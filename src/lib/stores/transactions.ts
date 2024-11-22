@@ -3,7 +3,13 @@ import { writable } from 'svelte/store';
 
 export interface TransactionNode {
 	id: string;
-	// Add other properties as needed
+	inputs: Array<{ boxId: string }>;
+	outputs: Array<{
+		boxId: string;
+		value: number;
+		assets: Array<{ tokenId: string; amount: string }>;
+	}>;
+	fee: number;
 }
 
 interface NodeInfo {
@@ -15,8 +21,13 @@ export const transactions = writable<TransactionNode[]>([]);
 export const mempoolSize = writable<number>(0);
 export const maxTxCount = 1000;
 
+// New store to hold the bank box chains
+export const bankBoxChains = writable<any[]>([]);
+
 const nodeUrl = 'http://213.239.193.208:9053';
 const pollingInterval = 5000;
+
+const TOKEN_BANK_NFT = '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9'; // SUSD Bank V2 NFT
 
 let lastSeenMessageTime = 0;
 let lastProcessedHeight = 0;
@@ -59,6 +70,9 @@ async function populateInitialSet() {
 	// Save transactions to store
 	transactions.set(transactionsArray.slice(0, maxTxCount));
 	mempoolSize.set(transactionsArray.length);
+
+	// Process transactions to build bank box chains
+	buildBankBoxChains(transactionsArray);
 
 	// Get initial node info for baseline
 	const nodeInfo = await fetchNodeInfo();
@@ -103,6 +117,9 @@ async function refreshMempool() {
 	// Update transactions store
 	transactions.set(transactionsArray.slice(0, maxTxCount));
 	mempoolSize.set(transactionsArray.length);
+
+	// Process transactions to build bank box chains
+	buildBankBoxChains(transactionsArray);
 }
 
 function startPolling() {
@@ -117,3 +134,95 @@ function startPolling() {
 
 // Start the initial population and polling
 populateInitialSet().then(startPolling);
+
+// New function to build bank box chains
+function buildBankBoxChains(transactionsArray: TransactionNode[]) {
+	const boxes = new Map(); // boxId -> box info
+	const txMap = new Map(); // txId -> transaction
+
+	// Collect all transactions and build maps
+	transactionsArray.forEach((tx) => {
+		txMap.set(tx.id, tx);
+
+		tx.outputs.forEach((output) => {
+			boxes.set(output.boxId, {
+				box: output,
+				createdBy: tx.id,
+				spentBy: []
+			});
+		});
+	});
+
+	// Map inputs to spending transactions
+	transactionsArray.forEach((tx) => {
+		tx.inputs.forEach((input) => {
+			if (boxes.has(input.boxId)) {
+				boxes.get(input.boxId).spentBy.push(tx.id);
+			} else {
+				// External input (could be the initial bank box)
+				boxes.set(input.boxId, {
+					box: { boxId: input.boxId },
+					createdBy: null,
+					spentBy: [tx.id]
+				});
+			}
+		});
+	});
+
+	// Identify bank boxes (boxes containing TOKEN_BANK_NFT)
+	const bankBoxes = Array.from(boxes.values()).filter((boxInfo) => {
+		return boxInfo.box.assets?.some((asset) => asset.tokenId === TOKEN_BANK_NFT);
+	});
+
+	// Build chains starting from the latest bank boxes
+	const chains = [];
+	const visitedBoxes = new Set();
+	const visitedTxs = new Set();
+
+	bankBoxes.forEach((bankBox) => {
+		const chain = [];
+		traverseBankBoxChain(bankBox.box.boxId, chain, visitedBoxes, visitedTxs, boxes, txMap);
+		if (chain.length > 0) {
+			chains.push(chain);
+		}
+	});
+
+	// Update the bankBoxChains store
+	bankBoxChains.set(chains);
+}
+
+function traverseBankBoxChain(boxId, chain, visitedBoxes, visitedTxs, boxes, txMap) {
+	if (visitedBoxes.has(boxId)) return;
+	visitedBoxes.add(boxId);
+
+	const boxInfo = boxes.get(boxId);
+	if (!boxInfo) return;
+
+	chain.push({ type: 'box', box: boxInfo.box });
+
+	// If the box is spent by transactions in the mempool
+	if (boxInfo.spentBy.length > 0) {
+		// Sort conflicting transactions by fee (higher fee first)
+		const sortedTxIds = boxInfo.spentBy
+			.map((txId) => txMap.get(txId))
+			.filter((tx) => tx)
+			.sort((a, b) => BigInt(b.fee) - BigInt(a.fee))
+			.map((tx) => tx.id);
+
+		sortedTxIds.forEach((txId, index) => {
+			if (visitedTxs.has(txId)) return;
+			visitedTxs.add(txId);
+
+			const tx = txMap.get(txId);
+			if (tx) {
+				chain.push({ type: 'tx', tx, isMainBranch: index === 0 });
+				tx.outputs.forEach((output) => {
+					// Only traverse boxes containing the TOKEN_BANK_NFT
+					if (output.assets?.some((asset) => asset.tokenId === TOKEN_BANK_NFT)) {
+						traverseBankBoxChain(output.boxId, chain, visitedBoxes, visitedTxs, boxes, txMap);
+					}
+				});
+			}
+		});
+	}
+}

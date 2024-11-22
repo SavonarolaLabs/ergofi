@@ -1,7 +1,9 @@
 <script>
 	import Actions from '$lib/Actions.svelte';
+	import Transactions from '$lib/Transactions.svelte';
 </script>
 
+<Transactions></Transactions>
 <Actions></Actions>
 
 <div>Amount u can choose</div>

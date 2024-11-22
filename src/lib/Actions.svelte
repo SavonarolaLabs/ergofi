@@ -349,7 +349,9 @@
 		<!-- START -->
 
 		<div class="actions_buySellWrapper">
+			<!-- Buy Section -->
 			<div class="actions_buyWrapper actions_doWrapper">
+				<!-- Balance -->
 				<div class="actions_balance">
 					<div>
 						<span class="actions_primaryText" style="margin-inline-end: 8px;">Available </span><span
@@ -359,23 +361,11 @@
 							</span><span> SigUSD</span></span
 						>
 					</div>
-					<a href="/assets/deposit/SigUSD" class="actions_deposit"
-						><svg
-							class="sc-eqUAAy cMqsAc mx-icon"
-							focusable="false"
-							width="1em"
-							height="1em"
-							fill="currentColor"
-							aria-hidden="true"
-							viewBox="0 0 1024 1024"
-							data-icon="PlusCircleFilled"
-							style="font-size: 16px;"
-							><path
-								d="M907.636364 523.636364a384 384 384 0 1 0-768 0 384 384 0 0 0 768 0z m-418.909091-139.636364a34.909091 34.909091 0 0 1 69.818182 0v104.727273h104.727272a34.909091 34.909091 0 0 1 0 69.818182H558.545455v104.727272a34.909091 34.909091 0 0 1-69.818182 0V558.545455H384a34.909091 34.909091 0 0 1 0-69.818182h104.727273V384z"
-							></path></svg
-						></a
-					>
+					<a href="/assets/deposit/SigUSD" class="actions_deposit">
+						<!-- SVG icon -->
+					</a>
 				</div>
+				<!-- Price Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
 						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
@@ -392,7 +382,41 @@
 						>
 					</div>
 				</div>
-				<!-- Similar code for amount and total inputs -->
+				<!-- Amount Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Amount</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-buyQuantity"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleBuyAmountChange}
+								bind:value={buyAmountInput}
+							/><span class="ant-input-suffix"><span>rsBTC</span> </span></span
+						>
+					</div>
+				</div>
+				<!-- Total Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Total</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-buyTotal"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleBuyTotalChange}
+								bind:value={buyTotalInput}
+							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
+						>
+					</div>
+				</div>
+				<!-- Buy Button -->
 				{#if wallet_initialized}
 					<button class="buySellButton buyButton" on:click={configureBuy}>Buy</button>
 				{:else if crystalwallet_locked}
@@ -410,7 +434,92 @@
 					</button>
 				{/if}
 			</div>
-			<!-- Similar code for the Sell section -->
+
+			<!-- Sell Section -->
+			<div class="actions_sellWrapper actions_doWrapper">
+				<!-- Balance -->
+				<div class="actions_balance">
+					<div>
+						<span class="actions_primaryText" style="margin-inline-end: 8px;">Available </span><span
+							><span>
+								{(user_tokens.find((t) => t.name == 'rsBTC')?.amount ?? 0) /
+									10 ** (user_tokens.find((t) => t.name == 'rsBTC')?.decimals ?? 8)}
+							</span><span> rsBTC</span></span
+						>
+					</div>
+					<a href="/assets/deposit/rsBTC" class="actions_deposit">
+						<!-- SVG icon -->
+					</a>
+				</div>
+				<!-- Price Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Price</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-sellPrice"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleSellPriceChange}
+								bind:value={sellPriceInput}
+							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
+						>
+					</div>
+				</div>
+				<!-- Amount Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Amount</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-sellQuantity"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleSellAmountChange}
+								bind:value={sellAmountInput}
+							/><span class="ant-input-suffix"><span>rsBTC</span> </span></span
+						>
+					</div>
+				</div>
+				<!-- Total Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Total</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-sellTotal"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleSellTotalChange}
+								bind:value={sellTotalInput}
+							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
+						>
+					</div>
+				</div>
+				<!-- Sell Button -->
+				{#if wallet_initialized}
+					<button class="buySellButton sellButton" on:click={swapActionSell}> Sell </button>
+				{:else if crystalwallet_locked}
+					<button
+						class="buySellButton sellButton"
+						on:click={() => {
+							show_wallet_unlock_dialog = true;
+						}}
+					>
+						Unlock Wallet
+					</button>
+				{:else}
+					<button class="buySellButton sellButton" on:click={() => goto('/wallet')}>
+						Create/Restore Wallet
+					</button>
+				{/if}
+			</div>
 		</div>
 
 		<!-- END -->
@@ -470,6 +579,9 @@
 	}
 	.actions_buyWrapper {
 		padding-inline-end: 12px;
+	}
+	.actions_sellWrapper {
+		padding-inline-start: 12px;
 	}
 	.actions_doWrapper {
 		flex-grow: 1;

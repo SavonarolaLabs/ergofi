@@ -1,4 +1,7 @@
 <script lang="ts">
+	//bind:value={sellTotalInput}
+	//bind:value={buyTotalInput}
+
 	// Replace external imports with dummy data
 	const BOB_ADDRESS = 'dummy_bob_address';
 	const BOB_MNEMONIC = 'dummy_bob_mnemonic';
@@ -162,6 +165,7 @@
 
 		return swapParams;
 	}
+
 	async function swapExecuteBuy() {
 		const sellingToken = TOKEN.rsBTC;
 		const buyingToken = TOKEN.SigUSD;
@@ -365,6 +369,24 @@
 						<!-- SVG icon -->
 					</a>
 				</div>
+
+				<!-- Amount Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Amount</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-buyQuantity"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleBuyAmountChange}
+								bind:value={buyAmountInput}
+							/><span class="ant-input-suffix"><span>ERG</span> </span></span
+						>
+					</div>
+				</div>
 				<!-- Price Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
@@ -379,23 +401,6 @@
 								on:input={handleBuyPriceChange}
 								bind:value={buyPriceInput}
 							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
-						>
-					</div>
-				</div>
-				<!-- Amount Input -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Amount</span></span
-							><input
-								placeholder=""
-								data-testid="spot-trade-buyQuantity"
-								class="ant-input ant-input-sm"
-								type="text"
-								on:input={handleBuyAmountChange}
-								bind:value={buyAmountInput}
-							/><span class="ant-input-suffix"><span>rsBTC</span> </span></span
 						>
 					</div>
 				</div>
@@ -418,7 +423,7 @@
 				</div>
 				<!-- Buy Button -->
 				{#if wallet_initialized}
-					<button class="buySellButton buyButton" on:click={configureBuy}>Buy</button>
+					<button class="buySellButton buyButton" on:click={configureBuy}>Buy ERG</button>
 				{:else if crystalwallet_locked}
 					<button
 						class="buySellButton buyButton"
@@ -444,12 +449,29 @@
 							><span>
 								{(user_tokens.find((t) => t.name == 'rsBTC')?.amount ?? 0) /
 									10 ** (user_tokens.find((t) => t.name == 'rsBTC')?.decimals ?? 8)}
-							</span><span> rsBTC</span></span
+							</span><span> ERG</span></span
 						>
 					</div>
 					<a href="/assets/deposit/rsBTC" class="actions_deposit">
 						<!-- SVG icon -->
 					</a>
+				</div>
+				<!-- Amount Input -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
+							><span class="ant-input-prefix"
+								><span class="plus-minus_prefix__IJXO_">Amount</span></span
+							><input
+								placeholder=""
+								data-testid="spot-trade-sellQuantity"
+								class="ant-input ant-input-sm"
+								type="text"
+								on:input={handleSellAmountChange}
+								bind:value={sellAmountInput}
+							/><span class="ant-input-suffix"><span>ERG</span> </span></span
+						>
+					</div>
 				</div>
 				<!-- Price Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
@@ -468,23 +490,7 @@
 						>
 					</div>
 				</div>
-				<!-- Amount Input -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Amount</span></span
-							><input
-								placeholder=""
-								data-testid="spot-trade-sellQuantity"
-								class="ant-input ant-input-sm"
-								type="text"
-								on:input={handleSellAmountChange}
-								bind:value={sellAmountInput}
-							/><span class="ant-input-suffix"><span>rsBTC</span> </span></span
-						>
-					</div>
-				</div>
+
 				<!-- Total Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
@@ -504,7 +510,7 @@
 				</div>
 				<!-- Sell Button -->
 				{#if wallet_initialized}
-					<button class="buySellButton sellButton" on:click={swapActionSell}> Sell </button>
+					<button class="buySellButton sellButton" on:click={swapActionSell}> Sell ERG </button>
 				{:else if crystalwallet_locked}
 					<button
 						class="buySellButton sellButton"

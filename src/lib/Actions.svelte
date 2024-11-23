@@ -18,8 +18,8 @@
 	const directionSell = 1n;
 	const direction = directionBuy; // TEST
 
-	const FEE_UI = 50n; //0.5%
 	//const FEE_UI = 10000n; //100% - TEST
+	const FEE_UI = 50n; //0.5%
 	const FEE_UI_DENOM = 100_00n;
 	const FEE_MINING_MIN = RECOMMENDED_MIN_FEE_VALUE;
 
@@ -53,12 +53,17 @@
 		calculateUsdErgFromAmount(direction);
 	}
 
+	let selectedCurrency: Currency = 'ERG';
+	let fromAmount = '';
+	let toAmount = '';
+	// fromAmount
+
 	function handleBuyTotalChange(event) {
 		buyTotalInput = event.target.value;
 		calculateUsdErgFromTotal(direction);
 	}
 
-	function calculateUsdErgFromAmount(direction: bigint) {
+	function calculateUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
@@ -93,17 +98,19 @@
 			);
 			const feeTotal = feeContract + miningFee + feeUI;
 
-			buyTotalInput = new BigNumber(requestSC.toString()).dividedBy('100').toFixed(2);
-			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
-			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
+			const totalSigUSD = new BigNumber(requestSC.toString()).dividedBy('100').toFixed(2);
+			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
+			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
+			return { totalSigUSD, finalPrice, totalFee };
 		} else {
-			buyPriceInput = '';
-			buyTotalInput = '';
-			buyFeeInput = '';
+			const totalSigUSD = '';
+			const finalPrice = '';
+			const totalFee = '';
+			return { totalSigUSD, finalPrice, totalFee };
 		}
 	}
 
-	function calculateUsdErgFromTotal(direction: bigint) {
+	function calculateUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
@@ -123,15 +130,17 @@
 			const totalErgoRequired = bcDeltaExpectedWithFee + feeUI + miningFee;
 			const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 
-			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
-			buyAmountInput = new BigNumber(totalErgoRequired.toString())
+			const totalErg = new BigNumber(totalErgoRequired.toString())
 				.dividedBy('1000000000')
 				.toFixed(9);
-			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
+			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
+			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
+			return { totalErg, finalPrice, totalFee };
 		} else {
-			buyAmountInput = '';
-			buyPriceInput = '';
-			buyFeeInput = '';
+			const totalErg = '';
+			const finalPrice = '';
+			const totalFee = '';
+			return { totalErg, finalPrice, totalFee };
 		}
 	}
 </script>

@@ -178,6 +178,7 @@
 			<span class="text-sm text-gray-500 dark:text-gray-400">Balance: 0.0</span>
 		</div>
 		<div
+			style="border: none!important; outline: none!important; box-shadow: none!important;"
 			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
 		>
 			<input
@@ -221,6 +222,7 @@
 			<span class="text-sm text-gray-500 dark:text-gray-400">Price: {swapPrice}</span>
 		</div>
 		<div
+			style="border: none!important; outline: none!important; box-shadow: none!important;"
 			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
 		>
 			<input

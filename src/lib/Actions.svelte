@@ -14,8 +14,9 @@
 	const inErg = BigInt('1603341601262771'); // Примерное значение ERG в системе
 	const inCircSigUSD = BigInt('35223802'); // Циркулирующий SigUSD
 	const oraclePrice = BigInt('6316597'); // Цена из оракула (nanoERG за цент)
-	const directionBuy = -1n; // CHECK DIRECTION
-	const directionSell = 1n; // CHECK DIRECTION
+	const directionBuy = -1n;
+	const directionSell = 1n;
+	const direction = directionBuy; // TEST
 
 	const FEE_UI = 50n; //0.5%
 	//const FEE_UI = 10000n; //100% - TEST
@@ -49,15 +50,15 @@
 	// Обработчики изменений для покупки
 	function handleBuyAmountChange(event) {
 		buyAmountInput = event.target.value;
-		calculateBuyFromAmount();
+		calculateUsdErgFromAmount(direction);
 	}
 
 	function handleBuyTotalChange(event) {
 		buyTotalInput = event.target.value;
-		calculateBuyFromTotal();
+		calculateUsdErgFromTotal(direction);
 	}
 
-	function calculateBuyFromAmount() {
+	function calculateUsdErgFromAmount(direction: bigint) {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
@@ -84,7 +85,7 @@
 				inCircSigUSD,
 				oraclePrice,
 				BigInt(amountWithoutUI),
-				directionBuy
+				direction
 			);
 
 			const rateTotal = new BigNumber(requestSC.toString()).dividedBy(
@@ -102,7 +103,7 @@
 		}
 	}
 
-	function calculateBuyFromTotal() {
+	function calculateUsdErgFromTotal(direction: bigint) {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
@@ -113,7 +114,7 @@
 				rateSCERG,
 				fee: feeContract,
 				bcDeltaExpectedWithFee
-			} = calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, totalSC, directionBuy);
+			} = calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, totalSC, direction);
 
 			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
 			const miningFee = FEE_MINING_MIN;
@@ -133,77 +134,6 @@
 			buyFeeInput = '';
 		}
 	}
-
-	// Обработчики изменений для продажи
-	function handleSellAmountChange(event) {
-		sellAmountInput = event.target.value;
-		calculateSellFromAmount();
-	}
-
-	function handleSellTotalChange(event) {
-		sellTotalInput = event.target.value;
-		calculateSellFromTotal();
-	}
-
-	function calculateSellFromAmount() {
-		console.log('SELL');
-		const amountERG = new BigNumber(sellAmountInput);
-
-		if (!amountERG.isNaN() && amountERG.gt(0)) {
-			const amountNanoERG = amountERG
-				.multipliedBy('1000000000')
-				.integerValue(BigNumber.ROUND_FLOOR);
-			const requestSCBigInt = BigInt(amountERG.multipliedBy('100').toFixed(0));
-
-			const { rateSCERG, fee, requestSC } = calculateSigUsdRateWithFeeFromErg(
-				inErg,
-				inCircSigUSD,
-				oraclePrice,
-				requestSCBigInt,
-				directionSell
-			);
-
-			sellPriceInput = new BigNumber(1).dividedBy(rateSCERG).toFixed(8);
-			const totalSigUSD = requestSC;
-			sellTotalInput = new BigNumber(totalSigUSD.toString()).dividedBy('100').toFixed(2);
-			sellFeeInput = new BigNumber(fee.toString()).dividedBy('100').toFixed(2);
-		} else {
-			sellPriceInput = '';
-			sellTotalInput = '';
-			sellFeeInput = '';
-		}
-	}
-
-	function calculateSellFromTotal() {
-		calculateSigUsdRateWithFeeFromErg;
-		const totalSigUSD = new BigNumber(sellTotalInput)
-			.multipliedBy('100')
-			.integerValue(BigNumber.ROUND_CEIL);
-
-		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
-			const totalBigInt = BigInt(totalSigUSD.toString());
-			console.log('Oracle Price:', oraclePrice);
-			const { rateSCERG, fee, bcDeltaExpectedWithFee } = calculateSigUsdRateWithFee(
-				inErg,
-				inCircSigUSD,
-				oraclePrice,
-				totalBigInt,
-				directionSell
-			);
-
-			const amountERG = new BigNumber(bcDeltaExpectedWithFee.toString())
-				.dividedBy('100')
-				.toFixed(8);
-
-			sellAmountInput = amountERG;
-			sellPriceInput = new BigNumber(1).dividedBy(rateSCERG).toFixed(8);
-			sellFeeInput = new BigNumber(fee.toString()).dividedBy('100').toFixed(2);
-		} else {
-			sellAmountInput = '';
-			sellPriceInput = '';
-			sellFeeInput = '';
-		}
-	}
 </script>
 
 <div class="actions">
@@ -215,9 +145,6 @@
 			<div class="actions_buyWrapper actions_doWrapper">
 				<!-- Balance -->
 				<!-- ... -->
-
-				<div>В этой части мы хотим - КУПИТЬ SigUSD - ПРОДАВ ЭРГО</div>
-				<div>То есть за 1 ЭРГО - мы получаем 1.55 Сигюсд</div>
 				<!-- Amount Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
@@ -290,97 +217,11 @@
 								bind:value={buyFeeInput}
 								readonly
 							/>
-							<span class="ant-input-suffix"><span>SigUSD</span> </span>
-						</span>
-					</div>
-				</div>
-				<!-- Buy Button -->
-				<!-- ... -->
-			</div>
-			<div>
-				----------------------------------------------------------------------------------------------------------
-			</div>
-			<!-- Sell Section -->
-			<div class="actions_sellWrapper actions_doWrapper">
-				<!-- Balance -->
-				<!-- ... -->
-				<!-- Amount Input -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
-							<span class="ant-input-prefix">
-								<span class="plus-minus_prefix__IJXO_">Amount</span>
-							</span>
-							<input
-								placeholder=""
-								data-testid="spot-trade-sellAmount"
-								class="ant-input ant-input-sm"
-								type="text"
-								on:input={handleSellAmountChange}
-								bind:value={sellAmountInput}
-							/>
 							<span class="ant-input-suffix"><span>ERG</span> </span>
 						</span>
 					</div>
 				</div>
-				<!-- Price Input (readonly) -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
-							<span class="ant-input-prefix">
-								<span class="plus-minus_prefix__IJXO_">Price</span>
-							</span>
-							<input
-								placeholder=""
-								data-testid="spot-trade-sellPrice"
-								class="ant-input ant-input-sm"
-								type="text"
-								bind:value={sellPriceInput}
-								readonly
-							/>
-							<span class="ant-input-suffix"><span>SigUSD</span> </span>
-						</span>
-					</div>
-				</div>
-				<!-- Total Input -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
-							<span class="ant-input-prefix">
-								<span class="plus-minus_prefix__IJXO_">Total</span>
-							</span>
-							<input
-								placeholder=""
-								data-testid="spot-trade-sellTotal"
-								class="ant-input ant-input-sm"
-								type="text"
-								on:input={handleSellTotalChange}
-								bind:value={sellTotalInput}
-							/>
-							<span class="ant-input-suffix"><span>SigUSD</span> </span>
-						</span>
-					</div>
-				</div>
-				<!-- Fee Input (readonly) -->
-				<div class="actions_inputWrapper__OKcnB actions_line">
-					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
-							<span class="ant-input-prefix">
-								<span class="plus-minus_prefix__IJXO_">Fee</span>
-							</span>
-							<input
-								placeholder=""
-								data-testid="spot-trade-sellFee"
-								class="ant-input ant-input-sm"
-								type="text"
-								bind:value={sellFeeInput}
-								readonly
-							/>
-							<span class="ant-input-suffix"><span>SigUSD</span> </span>
-						</span>
-					</div>
-				</div>
-				<!-- Sell Button -->
+				<!-- Buy Button -->
 				<!-- ... -->
 			</div>
 		</div>

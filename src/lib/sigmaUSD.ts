@@ -28,7 +28,6 @@ export function calculateSigUsdRateWithFee(
 	let rateSCERG: number;
 
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	//console.log(oraclePrice, ' +Reserve BC:', bcReserveNeededIn);
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
@@ -54,21 +53,14 @@ export function calculateSigRsvRateWithFee(
 ): { rateRSVERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
 	let rateRSVERG: number;
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
-	console.log(oraclePrice, ' +Reserve BC:', bcReserveNeededIn);
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 
-	console.log('reserve rate', inErg / bcReserveNeededIn);
 	const equityIn = inErg - liabilitiesIn;
-	console.log('🚀 ~ equityIn:', equityIn);
 	const equityRate = equityIn / inCircSigRSV; // nanoergs per RSV
-	console.log('🚀 ~ equityRate:', equityRate);
 	const bcDeltaExpected = equityRate * requestRSV;
-	console.log('🚀 ~ bcDeltaExpected:', bcDeltaExpected);
 	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
 	const bcDeltaExpectedWithFee = bcDeltaExpected + direction * fee;
-	console.log('🚀 ~ bcDeltaExpectedWithFee:', bcDeltaExpectedWithFee);
 	rateRSVERG = Number(requestRSV) / Number(bcDeltaExpectedWithFee);
-	console.log('🚀 ~ rateRSVERG:', rateRSVERG);
 
 	return { rateRSVERG, fee, bcDeltaExpectedWithFee };
 }
@@ -81,7 +73,6 @@ export function calculateSigUsdRateWithFeeFromErg(
 	ergRequest: bigint,
 	direction: bigint
 ): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	console.log('From ERG -> to SigUSD');
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 
@@ -96,7 +87,6 @@ export function calculateSigUsdRateWithFeeFromErg(
 	const requestSC = bcDeltaExpected / scNominalPrice;
 
 	const rateSCERG = Number(requestSC) / Number(ergRequest);
-	console.log('Result: Erg', ergRequest, ' -> Sig USD', requestSC);
 	return { rateSCERG, fee, requestSC };
 }
 

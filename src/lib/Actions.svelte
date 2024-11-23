@@ -57,11 +57,6 @@
 		calculateBuyFromTotal();
 	}
 
-	// Функция Должна работать следующим образом
-	// Берем Amount - он в нашей логике является Total (bcDeltaExpectedWithFee)
-	// На основе него расчитываем requestSC
-	//
-
 	function calculateBuyFromAmount() {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 
@@ -71,25 +66,20 @@
 				.integerValue(BigNumber.ROUND_FLOOR)
 				.toFixed(0);
 
-			//------------------------- INCLUDE UI FEE MINING FEE -------------------------
-			//DELETE MINING FEE
 			const miningFee = FEE_MINING_MIN;
 			const amountWithoutMining = BigInt(inputAmountNanoERG) - BigInt(miningFee);
-			//DELETE UI FEE
 			const amountWithoutUI = new BigNumber(amountWithoutMining.toString())
 				.multipliedBy(FEE_UI_DENOM.toString())
 				.dividedBy((FEE_UI_DENOM + FEE_UI).toString())
 				.integerValue(BigNumber.ROUND_FLOOR)
 				.toFixed(0);
-			//DROP INTO CONTRACT
-			console.log(inputAmountNanoERG, ' INPUT AMOUNT');
-			console.log(amountWithoutMining, ' INPUT - MINING');
-			console.log(amountWithoutUI, ' INPUT - UI');
+			const feeUI = BigInt(amountWithoutMining) - BigInt(amountWithoutUI);
 
-			//------------------------- ------------------------- -------------------------
-
-			// withoutFEE = amountWithoutUI
-			const { rateSCERG, fee, requestSC } = calculateSigUsdRateWithFeeFromErg(
+			const {
+				rateSCERG,
+				fee: feeContract,
+				requestSC
+			} = calculateSigUsdRateWithFeeFromErg(
 				inErg,
 				inCircSigUSD,
 				oraclePrice,
@@ -97,23 +87,14 @@
 				directionBuy
 			);
 
-			const feeContract = fee; // Contract FEE in NANOERG
+			const rateTotal = new BigNumber(requestSC.toString()).dividedBy(
+				inputAmountNanoERG.toString()
+			);
+			const feeTotal = feeContract + miningFee + feeUI;
 
-			const totalSigUSD = requestSC;
-
-			buyTotalInput = new BigNumber(totalSigUSD.toString()).dividedBy('100').toFixed(2);
-			buyPriceInput = new BigNumber(10000000).multipliedBy(rateSCERG).toFixed(2);
-			buyFeeInput = new BigNumber(fee.toString()).dividedBy('1000000000').toFixed(9);
-			//-----------------------
-
-			// PRICE IMPACT?
-			const rateTotal = new BigNumber(requestSC.toString())
-				//.multipliedBy(1_000_000_000)
-				//.dividedBy(100)
-				.dividedBy(inputAmountNanoERG.toString());
+			buyTotalInput = new BigNumber(requestSC.toString()).dividedBy('100').toFixed(2);
 			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
-
-			//-----------------------
+			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
 		} else {
 			buyPriceInput = '';
 			buyTotalInput = '';
@@ -122,64 +103,30 @@
 	}
 
 	function calculateBuyFromTotal() {
-		//calculateSigUsdRateWithFeeFromErg;
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
 
-		console.log('-------START:Cents from Inputs:', totalSigUSD.toString());
-
 		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
 			const totalSC = BigInt(totalSigUSD.toString());
-			console.log('converted cents,', totalSC);
-			const { rateSCERG, fee, bcDeltaExpectedWithFee } = calculateSigUsdRateWithFee(
-				inErg,
-				inCircSigUSD,
-				oraclePrice,
-				totalSC,
-				directionBuy
-			);
+			const {
+				rateSCERG,
+				fee: feeContract,
+				bcDeltaExpectedWithFee
+			} = calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, totalSC, directionBuy);
 
-			const feeContract = fee; // Contract FEE in NANOERG
-
-			//----- ADD UI FEE
 			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
-			//----- ADD mining FEE -------
 			const miningFee = FEE_MINING_MIN;
-			const feeTotal = fee + miningFee + feeUI;
-
-			//console.log('Oracle Price:', oraclePrice); // OraclePrice ERG for Cent? or Nanoerg for Cents?
-			// console.log(feeUI, ' UI FEE');
-			// console.log(feeContract, ' feeContract');
-			// console.log(miningFee, ' miningFee');
+			const feeTotal = feeContract + miningFee + feeUI;
 
 			const totalErgoRequired = bcDeltaExpectedWithFee + feeUI + miningFee;
-			const rateTotal = new BigNumber(totalSC.toString())
-				//.multipliedBy(1_000_000_000)
-				//.dividedBy(100)
-				.dividedBy(totalErgoRequired.toString());
-			console.log(rateSCERG.toString(), 'rateSCERG:');
-			console.log(rateTotal.toString(), 'rateTotal:');
+			const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 
-			// console.log(bcDeltaExpectedWithFee, ' ERGO FROM CONTRACT:');
-			// console.log(totalPrice, ' ERGO TOTAL:');
-
-			const amountERG = new BigNumber(bcDeltaExpectedWithFee.toString())
-				.dividedBy('1000000000') //10**9
-				.toFixed(9);
-
-			// ----------- CALCULATIONS WITHOUT UI FEE && MINING FEE -------------
-			//buyAmountInput = amountERG;
-			//buyPriceInput = new BigNumber(10000000).multipliedBy(rateSCERG).toFixed(2);
-			//buyFeeInput = new BigNumber(fee.toString()).dividedBy('1000000000').toFixed(9); // NEED TO FIX
-			// -------------------------------------------------------------------
-
-			// ----------- CALCULATIONS WITH UI FEE && MINING FEE 	-------------
 			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			buyAmountInput = new BigNumber(totalErgoRequired.toString())
-				.dividedBy('1000000000') //10**9
+				.dividedBy('1000000000')
 				.toFixed(9);
-			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9); // NEED TO FIX
+			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9);
 		} else {
 			buyAmountInput = '';
 			buyPriceInput = '';

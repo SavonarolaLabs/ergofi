@@ -236,3 +236,29 @@ input:not(:checked) + label:hover {
 		max-width: 100%;
 	}
 }
+
+/* Global styles for Bootstrap in your SvelteKit project */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none!important;
+  box-shadow: none!important;
+}
+
+input,
+select,
+textarea {
+  border: none!important;
+  outline: none!important;
+  background: transparent;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* For Firefox */
+}

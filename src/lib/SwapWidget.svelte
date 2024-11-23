@@ -21,13 +21,13 @@
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
 	<!-- From Input -->
-	<div class="relative mb-8 rounded-md dark:bg-gray-900">
+	<div class="relative mb-6 rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 			<span class="text-sm text-gray-500 dark:text-gray-400">From</span>
 			<span class="text-sm text-gray-500 dark:text-gray-400">Balance: 0.0</span>
 		</div>
 		<div
-			class="flex items-center rounded-lg bg-gray-50 pl-1 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
+			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
 		>
 			<input
 				type="number"
@@ -69,7 +69,7 @@
 			<span class="text-sm text-gray-500 dark:text-gray-400">Price: 0.0</span>
 		</div>
 		<div
-			class="flex items-center rounded-lg bg-gray-50 p-3 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
+			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
 		>
 			<input
 				type="number"
@@ -79,11 +79,11 @@
 				min="0"
 			/>
 			<div
-				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
+				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
 				class="broder relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-white px-3 py-2 dark:bg-gray-900"
 			>
 				<div class="h-5 w-5 {tokenColor[toToken]} rounded-full" />
-				<span class="font-medium text-gray-900 dark:text-gray-100">{toToken}</span>
+				<span class="ml-3 font-medium text-gray-800 dark:text-gray-400">{toToken}</span>
 			</div>
 		</div>
 	</div>

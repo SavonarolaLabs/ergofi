@@ -1,611 +1,445 @@
 <script lang="ts">
-	//bind:value={sellTotalInput}
-	//bind:value={buyTotalInput}
-
-	// Replace external imports with dummy data
-	const BOB_ADDRESS = 'dummy_bob_address';
-	const BOB_MNEMONIC = 'dummy_bob_mnemonic';
-
-	const TOKEN = {
-		SigUSD: { tokenId: 'dummy_sigusd_tokenid', decimals: 2 },
-		rsBTC: { tokenId: 'dummy_rsbtc_tokenid', decimals: 8 }
-	};
-
-	const b = {}; // Dummy object
-	const signTxInput = {}; // Dummy object
-
-	async function configureSwapTx(params) {
-		// Dummy function
-		return params;
-	}
-
 	import BigNumber from 'bignumber.js';
+	import {
+		calculateSigUsdRateWithFee,
+		calculateSigUsdRateWithFeeFromErg,
+		calculateSigUsdRateWithFeeReversed,
+		extractBoxesData
+	} from './sigmaUSD';
+	import { onMount } from 'svelte';
+	import { RECOMMENDED_MIN_FEE_VALUE } from '@fleet-sdk/core';
 
-	let crystalwallet_locked = false;
-	let show_wallet_unlock_dialog = false;
-	let user_address = 'dummy_user_address';
-	let user_mnemonic = 'dummy_user_mnemonic';
-	let user_tokens = [
-		{ name: 'SigUSD', amount: 1000000000, decimals: 2 },
-		{ name: 'rsBTC', amount: 1000000000, decimals: 8 }
-	];
-	let wallet_initialized = true;
+	// LOAD ORACLE BOX
+	// Фиктивные данные (замените на реальные данные из блокчейна)
+	const inErg = BigInt('1603341601262771'); // Примерное значение ERG в системе
+	const inCircSigUSD = BigInt('35223802'); // Циркулирующий SigUSD
+	const oraclePrice = BigInt('6316597'); // Цена из оракула (nanoERG за цент)
+	const directionBuy = -1n; // CHECK DIRECTION
+	const directionSell = 1n; // CHECK DIRECTION
 
-	async function createAndMultisigSwapTx(swapParams, b, user_mnemonic, user_address) {
-		// Dummy function
-		return { txId: 'dummy_tx_id' };
-	}
-	async function executeAndSignInputsSwapTx(swapParams, signTxInput) {
-		// Dummy function
-		return { txId: 'dummy_tx_id' };
-	}
+	const FEE_UI = 50n; //0.5%
+	//const FEE_UI = 10000n; //100% - TEST
+	const FEE_UI_DENOM = 100_00n;
+	const FEE_MINING_MIN = RECOMMENDED_MIN_FEE_VALUE;
 
-	// Replace 'goto' with a dummy function
-	function goto(path: string) {
-		console.log('Navigate to', path);
-	}
+	// Dummy for tests
+	// sigmaUSD.ts:825 initial SC= 100n  vs reversed= 100n
+	// sigmaUSD.ts:826 direct rate= 1.6154397110743428e-7  vs reversed= 1.6154397110743428e-7
+	// sigmaUSD.ts:827 when ERG= 619026506n
 
-	type SwapRequest = {
-		address?: string;
-		makerPk?: string;
-		price: string;
-		nanoErg?: number;
-		makerToken?: {
-			tokenId: string;
-			amount: string;
-		};
-		takerTokenId?: string;
-		tradingPair?: string;
-		side: 'BUY' | 'SELL';
-		amount?: string;
-		sellingTokenId?: string;
-		buyingTokenId?: string;
-	};
+	// ----------RATES-----------
+	// sigmaUSD.ts:65 🚀 ~ liableRate: 6316597n
+	// sigmaUSD.ts:66 🚀 ~ oraclePrice: 6316597n
+	// sigmaUSD.ts:67 🚀 ~ scNominalPrice: 6316597n
 
-	const SAFE_MIN_BOX_VALUE = 1000000; // Dummy value
+	// Импортируем функции (предполагается, что они доступны)
+	// Если они находятся в другом файле, замените путь на корректный
 
-	function asBigInt(value) {
-		return BigInt(value);
-	}
+	// Инициализация переменных
+	let buyAmountInput = '10';
+	let buyPriceInput = '';
+	let buyTotalInput = '';
+	let buyFeeInput = '';
 
-	let buyPriceInput = '69000';
-	let buyAmountInput = '0.1';
-	let buyTotalInput = (parseFloat(buyPriceInput) * parseFloat(buyAmountInput))
-		.toFixed(8)
-		.replace(/\.?0+$/, '');
+	let sellAmountInput = '10';
+	let sellPriceInput = '';
+	let sellTotalInput = '';
+	let sellFeeInput = '';
 
-	let sellPriceInput = '69000';
-	let sellAmountInput = '0.1';
-	let sellTotalInput = (parseFloat(sellPriceInput) * parseFloat(sellAmountInput))
-		.toFixed(8)
-		.replace(/\.?0+$/, '');
-
-	function handleBuyPriceChange(event) {
-		buyPriceInput = event.target.value;
-		calcBuyTotal();
-	}
-
+	// Обработчики изменений для покупки
 	function handleBuyAmountChange(event) {
 		buyAmountInput = event.target.value;
-		calcBuyTotal();
+		calculateBuyFromAmount();
 	}
 
 	function handleBuyTotalChange(event) {
 		buyTotalInput = event.target.value;
-		calcBuyAmount();
+		calculateBuyFromTotal();
 	}
 
-	function handleSellPriceChange(event) {
-		sellPriceInput = event.target.value;
-		calcSellTotal();
+	// Функция Должна работать следующим образом
+	// Берем Amount - он в нашей логике является Total (bcDeltaExpectedWithFee)
+	// На основе него расчитываем requestSC
+	//
+
+	function calculateBuyFromAmount() {
+		const inputAmountERG = new BigNumber(buyAmountInput);
+
+		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+			const inputAmountNanoERG = inputAmountERG
+				.multipliedBy('1000000000')
+				.integerValue(BigNumber.ROUND_FLOOR)
+				.toFixed(0);
+
+			//------------------------- INCLUDE UI FEE MINING FEE -------------------------
+			//DELETE MINING FEE
+			const miningFee = FEE_MINING_MIN;
+			const amountWithoutMining = BigInt(inputAmountNanoERG) - BigInt(miningFee);
+			//DELETE UI FEE
+			const amountWithoutUI = new BigNumber(amountWithoutMining.toString())
+				.multipliedBy(FEE_UI_DENOM.toString())
+				.dividedBy((FEE_UI_DENOM + FEE_UI).toString())
+				.integerValue(BigNumber.ROUND_FLOOR)
+				.toFixed(0);
+			//DROP INTO CONTRACT
+			console.log(inputAmountNanoERG, ' INPUT AMOUNT');
+			console.log(amountWithoutMining, ' INPUT - MINING');
+			console.log(amountWithoutUI, ' INPUT - UI');
+
+			//------------------------- ------------------------- -------------------------
+
+			// withoutFEE = amountWithoutUI
+			const { rateSCERG, fee, requestSC } = calculateSigUsdRateWithFeeFromErg(
+				inErg,
+				inCircSigUSD,
+				oraclePrice,
+				BigInt(amountWithoutUI),
+				directionBuy
+			);
+
+			const feeContract = fee; // Contract FEE in NANOERG
+
+			const totalSigUSD = requestSC;
+
+			buyTotalInput = new BigNumber(totalSigUSD.toString()).dividedBy('100').toFixed(2);
+			buyPriceInput = new BigNumber(10000000).multipliedBy(rateSCERG).toFixed(2);
+			buyFeeInput = new BigNumber(fee.toString()).dividedBy('1000000000').toFixed(9);
+			//-----------------------
+
+			// PRICE IMPACT?
+			const rateTotal = new BigNumber(requestSC.toString())
+				//.multipliedBy(1_000_000_000)
+				//.dividedBy(100)
+				.dividedBy(inputAmountNanoERG.toString());
+			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
+
+			//-----------------------
+		} else {
+			buyPriceInput = '';
+			buyTotalInput = '';
+			buyFeeInput = '';
+		}
 	}
 
+	function calculateBuyFromTotal() {
+		//calculateSigUsdRateWithFeeFromErg;
+		const totalSigUSD = new BigNumber(buyTotalInput)
+			.multipliedBy('100')
+			.integerValue(BigNumber.ROUND_CEIL);
+
+		console.log('-------START:Cents from Inputs:', totalSigUSD.toString());
+
+		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
+			const totalSC = BigInt(totalSigUSD.toString());
+			console.log('converted cents,', totalSC);
+			const { rateSCERG, fee, bcDeltaExpectedWithFee } = calculateSigUsdRateWithFee(
+				inErg,
+				inCircSigUSD,
+				oraclePrice,
+				totalSC,
+				directionBuy
+			);
+
+			const feeContract = fee; // Contract FEE in NANOERG
+
+			//----- ADD UI FEE
+			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
+			//----- ADD mining FEE -------
+			const miningFee = FEE_MINING_MIN;
+			const feeTotal = fee + miningFee + feeUI;
+
+			//console.log('Oracle Price:', oraclePrice); // OraclePrice ERG for Cent? or Nanoerg for Cents?
+			// console.log(feeUI, ' UI FEE');
+			// console.log(feeContract, ' feeContract');
+			// console.log(miningFee, ' miningFee');
+
+			const totalErgoRequired = bcDeltaExpectedWithFee + feeUI + miningFee;
+			const rateTotal = new BigNumber(totalSC.toString())
+				//.multipliedBy(1_000_000_000)
+				//.dividedBy(100)
+				.dividedBy(totalErgoRequired.toString());
+			console.log(rateSCERG.toString(), 'rateSCERG:');
+			console.log(rateTotal.toString(), 'rateTotal:');
+
+			// console.log(bcDeltaExpectedWithFee, ' ERGO FROM CONTRACT:');
+			// console.log(totalPrice, ' ERGO TOTAL:');
+
+			const amountERG = new BigNumber(bcDeltaExpectedWithFee.toString())
+				.dividedBy('1000000000') //10**9
+				.toFixed(9);
+
+			// ----------- CALCULATIONS WITHOUT UI FEE && MINING FEE -------------
+			//buyAmountInput = amountERG;
+			//buyPriceInput = new BigNumber(10000000).multipliedBy(rateSCERG).toFixed(2);
+			//buyFeeInput = new BigNumber(fee.toString()).dividedBy('1000000000').toFixed(9); // NEED TO FIX
+			// -------------------------------------------------------------------
+
+			// ----------- CALCULATIONS WITH UI FEE && MINING FEE 	-------------
+			buyPriceInput = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
+			buyAmountInput = new BigNumber(totalErgoRequired.toString())
+				.dividedBy('1000000000') //10**9
+				.toFixed(9);
+			buyFeeInput = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(9); // NEED TO FIX
+		} else {
+			buyAmountInput = '';
+			buyPriceInput = '';
+			buyFeeInput = '';
+		}
+	}
+
+	// Обработчики изменений для продажи
 	function handleSellAmountChange(event) {
 		sellAmountInput = event.target.value;
-		calcSellTotal();
+		calculateSellFromAmount();
 	}
 
 	function handleSellTotalChange(event) {
 		sellTotalInput = event.target.value;
-		calcSellAmount();
+		calculateSellFromTotal();
 	}
 
-	function calcBuyTotal() {
-		const price = parseFloat(buyPriceInput);
-		const amount = parseFloat(buyAmountInput);
-		if (!isNaN(price) && !isNaN(amount)) {
-			buyTotalInput = (price * amount).toFixed(8).replace(/\.?0+$/, '');
+	function calculateSellFromAmount() {
+		console.log('SELL');
+		const amountERG = new BigNumber(sellAmountInput);
+
+		if (!amountERG.isNaN() && amountERG.gt(0)) {
+			const amountNanoERG = amountERG
+				.multipliedBy('1000000000')
+				.integerValue(BigNumber.ROUND_FLOOR);
+			const requestSCBigInt = BigInt(amountERG.multipliedBy('100').toFixed(0));
+
+			const { rateSCERG, fee, requestSC } = calculateSigUsdRateWithFeeFromErg(
+				inErg,
+				inCircSigUSD,
+				oraclePrice,
+				requestSCBigInt,
+				directionSell
+			);
+
+			sellPriceInput = new BigNumber(1).dividedBy(rateSCERG).toFixed(8);
+			const totalSigUSD = requestSC;
+			sellTotalInput = new BigNumber(totalSigUSD.toString()).dividedBy('100').toFixed(2);
+			sellFeeInput = new BigNumber(fee.toString()).dividedBy('100').toFixed(2);
+		} else {
+			sellPriceInput = '';
+			sellTotalInput = '';
+			sellFeeInput = '';
 		}
 	}
 
-	function calcBuyAmount() {
-		const total = parseFloat(buyTotalInput);
-		const price = parseFloat(buyPriceInput);
-		if (!isNaN(price) && !isNaN(total)) {
-			buyAmountInput = (total / price).toFixed(8).replace(/\.?0+$/, '');
+	function calculateSellFromTotal() {
+		calculateSigUsdRateWithFeeFromErg;
+		const totalSigUSD = new BigNumber(sellTotalInput)
+			.multipliedBy('100')
+			.integerValue(BigNumber.ROUND_CEIL);
+
+		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
+			const totalBigInt = BigInt(totalSigUSD.toString());
+			console.log('Oracle Price:', oraclePrice);
+			const { rateSCERG, fee, bcDeltaExpectedWithFee } = calculateSigUsdRateWithFee(
+				inErg,
+				inCircSigUSD,
+				oraclePrice,
+				totalBigInt,
+				directionSell
+			);
+
+			const amountERG = new BigNumber(bcDeltaExpectedWithFee.toString())
+				.dividedBy('100')
+				.toFixed(8);
+
+			sellAmountInput = amountERG;
+			sellPriceInput = new BigNumber(1).dividedBy(rateSCERG).toFixed(8);
+			sellFeeInput = new BigNumber(fee.toString()).dividedBy('100').toFixed(2);
+		} else {
+			sellAmountInput = '';
+			sellPriceInput = '';
+			sellFeeInput = '';
 		}
-	}
-
-	function calcSellTotal() {
-		const price = parseFloat(sellPriceInput);
-		const amount = parseFloat(sellAmountInput);
-		if (!isNaN(price) && !isNaN(amount)) {
-			sellTotalInput = (price * amount).toFixed(8).replace(/\.?0+$/, '');
-		}
-	}
-
-	function calcSellAmount() {
-		const total = parseFloat(sellTotalInput);
-		const price = parseFloat(sellPriceInput);
-		if (!isNaN(price) && !isNaN(total)) {
-			sellAmountInput = (total / price).toFixed(8).replace(/\.?0+$/, '');
-		}
-	}
-
-	function dummySwapParams() {
-		const address = BOB_ADDRESS;
-
-		const price = '100';
-		const amount = 200n;
-		const sellingTokenId = TOKEN.SigUSD.tokenId;
-		const buyingTokenId = TOKEN.rsBTC.tokenId;
-
-		const swapParams: SwapRequest = {
-			makerPk: address,
-			price: price,
-			nanoErg: SAFE_MIN_BOX_VALUE,
-			makerToken: {
-				tokenId: sellingTokenId,
-				amount: asBigInt(amount)
-			},
-			takerTokenId: buyingTokenId,
-			tradingPair: 'rsBTC_SigUSD',
-			side: 'SELL'
-		};
-
-		return swapParams;
-	}
-
-	async function swapExecuteBuy() {
-		const sellingToken = TOKEN.rsBTC;
-		const buyingToken = TOKEN.SigUSD;
-
-		// take user inputs
-		const amountInput = new BigNumber(buyAmountInput);
-		const priceInput = new BigNumber(buyPriceInput);
-
-		// load and calculate decimals
-		const decimalsToken = TOKEN.rsBTC.decimals;
-		const decimalsCurrency = TOKEN.SigUSD.decimals;
-		const bigDecimalsToken = new BigNumber(10).pow(decimalsToken);
-		const bigDecimalsCurrency = new BigNumber(10).pow(decimalsCurrency);
-		const bigDecimalsDelta = bigDecimalsToken.dividedBy(bigDecimalsCurrency);
-
-		// apply decimals
-		const real_price = priceInput.dividedBy(bigDecimalsDelta);
-		const real_amount = amountInput.multipliedBy(bigDecimalsToken);
-		const total = real_price.multipliedBy(real_amount);
-
-		console.log('real price: 1 sat in cents =', real_price.toString());
-		console.log('real amount: sats =', real_amount.toString());
-		console.log('total amount: cents =', total.toString());
-
-		const swapParams: SwapRequest = {
-			makerPk: user_address,
-			price: real_price.toString(),
-			nanoErg: SAFE_MIN_BOX_VALUE,
-			makerToken: {
-				tokenId: sellingToken.tokenId,
-				amount: real_amount.toString()
-			},
-			takerTokenId: buyingToken.tokenId,
-			tradingPair: 'rsBTC_SigUSD',
-			side: 'SELL'
-		};
-		console.log('swap params for selling:', swapParams);
-		//----------------------------
-		let signedTx = await executeAndSignInputsSwapTx(swapParams, signTxInput); // UNSIGNED TX
-		console.log(signedTx);
-	}
-
-	async function swapActionBuy() {
-		const sellingToken = TOKEN.SigUSD;
-		const buyingToken = TOKEN.rsBTC;
-
-		// take user inputs
-		const amountInput = new BigNumber(buyAmountInput);
-		const priceInput = new BigNumber(buyPriceInput);
-
-		// load and calculate decimals
-		const decimalsToken = TOKEN.rsBTC.decimals;
-		const decimalsCurrency = TOKEN.SigUSD.decimals;
-		const bigDecimalsToken = new BigNumber(10).pow(decimalsToken);
-		const bigDecimalsCurrency = new BigNumber(10).pow(decimalsCurrency);
-		const bigDecimalsDelta = bigDecimalsToken.dividedBy(bigDecimalsCurrency);
-
-		// apply decimals to contract
-		const real_price = new BigNumber(1)
-			.dividedBy(priceInput.dividedBy(bigDecimalsDelta))
-			.toString(10); // 1 sats =
-		const real_amount = amountInput
-			.multipliedBy(priceInput)
-			.multipliedBy(bigDecimalsCurrency)
-			.toString(10);
-		const total = amountInput.multipliedBy(bigDecimalsToken).toString(10);
-		console.log('real_price 1 cent in sats = ', real_price);
-		console.log('real_amount in cents', real_amount);
-		console.log('total in sats', total);
-
-		const swapParams: SwapRequest = {
-			address: user_address,
-			price: real_price.toString(),
-			amount: real_amount.toString(),
-			sellingTokenId: sellingToken.tokenId,
-			buyingTokenId: buyingToken.tokenId,
-			side: 'BUY'
-		};
-
-		console.log('swap params for selling:', swapParams);
-		//----------------------------
-		let signedTx = await createAndMultisigSwapTx(swapParams, b, user_mnemonic, user_address);
-		console.log(signedTx);
-		return;
-	}
-
-	async function swapActionSell() {
-		const sellingToken = TOKEN.rsBTC;
-		const buyingToken = TOKEN.SigUSD;
-
-		// take user inputs
-		const amountInput = new BigNumber(sellAmountInput);
-		const priceInput = new BigNumber(sellPriceInput);
-
-		// load and calculate decimals
-		const decimalsToken = TOKEN.rsBTC.decimals;
-		const decimalsCurrency = TOKEN.SigUSD.decimals;
-		const bigDecimalsToken = new BigNumber(10).pow(decimalsToken);
-		const bigDecimalsCurrency = new BigNumber(10).pow(decimalsCurrency);
-		const bigDecimalsDelta = bigDecimalsToken.dividedBy(bigDecimalsCurrency);
-
-		// apply decimals
-		const real_price = priceInput.dividedBy(bigDecimalsDelta);
-		const real_amount = amountInput.multipliedBy(bigDecimalsToken);
-		const total = real_price.multipliedBy(real_amount);
-
-		console.log('real price: 1 sat in cents =', real_price.toString());
-		console.log('real amount: sats =', real_amount.toString());
-		console.log('total amount: cents =', total.toString());
-
-		const swapParams: SwapRequest = {
-			address: user_address,
-			price: real_price.toString(),
-			amount: real_amount.toString(),
-			sellingTokenId: sellingToken.tokenId,
-			buyingTokenId: buyingToken.tokenId,
-			side: 'SELL'
-		};
-		console.log('swap params for selling:', swapParams);
-		//----------------------------
-		let signedTx = await createAndMultisigSwapTx(swapParams, b, user_mnemonic, user_address);
-		console.log(signedTx);
-	}
-
-	async function configureBuy() {
-		const sellingToken = TOKEN.rsBTC;
-		const buyingToken = TOKEN.SigUSD;
-
-		// take user inputs
-		const amountInput = new BigNumber(buyAmountInput);
-		const priceInput = new BigNumber(buyPriceInput);
-
-		// load and calculate decimals
-		const decimalsToken = TOKEN.rsBTC.decimals;
-		const decimalsCurrency = TOKEN.SigUSD.decimals;
-		const bigDecimalsToken = new BigNumber(10).pow(decimalsToken);
-		const bigDecimalsCurrency = new BigNumber(10).pow(decimalsCurrency);
-		const bigDecimalsDelta = bigDecimalsToken.dividedBy(bigDecimalsCurrency);
-
-		// apply decimals
-		const real_price = priceInput.dividedBy(bigDecimalsDelta);
-		const real_amount = amountInput.multipliedBy(bigDecimalsToken);
-		const total = real_price.multipliedBy(real_amount);
-
-		console.log('real price: 1 sat in cents =', real_price.toString());
-		console.log('real amount: sats =', real_amount.toString());
-		console.log('total amount: cents =', total.toString());
-
-		const swapParams: SwapRequest = {
-			address: user_address,
-			price: real_price.toString(),
-			amount: real_amount.toString(),
-			sellingTokenId: sellingToken.tokenId,
-			buyingTokenId: buyingToken.tokenId,
-			side: 'SELL'
-		};
-		console.log('swap params for configuring buy action:', swapParams);
-
-		// Request Server
-		let swapParamsExecute = await configureSwapTx(swapParams); // new SwapParams
-		console.log(swapParamsExecute);
-
-		// Execute it
-		let signedTx = await executeAndSignInputsSwapTx(swapParamsExecute, signTxInput); // UNSIGNED TX
-		console.log(signedTx);
 	}
 </script>
 
 <div class="actions">
-	<div class="actions_header">
-		<div class="actions_headerTabActive">Spot</div>
-		<div class="fee">
-			Maker <span style="display: inline-block; direction: ltr;">0.000%</span>
-			/ Taker
-			<span style="display: inline-block; direction: ltr;">0.200%</span>
-		</div>
-	</div>
+	<!-- Остальная часть кода -->
 	<div class="actions_contentWrapper">
-		<div
-			class="actions_line actions_mode__nRnKJ actions_textNowarp__3QcjB actions_modeActive__VpeUM"
-		>
-			Limit
-		</div>
-
-		<!-- START -->
-
+		<!-- ... -->
 		<div class="actions_buySellWrapper">
 			<!-- Buy Section -->
 			<div class="actions_buyWrapper actions_doWrapper">
 				<!-- Balance -->
-				<div class="actions_balance">
-					<div>
-						<span class="actions_primaryText" style="margin-inline-end: 8px;">Available </span><span
-							><span>
-								{(user_tokens.find((t) => t.name == 'SigUSD')?.amount ?? 0) /
-									10 ** (user_tokens.find((t) => t.name == 'SigUSD')?.decimals ?? 2)}
-							</span><span> SigUSD</span></span
-						>
-					</div>
-					<a href="/assets/deposit/SigUSD" class="actions_deposit">
-						<!-- SVG icon -->
-					</a>
-				</div>
+				<!-- ... -->
 
+				<div>В этой части мы хотим - КУПИТЬ SigUSD - ПРОДАВ ЭРГО</div>
+				<div>То есть за 1 ЭРГО - мы получаем 1.55 Сигюсд</div>
 				<!-- Amount Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Amount</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Amount</span>
+							</span>
+							<input
 								placeholder=""
-								data-testid="spot-trade-buyQuantity"
+								data-testid="spot-trade-buyAmount"
 								class="ant-input ant-input-sm"
 								type="text"
 								on:input={handleBuyAmountChange}
 								bind:value={buyAmountInput}
-							/><span class="ant-input-suffix"><span>ERG</span> </span></span
-						>
+							/>
+							<span class="ant-input-suffix"><span>ERG</span> </span>
+						</span>
 					</div>
 				</div>
-				<!-- Price Input -->
+				<!-- Price Input (readonly) -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Price</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Price</span>
+							</span>
+							<input
 								placeholder=""
 								data-testid="spot-trade-buyPrice"
 								class="ant-input ant-input-sm"
 								type="text"
-								on:input={handleBuyPriceChange}
 								bind:value={buyPriceInput}
-							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
-						>
+								readonly
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
 					</div>
 				</div>
 				<!-- Total Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Total</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Total</span>
+							</span>
+							<input
 								placeholder=""
 								data-testid="spot-trade-buyTotal"
 								class="ant-input ant-input-sm"
 								type="text"
 								on:input={handleBuyTotalChange}
 								bind:value={buyTotalInput}
-							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
-						>
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
+					</div>
+				</div>
+				<!-- Fee Input (readonly) -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Fee</span>
+							</span>
+							<input
+								placeholder=""
+								data-testid="spot-trade-buyFee"
+								class="ant-input ant-input-sm"
+								type="text"
+								bind:value={buyFeeInput}
+								readonly
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
 					</div>
 				</div>
 				<!-- Buy Button -->
-				{#if wallet_initialized}
-					<button class="buySellButton buyButton" on:click={configureBuy}>Buy ERG</button>
-				{:else if crystalwallet_locked}
-					<button
-						class="buySellButton buyButton"
-						on:click={() => {
-							show_wallet_unlock_dialog = true;
-						}}
-					>
-						Unlock Wallet
-					</button>
-				{:else}
-					<button class="buySellButton buyButton" on:click={() => goto('/wallet')}>
-						Create/Restore Wallet
-					</button>
-				{/if}
+				<!-- ... -->
 			</div>
-
+			<div>
+				----------------------------------------------------------------------------------------------------------
+			</div>
 			<!-- Sell Section -->
 			<div class="actions_sellWrapper actions_doWrapper">
 				<!-- Balance -->
-				<div class="actions_balance">
-					<div>
-						<span class="actions_primaryText" style="margin-inline-end: 8px;">Available </span><span
-							><span>
-								{(user_tokens.find((t) => t.name == 'rsBTC')?.amount ?? 0) /
-									10 ** (user_tokens.find((t) => t.name == 'rsBTC')?.decimals ?? 8)}
-							</span><span> ERG</span></span
-						>
-					</div>
-					<a href="/assets/deposit/rsBTC" class="actions_deposit">
-						<!-- SVG icon -->
-					</a>
-				</div>
+				<!-- ... -->
 				<!-- Amount Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Amount</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Amount</span>
+							</span>
+							<input
 								placeholder=""
-								data-testid="spot-trade-sellQuantity"
+								data-testid="spot-trade-sellAmount"
 								class="ant-input ant-input-sm"
 								type="text"
 								on:input={handleSellAmountChange}
 								bind:value={sellAmountInput}
-							/><span class="ant-input-suffix"><span>ERG</span> </span></span
-						>
+							/>
+							<span class="ant-input-suffix"><span>ERG</span> </span>
+						</span>
 					</div>
 				</div>
-				<!-- Price Input -->
+				<!-- Price Input (readonly) -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Price</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Price</span>
+							</span>
+							<input
 								placeholder=""
 								data-testid="spot-trade-sellPrice"
 								class="ant-input ant-input-sm"
 								type="text"
-								on:input={handleSellPriceChange}
 								bind:value={sellPriceInput}
-							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
-						>
+								readonly
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
 					</div>
 				</div>
-
 				<!-- Total Input -->
 				<div class="actions_inputWrapper__OKcnB actions_line">
 					<div class="plus-minus_wrapper__ht_aW">
-						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm"
-							><span class="ant-input-prefix"
-								><span class="plus-minus_prefix__IJXO_">Total</span></span
-							><input
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Total</span>
+							</span>
+							<input
 								placeholder=""
 								data-testid="spot-trade-sellTotal"
 								class="ant-input ant-input-sm"
 								type="text"
 								on:input={handleSellTotalChange}
 								bind:value={sellTotalInput}
-							/><span class="ant-input-suffix"><span>SigUSD</span> </span></span
-						>
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
+					</div>
+				</div>
+				<!-- Fee Input (readonly) -->
+				<div class="actions_inputWrapper__OKcnB actions_line">
+					<div class="plus-minus_wrapper__ht_aW">
+						<span class="ant-input-affix-wrapper input-plus-minus ant-input-affix-wrapper-sm">
+							<span class="ant-input-prefix">
+								<span class="plus-minus_prefix__IJXO_">Fee</span>
+							</span>
+							<input
+								placeholder=""
+								data-testid="spot-trade-sellFee"
+								class="ant-input ant-input-sm"
+								type="text"
+								bind:value={sellFeeInput}
+								readonly
+							/>
+							<span class="ant-input-suffix"><span>SigUSD</span> </span>
+						</span>
 					</div>
 				</div>
 				<!-- Sell Button -->
-				{#if wallet_initialized}
-					<button class="buySellButton sellButton" on:click={swapActionSell}> Sell ERG </button>
-				{:else if crystalwallet_locked}
-					<button
-						class="buySellButton sellButton"
-						on:click={() => {
-							show_wallet_unlock_dialog = true;
-						}}
-					>
-						Unlock Wallet
-					</button>
-				{:else}
-					<button class="buySellButton sellButton" on:click={() => goto('/wallet')}>
-						Create/Restore Wallet
-					</button>
-				{/if}
+				<!-- ... -->
 			</div>
 		</div>
-
-		<!-- END -->
 	</div>
 </div>
 
-<style lang="postcss">
-	.actions {
-		background-color: var(--bg-level-secondary);
-	}
-	.actions_header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		border-bottom: 1px solid var(--divider-primary);
-		padding: 0 16px;
-		flex-shrink: 0;
-		line-height: 40px;
-	}
-	.actions_headerTabActive {
-		font-weight: 500;
-	}
-	.fee {
-		color: var(--tint-blue-base);
-		background-color: var(--tint-blue-smooth);
-		font-size: 12px;
-		border-radius: 2px;
-		padding: 0 6px;
-		line-height: 20px;
-	}
-	.actions_contentWrapper {
-		padding: 5px 16px 13px;
-	}
-	.actions_line {
-		margin-bottom: 10px;
-		margin-top: 5px;
-	}
-	.actions_buySellWrapper {
-		display: flex;
-		justify-content: space-between;
-		align-items: stretch;
-		position: relative;
-	}
-	.actions_balance {
-		margin-bottom: 5px;
-		min-height: 28px;
-		font-size: 12px;
-		display: flex;
-		align-items: center;
-	}
-	.actions_primaryText {
-		color: var(--primary-text);
-	}
-	.actions_deposit {
-		padding-inline-start: 4px;
-		color: var(--primary-base);
-	}
-	.actions_buyWrapper {
-		padding-inline-end: 12px;
-	}
-	.actions_sellWrapper {
-		padding-inline-start: 12px;
-	}
-	.actions_doWrapper {
-		flex-grow: 1;
-		width: 50%;
-	}
-	.buySellButton {
-		height: 36px;
-		width: 100%;
-		border: none;
-		color: #fff;
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.16s ease-in;
-	}
-	.buyButton {
-		background-color: var(--up);
-	}
-	.sellButton {
-		background-color: var(--down);
-	}
+<style>
+	/* Ваши стили остаются без изменений */
 </style>

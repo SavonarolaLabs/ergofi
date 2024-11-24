@@ -1,7 +1,18 @@
 <script lang="ts">
 	import { RECOMMENDED_MIN_FEE_VALUE } from '@fleet-sdk/core';
 	import BigNumber from 'bignumber.js';
-	import { calculateSigUsdRateWithFee, calculateSigUsdRateWithFeeFromErg } from './sigmaUSD';
+	import {
+		calculateSigUsdRateWithFee,
+		calculateSigUsdRateWithFeeFromErg,
+		extractBoxesData
+	} from './sigmaUSD';
+	import { writable } from 'svelte/store';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		updateBankBoxAndOracle();
+		//console.log($oraclePriceSigUsd);
+	});
 
 	const FEE_UI = 50n; //0.5%
 	const FEE_UI_DENOM = 100_00n;
@@ -9,11 +20,15 @@
 
 	// LOAD ORACLE BOX
 	// Фиктивные данные (замените на реальные данные из блокчейна)
-	const inErg = BigInt('1603341601262771'); // Примерное значение ERG в системе
-	const inCircSigUSD = BigInt('35223802'); // Циркулирующий SigUSD
-	const oraclePrice = BigInt('6316597'); // Цена из оракула (nanoERG за цент)
+	//const inErg = BigInt('1603341601262771'); // Примерное значение ERG в системе
+	//const inCircSigUSD = BigInt('35223802'); // Циркулирующий SigUSD
+	//const oraclePrice = BigInt('6316597'); // Цена из оракула (nanoERG за цент)
 	const directionBuy = -1n;
 	const directionSell = 1n;
+
+	const bankBoxInErg = writable<bigint>;
+	const bankBoxInCircSigUsd = writable<bigint>;
+	const oraclePriceSigUsd = writable<bigint>;
 
 	type Currency = 'ERG' | 'SigUSD';
 
@@ -23,6 +38,25 @@
 	let swapPrice: number = 0.0;
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
+
+	// TODO: Technical Minimal Values -> 0.11
+	// TODO: Show Price, when value = 0 , only price / w/o Amount/Totals
+
+	async function updateBankBoxAndOracle() {
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		} = await extractBoxesData();
+		bankBoxInErg.set(inErg);
+		bankBoxInCircSigUsd.set(inCircSigUSD);
+		oraclePriceSigUsd.set(oraclePrice);
+	}
 
 	function handleCurrencyChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
@@ -105,9 +139,9 @@
 				fee: feeContract,
 				requestSC
 			} = calculateSigUsdRateWithFeeFromErg(
-				inErg,
-				inCircSigUSD,
-				oraclePrice,
+				$bankBoxInErg,
+				$bankBoxInCircSigUsd,
+				$oraclePriceSigUsd,
 				BigInt(amountWithoutUI),
 				direction
 			);
@@ -140,7 +174,13 @@
 				rateSCERG,
 				fee: feeContract,
 				bcDeltaExpectedWithFee
-			} = calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, totalSC, direction);
+			} = calculateSigUsdRateWithFee(
+				$bankBoxInErg,
+				$bankBoxInCircSigUsd,
+				$oraclePriceSigUsd,
+				totalSC,
+				direction
+			);
 
 			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
 			const miningFee = FEE_MINING_MIN;
@@ -184,7 +224,7 @@
 			<input
 				type="number"
 				bind:value={fromAmount}
-				on:change={handleFromAmountChange}
+				on:input={handleFromAmountChange}
 				class="w-full bg-transparent text-3xl text-gray-900 outline-none dark:text-gray-100"
 				placeholder="0"
 				min="0"
@@ -228,7 +268,7 @@
 			<input
 				type="number"
 				bind:value={toAmount}
-				on:change={handleToAmountChange}
+				on:input={handleToAmountChange}
 				class="w-full bg-transparent text-3xl text-gray-900 outline-none dark:text-gray-100"
 				placeholder="0"
 				min="0"

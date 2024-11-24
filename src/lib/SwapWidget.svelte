@@ -9,21 +9,14 @@
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
+	// TODO: Technical Minimal Values -> 0.11
+	// TODO: Swap Button -> Currency -> Direction
+	// TODO: Loader Status
+
 	onMount(async () => {
 		await updateBankBoxAndOracle();
 		initialInputs();
-		// Load with initial data
 	});
-
-	function initialInputs() {
-		const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
-			directionBuy,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
-		);
-		fromAmount = BASE_INPUT_AMOUNT_ERG.toString();
-		toAmount = totalSigUSD;
-		swapPrice = finalPrice;
-	}
 
 	const FEE_UI = 50n; //0.5%
 	const FEE_UI_DENOM = 100_00n;
@@ -49,7 +42,15 @@
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
-	// TODO: Technical Minimal Values -> 0.11
+	function initialInputs() {
+		const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
+			directionBuy,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
+		);
+		fromAmount = BASE_INPUT_AMOUNT_ERG.toString();
+		toAmount = totalSigUSD;
+		swapPrice = finalPrice;
+	}
 
 	async function updateBankBoxAndOracle() {
 		console.log('update start');
@@ -68,20 +69,17 @@
 		oraclePriceSigUsd.set(oraclePrice);
 	}
 
-	function handleCurrencyChange(event: Event) {
-		const target = event.target as HTMLSelectElement;
-		selectedCurrency = target.value as Currency;
-
+	function recalculateInputsOnCurrencyChange() {
 		if (fromAmount !== '') {
 			if (selectedCurrency == 'ERG') {
-				const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
+				const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
 					directionBuy,
 					fromAmount
 				);
 				toAmount = totalSigUSD;
 				swapPrice = finalPrice;
 			} else {
-				const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
+				const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
 					directionSell,
 					fromAmount
 				);
@@ -91,17 +89,23 @@
 		}
 	}
 
+	function handleCurrencyChange(event: Event) {
+		const target = event.target as HTMLSelectElement;
+		selectedCurrency = target.value as Currency;
+		recalculateInputsOnCurrencyChange();
+	}
+
 	function handleToAmountChange(event) {
 		toAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
-			const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
+			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
 				directionBuy,
 				toAmount
 			);
 			fromAmount = totalErg;
 			swapPrice = finalPrice;
 		} else {
-			const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
+			const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
 				directionSell,
 				toAmount
 			);
@@ -113,14 +117,14 @@
 	function handleFromAmountChange(event) {
 		fromAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
-			const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
+			const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
 				directionBuy,
 				fromAmount
 			);
 			toAmount = totalSigUSD;
 			swapPrice = finalPrice;
 		} else {
-			const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
+			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
 				directionSell,
 				fromAmount
 			);
@@ -129,7 +133,7 @@
 		}
 	}
 
-	function calculateUsdErgPriceFromAmount(direction: bigint, buyAmount: BigNumber): any {
+	function calculatePriceUsdErgFromAmount(direction: bigint, buyAmount: BigNumber): any {
 		const inputAmountNanoERG = buyAmount
 			.multipliedBy('1000000000')
 			.integerValue(BigNumber.ROUND_FLOOR)
@@ -165,21 +169,20 @@
 			rateTotal
 		};
 	}
-
-	function updateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
+	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
 			// ------------
 
 			const { rateSCERG, feeContract, requestSC, feeTotal, rateTotal } =
-				calculateUsdErgPriceFromAmount(direction, inputAmountERG);
+				calculatePriceUsdErgFromAmount(direction, inputAmountERG);
 			const totalSigUSD = new BigNumber(requestSC.toString()).dividedBy('100').toFixed(2);
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 			return { totalSigUSD, finalPrice, totalFee };
 		} else {
 			const { rateSCERG, feeContract, requestSC, feeTotal, rateTotal } =
-				calculateUsdErgPriceFromAmount(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
+				calculatePriceUsdErgFromAmount(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
 			const totalSigUSD = '';
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = '';
@@ -187,7 +190,7 @@
 		}
 	}
 
-	function calculateUsdErgPriceFromTotal(direction: bigint, buyTotal: BigNumber): any {
+	function calculatePriceUsdErgFromTotal(direction: bigint, buyTotal: BigNumber): any {
 		const totalSC = BigInt(buyTotal.toString());
 		const {
 			rateSCERG,
@@ -209,14 +212,14 @@
 
 		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
-	function updateInputsUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
+	function calculateInputsUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
 
 		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
 			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-				calculateUsdErgPriceFromTotal(direction, totalSigUSD);
+				calculatePriceUsdErgFromTotal(direction, totalSigUSD);
 
 			const totalErg = new BigNumber(totalErgoRequired.toString())
 				.dividedBy('1000000000')
@@ -226,7 +229,7 @@
 			return { totalErg, finalPrice, totalFee };
 		} else {
 			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-				calculateUsdErgPriceFromTotal(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
+				calculatePriceUsdErgFromTotal(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
 			const totalErg = '';
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = '';

@@ -9,9 +9,9 @@
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
-	onMount(() => {
-		updateBankBoxAndOracle();
-		//console.log($oraclePriceSigUsd);
+	onMount(async () => {
+		await updateBankBoxAndOracle();
+		console.log('Loaded oracle =', $oraclePriceSigUsd);
 	});
 
 	const FEE_UI = 50n; //0.5%
@@ -20,15 +20,12 @@
 
 	// LOAD ORACLE BOX
 	// Фиктивные данные (замените на реальные данные из блокчейна)
-	//const inErg = BigInt('1603341601262771'); // Примерное значение ERG в системе
-	//const inCircSigUSD = BigInt('35223802'); // Циркулирующий SigUSD
-	//const oraclePrice = BigInt('6316597'); // Цена из оракула (nanoERG за цент)
 	const directionBuy = -1n;
 	const directionSell = 1n;
 
-	const bankBoxInErg = writable<bigint>;
-	const bankBoxInCircSigUsd = writable<bigint>;
-	const oraclePriceSigUsd = writable<bigint>;
+	const bankBoxInErg = writable<bigint>(0n);
+	const bankBoxInCircSigUsd = writable<bigint>(0n);
+	const oraclePriceSigUsd = writable<bigint>(0n);
 
 	type Currency = 'ERG' | 'SigUSD';
 
@@ -43,6 +40,7 @@
 	// TODO: Show Price, when value = 0 , only price / w/o Amount/Totals
 
 	async function updateBankBoxAndOracle() {
+		console.log('update start');
 		const {
 			inErg,
 			inSigUSD,

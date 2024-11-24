@@ -10,9 +10,10 @@ import {
 } from '@fleet-sdk/core';
 import { getBankBox, getOracleBox } from './getOracleBox';
 
-const TOKEN_SIGRSV = '003bd19d0187117f130b62e1bcab0939929ff5f7709f843c5c4dd158949285d0'; // SigRSV
-const TOKEN_SIGUSD = '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04'; // SigUSD
-const TOKEN_BANK_NFT = '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9'; // SUSD Bank V2 NFT
+export const TOKEN_SIGRSV = '003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0'; // SigRSV V2
+export const TOKEN_SIGRSV_V0 = '003bd19d0187117f130b62e1bcab0939929ff5f7709f843c5c4dd158949285d0'; // SigRSV
+export const TOKEN_SIGUSD = '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04'; // SigUSD
+export const TOKEN_BANK_NFT = '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9'; // SUSD Bank V2 NFT
 
 const FEE = 200n;
 const FEE_DENOM = 10_000n;

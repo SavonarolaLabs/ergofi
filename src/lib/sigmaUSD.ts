@@ -100,7 +100,7 @@ export function calculateSigUsdRateWithFeeReversed(
 ): { rateSCERG: number; fee: bigint; requestSC: bigint } {
 	let rateSCERG: number;
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	console.log(oraclePrice, ' +Reserve BC:', bcReserveNeededIn);
+	//console.log(oraclePrice, ' +Reserve BC:', bcReserveNeededIn);
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
@@ -113,10 +113,10 @@ export function calculateSigUsdRateWithFeeReversed(
 	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
 
 	rateSCERG = Number(requestSC) / Number(requestErg);
-	console.log('                          ');
-	console.log('----------FINAL-----------');
-	console.log('🚀 ~ rateSCERG:', rateSCERG);
-	console.log('                          ');
+	// console.log('                          ');
+	// console.log('----------FINAL-----------');
+	// console.log('🚀 ~ rateSCERG:', rateSCERG);
+	// console.log('                          ');
 	return { rateSCERG, fee, requestSC }; //cents for nanoerg
 }
 

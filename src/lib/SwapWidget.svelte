@@ -11,21 +11,34 @@
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
-		console.log('Loaded oracle =', $oraclePriceSigUsd);
+		initialInputs();
+		// Load with initial data
 	});
+
+	function initialInputs() {
+		const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
+			directionBuy,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
+		);
+		fromAmount = BASE_INPUT_AMOUNT_ERG.toString();
+		toAmount = totalSigUSD;
+		swapPrice = finalPrice;
+	}
 
 	const FEE_UI = 50n; //0.5%
 	const FEE_UI_DENOM = 100_00n;
 	const FEE_MINING_MIN = RECOMMENDED_MIN_FEE_VALUE;
+	const BASE_INPUT_AMOUNT_ERG = 100n; //100 ERG
+	const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
 	// LOAD ORACLE BOX
 	// Фиктивные данные (замените на реальные данные из блокчейна)
 	const directionBuy = -1n;
 	const directionSell = 1n;
 
-	const bankBoxInErg = writable<bigint>(0n);
-	const bankBoxInCircSigUsd = writable<bigint>(0n);
-	const oraclePriceSigUsd = writable<bigint>(0n);
+	const bankBoxInErg = writable<bigint>(1653105734759386n);
+	const bankBoxInCircSigUsd = writable<bigint>(46260638n);
+	const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 	type Currency = 'ERG' | 'SigUSD';
 
@@ -37,7 +50,6 @@
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
 	// TODO: Technical Minimal Values -> 0.11
-	// TODO: Show Price, when value = 0 , only price / w/o Amount/Totals
 
 	async function updateBankBoxAndOracle() {
 		console.log('update start');
@@ -62,14 +74,14 @@
 
 		if (fromAmount !== '') {
 			if (selectedCurrency == 'ERG') {
-				const { totalSigUSD, finalPrice, totalFee } = calculateUsdErgFromAmount(
+				const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
 					directionBuy,
 					fromAmount
 				);
 				toAmount = totalSigUSD;
 				swapPrice = finalPrice;
 			} else {
-				const { totalErg, finalPrice, totalFee } = calculateUsdErgFromTotal(
+				const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
 					directionSell,
 					fromAmount
 				);
@@ -82,11 +94,14 @@
 	function handleToAmountChange(event) {
 		toAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
-			const { totalErg, finalPrice, totalFee } = calculateUsdErgFromTotal(directionBuy, toAmount);
+			const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
+				directionBuy,
+				toAmount
+			);
 			fromAmount = totalErg;
 			swapPrice = finalPrice;
 		} else {
-			const { totalSigUSD, finalPrice, totalFee } = calculateUsdErgFromAmount(
+			const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
 				directionSell,
 				toAmount
 			);
@@ -98,14 +113,14 @@
 	function handleFromAmountChange(event) {
 		fromAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
-			const { totalSigUSD, finalPrice, totalFee } = calculateUsdErgFromAmount(
+			const { totalSigUSD, finalPrice, totalFee } = updateInputsUsdErgFromAmount(
 				directionBuy,
 				fromAmount
 			);
 			toAmount = totalSigUSD;
 			swapPrice = finalPrice;
 		} else {
-			const { totalErg, finalPrice, totalFee } = calculateUsdErgFromTotal(
+			const { totalErg, finalPrice, totalFee } = updateInputsUsdErgFromTotal(
 				directionSell,
 				fromAmount
 			);
@@ -114,78 +129,94 @@
 		}
 	}
 
-	function calculateUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
+	function calculateUsdErgPriceFromAmount(direction: bigint, buyAmount: BigNumber): any {
+		const inputAmountNanoERG = buyAmount
+			.multipliedBy('1000000000')
+			.integerValue(BigNumber.ROUND_FLOOR)
+			.toFixed(0);
+
+		const miningFee = FEE_MINING_MIN;
+		const amountWithoutMining = BigInt(inputAmountNanoERG) - BigInt(miningFee);
+		const amountWithoutUI = new BigNumber(amountWithoutMining.toString())
+			.multipliedBy(FEE_UI_DENOM.toString())
+			.dividedBy((FEE_UI_DENOM + FEE_UI).toString())
+			.integerValue(BigNumber.ROUND_FLOOR)
+			.toFixed(0);
+		const feeUI = BigInt(amountWithoutMining) - BigInt(amountWithoutUI);
+
+		const {
+			rateSCERG,
+			fee: feeContract,
+			requestSC
+		} = calculateSigUsdRateWithFeeFromErg(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd,
+			BigInt(amountWithoutUI),
+			direction
+		);
+		const feeTotal = feeContract + miningFee + feeUI;
+		const rateTotal = new BigNumber(requestSC.toString()).dividedBy(inputAmountNanoERG.toString());
+		return {
+			rateSCERG,
+			feeContract,
+			requestSC,
+			feeTotal,
+			rateTotal
+		};
+	}
+
+	function updateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
-
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
-			const inputAmountNanoERG = inputAmountERG
-				.multipliedBy('1000000000')
-				.integerValue(BigNumber.ROUND_FLOOR)
-				.toFixed(0);
+			// ------------
 
-			const miningFee = FEE_MINING_MIN;
-			const amountWithoutMining = BigInt(inputAmountNanoERG) - BigInt(miningFee);
-			const amountWithoutUI = new BigNumber(amountWithoutMining.toString())
-				.multipliedBy(FEE_UI_DENOM.toString())
-				.dividedBy((FEE_UI_DENOM + FEE_UI).toString())
-				.integerValue(BigNumber.ROUND_FLOOR)
-				.toFixed(0);
-			const feeUI = BigInt(amountWithoutMining) - BigInt(amountWithoutUI);
-
-			const {
-				rateSCERG,
-				fee: feeContract,
-				requestSC
-			} = calculateSigUsdRateWithFeeFromErg(
-				$bankBoxInErg,
-				$bankBoxInCircSigUsd,
-				$oraclePriceSigUsd,
-				BigInt(amountWithoutUI),
-				direction
-			);
-
-			const rateTotal = new BigNumber(requestSC.toString()).dividedBy(
-				inputAmountNanoERG.toString()
-			);
-			const feeTotal = feeContract + miningFee + feeUI;
-
+			const { rateSCERG, feeContract, requestSC, feeTotal, rateTotal } =
+				calculateUsdErgPriceFromAmount(direction, inputAmountERG);
 			const totalSigUSD = new BigNumber(requestSC.toString()).dividedBy('100').toFixed(2);
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 			return { totalSigUSD, finalPrice, totalFee };
 		} else {
+			const { rateSCERG, feeContract, requestSC, feeTotal, rateTotal } =
+				calculateUsdErgPriceFromAmount(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
 			const totalSigUSD = '';
-			const finalPrice = '';
+			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = '';
 			return { totalSigUSD, finalPrice, totalFee };
 		}
 	}
 
-	function calculateUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
+	function calculateUsdErgPriceFromTotal(direction: bigint, buyTotal: BigNumber): any {
+		const totalSC = BigInt(buyTotal.toString());
+		const {
+			rateSCERG,
+			fee: feeContract,
+			bcDeltaExpectedWithFee: contractErgoRequired
+		} = calculateSigUsdRateWithFee(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd,
+			totalSC,
+			direction
+		);
+		const feeUI = (contractErgoRequired * FEE_UI) / FEE_UI_DENOM;
+		const miningFee = FEE_MINING_MIN;
+		const feeTotal = feeContract + miningFee + feeUI;
+
+		const totalErgoRequired = contractErgoRequired + feeUI + miningFee;
+		const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
+
+		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
+	}
+	function updateInputsUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
 
 		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
-			const totalSC = BigInt(totalSigUSD.toString());
-			const {
-				rateSCERG,
-				fee: feeContract,
-				bcDeltaExpectedWithFee
-			} = calculateSigUsdRateWithFee(
-				$bankBoxInErg,
-				$bankBoxInCircSigUsd,
-				$oraclePriceSigUsd,
-				totalSC,
-				direction
-			);
-
-			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
-			const miningFee = FEE_MINING_MIN;
-			const feeTotal = feeContract + miningFee + feeUI;
-
-			const totalErgoRequired = bcDeltaExpectedWithFee + feeUI + miningFee;
-			const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
+			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+				calculateUsdErgPriceFromTotal(direction, totalSigUSD);
 
 			const totalErg = new BigNumber(totalErgoRequired.toString())
 				.dividedBy('1000000000')
@@ -194,8 +225,10 @@
 			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 			return { totalErg, finalPrice, totalFee };
 		} else {
+			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+				calculateUsdErgPriceFromTotal(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
 			const totalErg = '';
-			const finalPrice = '';
+			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = '';
 			return { totalErg, finalPrice, totalFee };
 		}

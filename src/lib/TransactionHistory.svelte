@@ -1,5 +1,15 @@
 <script lang="ts">
-	import { history } from '../data/history';
+	import {
+		transactions,
+		totalTransactions,
+		currentPage,
+		itemsPerPage,
+		isLoading,
+		error,
+		fetchTransactions
+	} from '$lib/stores/transactionStore';
+
+	import { onMount } from 'svelte';
 	import { SIGUSD_BANK, TOKEN_SIGRSV, TOKEN_SIGUSD } from './sigmaUSD';
 
 	interface TokenStats {
@@ -21,7 +31,6 @@
 		amount: string;
 		volume: string;
 		priceContract: string | number;
-		//priceTotal: number;
 	}
 
 	function calculateTokenStatsByAddress(tx: any, tokenId: string, address: string): TokenStats {
@@ -32,7 +41,7 @@
 			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
 
 		const outputAmount = tx.outputs
-			.filter((input: any) => input.address == address)
+			.filter((output: any) => output.address == address)
 			.flatMap((output: any) => output.assets)
 			.filter((asset: any) => asset.tokenId === tokenId)
 			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
@@ -52,6 +61,7 @@
 			rsvStats: calculateTokenStatsByAddress(tx, TOKEN_SIGRSV, address)
 		};
 	}
+
 	function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): OperationInfo {
 		let priceErgUsd;
 		let priceErgSigRSV;
@@ -67,7 +77,7 @@
 			priceErgUsd = (-(bank.usdStats.difference / bank.ergoStats.difference) * 10 ** 7).toFixed(2);
 			priceErgSigRSV = 0;
 		} else {
-			pair = 'RSV/ERG	';
+			pair = 'RSV/ERG';
 			operation = bank.rsvStats.difference < 0 ? 'buy' : 'sell';
 			amount = -bank.rsvStats.difference + ' RSV';
 			priceErgSigRSV = (-(bank.rsvStats.difference / bank.ergoStats.difference) * 10 ** 9).toFixed(
@@ -125,79 +135,93 @@
 		return value.length > 6 ? `${value.slice(0, 3)}...${value.slice(-3)}` : value;
 	}
 
-	// Pre-process the history items to avoid async issues
-	const processedHistory = history.items
-		.map((tx) => {
-			if (!tx.inputs || !tx.outputs) return null;
+	// Pre-process the transactions when they change
+	let processedHistory: any[] = [];
 
-			const bank = calculateAddressInfo(tx, SIGUSD_BANK);
-			const user = calculateAddressInfo(tx, tx.outputs[1].address);
-			const txData: OperationInfo = calculateOperationInfo(bank, user);
+	$: if ($transactions) {
+		processedHistory = $transactions
+			.map((tx) => {
+				if (!tx.inputs || !tx.outputs) return null;
 
-			return {
-				...tx,
-				bank,
-				user,
-				txData,
-				shortenedId: shorten(tx.id),
-				shortenedAddress: shorten(tx.inputs[0]?.address),
-				formattedTimestamp: tx.timestamp ? new Date(tx.timestamp).toISOString() : ''
-			};
-		})
-		.filter(Boolean); // Remove null entries
+				const bank = calculateAddressInfo(tx, SIGUSD_BANK);
+				const userAddress = tx.outputs[1]?.address || tx.inputs[0]?.address;
+				const user = calculateAddressInfo(tx, userAddress);
+				const txData: OperationInfo = calculateOperationInfo(bank, user);
+
+				return {
+					...tx,
+					bank,
+					user,
+					txData,
+					shortenedId: shorten(tx.id),
+					shortenedAddress: shorten(userAddress),
+					formattedTimestamp: tx.timestamp ? new Date(tx.timestamp).toISOString() : ''
+				};
+			})
+			.filter(Boolean); // Remove null entries
+	}
+
+	onMount(() => {
+		fetchTransactions($currentPage);
+	});
+
+	function goToPage(page: number) {
+		fetchTransactions(page);
+	}
+
+	// Calculate total pages
+	$: totalPages = Math.ceil($totalTransactions / $itemsPerPage);
 </script>
 
-<table>
-	<thead>
-		<tr>
-			<th>Timestamp</th>
-			<th>Tx ID</th>
-			<th>Pair</th>
-			<th>Operation</th>
-			<!-- <th>Inclusion Height</th> -->
-			<!-- <th>SIGUSD Input</th>
-			<th>SIGUSD Output</th> -->
-			<th>Amount</th>
-			<!-- <th>SIGRSV Input</th>
-			<th>SIGRSV Output</th> -->
-			<!-- <th>SIGRSV Diff</th> -->
-			<!-- <th>ERGO Input</th> -->
-			<!-- <th>ERGO Output</th> -->
-			<th>Volume</th>
-			<th>Price</th>
-			<th>User-USD-DIFF</th>
-			<th>User-ERG-DIFF</th>
-			<!-- <th>User-RSV-DIFF</th> -->
-
-			<th>Address</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each processedHistory as tx}
+{#if $isLoading}
+	<p>Loading transactions...</p>
+{:else if $error}
+	<p>Error: {$error}</p>
+{:else}
+	<table>
+		<thead>
 			<tr>
-				<td>{tx?.formattedTimestamp}</td>
-				<td>{tx?.shortenedId}</td>
-				<td>{tx?.txData.pair}</td>
-				<td>{tx?.txData.operation}</td>
-				<!-- <td>{tx.inclusionHeight}</td> -->
-				<!-- <td>{centsToUsd(tx.sigUSDStats.input)}</td>
-				<td>{centsToUsd(tx.sigUSDStats.output)}</td> -->
-				<td>{tx?.txData.amount} </td>
-				<!-- <td>{tx.sigRSVStats.input}</td>	
-				<td>{tx.sigRSVStats.output}</td> -->
-				<!-- <td>{tx.sigRSVStats.difference}</td> -->
-				<!-- <td>{nanoErgToErg(tx.ergoStats.input)}</td>
-				<td>{nanoErgToErg(tx.ergoStats.output)}</td> -->
-				<td>{tx?.txData.volume}</td>
-				<td>{tx?.txData.priceContract}</td>
-				<td>{tx?.user.usdStats?.difference}</td>
-				<td>{tx?.user.ergoStats?.difference}</td>
-				<!-- <td>{tx.userRSVStats.difference}</td> -->
-				<td>{tx?.shortenedAddress}</td>
+				<th>Timestamp</th>
+				<th>Tx ID</th>
+				<th>Pair</th>
+				<th>Operation</th>
+				<th>Amount</th>
+				<th>Volume</th>
+				<th>Price</th>
+				<th>User USD Diff</th>
+				<th>User ERG Diff</th>
+				<th>Address</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each processedHistory as tx}
+				<tr>
+					<td>{tx?.formattedTimestamp}</td>
+					<td>{tx?.shortenedId}</td>
+					<td>{tx?.txData.pair}</td>
+					<td>{tx?.txData.operation}</td>
+					<td>{tx?.txData.amount}</td>
+					<td>{tx?.txData.volume}</td>
+					<td>{tx?.txData.priceContract}</td>
+					<td>{tx?.user.usdStats?.difference}</td>
+					<td>{tx?.user.ergoStats?.difference}</td>
+					<td>{tx?.shortenedAddress}</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+
+	<!-- Pagination Controls -->
+	<div class="pagination">
+		<button on:click={() => goToPage($currentPage - 1)} disabled={$currentPage === 1}>
+			Previous
+		</button>
+		<span>Page {$currentPage} of {totalPages}</span>
+		<button on:click={() => goToPage($currentPage + 1)} disabled={$currentPage === totalPages}>
+			Next
+		</button>
+	</div>
+{/if}
 
 <style>
 	table {
@@ -220,5 +244,20 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.pagination {
+		margin-top: 1em;
+		display: flex;
+		align-items: center;
+	}
+
+	.pagination button {
+		padding: 0.5em 1em;
+		margin-right: 1em;
+	}
+
+	.pagination span {
+		font-weight: bold;
 	}
 </style>

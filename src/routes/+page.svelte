@@ -3,6 +3,7 @@
 	import SwapWidget from '$lib/SwapWidget.svelte';
 	import BankHistoryWidget from '$lib/BankHistoryWidget.svelte';
 	import WalletButton from '$lib/WalletButton.svelte';
+	import TransactionHistory from '$lib/TransactionHistory.svelte';
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-4 py-2">
@@ -23,5 +24,6 @@
 	</div>
 </div>
 
+<TransactionHistory></TransactionHistory>
 <div class="mt-20"></div>
 <Elixir></Elixir>

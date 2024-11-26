@@ -4,11 +4,13 @@
 	import BankHistoryWidget from '$lib/BankHistoryWidget.svelte';
 	import WalletButton from '$lib/WalletButton.svelte';
 	import TransactionHistory from '$lib/TransactionHistory.svelte';
+	import ThemeToggle from '$lib/ThemeToggle.svelte';
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-4 py-2">
 	<div class="flex space-x-4"></div>
-	<div>
+	<div class="flex gap-2">
+		<ThemeToggle></ThemeToggle>
 		<WalletButton></WalletButton>
 	</div>
 </nav>

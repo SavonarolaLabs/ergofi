@@ -22,6 +22,7 @@
 			});
 
 		channel.on('all_transactions', (payload) => {
+			console.log(payload.transactions[0]);
 			allTransactions.set(payload.transactions);
 		});
 

@@ -1,3 +1,5 @@
+<!-- TransactionHistory.svelte -->
+
 <script lang="ts">
 	import {
 		transactions,
@@ -6,11 +8,16 @@
 		itemsPerPage,
 		isLoading,
 		error,
-		fetchTransactions
+		fetchTransactions,
+		syncTransactions,
+		syncProgress
 	} from '$lib/stores/transactionStore';
-
 	import { onMount } from 'svelte';
-	import { SIGUSD_BANK, TOKEN_SIGRSV, TOKEN_SIGUSD } from './sigmaUSD';
+
+	// Constants (replace with your actual values)
+	const SIGUSD_BANK = 'Your_SIGUSD_BANK_Address';
+	const TOKEN_SIGUSD = 'Your_TOKEN_SIGUSD_ID';
+	const TOKEN_SIGRSV = 'Your_TOKEN_SIGRSV_ID';
 
 	interface TokenStats {
 		input: number;
@@ -35,13 +42,13 @@
 
 	function calculateTokenStatsByAddress(tx: any, tokenId: string, address: string): TokenStats {
 		const inputAmount = tx.inputs
-			.filter((input: any) => input.address == address)
+			.filter((input: any) => input.ergoTree === address)
 			.flatMap((input: any) => input.assets)
 			.filter((asset: any) => asset.tokenId === tokenId)
 			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
 
 		const outputAmount = tx.outputs
-			.filter((output: any) => output.address == address)
+			.filter((output: any) => output.ergoTree === address)
 			.flatMap((output: any) => output.assets)
 			.filter((asset: any) => asset.tokenId === tokenId)
 			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
@@ -70,22 +77,25 @@
 		let amount;
 		let volume;
 
-		if (bank.usdStats.difference != 0) {
+		if (bank.usdStats?.difference !== 0) {
 			pair = 'USD/ERG';
-			operation = bank.usdStats.difference < 0 ? 'buy' : 'sell';
-			amount = -centsToUsd(bank.usdStats.difference) + ' USD';
-			priceErgUsd = (-(bank.usdStats.difference / bank.ergoStats.difference) * 10 ** 7).toFixed(2);
+			operation = bank.usdStats!.difference! < 0 ? 'buy' : 'sell';
+			amount = -centsToUsd(bank.usdStats!.difference!) + ' USD';
+			priceErgUsd = (-(bank.usdStats!.difference! / bank.ergoStats!.difference!) * 10 ** 7).toFixed(
+				2
+			);
 			priceErgSigRSV = 0;
 		} else {
 			pair = 'RSV/ERG';
-			operation = bank.rsvStats.difference < 0 ? 'buy' : 'sell';
-			amount = -bank.rsvStats.difference + ' RSV';
-			priceErgSigRSV = (-(bank.rsvStats.difference / bank.ergoStats.difference) * 10 ** 9).toFixed(
-				2
-			);
+			operation = bank.rsvStats!.difference! < 0 ? 'buy' : 'sell';
+			amount = -bank.rsvStats!.difference! + ' RSV';
+			priceErgSigRSV = (
+				-(bank.rsvStats!.difference! / bank.ergoStats!.difference!) *
+				10 ** 9
+			).toFixed(2);
 			priceErgUsd = 0;
 		}
-		volume = -nanoErgToErg(bank.ergoStats.difference) + ' ERG';
+		volume = -nanoErgToErg(bank.ergoStats!.difference!) + ' ERG';
 
 		return {
 			pair: pair,
@@ -100,28 +110,18 @@
 		return nanoErg ? Number((nanoErg / 10 ** 9).toFixed(2)) : 0;
 	}
 
-	function ergToNanoErg(erg: number) {
-		return erg ? erg * 10 ** 9 : 0;
-	}
-
 	function centsToUsd(cents: number) {
 		return cents ? Number((cents / 10 ** 2).toFixed(2)) : 0;
 	}
 
-	function usdToCents(usd: number) {
-		return usd ? usd * 10 ** 2 : 0;
-	}
-
 	function calculateErgoStatsByAddress(tx: any, address: string): TokenStats {
 		const inputAmount = tx.inputs
-			.filter((input: any) => input.address == address)
-			.flatMap((input: any) => input.value)
-			.reduce((sum: number, value: any) => sum + value, 0);
+			.filter((input: any) => input.ergoTree === address)
+			.reduce((sum: number, input: any) => sum + input.value, 0);
 
 		const outputAmount = tx.outputs
-			.filter((output: any) => output.address == address)
-			.flatMap((output: any) => output.value)
-			.reduce((sum: number, value: any) => sum + value, 0);
+			.filter((output: any) => output.ergoTree === address)
+			.reduce((sum: number, output: any) => sum + output.value, 0);
 
 		return {
 			input: inputAmount,
@@ -144,7 +144,7 @@
 				if (!tx.inputs || !tx.outputs) return null;
 
 				const bank = calculateAddressInfo(tx, SIGUSD_BANK);
-				const userAddress = tx.outputs[1]?.address || tx.inputs[0]?.address;
+				const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 				const user = calculateAddressInfo(tx, userAddress);
 				const txData: OperationInfo = calculateOperationInfo(bank, user);
 
@@ -163,6 +163,7 @@
 
 	onMount(() => {
 		fetchTransactions($currentPage);
+		syncTransactions();
 	});
 
 	function goToPage(page: number) {
@@ -172,6 +173,13 @@
 	// Calculate total pages
 	$: totalPages = Math.ceil($totalTransactions / $itemsPerPage);
 </script>
+
+<!-- TransactionHistory.svelte -->
+{#if $isLoading}
+	<div class="progress-bar-container">
+		<p>Syncing transactions... {$syncProgress} transactions synchronized</p>
+	</div>
+{/if}
 
 {#if $isLoading}
 	<p>Loading transactions...</p>
@@ -224,6 +232,31 @@
 {/if}
 
 <style>
+	.progress-bar-container {
+		width: 100%;
+		background-color: #f3f3f3;
+		height: 20px;
+		margin-bottom: 1em;
+		position: relative;
+	}
+
+	.progress-bar {
+		height: 100%;
+		background-color: #4caf50;
+		width: 0%;
+		transition: width 0.2s;
+	}
+
+	.progress-bar-container p {
+		position: absolute;
+		width: 100%;
+		text-align: center;
+		margin: 0;
+		line-height: 20px;
+		color: #000;
+		font-size: 14px;
+	}
+
 	table {
 		width: 100%;
 		border-collapse: collapse;

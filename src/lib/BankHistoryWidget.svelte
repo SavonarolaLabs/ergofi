@@ -6,7 +6,7 @@
 		amount: number;
 		timestamp: number;
 		price: number;
-		type: 'Mint' | 'Redeem';
+		type: 'Buy' | 'Sell';
 		ergAmount: number;
 	};
 
@@ -15,15 +15,15 @@
 			id: 'abc123def',
 			amount: 100.5,
 			timestamp: Date.now() - 7200000,
-			type: 'Mint',
+			type: 'Sell',
 			ergAmount: -50.25,
 			price: 2.01
 		},
 		{
-			id: 'ghi456jkl',
+			id: 'Buy',
 			amount: -200,
 			timestamp: Date.now() - 18000000,
-			type: 'Redeem',
+			type: 'Buy',
 			ergAmount: 100,
 			price: 1.95
 		}, // 5 hours ago
@@ -31,7 +31,7 @@
 			id: 'mno789pqr',
 			amount: 150.123,
 			timestamp: Date.now() - 86400000,
-			type: 'Mint',
+			type: 'Sell',
 			ergAmount: -75.0615,
 			price: 2.03
 		} // 1 day ago

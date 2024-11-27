@@ -197,9 +197,7 @@
 	}
 
 	async function handleSwapButton(event: Event) {
-		test();
-
-		// Check currency -> Trigger TX
+		//test();
 		if (selectedCurrency == 'ERG') {
 			const nanoErg = BigInt(BigNumber(fromAmount).multipliedBy(1_000_000_000).toString());
 			await buyUSDWithERG(nanoErg);
@@ -296,8 +294,6 @@
 	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
-			// ------------
-
 			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
 				calculatePriceUsdErgFromAmount(direction, inputAmountERG);
 
@@ -328,13 +324,13 @@
 			totalSC,
 			direction
 		);
+
 		const feeUI = (contractErgoRequired * FEE_UI) / FEE_UI_DENOM;
 		const miningFee = feeMining;
 		const feeTotal = feeContract + miningFee + feeUI;
 
-		const totalErgoRequired = contractErgoRequired + feeUI + miningFee;
+		const totalErgoRequired = contractErgoRequired - feeUI - miningFee;
 		const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
-
 		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
 
@@ -344,12 +340,13 @@
 			.integerValue(BigNumber.ROUND_CEIL);
 
 		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
+			// NEED TO REWORK THIS PART--------
 			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
 				calculatePriceUsdErgFromTotal(direction, totalSigUSD);
-
+			//---------------------------------
 			const totalErg = new BigNumber(totalErgoRequired.toString())
 				.dividedBy('1000000000')
-				.toFixed(2);
+				.toFixed(8);
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 			return { totalErg, finalPrice, totalFee };

@@ -50,6 +50,7 @@
 	const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 	type Currency = 'ERG' | 'SigUSD';
+	type LastUserInput = 'From' | 'To';
 
 	let loading = true;
 	let fromAmount = '';
@@ -59,6 +60,7 @@
 	let swapPrice: number = 0.0;
 	let globalUiFeeErg;
 	let globalContractERG;
+	let lastInput: LastUserInput = 'From';
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
@@ -146,9 +148,6 @@
 		return cents ? Number((cents / 10 ** 2).toFixed(2)) : 0;
 	}
 
-	function clearUIFee() {}
-	function clearMiningFee() {}
-
 	function initialInputs() {
 		const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
 			directionBuy,
@@ -177,6 +176,7 @@
 	}
 
 	function recalculateInputsOnCurrencyChange() {
+		// TODO: Recalculate based on lastInput
 		if (fromAmount !== '') {
 			if (selectedCurrency == 'ERG') {
 				const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } =
@@ -197,13 +197,26 @@
 	}
 
 	async function handleSwapButton(event: Event) {
-		//test();
-		if (selectedCurrency == 'ERG') {
-			const nanoErg = BigInt(BigNumber(fromAmount).multipliedBy(1_000_000_000).toString());
-			await buyUSDWithERG(nanoErg);
+		// TODO: change based on lastInput
+		if (lastInput == 'From') {
+			if (selectedCurrency == 'ERG') {
+				const nanoErg = BigInt(BigNumber(fromAmount).multipliedBy(1_000_000_000).toString());
+				await buyUSDWithERG(nanoErg);
+			} else {
+				const cents = BigInt(BigNumber(fromAmount).multipliedBy(100).toString());
+				await buyERGWithUSD(cents);
+			}
 		} else {
-			const cents = BigInt(BigNumber(fromAmount).multipliedBy(100).toString());
-			await buyERGWithUSD(cents);
+			if (selectedCurrency == 'ERG') {
+				console.log('REVERSED CHECK');
+				const cents = BigInt(BigNumber(toAmount).multipliedBy(100).toString());
+				await buyUSDWithERGReversed(cents);
+			} else {
+				console.log('REVERSED CHECK USD');
+				const nanoErg = BigInt(BigNumber(toAmount).multipliedBy(1_000_000_000).toString());
+				console.log('NO FUNCTION, ERG to = ,', nanoErg);
+				//await buyERGWithUSD(cents); //<-------- NO FUNCTION
+			}
 		}
 	}
 
@@ -230,6 +243,7 @@
 			globalContractERG = contractERG;
 			swapPrice = finalPrice;
 		}
+		lastInput = 'To';
 	}
 
 	function handleFromAmountChange(event) {
@@ -249,6 +263,7 @@
 			toAmount = totalErg;
 			swapPrice = finalPrice;
 		}
+		lastInput = 'From';
 	}
 
 	function calculatePriceUsdErgFromAmount(direction: bigint, buyAmount: BigNumber): any {
@@ -346,7 +361,7 @@
 			//---------------------------------
 			const totalErg = new BigNumber(totalErgoRequired.toString())
 				.dividedBy('1000000000')
-				.toFixed(8);
+				.toFixed(9);
 			const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 			const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 			return { totalErg, finalPrice, totalFee };
@@ -490,11 +505,9 @@
 			outCircSigRSV
 		};
 	}
-	// ----------------
-
-	// SELL USD -> BUY ERG
-	async function buyERGWithUSD(inputUSD: bigint = 1_000_000_000n) {
-		const direction = -1n;
+	// BUY USD --> SELL ERG (From Finall USD AMOUNT)
+	async function buyUSDWithERGReversed(inputUSD: bigint = 1_00n) {
+		const direction = 1n;
 		await window.ergoConnector.nautilus.connect();
 		const me = await ergo.get_change_address();
 		const utxos = await ergo.get_utxos();
@@ -507,6 +520,22 @@
 		//		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
 		//		console.log(txId);
+	}
+
+	// SELL USD -> BUY ERG
+	async function buyERGWithUSD(inputUSD: bigint = 1_00n) {
+		const direction = -1n;
+		await window.ergoConnector.nautilus.connect();
+		const me = await ergo.get_change_address();
+		const utxos = await ergo.get_utxos();
+		const height = await ergo.get_current_height();
+
+		const tx = await buyERGWithUSDTx(inputUSD, me, SIGUSD_BANK, utxos, height, direction);
+		console.log(tx);
+		const signed = await ergo.sign_tx(tx);
+
+		//		const txId = await ergo.submit_tx(signed);
+		console.log(signed);
 	}
 
 	export async function buyERGWithUSDTx(
@@ -596,7 +625,6 @@
 		console.log(unsignedMintTransaction);
 		return unsignedMintTransaction;
 	}
-	// ----------------
 
 	async function swapUSDERG(
 		direction: bigint = 1n,

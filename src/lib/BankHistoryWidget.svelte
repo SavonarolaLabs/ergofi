@@ -93,10 +93,10 @@
 			</div>
 			<div class="flex flex-col">
 				<div>
-					<span class="mr-1 text-3xl font-light">
+					<span class="mr-1 text-3xl">
 						{formatAmount(interaction.amount)}
 					</span>
-					<span class="text-lg font-light text-gray-500"> SigUSD </span>
+					<span class="text-lg text-gray-500"> SigUSD </span>
 				</div>
 				<div class="pr-10 text-right text-gray-500">
 					{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>

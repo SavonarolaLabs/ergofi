@@ -781,7 +781,7 @@
 			/>
 			<div
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
-				class="broder relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-white px-3 py-2 dark:bg-gray-900"
+				class="dark:broder relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
 			>
 				<div class="h-5 w-5 flex-shrink-0 {tokenColor[selectedCurrency]} rounded-full"></div>
 				<select
@@ -825,7 +825,7 @@
 			/>
 			<div
 				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
-				class="broder relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-white px-3 py-2 dark:bg-gray-900"
+				class="broder relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
 			>
 				<div class="h-5 w-5 {tokenColor[toToken]} rounded-full" />
 				<span class="ml-3 font-medium text-gray-800 dark:text-gray-400">{toToken}</span>

@@ -13,6 +13,9 @@
 		syncProgress
 	} from '$lib/stores/transactionStore';
 	import { onMount } from 'svelte';
+	import { history } from '../data/history';
+
+	const DUMMY_DATA = true;
 
 	// Constants (replace with your actual values)
 	const SIGUSD_BANK = 'Your_SIGUSD_BANK_Address';
@@ -162,8 +165,31 @@
 	}
 
 	onMount(() => {
-		fetchTransactions($currentPage);
-		syncTransactions();
+		if (DUMMY_DATA) {
+			processedHistory = history.items
+				.map((tx) => {
+					if (!tx.inputs || !tx.outputs) return null;
+
+					const bank = calculateAddressInfo(tx, SIGUSD_BANK);
+					const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
+					const user = calculateAddressInfo(tx, userAddress);
+					const txData: OperationInfo = calculateOperationInfo(bank, user);
+
+					return {
+						...tx,
+						bank,
+						user,
+						txData,
+						shortenedId: shorten(tx.id),
+						shortenedAddress: shorten(userAddress),
+						formattedTimestamp: tx.timestamp ? new Date(tx.timestamp).toISOString() : ''
+					};
+				})
+				.filter(Boolean);
+		} else {
+			fetchTransactions($currentPage);
+			syncTransactions();
+		}
 	});
 
 	function goToPage(page: number) {

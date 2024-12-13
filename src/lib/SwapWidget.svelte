@@ -22,8 +22,6 @@
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
 
-	// TODO: FIX - INPUT VISUAL SEPARATE FROM INPUT VALUE ... (0.01 cents due to round dissapears)
-
 	onMount(async () => {
 		await updateBankBoxAndOracle();
 		initialInputs();
@@ -61,6 +59,24 @@
 	let lastInput: LastUserInput = 'From';
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
+
+	function applyFee(inputERG: bigint) {
+		const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
+		const contractERG = inputERG - feeMining - uiSwapFee;
+		return { uiSwapFee, contractERG };
+	}
+
+	function reverseFee(contractERG: bigint) {
+		const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
+		const inputERG = contractERG + feeMining + uiSwapFee;
+		return { inputERG, uiSwapFee };
+	}
+
+	function reverseFeeV2(contractERG: bigint, inputERG: bigint) {
+		const uiSwapFee: bigint = inputERG - contractERG - feeMining;
+		const userERG: bigint = contractERG - uiSwapFee - feeMining;
+		return { userERG, uiSwapFee };
+	}
 
 	function test() {
 		// for example
@@ -134,6 +150,7 @@
 			difference: outputAmount - inputAmount
 		};
 	}
+
 	function nanoErgToErg(nanoErg: number) {
 		return nanoErg ? Number((nanoErg / 10 ** 9).toFixed(2)) : 0;
 	}
@@ -402,15 +419,10 @@
 		height: number,
 		direction: bigint
 	): any {
-		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
+		//Part 0 - use Fee
+		const { uiSwapFee, contractERG: contractErg } = applyFee(inputErg);
 
-		// ----------------------------------------
-		const uiSwapFee = (inputErg * FEE_UI) / FEE_UI_DENOM;
-		const contractErg = inputErg - feeMining - uiSwapFee;
-		// ----------------------------------------
-
+		//Part 1 - Get Oracle
 		const {
 			inErg,
 			inSigUSD,
@@ -422,6 +434,7 @@
 			oracleBox
 		} = await extractBoxesData();
 
+		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
 			inErg,
 			inCircSigUSD,
@@ -430,6 +443,7 @@
 			direction
 		);
 
+		//Part 3 - Calculate BankBox
 		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
 			inErg,
 			inSigUSD,
@@ -440,9 +454,51 @@
 			contractErg,
 			direction
 		);
-		console.log(contractUSD, 'USD -> ERG ', contractErg);
 
-		// ---------- Bank Box
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildErgUSDTx(
+			direction,
+			contractErg,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
+
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
+
+	export function buildErgUSDTx(
+		direction: bigint,
+		contractErg: bigint,
+		contractUSD: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		height: number,
+		bankBox: any,
+		oracleBox: any,
+		uiSwapFee: bigint,
+		utxos: Array<any>,
+		outErg: bigint,
+		outSigUSD: bigint,
+		outSigRSV: bigint,
+		outCircSigUSD: bigint,
+		outCircSigRSV: bigint
+	) {
+		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
+
 		const BankOutBox = new OutputBuilder(outErg, bankAddr)
 			.addTokens([
 				{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
@@ -479,7 +535,7 @@
 			.toEIP12Object();
 
 		unsignedMintTransaction.dataInputs = [oracleBox];
-		console.log(unsignedMintTransaction);
+
 		return unsignedMintTransaction;
 	}
 
@@ -507,6 +563,7 @@
 			outCircSigRSV
 		};
 	}
+
 	// BUY USD --> SELL ERG (From Finall USD AMOUNT)
 	async function buyUSDWithERGReversed(
 		inputUSD: bigint = 1_00n,
@@ -550,6 +607,7 @@
 
 		const contractUSD = inputUSD;
 
+		//Part 1 - Get Oracle
 		const {
 			inErg,
 			inSigUSD,
@@ -560,11 +618,12 @@
 			bankBox,
 			oracleBox
 		} = await extractBoxesData();
-		//
 
-		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
+		//Part 2 - Calculate Price
+		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
+		//Part 3 - Calculate BankBox
 		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
 			inErg,
 			inSigUSD,
@@ -572,63 +631,107 @@
 			inCircSigUSD,
 			inCircSigRSV,
 			contractUSD,
-			contractERG,
+			contractErg,
 			direction
 		);
 
 		// FEE after SWAP (but dont recalculate Rate) // TRICKY ???
 		// ----------------------------------------
-		const uiSwapFee = inputErg - contractERG - feeMining;
-		const userERG = contractERG - uiSwapFee - feeMining;
+		const uiSwapFee = inputErg - contractErg - feeMining;
+		const userERG = contractErg - uiSwapFee - feeMining;
 		// ----------------------------------------
-		console.log(contractERG, ' = contractERG');
-		console.log(inputErg, ' = contractERG');
-		console.log(feeMining, ' = feeMining');
-		console.log(uiSwapFee, ' = uiSwapFee');
 
-		console.log(inputErg, ' = INPUT');
-		console.log(userERG, ' = userERG');
-		console.log(uiSwapFee, ' = uiSwapFee');
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildErgUSDTx(
+			direction,
+			contractErg,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
 
-		console.log(contractUSD, 'USD -> ERG ', inputErg);
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
 
-		// ---------- Bank Box
-		const BankOutBox = new OutputBuilder(outErg, bankAddr)
-			.addTokens([
-				{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-				{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-				{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-			])
-			.setAdditionalRegisters({
-				R4: SLong(BigInt(outCircSigUSD)).toHex(),
-				R5: SLong(BigInt(outCircSigRSV)).toHex()
-			});
+	export async function buyUSDWithERGReversedTxV2(
+		inputUSD: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		utxos: Array<any>,
+		height: number,
+		direction: bigint,
+		inputErg: bigint
+	): any {
+		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
 
-		// ---------- Receipt ------------
-		console.log('direction=', direction, ' -1n?', direction == -1n);
-		const receiptBox = new OutputBuilder(
-			direction == -1n ? userERG : SAFE_MIN_BOX_VALUE,
-			myAddr
-		).setAdditionalRegisters({
-			R4: SLong(BigInt(direction * contractUSD)).toHex(),
-			R5: SLong(BigInt(direction * userERG)).toHex()
-		});
+		const contractUSD = inputUSD;
 
-		if (direction == 1n) {
-			receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: contractUSD });
-		}
+		//Part 1 - Get Oracle
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		} = await extractBoxesData();
 
-		const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
+		//Part 2 - Calculate Price
+		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
-		const unsignedMintTransaction = new TransactionBuilder(height)
-			.from([bankBox, ...utxos])
-			.to([BankOutBox, receiptBox, uiFeeBox])
-			.sendChangeTo(myAddr)
-			.payFee(feeMining)
-			.build()
-			.toEIP12Object();
+		//Part 3 - Calculate BankBox
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractUSD,
+			contractErg,
+			direction
+		);
 
-		unsignedMintTransaction.dataInputs = [oracleBox];
+		// FEE after SWAP (but dont recalculate Rate) // TRICKY ???
+		// ----------------------------------------
+		const uiSwapFee = inputErg - contractErg - feeMining;
+		const userERG = contractErg - uiSwapFee - feeMining;
+		// ----------------------------------------
+
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildErgUSDTx(
+			direction,
+			contractErg,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
+
 		console.log(unsignedMintTransaction);
 		return unsignedMintTransaction;
 	}

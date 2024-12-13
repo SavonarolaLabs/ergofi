@@ -299,19 +299,17 @@
 		lastInput = 'To';
 	}
 
-	// STOPED
 	function calculatePriceUsdErgFromAmount(direction: bigint, buyAmount: BigNumber): any {
 		const inputAmountNanoERG = buyAmount
 			.multipliedBy('1000000000')
 			.integerValue(BigNumber.ROUND_FLOOR)
 			.toFixed(0);
+		const inputErg = BigInt(inputAmountNanoERG);
 
-		// SAME STAFF
-		// ----------------------------------------
-		const uiFeeErg = (BigInt(inputAmountNanoERG) * FEE_UI) / FEE_UI_DENOM;
-		const contractERG = BigInt(inputAmountNanoERG) - feeMining - uiFeeErg;
-		// ----------------------------------------
+		//Part 0 - use Fee
+		const { uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg);
 
+		//Part 2 - Calculate Price
 		const {
 			rateSCERG: contractRate,
 			fee: contractFee,

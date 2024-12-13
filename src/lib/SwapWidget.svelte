@@ -255,29 +255,10 @@
 		recalculateInputsOnCurrencyChange();
 	}
 
-	function handleToAmountChange(event) {
-		toAmount = event.target.value;
-		if (selectedCurrency == 'ERG') {
-			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
-				directionBuy,
-				toAmount
-			);
-			fromAmount = totalErg;
-			swapPrice = finalPrice;
-		} else {
-			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } =
-				calculateInputsUsdErgFromAmount(directionSell, toAmount);
-			fromAmount = totalSigUSD;
-			globalUiFeeErg = uiFeeErg;
-			globalContractERG = contractERG;
-			swapPrice = finalPrice;
-		}
-		lastInput = 'To';
-	}
-
 	function handleFromAmountChange(event) {
 		fromAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
+			// (f1.price)
 			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } =
 				calculateInputsUsdErgFromAmount(directionBuy, fromAmount);
 			toAmount = totalSigUSD;
@@ -285,6 +266,7 @@
 			globalContractERG = contractERG;
 			swapPrice = finalPrice;
 		} else {
+			// (f3.price)
 			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
 				directionSell,
 				fromAmount
@@ -295,6 +277,29 @@
 		lastInput = 'From';
 	}
 
+	function handleToAmountChange(event) {
+		toAmount = event.target.value;
+		if (selectedCurrency == 'ERG') {
+			// (f2)
+			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
+				directionBuy,
+				toAmount
+			);
+			fromAmount = totalErg;
+			swapPrice = finalPrice;
+		} else {
+			// (f4)
+			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } =
+				calculateInputsUsdErgFromAmount(directionSell, toAmount);
+			fromAmount = totalSigUSD;
+			globalUiFeeErg = uiFeeErg;
+			globalContractERG = contractERG;
+			swapPrice = finalPrice;
+		}
+		lastInput = 'To';
+	}
+
+	// STOPED
 	function calculatePriceUsdErgFromAmount(direction: bigint, buyAmount: BigNumber): any {
 		const inputAmountNanoERG = buyAmount
 			.multipliedBy('1000000000')
@@ -333,6 +338,7 @@
 		};
 	}
 
+	// (f1.price)
 	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
@@ -380,6 +386,7 @@
 		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
 
+	// (f3.price)
 	function calculateInputsUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
@@ -912,163 +919,6 @@
 
 		console.log(unsignedMintTransaction);
 		return unsignedMintTransaction;
-	}
-	// ------------------------------------------------
-
-	async function swapUSDERG(
-		direction: bigint = 1n,
-		swapUSD: bigint = 100n,
-		feeUI: bigint = SAFE_MIN_BOX_VALUE
-		//contractErg: bigint = 1n
-	) {
-		await window.ergoConnector.nautilus.connect();
-		const me = await ergo.get_change_address();
-		const utxos = await ergo.get_utxos();
-		const height = await ergo.get_current_height();
-
-		const tx = await swapUSDERGTx(swapUSD, me, SIGUSD_BANK, utxos, height, direction, feeUI);
-		console.log(tx);
-		const signed = await ergo.sign_tx(tx);
-
-		//		const txId = await ergo.submit_tx(signed);
-		console.log(signed);
-		//		console.log(txId);
-	}
-
-	export async function swapUSDERGTx(
-		contractUSD: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint,
-		feeUI: bigint
-	): any {
-		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
-
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		} = await extractBoxesData();
-
-		const { rateSCERG: contractRate, bcDeltaExpectedWithFee } = calculateSigUsdRateWithFee(
-			inErg,
-			inCircSigUSD,
-			oraclePrice,
-			contractUSD,
-			direction
-		); //Зачем тут нужен bcDeltaExpectedWithFee
-
-		const {
-			requestErg: contractErg,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		} = calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractRate,
-			direction
-		); // Calculate Bank Box
-
-		console.log('SECOND CALCULATION - TX');
-		console.log(contractUSD, 'USD -> ERG ', contractErg);
-		console.log('UI+MINING+ERG -> ', contractErg + feeUI + feeMining);
-
-		// ---------- Bank Box
-		const BankOutBox = new OutputBuilder(outErg, bankAddr)
-			.addTokens([
-				{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-				{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-				{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-			])
-			.setAdditionalRegisters({
-				R4: SLong(BigInt(outCircSigUSD)).toHex(), //value
-				R5: SLong(BigInt(outCircSigRSV)).toHex() //nano erg
-			});
-
-		// ---------- Receipt ------------
-		console.log('direction=', direction, ' -1n?', direction == -1n);
-		const receiptBox = new OutputBuilder(
-			direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
-			myAddr
-		).setAdditionalRegisters({
-			R4: SLong(BigInt(direction * contractUSD)).toHex(),
-			R5: SLong(BigInt(direction * contractErg)).toHex()
-		});
-
-		if (direction == 1n) {
-			receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: contractUSD });
-		}
-
-		// ---------- UI Fee Box ------------ (TODO: direction check)
-		const uiFeeBox = new OutputBuilder(feeUI, uiAddr);
-
-		const unsignedMintTransaction = new TransactionBuilder(height)
-			.from([bankBox, ...utxos])
-			.to([BankOutBox, receiptBox, uiFeeBox])
-			.sendChangeTo(myAddr)
-			.payFee(RECOMMENDED_MIN_FEE_VALUE)
-			.build()
-			.toEIP12Object();
-
-		unsignedMintTransaction.dataInputs = [oracleBox];
-		console.log(unsignedMintTransaction);
-
-		return unsignedMintTransaction;
-	}
-
-	function calculateOutputSc(
-		inErg: bigint,
-		inSigUSD: bigint,
-		inSigRSV: bigint,
-		inCircSigUSD: bigint,
-		inCircSigRSV: bigint,
-		requestSC: bigint,
-		rateWithFee: number,
-		direction: bigint
-	) {
-		const requestErg = BigInt(Math.floor(Number(requestSC) / rateWithFee)); //nanoerg
-		console.log('---------EXCHANGE----------');
-		console.log('🚀 ~ requestErg:', requestErg, ' | nanoergs');
-		console.log('🚀 ~ requestSC:', requestSC, ' | cents');
-		console.log('                          ');
-
-		// Bank out
-		const outErg = inErg + requestErg * direction; //
-		console.log('inErg:', inErg, ' + requestErg:', requestErg, ' = outErg:', outErg);
-
-		const outSigUSD = inSigUSD - requestSC * direction; //
-		console.log('inSigUSD:', inSigUSD, ' -requestSC:', requestSC, ' = outSigUSD:', outSigUSD);
-
-		const outCircSigUSD = inCircSigUSD + requestSC * direction;
-		console.log('🚀 ~ outCircSigUSD:', outCircSigUSD);
-
-		const outSigRSV = inSigRSV;
-		const outCircSigRSV = inCircSigRSV;
-
-		return {
-			requestErg,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		};
 	}
 
 	$: toToken = selectedCurrency === 'ERG' ? 'SigUSD' : 'ERG';

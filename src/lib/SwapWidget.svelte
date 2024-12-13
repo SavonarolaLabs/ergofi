@@ -280,7 +280,7 @@
 	function handleToAmountChange(event) {
 		toAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
-			// (f2)
+			// (f2.price)
 			const { totalErg, finalPrice, totalFee } = calculateInputsUsdErgFromTotal(
 				directionBuy,
 				toAmount
@@ -288,7 +288,7 @@
 			fromAmount = totalErg;
 			swapPrice = finalPrice;
 		} else {
-			// (f4)
+			// (f4.price)
 			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } =
 				calculateInputsUsdErgFromAmount(directionSell, toAmount);
 			fromAmount = totalSigUSD;
@@ -299,6 +299,27 @@
 		lastInput = 'To';
 	}
 
+	// (f1.price && f4.price)
+	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
+		const inputAmountERG = new BigNumber(buyAmountInput);
+		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
+				calculatePriceUsdErgFromAmount(direction, inputAmountERG);
+
+			const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
+			const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+			const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
+			return { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg };
+		} else {
+			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
+				calculatePriceUsdErgFromAmount(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
+			const totalSigUSD = '';
+			const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+			const totalFee = '';
+			return { totalSigUSD, finalPrice, totalFee };
+		}
+	}
+
 	function calculatePriceUsdErgFromAmount(direction: bigint, buyAmount: BigNumber): any {
 		const inputAmountNanoERG = buyAmount
 			.multipliedBy('1000000000')
@@ -306,8 +327,17 @@
 			.toFixed(0);
 		const inputErg = BigInt(inputAmountNanoERG);
 
-		//Part 0 - use Fee
-		const { uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg);
+		let uiFeeErg: bigint;
+		let contractERG: bigint;
+
+		if (direction === 1n) {
+			//f1
+			({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+		} else {
+			//f4
+			//({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+			({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg));
+		}
 
 		//Part 2 - Calculate Price
 		const {
@@ -336,62 +366,13 @@
 		};
 	}
 
-	// (f1.price)
-	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
-		const inputAmountERG = new BigNumber(buyAmountInput);
-		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
-			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-				calculatePriceUsdErgFromAmount(direction, inputAmountERG);
-
-			const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
-			const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
-			const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
-			return { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg };
-		} else {
-			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-				calculatePriceUsdErgFromAmount(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
-			const totalSigUSD = '';
-			const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
-			const totalFee = '';
-			return { totalSigUSD, finalPrice, totalFee };
-		}
-	}
-
-	function calculatePriceUsdErgFromTotal(direction: bigint, buyTotal: BigNumber): any {
-		const totalSC = BigInt(buyTotal.toString());
-
-		const {
-			rateSCERG,
-			fee: feeContract,
-			bcDeltaExpectedWithFee: contractErgoRequired
-		} = calculateSigUsdRateWithFee(
-			$bankBoxInErg,
-			$bankBoxInCircSigUsd,
-			$oraclePriceSigUsd,
-			totalSC,
-			direction
-		);
-
-		// ------------- THIS PART TO REWORK -----------------------------
-		const ergoBefore = (contractErgoRequired * FEE_UI_DENOM) / (FEE_UI_DENOM - FEE_UI);
-		const feeUI = ergoBefore - contractErgoRequired;
-		// ------------- THIS PART TO REWORK -----------------------------
-		const miningFee = feeMining;
-		const feeTotal = feeContract + miningFee + feeUI;
-
-		const totalErgoRequired = contractErgoRequired + feeUI + miningFee;
-		const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
-		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
-	}
-
-	// (f3.price)
+	// (f3.price && f2.price)
 	function calculateInputsUsdErgFromTotal(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
 
 		if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
-			// NEED TO REWORK THIS PART--------
 			const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
 				calculatePriceUsdErgFromTotal(direction, totalSigUSD);
 
@@ -410,6 +391,36 @@
 			const totalFee = '';
 			return { totalErg, finalPrice, totalFee };
 		}
+	}
+
+	function calculatePriceUsdErgFromTotal(direction: bigint, buyTotal: BigNumber): any {
+		const totalSC = BigInt(buyTotal.toString());
+
+		let uiFeeErg: bigint;
+		let totalErgoRequired: bigint;
+
+		const {
+			rateSCERG,
+			fee: feeContract,
+			bcDeltaExpectedWithFee: contractErgoRequired
+		} = calculateSigUsdRateWithFee(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd,
+			totalSC,
+			direction
+		);
+
+		if (direction === 1n) {
+			//f2
+			({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
+		} else {
+			//f3
+			({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
+		}
+		const feeTotal = feeContract + feeMining + uiFeeErg;
+		const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
+		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
 
 	// (f1) BUY USD -> SELL ERG

@@ -1,19 +1,20 @@
 import {
-	ErgoAddress,
-	OutputBuilder,
-	RECOMMENDED_MIN_FEE_VALUE,
-	SAFE_MIN_BOX_VALUE,
-	SLong,
-	TransactionBuilder
-} from '@fleet-sdk/core';
-import {
-	getBankBox,
-	getOracleBox,
 	type ExplorerAssetString,
 	type ExplorerOutputString,
 	type ExplorerOutputStringCustom
 } from './getOracleBox';
-import { TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset, type Output } from './api/ergoNode';
+import { TOKEN_SIGRSV, TOKEN_SIGUSD } from './api/ergoNode';
+
+export type OracleBoxesData = {
+	inErg: bigint;
+	inSigUSD: bigint;
+	inSigRSV: bigint;
+	inCircSigUSD: bigint;
+	inCircSigRSV: bigint;
+	oraclePrice: bigint;
+	newBankBox: ExplorerOutputStringCustom;
+	oracleBox: ExplorerOutputString;
+};
 
 const FEE = 200n;
 const FEE_DENOM = 10_000n;
@@ -158,17 +159,6 @@ function absBigInt(arg: bigint) {
 	return arg >= 0n ? arg : -arg;
 }
 
-export type OracleBoxesData = {
-	inErg: bigint;
-	inSigUSD: bigint;
-	inSigRSV: bigint;
-	inCircSigUSD: bigint;
-	inCircSigRSV: bigint;
-	oraclePrice: bigint;
-	newBankBox: ExplorerOutputStringCustom;
-	oracleBox: ExplorerOutputString;
-};
-
 export function extractBoxesData(oracleBox: ExplorerOutputString, bankBox: ExplorerOutputString) {
 	const inErg = BigInt(bankBox.value);
 	console.log('🚀 ~ inErg:', inErg);
@@ -282,153 +272,4 @@ function calculateOutputSc(
 		outCircSigUSD,
 		outCircSigRSV
 	};
-}
-
-// Обмен SigRSV и SigUSD
-
-export async function exchangeRsvTx(
-	requestRSV: bigint,
-	holderBase58PK: string,
-	bankBase58PK: string,
-	utxos: Array<any>,
-	height: number,
-	direction: bigint
-): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-
-	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV, oraclePrice, bankBox, oracleBox } =
-		await extractBoxesData();
-
-	const { rateRSVERG, fee } = calculateSigRsvRateWithFee(
-		inErg,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		requestRSV,
-		direction
-	);
-
-	const { requestErg, outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } =
-		calculateOutputRsv(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			requestRSV,
-			rateRSVERG,
-			direction
-		);
-
-	// ---------- BankOut ------------
-	const BankOutBox = new OutputBuilder(outErg, bankAddr)
-		.addTokens([
-			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-		])
-		.setAdditionalRegisters({
-			R4: SLong(BigInt(outCircSigUSD)).toHex(),
-			R5: SLong(BigInt(outCircSigRSV)).toHex()
-		});
-
-	// ---------- Receipt ------------
-	console.log('direction=', direction, ' -1n?', direction == -1n);
-	const receiptBox = new OutputBuilder(
-		direction == -1n ? requestErg : SAFE_MIN_BOX_VALUE,
-		myAddr
-	).setAdditionalRegisters({
-		R4: SLong(BigInt(direction * requestRSV)).toHex(),
-		R5: SLong(BigInt(direction * requestErg)).toHex()
-	});
-
-	if (direction == 1n) {
-		receiptBox.addTokens({ tokenId: TOKEN_SIGRSV, amount: requestRSV });
-	}
-
-	const unsignedMintTransaction = new TransactionBuilder(height)
-		.from([bankBox, ...utxos])
-		.to([BankOutBox, receiptBox])
-		.sendChangeTo(myAddr)
-		.payFee(RECOMMENDED_MIN_FEE_VALUE)
-		.build()
-		.toEIP12Object();
-
-	unsignedMintTransaction.dataInputs = [oracleBox];
-
-	return unsignedMintTransaction;
-}
-
-export async function exchangeScTx(
-	requestSC: bigint,
-	holderBase58PK: string,
-	bankBase58PK: string,
-	utxos: Array<any>,
-	height: number,
-	direction: bigint
-): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-
-	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV, oraclePrice, bankBox, oracleBox } =
-		await extractBoxesData();
-
-	const { rateSCERG, fee } = calculateSigUsdRateWithFee(
-		inErg,
-		inCircSigUSD,
-		oraclePrice,
-		requestSC,
-		direction
-	);
-
-	const { requestErg, outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } =
-		calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			requestSC,
-			rateSCERG,
-			direction
-		);
-
-	// ---------- Bank Box
-	const BankOutBox = new OutputBuilder(outErg, bankAddr)
-		.addTokens([
-			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-		])
-		.setAdditionalRegisters({
-			R4: SLong(BigInt(outCircSigUSD)).toHex(), // value
-			R5: SLong(BigInt(outCircSigRSV)).toHex() // nano erg
-		});
-
-	// ---------- Receipt ------------
-	console.log('direction=', direction, ' -1n?', direction == -1n);
-	const receiptBox = new OutputBuilder(
-		direction == -1n ? requestErg : SAFE_MIN_BOX_VALUE,
-		myAddr
-	).setAdditionalRegisters({
-		R4: SLong(BigInt(direction * requestSC)).toHex(),
-		R5: SLong(BigInt(direction * requestErg)).toHex()
-	});
-
-	if (direction == 1n) {
-		receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: requestSC });
-	}
-
-	const unsignedMintTransaction = new TransactionBuilder(height)
-		.from([bankBox, ...utxos])
-		.to([BankOutBox, receiptBox])
-		.sendChangeTo(myAddr)
-		.payFee(RECOMMENDED_MIN_FEE_VALUE)
-		.build()
-		.toEIP12Object();
-
-	unsignedMintTransaction.dataInputs = [oracleBox];
-
-	return unsignedMintTransaction;
 }

@@ -9,7 +9,7 @@ import {
 	TransactionBuilder
 } from '@fleet-sdk/core';
 import { getBankBox, getOracleBox } from './getOracleBox';
-import type { Asset } from './api/ergoNode';
+import { TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset } from './api/ergoNode';
 
 const FEE = 200n;
 const FEE_DENOM = 10_000n;

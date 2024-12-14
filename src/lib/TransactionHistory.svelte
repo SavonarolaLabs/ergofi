@@ -150,7 +150,7 @@
 			.map((tx) => {
 				if (!tx.inputs || !tx.outputs) return null;
 
-				const bank = calculateAddressInfo(tx, SIGUSD_BANK);
+				const bank = calculateAddressInfo(tx, SIGUSD_BANK_ADDRESS);
 				const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 				const user = calculateAddressInfo(tx, userAddress);
 				const txData: OperationInfo = calculateOperationInfo(bank, user);
@@ -174,7 +174,7 @@
 				.map((tx) => {
 					if (!tx.inputs || !tx.outputs) return null;
 
-					const bank = calculateAddressInfo(tx, SIGUSD_BANK);
+					const bank = calculateAddressInfo(tx, SIGUSD_BANK_ADDRESS);
 					const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 					const user = calculateAddressInfo(tx, userAddress);
 					const txData: OperationInfo = calculateOperationInfo(bank, user);

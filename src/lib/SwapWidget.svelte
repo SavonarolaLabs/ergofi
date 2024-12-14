@@ -528,7 +528,14 @@
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		const tx = await buyUSDWithERGReversedTxV2(inputUSD, me, SIGUSD_BANK, utxos, height, direction);
+		const tx = await buyUSDWithERGReversedTxV2(
+			inputUSD,
+			me,
+			SIGUSD_BANK_ADDRESS,
+			utxos,
+			height,
+			direction
+		);
 
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);

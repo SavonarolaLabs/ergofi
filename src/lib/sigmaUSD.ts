@@ -3,13 +3,17 @@ import {
 	OutputBuilder,
 	RECOMMENDED_MIN_FEE_VALUE,
 	SAFE_MIN_BOX_VALUE,
-	SByte,
-	SColl,
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { getBankBox, getOracleBox } from './getOracleBox';
-import { TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset } from './api/ergoNode';
+import {
+	getBankBox,
+	getOracleBox,
+	type ExplorerAssetString,
+	type ExplorerOutputString,
+	type ExplorerOutputStringCustom
+} from './getOracleBox';
+import { TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset, type Output } from './api/ergoNode';
 
 const FEE = 200n;
 const FEE_DENOM = 10_000n;
@@ -154,20 +158,28 @@ function absBigInt(arg: bigint) {
 	return arg >= 0n ? arg : -arg;
 }
 
-export async function extractBoxesData() {
-	const oracleBox = await getOracleBox(); // get(oracle_box)
-	const bankBox = await getBankBox(); // get(bank_box)
+export type OracleBoxesData = {
+	inErg: bigint;
+	inSigUSD: bigint;
+	inSigRSV: bigint;
+	inCircSigUSD: bigint;
+	inCircSigRSV: bigint;
+	oraclePrice: bigint;
+	newBankBox: ExplorerOutputStringCustom;
+	oracleBox: ExplorerOutputString;
+};
 
+export function extractBoxesData(oracleBox: ExplorerOutputString, bankBox: ExplorerOutputString) {
 	const inErg = BigInt(bankBox.value);
 	console.log('🚀 ~ inErg:', inErg);
 
 	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD).amount
+		bankBox.assets.find((asset: ExplorerAssetString) => asset.tokenId == TOKEN_SIGUSD)!.amount
 	);
 	console.log('🚀 ~ inSigUSD:', inSigUSD);
 
 	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV).amount
+		bankBox.assets.find((asset: ExplorerAssetString) => asset.tokenId == TOKEN_SIGRSV)!.amount
 	);
 	console.log('🚀 ~ inSigRSV:', inSigRSV);
 
@@ -176,8 +188,9 @@ export async function extractBoxesData() {
 	const inCircSigRSV = BigInt(bankBox.additionalRegisters.R5.renderedValue);
 	console.log('🚀 ~ inCircSigRSV:', inCircSigRSV);
 
-	bankBox.additionalRegisters.R4 = bankBox.additionalRegisters.R4.serializedValue;
-	bankBox.additionalRegisters.R5 = bankBox.additionalRegisters.R5.serializedValue;
+	let newBankBox: ExplorerOutputStringCustom = JSON.parse(JSON.stringify(bankBox));
+	newBankBox.additionalRegisters.R4 = bankBox.additionalRegisters.R4.serializedValue;
+	newBankBox.additionalRegisters.R5 = bankBox.additionalRegisters.R5.serializedValue;
 
 	// ORACLE PRICE / 100n
 	const oraclePrice = BigInt(oracleBox.additionalRegisters.R4.renderedValue) / 100n; // nanoerg for cent
@@ -190,7 +203,7 @@ export async function extractBoxesData() {
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
+		bankBox: newBankBox,
 		oracleBox
 	};
 }

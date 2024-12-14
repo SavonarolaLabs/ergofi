@@ -23,6 +23,7 @@
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
+	import { getBankBox, getOracleBox, type ExplorerOutputString } from './getOracleBox';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -46,6 +47,10 @@
 	const bankBoxInErg = writable<bigint>(1653105734759386n);
 	const bankBoxInCircSigUsd = writable<bigint>(46260638n);
 	const oraclePriceSigUsd = writable<bigint>(5405405n);
+
+	// TODO: type definition for OracleBox
+	const oracle_box = writable<ExplorerOutputString>();
+	const bank_box = writable<ExplorerOutputString>();
 
 	type Currency = 'ERG' | 'SigUSD';
 	type LastUserInput = 'From' | 'To';
@@ -109,18 +114,20 @@
 		swapPrice = finalPrice;
 	}
 
+	async function fetchLatestOracleAndBankBox() {
+		oracle_box.set(await getOracleBox());
+		bank_box.set(await getBankBox());
+	}
+
 	async function updateBankBoxAndOracle() {
 		console.log('update start');
+		await fetchLatestOracleAndBankBox();
 		const {
 			inErg,
-			inSigUSD,
-			inSigRSV,
+
 			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		} = await extractBoxesData();
+			oraclePrice
+		} = await extractBoxesData($oracle_box, $bank_box);
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
 		oraclePriceSigUsd.set(oraclePrice);
@@ -376,6 +383,7 @@
 		const { uiSwapFee, contractERG: contractErg } = applyFee(inputErg);
 
 		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
 		const {
 			inErg,
 			inSigUSD,
@@ -385,7 +393,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData();
+		} = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
@@ -560,6 +568,7 @@
 		const contractUSD = inputUSD;
 
 		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
 		const {
 			inErg,
 			inSigUSD,
@@ -569,7 +578,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData();
+		} = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
@@ -644,6 +653,7 @@
 		const contractUSD = inputUSD;
 
 		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
 		const {
 			inErg,
 			inSigUSD,
@@ -653,7 +663,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData();
+		} = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
@@ -734,6 +744,7 @@
 		const { uiSwapFee, contractERG: contractErg } = applyFeeSell(inputErg);
 
 		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
 		const {
 			inErg,
 			inSigUSD,
@@ -743,7 +754,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData();
+		} = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(

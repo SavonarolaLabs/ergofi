@@ -1,4 +1,6 @@
-function boxToStrVal(box) {
+import { ORACLE_ERG_USD_NFT, TOKEN_BANK_NFT } from './api/ergoNode';
+
+function boxToStrVal(box: ExplorerOutput): ExplorerOutputString {
 	let newBox = JSON.parse(JSON.stringify(box));
 	newBox.value = newBox.value.toString();
 
@@ -10,17 +12,91 @@ function boxToStrVal(box) {
 	return newBox;
 }
 
-const mainnet_oracle =
-	"011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f";
-//011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f
-//const testnet_oracle_gold = 'd94bfac40b516353983443209104dcdd5b7ca232a01ccb376ee8014df6330907';
+type ExplorerOutput = {
+	boxId: string;
+	transactionId: string;
+	blockId: string;
+	value: number;
+	index: number;
+	globalIndex: number;
+	creationHeight: number;
+	settlementHeight: number;
+	ergoTree: string;
+	ergoTreeConstants: string;
+	ergoTreeScript: string;
+	address: string;
+	assets: {
+		tokenId: string;
+		index: number;
+		amount: number;
+		name: string;
+		decimals: number;
+		type: string;
+	}[];
+	additionalRegisters: {
+		R4: { serializedValue: string; sigmaType: string; renderedValue: string };
+		R5: { serializedValue: string; sigmaType: string; renderedValue: string };
+	};
+	spentTransactionId: string | null;
+	mainChain: boolean;
+};
 
-const TOKEN_BANK_NFT =
-	"7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9"; //SUSD Bank V2 NFT
+export type ExplorerAssetString = {
+	tokenId: string;
+	index: number;
+	amount: string;
+	name: string;
+	decimals: number;
+	type: string;
+};
 
-export async function getOracleBox() {
+export type ExplorerOutputString = {
+	boxId: string;
+	transactionId: string;
+	blockId: string;
+	value: string;
+	index: number;
+	globalIndex: number;
+	creationHeight: number;
+	settlementHeight: number;
+	ergoTree: string;
+	ergoTreeConstants: string;
+	ergoTreeScript: string;
+	address: string;
+	assets: ExplorerAssetString[];
+	additionalRegisters: {
+		R4: { serializedValue: string; sigmaType: string; renderedValue: string };
+		R5: { serializedValue: string; sigmaType: string; renderedValue: string };
+	};
+	spentTransactionId: string | null;
+	mainChain: boolean;
+};
+
+export type ExplorerOutputStringCustom = {
+	boxId: string;
+	transactionId: string;
+	blockId: string;
+	value: string;
+	index: number;
+	globalIndex: number;
+	creationHeight: number;
+	settlementHeight: number;
+	ergoTree: string;
+	ergoTreeConstants: string;
+	ergoTreeScript: string;
+	address: string;
+	assets: ExplorerAssetString[];
+	additionalRegisters: {
+		R4: string;
+		R5: string;
+	};
+	spentTransactionId: string | null;
+	mainChain: boolean;
+};
+
+export async function getOracleBox(): Promise<ExplorerOutputString> {
 	const resp = await fetch(
-		`https://api.ergoplatform.com/api/v1/boxes/unspent/byTokenId/${mainnet_oracle}`
+		`https://api.ergoplatform.com/api/v1/boxes/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
 	);
 	let data = await resp.json();
 	let oracleBox = data.items[0];
@@ -28,7 +104,7 @@ export async function getOracleBox() {
 	return oracleBox;
 }
 
-export async function getBankBox() {
+export async function getBankBox(): Promise<ExplorerOutputString> {
 	const resp = await fetch(
 		`https://api.ergoplatform.com/api/v1/boxes/unspent/byTokenId/${TOKEN_BANK_NFT}`
 	);

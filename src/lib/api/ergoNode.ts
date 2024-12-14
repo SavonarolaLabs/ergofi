@@ -1,6 +1,8 @@
 //const NODE_URL = 'http://213.239.193.208:9053';
 const NODE_URL = 'http://localhost:9053';
 
+export const ORACLE_ERG_USD_NFT =
+	'011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f';
 export const TOKEN_SIGRSV = '003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0';
 export const TOKEN_SIGUSD = '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04';
 export const TOKEN_BANK_NFT = '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9';
@@ -72,7 +74,7 @@ export type Asset = {
 	amount: number;
 };
 
-type Output = {
+export type Output = {
 	boxId: string;
 	value: number;
 	ergoTree: string;

@@ -24,6 +24,7 @@
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
 	import { getBankBox, getOracleBox, type ExplorerOutputString } from './getOracleBox';
+	import { ergStringToNanoErgBigInt, usdStringToCentBigInt } from './utils';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -92,18 +93,6 @@
 		return { uiSwapFee, contractERG };
 	}
 
-	function nanoErgToErg(nanoErg: number) {
-		return nanoErg ? Number((nanoErg / 10 ** 9).toFixed(2)) : 0;
-	}
-
-	function ergToNanoErg(erg: number) {
-		return erg ? erg * 10 ** 9 : 0;
-	}
-
-	function centsToUsd(cents: number) {
-		return cents ? Number((cents / 10 ** 2).toFixed(2)) : 0;
-	}
-
 	function initialInputs() {
 		const { totalSigUSD, finalPrice, totalFee } = calculateInputsUsdErgFromAmount(
 			directionBuy,
@@ -159,22 +148,21 @@
 		if (lastInput == 'From') {
 			if (selectedCurrency == 'ERG') {
 				console.log('f1');
-				const nanoErg = BigInt(BigNumber(fromAmount).multipliedBy(1_000_000_000).toString());
+				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
 				await buyUSDWithERG(nanoErg);
 			} else {
 				console.log('f3');
-				const cents = BigInt(BigNumber(fromAmount).multipliedBy(100).toString());
+				const cents = usdStringToCentBigInt(fromAmount);
 				await buyERGWithUSD(cents);
 			}
 		} else {
 			if (selectedCurrency == 'ERG') {
 				console.log('f2');
-				const cents = BigInt(BigNumber(toAmount).multipliedBy(100).toString());
-				const nanoErg = BigInt(BigNumber(fromAmount).multipliedBy(1_000_000_000).toString());
-				await buyUSDWithERGReversed(cents, nanoErg);
+				const cents = usdStringToCentBigInt(toAmount);
+				await buyUSDWithERGReversed(cents);
 			} else {
 				console.log('f4');
-				const nanoErg = BigInt(BigNumber(toAmount).multipliedBy(1_000_000_000).toString());
+				const nanoErg = ergStringToNanoErgBigInt(toAmount);
 				await buyERGWithUSDReversed(nanoErg);
 			}
 		}
@@ -287,11 +275,11 @@
 		const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
 		return {
-			contractRate, // contractRate
-			contractFee, //contractFee
-			contractUSD, //contractUSD
-			contractERG, //contractERG
-			uiFeeErg, //
+			contractRate,
+			contractFee,
+			contractUSD,
+			contractERG,
+			uiFeeErg,
 			swapFee, //totalFee
 			swapRate //totalRate
 		};

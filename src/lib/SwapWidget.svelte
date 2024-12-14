@@ -62,6 +62,7 @@
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
+	// Fee Block
 	function applyFee(inputERG: bigint) {
 		const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
 		const contractERG = inputERG - feeMining - uiSwapFee;
@@ -74,12 +75,6 @@
 		return { inputERG, uiSwapFee };
 	}
 
-	function reverseFeeV2(contractERG: bigint, inputERG: bigint) {
-		const uiSwapFee: bigint = inputERG - contractERG - feeMining;
-		const userERG: bigint = contractERG - uiSwapFee - feeMining;
-		return { userERG, uiSwapFee };
-	}
-
 	function reverseFeeSell(contractERG: bigint) {
 		const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
 		const userERG = contractERG - feeMining - uiSwapFee;
@@ -90,79 +85,6 @@
 		const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 		const contractERG = inputERG + feeMining + uiSwapFee;
 		return { uiSwapFee, contractERG };
-	}
-
-	function test() {
-		// for example
-		const tx = history.items[2];
-		const bank = calculateAddressInfo(tx, SIGUSD_BANK_ADDRESS);
-		const userAddress = tx.outputs[1]?.address || tx.inputs[0]?.address;
-		const user = calculateAddressInfo(tx, userAddress); // В банке стало больше ERG
-		const minerAddress =
-			'2iHkR7CWvD1R4j1yZg5bkeDRQavjAaVPeTDFGGLZduHyfWMuYpmhHocX8GJoaieTx78FntzJbCBVL6rf96ocJoZdmWBL2fci7NqWgAirppPQmZ7fN9V6z13Ay6brPriBKYqLp1bT2Fk4FkFLCfdPpe';
-		const miner = calculateAddressInfo(tx, minerAddress);
-		const sigmaUIAddress = '9g8gaARC3N8j9v97wmnFkhDMxHHFh9PEzVUtL51FGSNwTbYEnnk';
-		const sigmaUI = calculateAddressInfo(tx, sigmaUIAddress);
-
-		const diffErg = nanoErgToErg(bank.difference);
-		console.log({ bank }, { user });
-
-		const contractErg = bank.ergoStats.difference;
-		const inputErg = -user.ergoStats.difference;
-		const totalFee = inputErg - contractErg;
-		// console.log('UI Fee', { sigmaUI });
-		// console.log('minerFee', { miner });
-		const sigmaAndMinerErg = miner.ergoStats.difference + sigmaUI.ergoStats.difference;
-		//console.log('is FEE ok?', totalFee == sigmaAndMinerErg ? 'yes' : 'no');
-		const feeToContractErg = (100 * sigmaUI.ergoStats.difference) / contractErg;
-		const feeToUserErg = (100 * sigmaUI.ergoStats.difference) / inputErg;
-		console.log('feeToContractErg', feeToContractErg);
-		console.log('feeToUserErg', feeToUserErg);
-	}
-
-	function calculateAddressInfo(tx: any, address: string): any {
-		return {
-			address: address,
-			ergoStats: calculateErgoStatsByAddress(tx, address),
-			usdStats: calculateTokenStatsByAddress(tx, TOKEN_SIGUSD, address),
-			rsvStats: calculateTokenStatsByAddress(tx, TOKEN_SIGRSV, address)
-		};
-	}
-	function calculateErgoStatsByAddress(tx: any, address: string): any {
-		const inputAmount = tx.inputs
-			.filter((input: any) => input.address == address)
-			.flatMap((input: any) => input.value)
-			.reduce((sum: number, value: any) => sum + value, 0);
-
-		const outputAmount = tx.outputs
-			.filter((output: any) => output.address == address)
-			.flatMap((output: any) => output.value)
-			.reduce((sum: number, value: any) => sum + value, 0);
-
-		return {
-			input: inputAmount,
-			output: outputAmount,
-			difference: outputAmount - inputAmount
-		};
-	}
-	function calculateTokenStatsByAddress(tx: any, tokenId: string, address: string): any {
-		const inputAmount = tx.inputs
-			.filter((input: any) => input.address == address)
-			.flatMap((input: any) => input.assets)
-			.filter((asset: any) => asset.tokenId === tokenId)
-			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
-
-		const outputAmount = tx.outputs
-			.filter((output: any) => output.address == address)
-			.flatMap((output: any) => output.assets)
-			.filter((asset: any) => asset.tokenId === tokenId)
-			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
-
-		return {
-			input: inputAmount,
-			output: outputAmount,
-			difference: outputAmount - inputAmount
-		};
 	}
 
 	function nanoErgToErg(nanoErg: number) {
@@ -475,7 +397,7 @@
 		);
 
 		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
 			inErg,
 			inSigUSD,
 			inSigRSV,
@@ -570,7 +492,7 @@
 		return unsignedMintTransaction;
 	}
 
-	function calculateOutputScV2(
+	function calculateOutputSc(
 		inErg: bigint,
 		inSigUSD: bigint,
 		inSigRSV: bigint,
@@ -606,24 +528,7 @@
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		// const tx = await buyUSDWithERGReversedTx(
-		// 	inputUSD,
-		// 	me,
-		// 	SIGUSD_BANK_ADDRESS,
-		// 	utxos,
-		// 	height,
-		// 	direction,
-		// 	inputErg
-		// );
-
-		const tx = await buyUSDWithERGReversedTxV2(
-			inputUSD,
-			me,
-			SIGUSD_BANK_ADDRESS,
-			utxos,
-			height,
-			direction
-		);
+		const tx = await buyUSDWithERGReversedTxV2(inputUSD, me, SIGUSD_BANK, utxos, height, direction);
 
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
@@ -631,75 +536,6 @@
 		//		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
 		//		console.log(txId);
-	}
-
-	export async function buyUSDWithERGReversedTx(
-		inputUSD: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint,
-		inputErg: bigint
-	): any {
-		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
-
-		const contractUSD = inputUSD;
-
-		//Part 1 - Get Oracle
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		} = await extractBoxesData();
-
-		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractErg,
-			direction
-		);
-
-		// FEE after SWAP (but dont recalculate Rate) // TRICKY ???
-		const { userERG, uiSwapFee } = reverseFeeV2(contractErg, inputErg);
-
-		//Part 4 - Calculate TX
-		const unsignedMintTransaction = buildErgUSDTx(
-			direction,
-			contractErg,
-			contractUSD,
-			holderBase58PK,
-			bankBase58PK,
-			height,
-			bankBox,
-			oracleBox,
-			uiSwapFee,
-			utxos,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		);
-
-		console.log(unsignedMintTransaction);
-		return unsignedMintTransaction;
 	}
 
 	export async function buyUSDWithERGReversedTxV2(
@@ -733,7 +569,7 @@
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
 		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
 			inErg,
 			inSigUSD,
 			inSigRSV,
@@ -817,7 +653,7 @@
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
 		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
 			inErg,
 			inSigUSD,
 			inSigRSV,
@@ -912,7 +748,7 @@
 		);
 
 		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputScV2(
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
 			inErg,
 			inSigUSD,
 			inSigRSV,

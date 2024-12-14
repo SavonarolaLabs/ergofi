@@ -1,65 +1,30 @@
 // src/lib/stores/transactions.ts
+import {
+	fetchMempoolTransactions,
+	fetchNodeInfo,
+	TOKEN_BANK_NFT,
+	type Asset,
+	type ErgoNodeInfo,
+	type MempoolTransaction
+} from '$lib/api/ergoNode';
 import { writable } from 'svelte/store';
 
-export interface TransactionNode {
-	id: string;
-	inputs: Array<{ boxId: string }>;
-	outputs: Array<{
-		boxId: string;
-		value: number;
-		assets: Array<{ tokenId: string; amount: string }>;
-	}>;
-	fee: number;
-}
-
-interface NodeInfo {
-	lastSeenMessageTime: number;
-	height: number;
-}
-
-export const transactions = writable<TransactionNode[]>([]);
+export const transactions = writable<MempoolTransaction[]>([]);
 export const mempoolSize = writable<number>(0);
 export const maxTxCount = 1000;
 
 // New store to hold the bank box chains
 export const bankBoxChains = writable<any[]>([]);
 
-const nodeUrl = 'http://213.239.193.208:9053';
 const pollingInterval = 5000;
-
-const TOKEN_BANK_NFT = '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9'; // SUSD Bank V2 NFT
 
 let lastSeenMessageTime = 0;
 let lastProcessedHeight = 0;
 
-async function fetchNodeInfo(): Promise<NodeInfo> {
-	const response = await fetch(`${nodeUrl}/info`);
-	if (!response.ok) {
-		throw new Error(`HTTP error! status: ${response.status}`);
-	}
-	return (await response.json()) as NodeInfo;
-}
-
-async function fetchMempoolTransactions(offset: number = 0): Promise<TransactionNode[]> {
-	try {
-		const response = await fetch(
-			`${nodeUrl}/transactions/unconfirmed?limit=10000&offset=${offset}`
-		);
-		if (!response.ok) {
-			console.error(`HTTP error! status: ${response.status}`);
-			return [];
-		}
-		return (await response.json()) as TransactionNode[];
-	} catch (error) {
-		console.error('Error fetching mempool transactions:', error);
-		return [];
-	}
-}
-
 async function populateInitialSet() {
 	let offset = 0;
-	let transactionsArray: TransactionNode[] = [];
-	let transactionsBatch: TransactionNode[];
+	let transactionsArray: MempoolTransaction[] = [];
+	let transactionsBatch: MempoolTransaction[];
 
 	do {
 		transactionsBatch = await fetchMempoolTransactions(offset);
@@ -75,9 +40,9 @@ async function populateInitialSet() {
 	buildBankBoxChains(transactionsArray);
 
 	// Get initial node info for baseline
-	const nodeInfo = await fetchNodeInfo();
+	const nodeInfo: ErgoNodeInfo = await fetchNodeInfo();
 	lastSeenMessageTime = nodeInfo.lastSeenMessageTime;
-	lastProcessedHeight = nodeInfo.height;
+	lastProcessedHeight = nodeInfo.fullHeight;
 
 	console.log(`Mempool(${transactionsArray.length}) reset`);
 }
@@ -86,9 +51,9 @@ async function checkForUpdates() {
 	const nodeInfo = await fetchNodeInfo();
 
 	// Check if block height has changed (indicates new block)
-	if (nodeInfo.height !== lastProcessedHeight) {
-		await handleNewBlock(nodeInfo.height);
-		lastProcessedHeight = nodeInfo.height;
+	if (nodeInfo.fullHeight !== lastProcessedHeight) {
+		await handleNewBlock(nodeInfo.fullHeight);
+		lastProcessedHeight = nodeInfo.fullHeight;
 	}
 
 	// Check if lastSeenMessageTime has changed (indicates new mempool activity)
@@ -105,8 +70,8 @@ async function handleNewBlock(newHeight: number) {
 
 async function refreshMempool() {
 	let offset = 0;
-	let transactionsArray: TransactionNode[] = [];
-	let transactionsBatch: TransactionNode[];
+	let transactionsArray: MempoolTransaction[] = [];
+	let transactionsBatch: MempoolTransaction[];
 
 	do {
 		transactionsBatch = await fetchMempoolTransactions(offset);
@@ -136,7 +101,7 @@ function startPolling() {
 populateInitialSet().then(startPolling);
 
 // New function to build bank box chains
-function buildBankBoxChains(transactionsArray: TransactionNode[]) {
+function buildBankBoxChains(transactionsArray: MempoolTransaction[]) {
 	const boxes = new Map(); // boxId -> box info
 	const txMap = new Map(); // txId -> transaction
 
@@ -171,7 +136,7 @@ function buildBankBoxChains(transactionsArray: TransactionNode[]) {
 
 	// Identify bank boxes (boxes containing TOKEN_BANK_NFT)
 	const bankBoxes = Array.from(boxes.values()).filter((boxInfo) => {
-		return boxInfo.box.assets?.some((asset) => asset.tokenId === TOKEN_BANK_NFT);
+		return boxInfo.box.assets?.some((asset: Asset) => asset.tokenId === TOKEN_BANK_NFT);
 	});
 
 	// Build chains starting from the latest bank boxes

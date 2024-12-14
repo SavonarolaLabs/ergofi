@@ -18,9 +18,13 @@
 	const DUMMY_DATA = true;
 
 	// Constants (replace with your actual values)
-	const SIGUSD_BANK = 'Your_SIGUSD_BANK_Address';
-	const TOKEN_SIGUSD = 'Your_TOKEN_SIGUSD_ID';
-	const TOKEN_SIGRSV = 'Your_TOKEN_SIGRSV_ID';
+
+	import {
+		SIGUSD_BANK_ADDRESS,
+		TOKEN_BANK_NFT,
+		TOKEN_SIGRSV,
+		TOKEN_SIGUSD
+	} from '$lib/api/ergoNode';
 
 	interface TokenStats {
 		input: number;

@@ -12,12 +12,14 @@
 		calculateSigUsdRateWithFee,
 		calculateSigUsdRateWithFeeFromErg,
 		calculateSigUsdRateWithFeeReversed,
-		extractBoxesData,
-		SIGUSD_BANK,
+		extractBoxesData
+	} from './sigmaUSD';
+	import {
+		SIGUSD_BANK_ADDRESS,
 		TOKEN_BANK_NFT,
 		TOKEN_SIGRSV,
 		TOKEN_SIGUSD
-	} from './sigmaUSD';
+	} from '$lib/api/ergoNode';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
@@ -93,7 +95,7 @@
 	function test() {
 		// for example
 		const tx = history.items[2];
-		const bank = calculateAddressInfo(tx, SIGUSD_BANK);
+		const bank = calculateAddressInfo(tx, SIGUSD_BANK_ADDRESS);
 		const userAddress = tx.outputs[1]?.address || tx.inputs[0]?.address;
 		const user = calculateAddressInfo(tx, userAddress); // В банке стало больше ERG
 		const minerAddress =
@@ -431,7 +433,7 @@
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK, utxos, height, direction);
+		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
@@ -607,14 +609,21 @@
 		// const tx = await buyUSDWithERGReversedTx(
 		// 	inputUSD,
 		// 	me,
-		// 	SIGUSD_BANK,
+		// 	SIGUSD_BANK_ADDRESS,
 		// 	utxos,
 		// 	height,
 		// 	direction,
 		// 	inputErg
 		// );
 
-		const tx = await buyUSDWithERGReversedTxV2(inputUSD, me, SIGUSD_BANK, utxos, height, direction);
+		const tx = await buyUSDWithERGReversedTxV2(
+			inputUSD,
+			me,
+			SIGUSD_BANK_ADDRESS,
+			utxos,
+			height,
+			direction
+		);
 
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
@@ -769,7 +778,7 @@
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		const tx = await buyERGWithUSDTx(inputUSD, me, SIGUSD_BANK, utxos, height, direction);
+		const tx = await buyERGWithUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
@@ -854,7 +863,14 @@
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		const tx = await buyERGWithUSDReversedTx(inputErg, me, SIGUSD_BANK, utxos, height, direction);
+		const tx = await buyERGWithUSDReversedTx(
+			inputErg,
+			me,
+			SIGUSD_BANK_ADDRESS,
+			utxos,
+			height,
+			direction
+		);
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
@@ -1016,6 +1032,6 @@
 		on:click={handleSwapButton}
 		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
 	>
-		Swap
+		Swap / Connect Wallet
 	</button>
 </div>

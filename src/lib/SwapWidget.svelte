@@ -425,13 +425,6 @@
 
 		const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg);
 		uiSwapFee = abc;
-		// //---- DEBUG Fee ----
-		// console.log(inputErg, ' inputErg');
-		// console.log(contractErg, ' contractErg');
-		// console.log(uiSwapFee, ' uiSwapFee');
-		// console.log(feeMining, ' feeMining');
-		// console.log('Total = Total?', inputErg == contractErg + uiSwapFee + feeMining);
-		// //DEBUG RESULT: VALID
 
 		//Part 1 - Get Oracle
 		await fetchLatestOracleAndBankBox();
@@ -459,22 +452,6 @@
 		//Part 2 - Calculate Price ()
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		console.log(
-			contractRate,
-			' vs ',
-			contractRateCompare,
-			' contractRate ',
-			contractRate == contractRateCompare
-		);
-
-		console.log(
-			contractErg,
-			' vs ',
-			contractErgCompare,
-			' contractErg ',
-			contractErg == contractErgCompare
-		);
 
 		//Adjust fee
 		if (contractErg > contractErgCompare)

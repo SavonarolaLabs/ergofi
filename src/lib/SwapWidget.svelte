@@ -147,6 +147,7 @@
 		// TODO: change based on lastInput
 		if (lastInput == 'From') {
 			if (selectedCurrency == 'ERG') {
+				//CANT SIGN
 				console.log('f1');
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
 				await buyUSDWithERG(nanoErg);
@@ -161,6 +162,7 @@
 				const cents = usdStringToCentBigInt(toAmount);
 				await buyUSDWithERGReversed(cents);
 			} else {
+				//CANT SIGN
 				console.log('f4');
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
 				await buyERGWithUSDReversed(nanoErg);
@@ -369,6 +371,14 @@
 	): any {
 		//Part 0 - use Fee
 		const { uiSwapFee, contractERG: contractErg } = applyFee(inputErg);
+
+		// //---- DEBUG Fee ----
+		// console.log(inputErg, ' inputErg');
+		// console.log(contractErg, ' contractErg');
+		// console.log(uiSwapFee, ' uiSwapFee');
+		// console.log(feeMining, ' feeMining');
+		// console.log('Total = Total?', inputErg == contractErg + uiSwapFee + feeMining);
+		// //RESULT: VALID
 
 		//Part 1 - Get Oracle
 		await fetchLatestOracleAndBankBox();
@@ -744,7 +754,7 @@
 			oracleBox
 		} = await extractBoxesData($oracle_box, $bank_box);
 
-		//Part 2 - Calculate Price
+		//Part 2 - Calculate Price (Potential Error)
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
 			inErg,
 			inCircSigUSD,

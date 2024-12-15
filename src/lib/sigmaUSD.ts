@@ -3,8 +3,13 @@ import {
 	type ExplorerOutputString,
 	type ExplorerOutputStringCustom
 } from './getOracleBox';
-import { TOKEN_SIGRSV, TOKEN_SIGUSD } from './api/ergoNode';
-import BigNumber from 'bignumber.js';
+import {
+	decodeBigInt,
+	TOKEN_SIGRSV,
+	TOKEN_SIGUSD,
+	type AssetString,
+	type OutputString
+} from './api/ergoNode';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -161,31 +166,31 @@ function absBigInt(arg: bigint) {
 	return arg >= 0n ? arg : -arg;
 }
 
-export function extractBoxesData(oracleBox: ExplorerOutputString, bankBox: ExplorerOutputString) {
+export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString) {
 	const inErg = BigInt(bankBox.value);
 	console.log('🚀 ~ inErg:', inErg);
 
 	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: ExplorerAssetString) => asset.tokenId == TOKEN_SIGUSD)!.amount
+		bankBox.assets.find((asset: AssetString) => asset.tokenId == TOKEN_SIGUSD)!.amount
 	);
 	console.log('🚀 ~ inSigUSD:', inSigUSD);
 
 	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: ExplorerAssetString) => asset.tokenId == TOKEN_SIGRSV)!.amount
+		bankBox.assets.find((asset: AssetString) => asset.tokenId == TOKEN_SIGRSV)!.amount
 	);
 	console.log('🚀 ~ inSigRSV:', inSigRSV);
 
-	const inCircSigUSD = BigInt(bankBox.additionalRegisters.R4.renderedValue);
+	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
 	console.log('🚀 ~ inCircSigUSD:', inCircSigUSD);
-	const inCircSigRSV = BigInt(bankBox.additionalRegisters.R5.renderedValue);
+	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
 	console.log('🚀 ~ inCircSigRSV:', inCircSigRSV);
 
 	let newBankBox: ExplorerOutputStringCustom = JSON.parse(JSON.stringify(bankBox));
-	newBankBox.additionalRegisters.R4 = bankBox.additionalRegisters.R4.serializedValue;
-	newBankBox.additionalRegisters.R5 = bankBox.additionalRegisters.R5.serializedValue;
+	newBankBox.additionalRegisters.R4 = bankBox.additionalRegisters.R4;
+	newBankBox.additionalRegisters.R5 = bankBox.additionalRegisters.R5;
 
 	// ORACLE PRICE / 100n
-	const oraclePrice = BigInt(oracleBox.additionalRegisters.R4.renderedValue) / 100n; // nanoerg for cent
+	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
 	console.log('🚀 ~ oraclePrice:', oraclePrice);
 
 	return {

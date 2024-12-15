@@ -1,3 +1,5 @@
+import { parse } from '@fleet-sdk/serializer';
+
 //const NODE_URL = 'http://213.239.193.208:9053';
 const NODE_URL = 'http://localhost:9053';
 
@@ -74,12 +76,28 @@ export type Asset = {
 	amount: number;
 };
 
+export type AssetString = {
+	tokenId: string;
+	amount: string;
+};
+
 export type Output = {
 	boxId: string;
 	value: number;
 	ergoTree: string;
 	creationHeight: number;
 	assets: Asset[];
+	additionalRegisters: Record<string, string>;
+	transactionId: string;
+	index: number;
+};
+
+export type OutputString = {
+	boxId: string;
+	value: string;
+	ergoTree: string;
+	creationHeight: number;
+	assets: AssetString[];
 	additionalRegisters: Record<string, string>;
 	transactionId: string;
 	index: number;
@@ -115,4 +133,9 @@ export async function fetchMempoolTransactions(offset: number = 0): Promise<Memp
 		console.error('Error fetching mempool transactions:', error);
 		return [];
 	}
+}
+
+export function decodeBigInt(register: string): bigint {
+	const parsed = parse<bigint>(register);
+	return parsed;
 }

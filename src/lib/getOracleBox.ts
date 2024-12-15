@@ -1,6 +1,6 @@
-import { ORACLE_ERG_USD_NFT, TOKEN_BANK_NFT } from './api/ergoNode';
+import { ORACLE_ERG_USD_NFT, TOKEN_BANK_NFT, type Output, type OutputString } from './api/ergoNode';
 
-function boxToStrVal(box: ExplorerOutput): ExplorerOutputString {
+function boxToStrVal(box: Output): OutputString {
 	let newBox = JSON.parse(JSON.stringify(box));
 	newBox.value = newBox.value.toString();
 
@@ -94,22 +94,22 @@ export type ExplorerOutputStringCustom = {
 	mainChain: boolean;
 };
 
-export async function getOracleBox(): Promise<ExplorerOutputString> {
+export async function getOracleBox(): Promise<OutputString> {
 	const resp = await fetch(
-		`https://api.ergoplatform.com/api/v1/boxes/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
+		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
 	);
 	let data = await resp.json();
-	let oracleBox = data.items[0];
+	let oracleBox = data[0];
 	oracleBox = boxToStrVal(oracleBox);
 	return oracleBox;
 }
 
-export async function getBankBox(): Promise<ExplorerOutputString> {
+export async function getBankBox(): Promise<OutputString> {
 	const resp = await fetch(
-		`https://api.ergoplatform.com/api/v1/boxes/unspent/byTokenId/${TOKEN_BANK_NFT}`
+		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${TOKEN_BANK_NFT}`
 	);
 	let data = await resp.json();
-	let bankBox = data.items[0];
+	let bankBox = data[0];
 	bankBox = boxToStrVal(bankBox);
 	return bankBox;
 }

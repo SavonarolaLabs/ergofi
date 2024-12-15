@@ -18,7 +18,8 @@
 		SIGUSD_BANK_ADDRESS,
 		TOKEN_BANK_NFT,
 		TOKEN_SIGRSV,
-		TOKEN_SIGUSD
+		TOKEN_SIGUSD,
+		type OutputString
 	} from '$lib/api/ergoNode';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
@@ -50,8 +51,8 @@
 	const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 	// TODO: type definition for OracleBox
-	const oracle_box = writable<ExplorerOutputString>();
-	const bank_box = writable<ExplorerOutputString>();
+	const oracle_box = writable<OutputString>();
+	const bank_box = writable<OutputString>();
 
 	type Currency = 'ERG' | 'SigUSD';
 	type LastUserInput = 'From' | 'To';

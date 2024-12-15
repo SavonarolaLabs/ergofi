@@ -22,7 +22,8 @@
 		SIGUSD_BANK_ADDRESS,
 		TOKEN_BANK_NFT,
 		TOKEN_SIGRSV,
-		TOKEN_SIGUSD
+		TOKEN_SIGUSD,
+		type Output
 	} from '$lib/api/ergoNode';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';

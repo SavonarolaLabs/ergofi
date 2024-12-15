@@ -1,4 +1,5 @@
 import { decodeBigInt, TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset, type Output } from './api/ergoNode';
+import { absBigInt, maxBigInt, minBigInt } from './utils';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -100,14 +101,7 @@ export function calculateSigUsdRateWithFeeReversed(
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
-	//-----------------------------------------
-	// const c = BigNumber((FEE_DENOM + FEE * direction).toString());
-	// const b = BigNumber(scNominalPrice.toString()).multipliedBy(c);
-	// const a = BigNumber((requestErg * FEE_DENOM).toString());
-	// const x = a.dividedBy(b);
-	// const requestSC = BigInt(x.toFixed(0));
 	const requestSC = (requestErg * FEE_DENOM) / (scNominalPrice * (FEE_DENOM + FEE * direction));
-	//const requestSC = (requestErg * FEE_DENOM) / (scNominalPrice * FEE_DENOM);
 
 	// 2 more params
 	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
@@ -117,66 +111,20 @@ export function calculateSigUsdRateWithFeeReversed(
 	return { rateSCERG, fee, requestSC }; //cents for nanoerg
 }
 
-// Новая функция для SigRSV, принимающая Total на вход
-export function calculateSigRsvRateWithFeeFromErg(
-	inErg: bigint,
-	inCircSigUSD: bigint,
-	inCircSigRSV: bigint,
-	oraclePrice: bigint,
-	ergRequest: bigint,
-	direction: bigint
-): { rateRSVERG: number; fee: bigint; requestRSV: bigint } {
-	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
-	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-
-	const equityIn = inErg - liabilitiesIn;
-	const equityRate = equityIn / inCircSigRSV; // nanoergs per RSV
-
-	const feeMultiplierNumerator = FEE_DENOM + direction * FEE;
-	const feeMultiplierDenominator = FEE_DENOM;
-
-	const bcDeltaExpected = (ergRequest * feeMultiplierDenominator) / feeMultiplierNumerator;
-	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
-	const requestRSV = bcDeltaExpected / equityRate;
-
-	const rateRSVERG = Number(requestRSV) / Number(ergRequest);
-
-	return { rateRSVERG, fee, requestRSV };
-}
-
 // Вспомогательные функции
-function minBigInt(...args: bigint[]) {
-	return args.reduce((min, current) => (current < min ? current : min));
-}
-function maxBigInt(...args: bigint[]) {
-	return args.reduce((max, current) => (current > max ? current : max));
-}
-function absBigInt(arg: bigint) {
-	return arg >= 0n ? arg : -arg;
-}
 
 export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
 	const inErg = BigInt(bankBox.value);
-	console.log('🚀 ~ inErg:', inErg);
-
 	const inSigUSD = BigInt(
 		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
 	);
-	console.log('🚀 ~ inSigUSD:', inSigUSD);
-
 	const inSigRSV = BigInt(
 		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
 	);
-	console.log('🚀 ~ inSigRSV:', inSigRSV);
-
 	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
-	console.log('🚀 ~ inCircSigUSD:', inCircSigUSD);
 	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
-	console.log('🚀 ~ inCircSigRSV:', inCircSigRSV);
-
 	// ORACLE PRICE / 100n
 	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
-	console.log('🚀 ~ oraclePrice:', oraclePrice);
 
 	return {
 		inErg,
@@ -190,74 +138,29 @@ export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxe
 	};
 }
 
-function calculateOutputRsv(
-	inErg: bigint,
-	inSigUSD: bigint,
-	inSigRSV: bigint,
-	inCircSigUSD: bigint,
-	inCircSigRSV: bigint,
-	requestRSV: bigint,
-	rateWithFee: number,
-	direction: bigint
-) {
-	const requestErg = BigInt(Math.floor(Number(requestRSV) / rateWithFee));
-	console.log('🚀 ~ requestErg:', requestErg);
-	console.log('🚀 ~ requestRSV:', requestRSV);
-
-	const outErg = inErg + direction * requestErg;
-	console.log('🚀 ~ inErg:', inErg);
-	console.log('🚀 ~ outErg:', outErg);
-
-	const outSigRSV = inSigRSV - direction * requestRSV;
-	console.log('🚀 ~ outSigRSV:', outSigRSV);
-
-	const outCircSigRSV = inCircSigRSV + direction * requestRSV;
-	console.log('🚀 ~ outCircSigRSV:', outCircSigRSV);
-
-	const outSigUSD = inSigUSD;
-	const outCircSigUSD = inCircSigUSD;
-
-	return {
-		requestErg,
-		outErg,
-		outSigUSD,
-		outSigRSV,
-		outCircSigUSD,
-		outCircSigRSV
-	};
-}
-
-function calculateOutputSc(
+export function calculateOutputSc(
 	inErg: bigint,
 	inSigUSD: bigint,
 	inSigRSV: bigint,
 	inCircSigUSD: bigint,
 	inCircSigRSV: bigint,
 	requestSC: bigint,
-	rateWithFee: number,
+	requestErg: bigint,
 	direction: bigint
-) {
-	const requestErg = BigInt(Math.floor(Number(requestSC) / rateWithFee)); // nanoerg
-	console.log('---------EXCHANGE----------');
-	console.log('🚀 ~ requestErg:', requestErg, ' | nanoergs');
-	console.log('🚀 ~ requestSC:', requestSC, ' | cents');
-	console.log('                          ');
-
-	// Bank out
-	const outErg = inErg + requestErg * direction; //
-	console.log('inErg:', inErg, ' + requestErg:', requestErg, ' = outErg:', outErg);
-
-	const outSigUSD = inSigUSD - requestSC * direction; //
-	console.log('inSigUSD:', inSigUSD, ' -requestSC:', requestSC, ' = outSigUSD:', outSigUSD);
-
+): {
+	outErg: bigint;
+	outSigUSD: bigint;
+	outSigRSV: bigint;
+	outCircSigUSD: bigint;
+	outCircSigRSV: bigint;
+} {
+	const outErg = inErg + requestErg * direction;
+	const outSigUSD = inSigUSD - requestSC * direction;
 	const outCircSigUSD = inCircSigUSD + requestSC * direction;
-	console.log('🚀 ~ outCircSigUSD:', outCircSigUSD);
-
 	const outSigRSV = inSigRSV;
 	const outCircSigRSV = inCircSigRSV;
 
 	return {
-		requestErg,
 		outErg,
 		outSigUSD,
 		outSigRSV,

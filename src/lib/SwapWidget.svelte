@@ -9,6 +9,7 @@
 	} from '@fleet-sdk/core';
 	import BigNumber from 'bignumber.js';
 	import {
+		calculateOutputSc,
 		calculateSigUsdRateWithFee,
 		calculateSigUsdRateWithFeeFromErg,
 		calculateSigUsdRateWithFeeReversed,
@@ -526,31 +527,6 @@
 		unsignedMintTransaction.dataInputs = [oracleBox];
 
 		return unsignedMintTransaction;
-	}
-
-	function calculateOutputSc(
-		inErg: bigint,
-		inSigUSD: bigint,
-		inSigRSV: bigint,
-		inCircSigUSD: bigint,
-		inCircSigRSV: bigint,
-		requestSC: bigint,
-		requestErg: bigint,
-		direction: bigint
-	) {
-		const outErg = inErg + requestErg * direction;
-		const outSigUSD = inSigUSD - requestSC * direction;
-		const outCircSigUSD = inCircSigUSD + requestSC * direction;
-		const outSigRSV = inSigRSV;
-		const outCircSigRSV = inCircSigRSV;
-
-		return {
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		};
 	}
 
 	// (f2) BUY USD --> SELL ERG (From Finall USD AMOUNT)

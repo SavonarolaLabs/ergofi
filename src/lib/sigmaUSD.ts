@@ -4,6 +4,7 @@ import {
 	type ExplorerOutputStringCustom
 } from './getOracleBox';
 import { TOKEN_SIGRSV, TOKEN_SIGUSD } from './api/ergoNode';
+import BigNumber from 'bignumber.js';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -35,11 +36,11 @@ export function calculateSigUsdRateWithFee(
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
 
-	const bcDeltaExpected = scNominalPrice * requestSC;
+	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
 	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
 
 	const bcDeltaExpectedWithFee = bcDeltaExpected + fee * direction;
-	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee);
+	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee); // X
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
@@ -99,25 +100,26 @@ export function calculateSigUsdRateWithFeeReversed(
 	requestErg: bigint,
 	direction: bigint
 ): { rateSCERG: number; fee: bigint; requestSC: bigint } {
+	//------------- STABLE PART ---------------
 	let rateSCERG: number;
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	//console.log(oraclePrice, ' +Reserve BC:', bcReserveNeededIn);
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
+	//-----------------------------------------
+	// const c = BigNumber((FEE_DENOM + FEE * direction).toString());
+	// const b = BigNumber(scNominalPrice.toString()).multipliedBy(c);
+	// const a = BigNumber((requestErg * FEE_DENOM).toString());
+	// const x = a.dividedBy(b);
+	// const requestSC = BigInt(x.toFixed(0));
+	const requestSC = (requestErg * FEE_DENOM) / (scNominalPrice * (FEE_DENOM + FEE * direction));
+	//const requestSC = (requestErg * FEE_DENOM) / (scNominalPrice * FEE_DENOM);
 
-	// STEP 1 -> -FEE
-	//const requestErg = 1n; // <-------- INITIAL
-	const bcDeltaExpected = (requestErg * FEE_DENOM) / (FEE_DENOM + direction * FEE);
-	// STEP 2 -> requestSC
-	const requestSC = bcDeltaExpected / scNominalPrice;
+	// 2 more params
+	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
 	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
-
 	rateSCERG = Number(requestSC) / Number(requestErg);
-	// console.log('                          ');
-	// console.log('----------FINAL-----------');
-	// console.log('🚀 ~ rateSCERG:', rateSCERG);
-	// console.log('                          ');
+
 	return { rateSCERG, fee, requestSC }; //cents for nanoerg
 }
 

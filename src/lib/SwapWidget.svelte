@@ -370,15 +370,17 @@
 		direction: bigint
 	): any {
 		//Part 0 - use Fee
-		const { uiSwapFee, contractERG: contractErg } = applyFee(inputErg);
+		let uiSwapFee;
 
+		const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg);
+		uiSwapFee = abc;
 		// //---- DEBUG Fee ----
 		// console.log(inputErg, ' inputErg');
 		// console.log(contractErg, ' contractErg');
 		// console.log(uiSwapFee, ' uiSwapFee');
 		// console.log(feeMining, ' feeMining');
 		// console.log('Total = Total?', inputErg == contractErg + uiSwapFee + feeMining);
-		// //RESULT: VALID
+		// //DEBUG RESULT: VALID
 
 		//Part 1 - Get Oracle
 		await fetchLatestOracleAndBankBox();
@@ -402,6 +404,32 @@
 			direction
 		);
 
+		//---- DEBUG Price Calculation ----
+		//Part 2 - Calculate Price ()
+		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		console.log(
+			contractRate,
+			' vs ',
+			contractRateCompare,
+			' contractRate ',
+			contractRate == contractRateCompare
+		);
+
+		console.log(
+			contractErg,
+			' vs ',
+			contractErgCompare,
+			' contractErg ',
+			contractErg == contractErgCompare
+		);
+
+		//Adjust fee
+		if (contractErg > contractErgCompare)
+			uiSwapFee = uiSwapFee + (-contractErgCompare + contractErg);
+		// //DEBUG RESULT: Need to Fix:   ----------------------
+
 		//Part 3 - Calculate BankBox
 		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
 			inErg,
@@ -410,14 +438,14 @@
 			inCircSigUSD,
 			inCircSigRSV,
 			contractUSD,
-			contractErg,
+			contractErgCompare,
 			direction
 		);
 
 		//Part 4 - Calculate TX
 		const unsignedMintTransaction = buildErgUSDTx(
 			direction,
-			contractErg,
+			contractErgCompare,
 			contractUSD,
 			holderBase58PK,
 			bankBase58PK,
@@ -739,7 +767,9 @@
 		direction: bigint
 	): any {
 		//Part 0 - use Fee
-		const { uiSwapFee, contractERG: contractErg } = applyFeeSell(inputErg);
+		let uiSwapFee;
+		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
+		uiSwapFee = abc;
 
 		//Part 1 - Get Oracle
 		await fetchLatestOracleAndBankBox();
@@ -754,7 +784,7 @@
 			oracleBox
 		} = await extractBoxesData($oracle_box, $bank_box);
 
-		//Part 2 - Calculate Price (Potential Error)
+		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
 			inErg,
 			inCircSigUSD,
@@ -762,6 +792,33 @@
 			contractErg,
 			direction
 		);
+
+		//---- DEBUG Price Calculation ----
+		//Part 2 - Calculate Price ()
+		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		console.log(
+			contractRate,
+			' vs ',
+			contractRateCompare,
+			' contractRate ',
+			contractRate == contractRateCompare
+		);
+
+		console.log(
+			contractErg,
+			' vs ',
+			contractErgCompare,
+			' contractErg ',
+			contractErg == contractErgCompare
+		);
+
+		//TODO: Change Price Calculations with same logic
+		//Adjust fee (-) cause sell
+		if (contractErg < contractErgCompare)
+			uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
+		// //DEBUG RESULT: Need to Fix:
 
 		//Part 3 - Calculate BankBox
 		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
@@ -771,14 +828,14 @@
 			inCircSigUSD,
 			inCircSigRSV,
 			contractUSD,
-			contractErg,
+			contractErgCompare,
 			direction
 		);
 
 		//Part 4 - Calculate TX
 		const unsignedMintTransaction = buildErgUSDTx(
 			direction,
-			contractErg,
+			contractErgCompare,
 			contractUSD,
 			holderBase58PK,
 			bankBase58PK,

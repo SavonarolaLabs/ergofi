@@ -919,6 +919,6 @@
 		on:click={handleSwapButton}
 		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
 	>
-		Swap / Connect Wallet
+		Swap
 	</button>
 </div>

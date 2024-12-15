@@ -16,16 +16,16 @@
 		type OracleBoxesData
 	} from './sigmaUSD';
 	import {
+		getBankBox,
+		getOracleBox,
 		SIGUSD_BANK_ADDRESS,
 		TOKEN_BANK_NFT,
 		TOKEN_SIGRSV,
-		TOKEN_SIGUSD,
-		type OutputString
+		TOKEN_SIGUSD
 	} from '$lib/api/ergoNode';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
-	import { getBankBox, getOracleBox, type ExplorerOutputString } from './getOracleBox';
 	import { ergStringToNanoErgBigInt, usdStringToCentBigInt } from './utils';
 
 	onMount(async () => {
@@ -52,8 +52,8 @@
 	const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 	// TODO: type definition for OracleBox
-	const oracle_box = writable<OutputString>();
-	const bank_box = writable<OutputString>();
+	const oracle_box = writable<Output>();
+	const bank_box = writable<Output>();
 
 	type Currency = 'ERG' | 'SigUSD';
 	type LastUserInput = 'From' | 'To';

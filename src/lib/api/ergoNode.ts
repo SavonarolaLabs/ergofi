@@ -76,28 +76,12 @@ export type Asset = {
 	amount: number;
 };
 
-export type AssetString = {
-	tokenId: string;
-	amount: string;
-};
-
 export type Output = {
 	boxId: string;
 	value: number;
 	ergoTree: string;
 	creationHeight: number;
 	assets: Asset[];
-	additionalRegisters: Record<string, string>;
-	transactionId: string;
-	index: number;
-};
-
-export type OutputString = {
-	boxId: string;
-	value: string;
-	ergoTree: string;
-	creationHeight: number;
-	assets: AssetString[];
 	additionalRegisters: Record<string, string>;
 	transactionId: string;
 	index: number;
@@ -133,6 +117,24 @@ export async function fetchMempoolTransactions(offset: number = 0): Promise<Memp
 		console.error('Error fetching mempool transactions:', error);
 		return [];
 	}
+}
+
+export async function getOracleBox(): Promise<Output> {
+	const resp = await fetch(
+		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
+	);
+	let data = await resp.json();
+	let oracleBox = data[0];
+	return oracleBox;
+}
+
+export async function getBankBox(): Promise<Output> {
+	const resp = await fetch(
+		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${TOKEN_BANK_NFT}`
+	);
+	let data = await resp.json();
+	let bankBox = data[0];
+	return bankBox;
 }
 
 export function decodeBigInt(register: string): bigint {

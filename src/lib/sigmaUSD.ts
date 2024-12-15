@@ -1,10 +1,4 @@
-import {
-	decodeBigInt,
-	TOKEN_SIGRSV,
-	TOKEN_SIGUSD,
-	type AssetString,
-	type OutputString
-} from './api/ergoNode';
+import { decodeBigInt, TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset, type Output } from './api/ergoNode';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -13,8 +7,8 @@ export type OracleBoxesData = {
 	inCircSigUSD: bigint;
 	inCircSigRSV: bigint;
 	oraclePrice: bigint;
-	bankBox: OutputString;
-	oracleBox: OutputString;
+	bankBox: Output;
+	oracleBox: Output;
 };
 
 const FEE = 200n;
@@ -161,17 +155,17 @@ function absBigInt(arg: bigint) {
 	return arg >= 0n ? arg : -arg;
 }
 
-export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString): OracleBoxesData {
+export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
 	const inErg = BigInt(bankBox.value);
 	console.log('🚀 ~ inErg:', inErg);
 
 	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: AssetString) => asset.tokenId == TOKEN_SIGUSD)!.amount
+		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
 	);
 	console.log('🚀 ~ inSigUSD:', inSigUSD);
 
 	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: AssetString) => asset.tokenId == TOKEN_SIGRSV)!.amount
+		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
 	);
 	console.log('🚀 ~ inSigRSV:', inSigRSV);
 

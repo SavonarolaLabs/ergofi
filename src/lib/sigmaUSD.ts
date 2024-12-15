@@ -1,9 +1,4 @@
 import {
-	type ExplorerAssetString,
-	type ExplorerOutputString,
-	type ExplorerOutputStringCustom
-} from './getOracleBox';
-import {
 	decodeBigInt,
 	TOKEN_SIGRSV,
 	TOKEN_SIGUSD,
@@ -18,8 +13,8 @@ export type OracleBoxesData = {
 	inCircSigUSD: bigint;
 	inCircSigRSV: bigint;
 	oraclePrice: bigint;
-	newBankBox: ExplorerOutputStringCustom;
-	oracleBox: ExplorerOutputString;
+	bankBox: OutputString;
+	oracleBox: OutputString;
 };
 
 const FEE = 200n;
@@ -166,7 +161,7 @@ function absBigInt(arg: bigint) {
 	return arg >= 0n ? arg : -arg;
 }
 
-export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString) {
+export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString): OracleBoxesData {
 	const inErg = BigInt(bankBox.value);
 	console.log('🚀 ~ inErg:', inErg);
 
@@ -185,10 +180,6 @@ export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString)
 	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
 	console.log('🚀 ~ inCircSigRSV:', inCircSigRSV);
 
-	let newBankBox: ExplorerOutputStringCustom = JSON.parse(JSON.stringify(bankBox));
-	newBankBox.additionalRegisters.R4 = bankBox.additionalRegisters.R4;
-	newBankBox.additionalRegisters.R5 = bankBox.additionalRegisters.R5;
-
 	// ORACLE PRICE / 100n
 	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
 	console.log('🚀 ~ oraclePrice:', oraclePrice);
@@ -200,7 +191,7 @@ export function extractBoxesData(oracleBox: OutputString, bankBox: OutputString)
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox: newBankBox,
+		bankBox,
 		oracleBox
 	};
 }

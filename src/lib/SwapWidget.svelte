@@ -12,7 +12,8 @@
 		calculateSigUsdRateWithFee,
 		calculateSigUsdRateWithFeeFromErg,
 		calculateSigUsdRateWithFeeReversed,
-		extractBoxesData
+		extractBoxesData,
+		type OracleBoxesData
 	} from './sigmaUSD';
 	import {
 		SIGUSD_BANK_ADDRESS,
@@ -394,7 +395,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData($oracle_box, $bank_box);
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
@@ -605,7 +606,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData($oracle_box, $bank_box);
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
@@ -690,7 +691,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData($oracle_box, $bank_box);
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
@@ -783,7 +784,7 @@
 			oraclePrice,
 			bankBox,
 			oracleBox
-		} = await extractBoxesData($oracle_box, $bank_box);
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
 		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(

@@ -29,6 +29,7 @@
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
 	import { ergStringToNanoErgBigInt, usdStringToCentBigInt } from './utils';
+	import { reserve_rate } from './stores/bank';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -71,6 +72,51 @@
 	let lastInput: LastUserInput = 'From';
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
+
+	// Reserve Rate
+	function calculateReserveRate(inErg: bigint, inCircSigUSD: bigint, oraclePrice: bigint): number {
+		console.log(inErg, 'inErg');
+		console.log(oraclePrice, 'oraclePrice');
+
+		const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
+		const reserveRate = Number(
+			BigNumber(inErg.toString()) // nanoergi
+				.multipliedBy(oraclePriceErgCents)
+				.dividedBy(inCircSigUSD.toString())
+				.dividedBy(10 ** 9)
+				.multipliedBy(100)
+				.toFixed(0)
+		);
+
+		const leftBoarderValue = 400;
+		let leftBoarderDelta;
+		const rightBoarderValue = 800;
+		let rightBoarderDelta;
+
+		if (reserveRate > leftBoarderValue) {
+			const a = BigNumber(leftBoarderValue.toString())
+				.multipliedBy(inCircSigUSD.toString())
+				.minus(BigNumber(inErg.toString()).multipliedBy(oraclePriceErgCents));
+			const b = oraclePriceErgCents.plus(
+				BigNumber(leftBoarderValue.toString()).multipliedBy(oraclePriceErgCents)
+			);
+			leftBoarderDelta = a.dividedBy(b).dividedBy(10 ** 9);
+		}
+		console.log('leftBoarderDelta ', leftBoarderDelta?.toFixed());
+
+		if (reserveRate < rightBoarderValue) {
+			const a = BigNumber(rightBoarderValue.toString())
+				.multipliedBy(inCircSigUSD.toString())
+				.minus(BigNumber(inErg.toString()).multipliedBy(oraclePriceErgCents));
+			const b = oraclePriceErgCents.plus(
+				BigNumber(rightBoarderValue.toString()).multipliedBy(oraclePriceErgCents)
+			);
+			rightBoarderDelta = a.dividedBy(b).dividedBy(10 ** 9);
+		}
+		console.log('rightBoarderDelta ', rightBoarderDelta?.toFixed());
+
+		return reserveRate;
+	}
 
 	// Fee Block
 	function applyFee(inputERG: bigint) {
@@ -124,6 +170,7 @@
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
 		oraclePriceSigUsd.set(oraclePrice);
+		reserve_rate.set(calculateReserveRate($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd));
 	}
 
 	function recalculateInputsOnCurrencyChange() {

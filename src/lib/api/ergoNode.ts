@@ -119,18 +119,38 @@ export async function fetchMempoolTransactions(offset: number = 0): Promise<Memp
 	}
 }
 
+const knownPeers = [
+	'213.239.193.208:9053',
+	'159.65.11.55:9053',
+	'165.227.26.175:9053',
+	'159.89.116.15:9053',
+	'136.244.110.145:9053',
+	'94.130.108.35:9053',
+	'51.75.147.1:9053',
+	'221.165.214.185:9053',
+	'217.182.197.196:9053',
+	'173.212.220.9:9053',
+	'176.9.65.58:9053',
+	'213.152.106.56:9053'
+];
+const index = 0;
+
 export async function getOracleBox(): Promise<Output> {
+	console.log('fetching Oracle box');
+	console.log('index,', knownPeers[index]);
 	const resp = await fetch(
-		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
+		`http://${knownPeers[index]}/blockchain/box/unspent/byTokenId/${ORACLE_ERG_USD_NFT}`
 	);
 	let data = await resp.json();
 	let oracleBox = data[0];
 	return oracleBox;
 }
+//66.94.127.1:9053/
+//213.239.193.208:9053/
 
 export async function getBankBox(): Promise<Output> {
 	const resp = await fetch(
-		`http://213.239.193.208:9053/blockchain/box/unspent/byTokenId/${TOKEN_BANK_NFT}`
+		`http://${knownPeers[index]}/blockchain/box/unspent/byTokenId/${TOKEN_BANK_NFT}`
 	);
 	let data = await resp.json();
 	let bankBox = data[0];

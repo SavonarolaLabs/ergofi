@@ -295,6 +295,10 @@
 		lastInput = 'To';
 	}
 
+	function handleFeeChange(event) {
+		feeMining = BigInt(Number(event.target.value) * 10 ** 9);
+		recalculateInputsOnCurrencyChange(); //TODO: To Amount Hadle
+	}
 	// (f1.price && f4.price)
 	function calculateInputsUsdErgFromAmount(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
@@ -987,6 +991,7 @@
 			max="1"
 			step="0.01"
 			bind:value={minerFee}
+			on:change={handleFeeChange}
 			class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-300 dark:bg-gray-700"
 		/>
 		<div class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">

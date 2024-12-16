@@ -29,7 +29,13 @@
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
 	import { ergStringToNanoErgBigInt, usdStringToCentBigInt } from './utils';
-	import { reserve_rate } from './stores/bank';
+	import {
+		reserve_boarder_left_ERG,
+		reserve_boarder_left_USD,
+		reserve_boarder_right_ERG,
+		reserve_boarder_right_USD,
+		reserve_rate
+	} from './stores/bank';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -74,12 +80,12 @@
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
 	// Reserve Rate
-	function calculateReserveRate(inErg: bigint, inCircSigUSD: bigint, oraclePrice: bigint): number {
+	function calculateReserveRate(inErg: bigint, inCircSigUSD: bigint, oraclePrice: bigint): any {
 		console.log(inErg, 'inErg');
 		console.log(oraclePrice, 'oraclePrice');
 
 		const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
-		const reserveRate = Number(
+		const reserveRateOld = Number(
 			BigNumber(inErg.toString()) // nanoergi
 				.multipliedBy(oraclePriceErgCents)
 				.dividedBy(inCircSigUSD.toString())
@@ -92,30 +98,39 @@
 		let leftBoarderDelta;
 		const rightBoarderValue = 800;
 		let rightBoarderDelta;
+		// Clear convert
+		const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
+		const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
+		const price = BigNumber(10 ** 9)
+			.dividedBy(BigNumber(oraclePrice.toString()))
+			.dividedBy(100); //convert to ERG / USD price
 
-		if (reserveRate > leftBoarderValue) {
-			const a = BigNumber(leftBoarderValue.toString())
-				.multipliedBy(inCircSigUSD.toString())
-				.minus(BigNumber(inErg.toString()).multipliedBy(oraclePriceErgCents));
-			const b = oraclePriceErgCents.plus(
-				BigNumber(leftBoarderValue.toString()).multipliedBy(oraclePriceErgCents)
-			);
-			leftBoarderDelta = a.dividedBy(b).dividedBy(10 ** 9);
+		const reserveRate = Number(
+			bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
+		);
+
+		const leftBorder = 4;
+		const rightBorder = 8;
+
+		function calculateBoarder(
+			boarder: number,
+			bankUSD: BigNumber,
+			bankERG: BigNumber,
+			price: BigNumber
+		) {
+			const a_Left = BigNumber(bankERG).multipliedBy(price);
+			const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
+			const delta_a_b_Left = a_Left.minus(b_Left);
+			const boarderUSD = delta_a_b_Left.dividedBy(boarder + 1);
+			return boarderUSD;
 		}
-		console.log('leftBoarderDelta ', leftBoarderDelta?.toFixed());
 
-		if (reserveRate < rightBoarderValue) {
-			const a = BigNumber(rightBoarderValue.toString())
-				.multipliedBy(inCircSigUSD.toString())
-				.minus(BigNumber(inErg.toString()).multipliedBy(oraclePriceErgCents));
-			const b = oraclePriceErgCents.plus(
-				BigNumber(rightBoarderValue.toString()).multipliedBy(oraclePriceErgCents)
-			);
-			rightBoarderDelta = a.dividedBy(b).dividedBy(10 ** 9);
-		}
-		console.log('rightBoarderDelta ', rightBoarderDelta?.toFixed());
+		const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
+		const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
+		const leftERG = Number(BigNumber(-leftUSD).dividedBy(price).toFixed(0));
+		const rightERG = Number(BigNumber(-rightUSD).dividedBy(price).toFixed(0));
 
-		return reserveRate;
+		return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 	}
 
 	// Fee Block
@@ -170,7 +185,16 @@
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
 		oraclePriceSigUsd.set(oraclePrice);
-		reserve_rate.set(calculateReserveRate($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd));
+		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRate(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd
+		);
+		reserve_rate.set(reserveRate);
+		reserve_boarder_left_USD.set(leftUSD);
+		reserve_boarder_left_ERG.set(leftERG);
+		reserve_boarder_right_USD.set(rightUSD);
+		reserve_boarder_right_ERG.set(rightERG);
 	}
 
 	function recalculateInputsOnCurrencyChange() {

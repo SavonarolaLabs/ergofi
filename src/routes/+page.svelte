@@ -5,12 +5,19 @@
 	import WalletButton from '$lib/WalletButton.svelte';
 	import TransactionHistory from '$lib/TransactionHistory.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
-	import { reserve_boarder_left, reserve_boarder_right, reserve_rate } from '$lib/stores/bank';
+	import {
+		reserve_boarder_left_ERG,
+		reserve_boarder_left_USD,
+		reserve_boarder_right_ERG,
+		reserve_boarder_right_USD,
+		reserve_rate
+	} from '$lib/stores/bank';
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-4 py-2">
 	<div class="flex space-x-4">
-		Reserve rate {$reserve_rate}%, left {$reserve_boarder_left}, right {$reserve_boarder_right}
+		Reserve rate {$reserve_rate}%, 400% = USD:{$reserve_boarder_left_USD} | ERG:{$reserve_boarder_left_ERG},
+		800% = USD:{$reserve_boarder_right_USD} | ERG:{$reserve_boarder_right_ERG}
 	</div>
 
 	<div class="flex gap-2">

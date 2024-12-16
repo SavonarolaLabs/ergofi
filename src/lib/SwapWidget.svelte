@@ -887,6 +887,12 @@
 		ERG: 'bg-orange-500',
 		SigUSD: 'bg-green-500'
 	};
+
+	let minerFee = 0.01;
+	let showFeeSlider = false;
+	const toggleFeeSlider = () => {
+		showFeeSlider = !showFeeSlider;
+	};
 </script>
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
@@ -962,7 +968,32 @@
 		</div>
 	</div>
 
-	<div class="my-4 flex w-full justify-end pr-4 text-blue-500">Fee Settings</div>
+	<!-- Fee Settings -->
+	<div class="flex w-full justify-end">
+		<button class="my-4 flex cursor-pointer pr-4 text-blue-500" on:click={toggleFeeSlider}>
+			{#if showFeeSlider}
+				Hide Fee Settings
+			{:else}
+				Fee Settings
+			{/if}
+		</button>
+	</div>
+	<div
+		class={`overflow-hidden transition-all duration-300 ${showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'}`}
+	>
+		<input
+			type="range"
+			min="0.01"
+			max="1"
+			step="0.01"
+			bind:value={minerFee}
+			class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-300 dark:bg-gray-700"
+		/>
+		<div class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+			Miner Fee: {minerFee.toFixed(2)} ERG
+		</div>
+	</div>
+
 	<!-- Swap Button -->
 	<button
 		on:click={handleSwapButton}

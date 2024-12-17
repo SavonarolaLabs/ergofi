@@ -12,6 +12,7 @@
 		reserve_boarder_right_USD,
 		reserve_rate
 	} from '$lib/stores/bank';
+	import LoanWidget from '$lib/LoanWidget.svelte';
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-4 py-2">
@@ -25,7 +26,7 @@
 		<WalletButton></WalletButton>
 	</div>
 </nav>
-
+<LoanWidget></LoanWidget>
 <div class="flex h-full pb-10">
 	<div class="flex grow items-end justify-start">
 		<BankHistoryWidget></BankHistoryWidget>

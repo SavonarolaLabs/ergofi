@@ -1,128 +1,90 @@
 <script lang="ts">
-	import { createLoan } from './loans';
+	import { TransactionFactory } from './transactionFactory'; // Импортируем TransactionFactory
+	import type { OpenOrderParams } from './plugins'; // Импортируем тип параметров
 	import { writable } from 'svelte/store';
 
-	// Переменные для формы
-	let showModal: boolean = false;
-	let amount: string = ''; // Сумма займа (ввод в ERG, конвертация в nanoERG)
-	let repayment: string = ''; // Сумма погашения
-	let term: number = 0; // Срок займа (в блоках)
-	let collateral: string = ''; // Обеспечение (в ERG)
-	let loading: boolean = false;
-	let error: string = '';
+	// UI переменные
+	let showModal = false;
+	let amount = '';
+	let repayment = '';
+	let term = 0;
+	let collateral = '';
+	let loading = false;
+	let error = '';
 
-	// Жестко заданный тип займа (строковый литерал)
-	const loanType: 'on-close' | 'fixed-height' = 'on-close'; // Фиксированный тип займа
-	const tokenId: string = 'ERG'; // Идентификатор токена (пример с ERG)
+	async function handleCreateTransaction() {
+		loading = true;
+		error = '';
+		try {
+			// Формируем параметры для ордера
+			const orderParams: Omit<OpenOrderParams, 'borrower'> = {
+				type: 'on-close',
+				loan: {
+					amount: BigInt(Number(amount) * 1e9), // ERG в NanoERG
+					repayment: BigInt(Number(repayment) * 1e9), // Repayment
+					tokenId: 'ERG'
+				},
+				maturityLength: term,
+				collateral: {
+					nanoErgs: BigInt(Number(collateral) * 1e9)
+				}
+			};
 
-	// Сброс формы после успешного создания займа или отмены
-	const resetForm = () => {
+			// Создаем ордер через TransactionFactory
+			const txId = await TransactionFactory.openOrder(orderParams);
+
+			alert(`Transaction created successfully! TX ID: ${txId}`);
+			resetForm();
+			showModal = false;
+		} catch (err) {
+			error = 'Failed to create transaction. Check the console for details.';
+			console.error(err);
+		} finally {
+			loading = false;
+		}
+	}
+
+	function resetForm() {
 		amount = '';
 		repayment = '';
 		term = 0;
 		collateral = '';
-		error = '';
-	};
-
-	// Обработчик создания займа
-	async function handleCreateLoan() {
-		loading = true; // Включаем состояние загрузки
-		error = ''; // Сбрасываем ошибки
-		try {
-			// Преобразуем данные формы для передачи в createLoan
-			const loanParams = {
-				type: loanType,
-				amount: BigInt(Number(amount) * 1e9), // Конвертация из ERG в nanoERG
-				repayment: BigInt(Number(repayment) * 1e9), // Погашение в nanoERG
-				tokenId,
-				maturityLength: term,
-				collateral: BigInt(Number(collateral) * 1e9) // Обеспечение в nanoERG
-			};
-
-			// Вызываем функцию для создания займа
-			const txId = await createLoan(loanParams);
-			alert(`Loan created successfully! Transaction ID: ${txId}`);
-			showModal = false; // Закрываем модальное окно
-			resetForm(); // Сбрасываем форму
-		} catch (err) {
-			error = 'Failed to create loan. Check console for details.'; // Выводим ошибку
-			console.error(err);
-		} finally {
-			loading = false; // Отключаем состояние загрузки
-		}
 	}
 </script>
 
-<!-- Кнопка открытия формы -->
-<button
-	on:click={() => (showModal = true)}
-	class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
->
-	Add New Loan
+<!-- UI -->
+<button on:click={() => (showModal = true)} class="rounded bg-blue-500 px-4 py-2 text-white">
+	Create Order
 </button>
 
-<!-- Модальное окно -->
 {#if showModal}
 	<div class="modal">
 		<div class="modal-content">
-			<h2 class="mb-4 text-lg font-bold">New Loan Request</h2>
+			<h2>Create a New Loan Order</h2>
+			<label for="amount">Loan Amount (ERG)</label>
+			<input id="amount" type="number" bind:value={amount} min="0.1" step="0.1" />
 
-			<!-- Поле ввода Amount -->
-			<label for="amount">Amount (ERG)</label>
-			<input
-				id="amount"
-				type="number"
-				placeholder="0.00"
-				class="input"
-				bind:value={amount}
-				min="0"
-				step="0.01"
-			/>
+			<label for="repayment">Repayment (ERG)</label>
+			<input id="repayment" type="number" bind:value={repayment} min="0.1" step="0.1" />
 
-			<!-- Поле ввода Repayment Amount -->
-			<label for="repayment">Repayment Amount (ERG)</label>
-			<input
-				id="repayment"
-				type="number"
-				placeholder="0.00"
-				class="input"
-				bind:value={repayment}
-				min="0"
-				step="0.01"
-			/>
+			<label for="term">Term (Blocks)</label>
+			<input id="term" type="number" bind:value={term} min="1" step="1" />
 
-			<!-- Поле ввода Term -->
-			<label for="term">Term (blocks)</label>
-			<input id="term" type="number" placeholder="0" class="input" bind:value={term} min="0" />
-
-			<!-- Поле ввода Collateral -->
 			<label for="collateral">Collateral (ERG)</label>
-			<input
-				id="collateral"
-				type="number"
-				placeholder="0.00"
-				class="input"
-				bind:value={collateral}
-				min="0"
-				step="0.01"
-			/>
+			<input id="collateral" type="number" bind:value={collateral} min="0.1" step="0.1" />
 
-			<!-- Отображение ошибки -->
 			{#if error}
-				<div class="mt-2 text-red-400">{error}</div>
+				<p class="text-red-500">{error}</p>
 			{/if}
 
-			<!-- Кнопки действий -->
-			<div class="actions">
-				<button on:click={() => (showModal = false)} class="text-gray-400 hover:text-gray-300">
-					CANCEL
-				</button>
+			<div class="flex justify-end space-x-2">
+				<button on:click={() => (showModal = false)} class="text-gray-400">Cancel</button>
 				<button
-					on:click={handleCreateLoan}
-					class="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+					on:click={handleCreateTransaction}
+					class="rounded bg-green-500 px-4 py-2 text-white"
 					disabled={loading}
 				>
-					{#if loading}Loading...{:else}CONFIRM{/if}
+					{loading ? 'Processing...' : 'Confirm'}
 				</button>
 			</div>
 		</div>
@@ -131,41 +93,29 @@
 
 <style>
 	.modal {
+		background: rgba(0, 0, 0, 0.6);
 		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
+		inset: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		z-index: 1000;
 	}
 	.modal-content {
-		background: #1e1e2f;
+		background: #333;
 		color: white;
 		padding: 1.5rem;
 		border-radius: 8px;
-		width: 90%;
-		max-width: 400px;
-		z-index: 1001;
-	}
-	button {
-		cursor: pointer;
-	}
-	.input {
 		width: 100%;
-		margin-bottom: 1rem;
-		padding: 0.5rem;
-		background: #2b2b3a;
-		border: 1px solid #444;
-		border-radius: 4px;
-		color: white;
+		max-width: 400px;
 	}
-	.actions {
-		display: flex;
-		justify-content: space-between;
-		margin-top: 1rem;
+	input {
+		width: 100%;
+		padding: 0.5rem;
+		margin-bottom: 1rem;
+		background: #222;
+		color: white;
+		border: 1px solid #555;
+		border-radius: 4px;
 	}
 </style>

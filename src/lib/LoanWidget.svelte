@@ -31,9 +31,11 @@
 			};
 
 			// Создаем ордер через TransactionFactory
-			const txId = await TransactionFactory.openOrder(orderParams);
+			//const txId = await TransactionFactory.openOrder(orderParams);
+			const signedTx = await TransactionFactory.openOrder(orderParams);
 
-			alert(`Transaction created successfully! TX ID: ${txId}`);
+			alert(`Transaction created successfully! TX ID: ${signedTx}`);
+			console.log({ signedTx });
 			resetForm();
 			showModal = false;
 		} catch (err) {

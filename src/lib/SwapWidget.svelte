@@ -121,14 +121,14 @@
 			const a_Left = BigNumber(bankERG).multipliedBy(price);
 			const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
 			const delta_a_b_Left = a_Left.minus(b_Left);
-			const boarderUSD = delta_a_b_Left.dividedBy(boarder + 1);
+			const boarderUSD = delta_a_b_Left.dividedBy(boarder - 1);
 			return boarderUSD;
 		}
 
 		const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
 		const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
-		const leftERG = Number(BigNumber(-leftUSD).dividedBy(price).toFixed(0));
-		const rightERG = Number(BigNumber(-rightUSD).dividedBy(price).toFixed(0));
+		const leftERG = Number(BigNumber(leftUSD).dividedBy(price).toFixed(0));
+		const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
 
 		return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 	}

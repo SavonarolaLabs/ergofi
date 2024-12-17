@@ -14,11 +14,8 @@ import {
 	RepayPlugin
 } from './plugins';
 import type { OpenOrderParams } from './plugins';
-
-//import { MIN_FEE } from '@/constants';
+import { LOANS_MIN_FEE } from './loansConstants';
 //import { useChainStore, useWalletStore } from '@/stories';
-
-export const MIN_FEE = RECOMMENDED_MIN_FEE_VALUE * 2n;
 
 export const OPEN_ORDER_UI_FEE = 10000000n;
 const IMPLEMENTOR_ADDRESS = ErgoAddress.fromBase58(
@@ -31,7 +28,7 @@ export class TransactionFactory {
 		const unsignedTx = new TransactionBuilder(chain.height)
 			.from(inputs)
 			.extend(OpenOrderPlugin({ ...order, borrower: changeAddress }))
-			.payFee(MIN_FEE)
+			.payFee(LOANS_MIN_FEE)
 			.sendChangeTo(changeAddress)
 			.build()
 			.toEIP12Object();
@@ -44,7 +41,7 @@ export class TransactionFactory {
 		const unsignedTx = new TransactionBuilder(chain.height)
 			.from(inputs)
 			.extend(CancelOrderPlugin(box, changeAddress))
-			.payFee(MIN_FEE)
+			.payFee(LOANS_MIN_FEE)
 			.sendChangeTo(changeAddress)
 			.build()
 			.toEIP12Object();
@@ -64,7 +61,7 @@ export class TransactionFactory {
 					uiImplementor: IMPLEMENTOR_ADDRESS
 				})
 			)
-			.payFee(MIN_FEE)
+			.payFee(LOANS_MIN_FEE)
 			.sendChangeTo(changeAddress)
 			.build()
 			.toEIP12Object();
@@ -78,7 +75,7 @@ export class TransactionFactory {
 		const unsignedTx = new TransactionBuilder(chain.height)
 			.from(inputs)
 			.extend(LiquidatePlugin(box, changeAddress))
-			.payFee(MIN_FEE)
+			.payFee(LOANS_MIN_FEE)
 			.sendChangeTo(changeAddress)
 			.build()
 			.toEIP12Object();
@@ -92,7 +89,7 @@ export class TransactionFactory {
 		const unsignedTx = new TransactionBuilder(chain.height)
 			.from(inputs)
 			.extend(RepayPlugin(box))
-			.payFee(MIN_FEE)
+			.payFee(LOANS_MIN_FEE)
 			.sendChangeTo(changeAddress)
 			.build()
 			.toEIP12Object();

@@ -5,8 +5,7 @@ import type { Amount, TokenAmount, FleetPlugin } from '@fleet-sdk/core';
 
 import { blake2b256, hex } from '@fleet-sdk/crypto';
 import { parse, SByte, SColl, SGroupElement, SInt, SLong, SSigmaProp } from '@fleet-sdk/serializer';
-//import { ERG_TOKEN_ID } from '@/constants';
-export const ERG_TOKEN_ID = 'ERG';
+import { ERG_TOKEN_ID } from './loansConstants';
 
 export type OpenOrderType = 'on-close' | 'fixed-height';
 

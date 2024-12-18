@@ -435,8 +435,9 @@
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
-		//		const txId = await ergo.submit_tx(signed);
-		console.log(signed);
+		//const txId = await ergo.submit_tx(signed);
+		console.log({ signed });
+		//console.log({ txId });
 		//		console.log(txId);
 	}
 

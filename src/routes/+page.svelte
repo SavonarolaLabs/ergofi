@@ -3,7 +3,6 @@
 	import SwapWidget from '$lib/SwapWidget.svelte';
 	import BankHistoryWidget from '$lib/BankHistoryWidget.svelte';
 	import WalletButton from '$lib/WalletButton.svelte';
-	import TransactionHistory from '$lib/TransactionHistory.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
 	import {
 		reserve_boarder_left_ERG,
@@ -38,6 +37,5 @@
 	</div>
 </div>
 
-<TransactionHistory></TransactionHistory>
 <div class="mt-20"></div>
 <Elixir></Elixir>

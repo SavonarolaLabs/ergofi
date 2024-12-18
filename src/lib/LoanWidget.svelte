@@ -169,7 +169,7 @@
 							id="amount"
 							type="number"
 							bind:value={amount}
-							on:change={handleAmountChange}
+							on:input={handleAmountChange}
 							class="input h-12 w-full"
 							placeholder="0.00"
 						/>
@@ -202,7 +202,7 @@
 							id="term"
 							type="number"
 							bind:value={term}
-							on:change={handleTermChange}
+							on:input={handleTermChange}
 							class="input input-bordered w-full"
 							placeholder="0"
 							min="1"
@@ -230,7 +230,7 @@
 							id="interestRate"
 							type="number"
 							bind:value={interestRate}
-							on:change={handleInterestChange}
+							on:input={handleInterestChange}
 							class="input input-bordered w-full"
 							placeholder="0.00"
 							min="0.1"

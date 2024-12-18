@@ -5,21 +5,32 @@
 	import { ASSET_ICONS } from './maps/assetIcons';
 
 	const timeUnits = ['days', 'months'];
+	const BLOCKS_PER_DAY = 720; // Предположение
+	const ERG_PRICE = 2; // TODO: PRICE - ASSETS
 
 	let showModal = false;
-	let amount = '';
+	let amount = 0;
+	let amountInUsd = 0;
+	let interestRate = 0;
+	let interest = 0;
 	let repayment = '';
 	let term = 0;
+	let termInBlocks = 0;
 	let timeUnit = timeUnits[0]; // "days" по умолчанию
 	let collateral = '';
+	let collateralInUsd = 10; //TEST
+	let collateralRate = '420'; // TEST
 	let selectedAsset = VERIFIED_ASSETS[0].metadata.name;
 	let loading = false;
 	let error = '';
 
+	// геты
 	function getTokenId(assetName: string) {
 		return VERIFIED_ASSETS.find((asset) => asset.metadata.name === assetName)?.tokenId || '';
 	}
-
+	function getTokenDecimals(assetName: string) {
+		return VERIFIED_ASSETS.find((asset) => asset.metadata.name === assetName)?.decimals || '';
+	}
 	function getAssetIcon(assetName: string) {
 		const tokenId = getTokenId(assetName);
 		return `/asset-icons/${ASSET_ICONS[tokenId] || 'default.png'}`;
@@ -29,9 +40,7 @@
 		loading = true;
 		error = '';
 		try {
-			const blocksPerDay = 720;
-			const termInBlocks = timeUnit === 'days' ? term * blocksPerDay : term * blocksPerDay * 30;
-
+			//const termInBlocks = calculateMaturityBlocks();
 			const tokenId = getTokenId(selectedAsset);
 			const orderParams: Omit<OpenOrderParams, 'borrower'> = {
 				type: 'on-close',
@@ -58,6 +67,26 @@
 		}
 	}
 
+	async function handleAmountChange() {
+		calculateAmountInUSD();
+		calculateInterest();
+		calculateCollateralRate();
+	}
+	async function handleTermChange() {
+		termInBlocks = calculateMaturityBlocks();
+	}
+	async function handleTimeUnitChange() {
+		termInBlocks = calculateMaturityBlocks();
+	}
+	async function handleInterestChange() {
+		calculateInterest();
+		calculateCollateralRate();
+	}
+	async function handleCollateralChange() {
+		calculateCollateralInUsd();
+		calculateCollateralRate();
+	}
+
 	function resetForm() {
 		amount = '';
 		repayment = '';
@@ -65,6 +94,26 @@
 		collateral = '';
 		selectedAsset = VERIFIED_ASSETS[0].metadata.name;
 		timeUnit = 'days';
+	}
+
+	// вычисления
+	function calculateInterest() {
+		interest = (Number(interestRate) * Number(amount)) / 100; //Должна зависить от ассета который вычисляется (Decimals)
+	}
+	function calculateCollateralRate() {
+		//Test Function
+		collateralRate = Math.floor(
+			(100 * (Number(collateral) * ERG_PRICE)) / (Number(amount) * ERG_PRICE + interest * ERG_PRICE)
+		).toString();
+	}
+	function calculateCollateralInUsd() {
+		collateralInUsd = Number(collateral) * ERG_PRICE;
+	}
+	function calculateAmountInUSD() {
+		amountInUsd = Number(amount) * ERG_PRICE;
+	}
+	function calculateMaturityBlocks() {
+		return timeUnit === 'days' ? term * BLOCKS_PER_DAY : term * BLOCKS_PER_DAY * 30;
 	}
 </script>
 
@@ -76,13 +125,40 @@
 {#if showModal}
 	<div class="modal">
 		<div class="modal-content gap-6">
-			<h2 class="mb-4 text-lg font-semibold">New Loan Request</h2>
+			<h3 class="flex items-center justify-between text-xl font-semibold">
+				<span>New loan request</span>
+				<div class="tooltip tooltip-left tooltip-left font-normal" data-tip="Collateral/Loan ratio">
+					<span class="badge-error badge-warning badge gap-1"
+						><svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16px"
+							height="16px"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="feather feather-alert-triangle h-3 h-3"
+							><path
+								d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+							></path><line x1="12" y1="9" x2="12" y2="13"></line><line
+								x1="12"
+								y1="17"
+								x2="12.01"
+								y2="17"
+							></line></svg
+						>
+						{collateralRate}%</span
+					>
+				</div>
+			</h3>
 
 			<!-- Заголовок Amount -->
 			<div class="form-control">
 				<label class="label" for="amount">
 					<span class="labe-text big">Amount </span>
-					<span class="label-text-alt opacity-70"> $100 </span>
+					<span class="label-text-alt opacity-70"> ${amountInUsd} </span>
 				</label>
 
 				<!-- Контейнер с Amount и Currency -->
@@ -93,6 +169,7 @@
 							id="amount"
 							type="number"
 							bind:value={amount}
+							on:change={handleAmountChange}
 							class="input h-12 w-full"
 							placeholder="0.00"
 						/>
@@ -118,19 +195,24 @@
 				<div class="form-control">
 					<label class="label" for="term">
 						<span class="label-text">Term</span>
-						<span class="label-text-alt opacity-70"> 10000 blocks</span>
+						<span class="label-text-alt opacity-70"> {termInBlocks} blocks</span>
 					</label>
 					<div class="input-group">
 						<input
 							id="term"
 							type="number"
 							bind:value={term}
+							on:change={handleTermChange}
 							class="input input-bordered w-full"
 							placeholder="0"
 							min="1"
 						/>
 
-						<select bind:value={timeUnit} class="select select-bordered border-l-0">
+						<select
+							bind:value={timeUnit}
+							on:change={handleTimeUnitChange}
+							class="select select-bordered border-l-0"
+						>
 							{#each timeUnits as unit}
 								<option value={unit}>{unit}</option>
 							{/each}
@@ -139,15 +221,16 @@
 				</div>
 
 				<div class="form-control">
-					<label class="label" for="repayment">
-						<span class="label-text">Interest (%)</span>
-						<span class="label-text-alt opacity-70"> 100 ERG</span>
+					<label class="label" for="interestRate">
+						<span class="label-text">Interest</span>
+						<span class="label-text-alt opacity-70"> {interest} ERG</span>
 					</label>
 					<div class="input-group">
 						<input
-							id="repayment"
+							id="interestRate"
 							type="number"
-							bind:value={repayment}
+							bind:value={interestRate}
+							on:change={handleInterestChange}
 							class="input input-bordered w-full"
 							placeholder="0.00"
 							min="0.1"
@@ -161,12 +244,13 @@
 			<div class="form-control">
 				<label class="label" for="collateral">
 					<span class="label-text big">Collateral</span>
-					<span class="label-text-alt opacity-70"> $666</span>
+					<span class="label-text-alt opacity-70"> ${collateralInUsd}</span>
 				</label>
 				<input
 					id="collateral"
 					type="number"
 					bind:value={collateral}
+					on:change={handleCollateralChange}
 					class="input input-bordered w-full"
 					placeholder="0.00"
 				/>
@@ -350,5 +434,53 @@
 	}
 	.opacity-70 {
 		opacity: 0.7;
+	}
+	.font-semibold {
+		font-weight: 600;
+	}
+	.font-normal {
+		font-weight: 400;
+	}
+	.tooltip {
+		position: relative;
+		display: inline-block;
+		--tooltip-offset: calc(100% + 1px + var(--tooltip-tail, 0px));
+		text-align: center;
+		--tooltip-tail: 3px;
+		--tooltip-color: hsl(var(--n));
+		--tooltip-text-color: hsl(var(--nc));
+		--tooltip-tail-offset: calc(100% + 1px - var(--tooltip-tail));
+	}
+	.tooltip:before {
+		position: absolute;
+		pointer-events: none;
+		z-index: 999;
+		content: var(--tw-content);
+		--tw-content: attr(data-tip);
+		max-width: 20rem;
+		border-radius: 0.25rem;
+		padding: 0.25rem 0.5rem;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		background-color: var(--tooltip-color);
+		color: var(--tooltip-text-color);
+		width: -moz-max-content;
+		width: max-content;
+	}
+	.tooltip-left:before {
+		transform: translateY(-50%);
+		top: 50%;
+		left: auto;
+		right: var(--tooltip-offset);
+		bottom: auto;
+	}
+	.tooltip:after {
+		position: absolute;
+		content: '';
+		border-style: solid;
+		border-width: var(--tooltip-tail, 0);
+		width: 0;
+		height: 0;
+		display: block;
 	}
 </style>

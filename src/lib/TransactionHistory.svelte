@@ -18,122 +18,12 @@
 	const DUMMY_DATA = true;
 
 	import { SIGUSD_BANK_ADDRESS, TOKEN_SIGRSV, TOKEN_SIGUSD } from '$lib/api/ergoNode';
-
-	interface TokenStats {
-		input: number;
-		output: number;
-		difference: number;
-	}
-
-	interface AddressInfo {
-		address: string;
-		ergoStats?: TokenStats;
-		usdStats?: TokenStats;
-		rsvStats?: TokenStats;
-	}
-
-	interface OperationInfo {
-		pair: string;
-		operation: string;
-		amount: string;
-		volume: string;
-		priceContract: string | number;
-	}
-
-	function calculateTokenStatsByAddress(tx: any, tokenId: string, address: string): TokenStats {
-		const inputAmount = tx.inputs
-			.filter((input: any) => input.ergoTree === address)
-			.flatMap((input: any) => input.assets)
-			.filter((asset: any) => asset.tokenId === tokenId)
-			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
-
-		const outputAmount = tx.outputs
-			.filter((output: any) => output.ergoTree === address)
-			.flatMap((output: any) => output.assets)
-			.filter((asset: any) => asset.tokenId === tokenId)
-			.reduce((sum: number, asset: any) => sum + asset.amount, 0);
-
-		return {
-			input: inputAmount,
-			output: outputAmount,
-			difference: outputAmount - inputAmount
-		};
-	}
-
-	function calculateAddressInfo(tx: any, address: string): AddressInfo {
-		return {
-			address: address,
-			ergoStats: calculateErgoStatsByAddress(tx, address),
-			usdStats: calculateTokenStatsByAddress(tx, TOKEN_SIGUSD, address),
-			rsvStats: calculateTokenStatsByAddress(tx, TOKEN_SIGRSV, address)
-		};
-	}
-
-	function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): OperationInfo {
-		let priceErgUsd;
-		let priceErgSigRSV;
-		let pair;
-		let operation;
-		let amount;
-		let volume;
-
-		if (bank.usdStats?.difference !== 0) {
-			pair = 'USD/ERG';
-			operation = bank.usdStats!.difference! < 0 ? 'buy' : 'sell';
-			amount = -centsToUsd(bank.usdStats!.difference!) + ' USD';
-			priceErgUsd = (-(bank.usdStats!.difference! / bank.ergoStats!.difference!) * 10 ** 7).toFixed(
-				2
-			);
-			priceErgSigRSV = 0;
-		} else {
-			pair = 'RSV/ERG';
-			operation = bank.rsvStats!.difference! < 0 ? 'buy' : 'sell';
-			amount = -bank.rsvStats!.difference! + ' RSV';
-			priceErgSigRSV = (
-				-(bank.rsvStats!.difference! / bank.ergoStats!.difference!) *
-				10 ** 9
-			).toFixed(2);
-			priceErgUsd = 0;
-		}
-		volume = -nanoErgToErg(bank.ergoStats!.difference!) + ' ERG';
-
-		return {
-			pair: pair,
-			operation: operation,
-			amount: amount,
-			volume: volume,
-			priceContract: pair == 'USD/ERG' ? priceErgUsd : priceErgSigRSV
-		};
-	}
-
-	function nanoErgToErg(nanoErg: number) {
-		return nanoErg ? Number((nanoErg / 10 ** 9).toFixed(2)) : 0;
-	}
-
-	function centsToUsd(cents: number) {
-		return cents ? Number((cents / 10 ** 2).toFixed(2)) : 0;
-	}
-
-	function calculateErgoStatsByAddress(tx: any, address: string): TokenStats {
-		const inputAmount = tx.inputs
-			.filter((input: any) => input.ergoTree === address)
-			.reduce((sum: number, input: any) => sum + input.value, 0);
-
-		const outputAmount = tx.outputs
-			.filter((output: any) => output.ergoTree === address)
-			.reduce((sum: number, output: any) => sum + output.value, 0);
-
-		return {
-			input: inputAmount,
-			output: outputAmount,
-			difference: outputAmount - inputAmount
-		};
-	}
-
-	function shorten(value: string | undefined): string {
-		if (!value) return '';
-		return value.length > 6 ? `${value.slice(0, 3)}...${value.slice(-3)}` : value;
-	}
+	import {
+		calculateAddressInfo,
+		calculateOperationInfo,
+		shorten,
+		type OperationInfo
+	} from './TransactionUtils';
 
 	// Pre-process the transactions when they change
 	let processedHistory: any[] = [];

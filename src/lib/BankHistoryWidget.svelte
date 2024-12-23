@@ -1,6 +1,17 @@
 <script lang="ts">
 	import { formatDistanceToNowStrict } from 'date-fns';
 	import Spinner from './Spinner.svelte';
+	import { exampleTxs } from './sampleTx';
+	import {
+		calculateAddressInfo,
+		calculateOperationInfo,
+		centsToUsd,
+		nanoErgToErg,
+		type OperationInfo
+	} from './TransactionUtils';
+	import { SIGUSD_BANK_TREE } from './api/ergoNode';
+	import { bankBoxChains } from './stores/transactions';
+	import { ErgoAddress } from '@fleet-sdk/core';
 
 	type Interaction = {
 		id: string;
@@ -11,17 +22,32 @@
 		ergAmount: number;
 		confirmed: boolean;
 	};
+	const txes = exampleTxs;
+	function makeSimpleParameters(txes: any) {
+		const interactions = txes.map((tx) => {
+			const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
+			const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
+			const user = calculateAddressInfo(tx, userAddress);
+			const txData: OperationInfo = calculateOperationInfo(bank, user);
+			const iteraction = {
+				id: '',
+				amount: Number(txData.amount.split(' ')[0]),
+				timestamp: Date.now(),
+				price: Number(txData.priceContract),
+				type: txData.operation,
+				ergAmount: Number(txData.volume.split(' ')[0]),
+				confirmed: false
+			};
+			return iteraction;
+		});
+
+		return interactions;
+	}
+
+	const exampleIteraction = makeSimpleParameters(exampleTxs);
 
 	const interactions: Interaction[] = [
-		{
-			id: 'abc123def',
-			amount: 100000.0,
-			timestamp: Date.now(),
-			type: 'Sell',
-			ergAmount: -100,
-			price: 10.01,
-			confirmed: false
-		},
+		exampleIteraction[0],
 		{
 			id: 'abc123def',
 			amount: 100.5,

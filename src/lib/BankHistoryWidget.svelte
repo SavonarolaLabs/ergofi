@@ -34,7 +34,7 @@
 			id: '',
 			amount: Number(txData.amount.split(' ')[0]),
 			timestamp: Date.now(),
-			price: Number(txData.priceContract),
+			price: Number(txData.price),
 			type: txData.operation,
 			ergAmount: Number(txData.volume.split(' ')[0]),
 			confirmed: false

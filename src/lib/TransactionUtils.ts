@@ -40,6 +40,7 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 	let operation;
 	let amount;
 	let volume;
+	let price;
 
 	if (bank.usdStats?.difference !== 0) {
 		pair = 'USD/ERG';
@@ -49,6 +50,7 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 			2
 		);
 		priceErgSigRSV = 0;
+		price = (-(user.usdStats!.difference! / user.ergoStats!.difference!) * 10 ** 7).toFixed(2);
 	} else {
 		pair = 'RSV/ERG';
 		operation = bank.rsvStats!.difference! < 0 ? 'buy' : 'sell';
@@ -58,6 +60,7 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 			10 ** 9
 		).toFixed(2);
 		priceErgUsd = 0;
+		price = (-(user.rsvStats!.difference! / user.ergoStats!.difference!) * 10 ** 9).toFixed(2);
 	}
 	volume = -nanoErgToErg(bank.ergoStats!.difference!) + ' ERG';
 
@@ -66,7 +69,8 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 		operation: operation,
 		amount: amount,
 		volume: volume,
-		priceContract: pair == 'USD/ERG' ? priceErgUsd : priceErgSigRSV
+		priceContract: pair == 'USD/ERG' ? priceErgUsd : priceErgSigRSV,
+		price
 	};
 }
 
@@ -118,4 +122,5 @@ export interface OperationInfo {
 	amount: string;
 	volume: string;
 	priceContract: string | number;
+	price: string | number;
 }

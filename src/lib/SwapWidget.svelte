@@ -51,7 +51,7 @@
 	const BASE_INPUT_AMOUNT_ERG = 100n; //100 ERG
 	const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
-	const uiFeeAddress = '9hBdmAbDAcqzL7ZnKjxo39pbEUR5VVzQA7LHWYywdGrZDmf6x5K';
+	const uiFeeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
 	const directionBuy = 1n;
 	const directionSell = -1n;
@@ -435,9 +435,9 @@
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
-		//const txId = await ergo.submit_tx(signed);
+		const txId = await ergo.submit_tx(signed);
 		console.log({ signed });
-		//console.log({ txId });
+		console.log({ txId });
 		//		console.log(txId);
 	}
 
@@ -606,7 +606,7 @@
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
-		//		const txId = await ergo.submit_tx(signed);
+		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
 		//		console.log(txId);
 	}
@@ -692,7 +692,7 @@
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
-		//const txId = await ergo.submit_tx(signed);
+		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
 	}
 
@@ -785,7 +785,7 @@
 		console.log(tx);
 		const signed = await ergo.sign_tx(tx);
 
-		//		const txId = await ergo.submit_tx(signed);
+		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
 		//		console.log(txId);
 	}

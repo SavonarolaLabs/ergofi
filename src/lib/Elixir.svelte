@@ -3,10 +3,14 @@
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import { mempool_transactions } from './stores/mempoolTranscations';
+	import { transactions } from './stores/transactionStore';
+	import { mempoolDummy } from './mempoolDummy';
 
 	const bankBoxChains = writable([]);
 
 	onMount(() => {
+		mempool_transactions.set(mempoolDummy);
+
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
 		const channelTopic = 'sigmausd_transactions';
@@ -25,12 +29,16 @@
 
 		channel.on('all_transactions', (payload) => {
 			console.log('all_transactions', { payload });
-			mempool_transactions.set(payload.transactions);
 		});
 
 		channel.on(channelTopic, (payload) => {
 			console.log(channelTopic, payload);
-			mempool_transactions.set(payload.transactions);
+
+			if (payload.transactions.length < 1) {
+				mempool_transactions.set(mempoolDummy);
+			} else {
+				mempool_transactions.set(payload.transactions);
+			}
 		});
 
 		return () => {

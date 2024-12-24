@@ -12,6 +12,7 @@
 	import { SIGUSD_BANK_TREE } from './api/ergoNode';
 	import { bankBoxChains } from './stores/transactions';
 	import { ErgoAddress } from '@fleet-sdk/core';
+	import { mempool_transactions } from './stores/mempoolTranscations';
 
 	type Interaction = {
 		id: string;
@@ -23,23 +24,26 @@
 		confirmed: boolean;
 	};
 	const txes = exampleTxs;
+
+	function txToSigmaUSDInteraction(tx) {
+		const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
+		const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
+		const user = calculateAddressInfo(tx, userAddress);
+		const txData: OperationInfo = calculateOperationInfo(bank, user);
+		const iteraction = {
+			id: '',
+			amount: Number(txData.amount.split(' ')[0]),
+			timestamp: Date.now(),
+			price: Number(txData.priceContract),
+			type: txData.operation,
+			ergAmount: Number(txData.volume.split(' ')[0]),
+			confirmed: false
+		};
+		return iteraction;
+	}
+
 	function makeSimpleParameters(txes: any) {
-		const interactions = txes.map((tx) => {
-			const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
-			const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
-			const user = calculateAddressInfo(tx, userAddress);
-			const txData: OperationInfo = calculateOperationInfo(bank, user);
-			const iteraction = {
-				id: '',
-				amount: Number(txData.amount.split(' ')[0]),
-				timestamp: Date.now(),
-				price: Number(txData.priceContract),
-				type: txData.operation,
-				ergAmount: Number(txData.volume.split(' ')[0]),
-				confirmed: false
-			};
-			return iteraction;
-		});
+		const interactions = txes.map(txToSigmaUSDInteraction);
 
 		return interactions;
 	}
@@ -92,7 +96,7 @@
 </script>
 
 <div class="widget">
-	{#each interactions as interaction}
+	{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction}
 		<div class="row">
 			<div class="left pb-1">
 				<div>

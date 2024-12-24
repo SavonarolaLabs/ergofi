@@ -2,15 +2,17 @@
 	import { Socket } from 'phoenix';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
+	import { mempool_transactions } from './stores/mempoolTranscations';
 
-	const transactions = writable([]);
 	const bankBoxChains = writable([]);
 
 	onMount(() => {
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
+		const channelTopic = 'sigmausd_transactions';
+		//const channelTopic = 'transactions';
 
-		const channel = socket.channel('mempool:sigmausd_transactions', {});
+		const channel = socket.channel('mempool:' + channelTopic, {});
 
 		channel
 			.join()
@@ -23,12 +25,12 @@
 
 		channel.on('all_transactions', (payload) => {
 			console.log('all_transactions', { payload });
-			transactions.set(payload.transactions);
+			mempool_transactions.set(payload.transactions);
 		});
 
-		channel.on('sigmausd_transactions', (payload) => {
-			console.log('sigmausd_transactions', payload);
-			transactions.set(payload.transactions);
+		channel.on(channelTopic, (payload) => {
+			console.log(channelTopic, payload);
+			mempool_transactions.set(payload.transactions);
 		});
 
 		return () => {
@@ -39,9 +41,9 @@
 </script>
 
 <h1>SigmaUSD Transactions</h1>
-{#if $transactions.length > 0}
+{#if $mempool_transactions.length > 0}
 	<ul>
-		{#each $transactions as tx}
+		{#each $mempool_transactions as tx}
 			<li><strong>Transaction ID:</strong> {tx.id}</li>
 		{/each}
 	</ul>

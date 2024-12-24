@@ -80,6 +80,11 @@
 		calculateInterest();
 		calculateCollateralRate();
 	}
+	async function handleAssetChange() {
+		calculateAmountInUSD();
+		calculateInterest();
+		calculateCollateralRate();
+	}
 	async function handleTermChange() {
 		termInBlocks = calculateMaturityBlocks();
 	}
@@ -115,10 +120,15 @@
 		).toString();
 	}
 	function calculateCollateralInUsd() {
-		collateralInUsd = Number(collateral) * ERG_PRICE;
+		const amountId = getTokenId('ERG');
+		const assetPrice = $assetsPriceRates[amountId];
+		collateralInUsd = Number(collateral) * assetPrice.fiat;
 	}
 	function calculateAmountInUSD() {
-		amountInUsd = Number(amount) * ERG_PRICE;
+		//selectedAsset
+		const amountId = getTokenId(selectedAsset);
+		const assetPrice = $assetsPriceRates[amountId];
+		amountInUsd = Number(amount) * assetPrice.fiat;
 	}
 	function calculateMaturityBlocks() {
 		return timeUnit === 'days' ? term * BLOCKS_PER_DAY : term * BLOCKS_PER_DAY * 30;
@@ -188,6 +198,7 @@
 						<img src={getAssetIcon(selectedAsset)} alt="icon" class="mr-2 h-5 w-5" />
 						<select
 							bind:value={selectedAsset}
+							on:change={handleAssetChange}
 							class="currency-select w-full bg-transparent text-white outline-none"
 						>
 							{#each VERIFIED_ASSETS as asset}

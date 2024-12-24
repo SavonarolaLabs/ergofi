@@ -9,7 +9,7 @@
 		nanoErgToErg,
 		type OperationInfo
 	} from './TransactionUtils';
-	import { SIGUSD_BANK_TREE } from './api/ergoNode';
+	import { MINER_TREE, SIGUSD_BANK_TREE } from './api/ergoNode';
 	import { bankBoxChains } from './stores/transactions';
 	import { ErgoAddress } from '@fleet-sdk/core';
 	import { mempool_transactions } from './stores/mempoolTranscations';
@@ -29,6 +29,13 @@
 		const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
 		const userAddress = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 		const user = calculateAddressInfo(tx, userAddress);
+		const miner = calculateAddressInfo(tx, MINER_TREE);
+
+		// const allInputs
+		// const allInputsExcept
+		// const allOutputs
+		// const allOutputsExcept
+
 		const txData: OperationInfo = calculateOperationInfo(bank, user);
 		const iteraction = {
 			id: '',

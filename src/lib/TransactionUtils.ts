@@ -33,6 +33,22 @@ export function calculateAddressInfo(tx: any, ergoTree: string): AddressInfo {
 	};
 }
 
+export function returnOutputsExcept(
+	tx: any,
+	includeTrees?: string[], // Опционально
+	exceptTrees?: string[] // Опционально
+) {
+	if (!tx?.outputs) {
+		return [];
+	}
+
+	return tx.outputs.filter((o) => {
+		const isInIncludeTrees = includeTrees ? includeTrees.includes(o.ergoTree) : true; // Если includeTrees не указан, включаем все
+		const isInExceptTrees = exceptTrees ? exceptTrees.includes(o.ergoTree) : false; // Если exceptTrees не указан, ничего не исключаем
+		return isInIncludeTrees && !isInExceptTrees; // Включаем, если входит в include и не входит в except
+	});
+}
+
 export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): OperationInfo {
 	let priceErgUsd;
 	let priceErgSigRSV;

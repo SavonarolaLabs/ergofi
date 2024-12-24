@@ -19,7 +19,7 @@ const HODLERG_CONTRACT =
 
 const VERIFIED_TOKEN_IDS = new Set(VERIFIED_ASSETS.map((x) => x.tokenId));
 
-type AssetRate = { erg: number; fiat: number };
+export type AssetRate = { erg: number; fiat: number };
 export type AssetPriceRates = {
 	[tokenId: string]: AssetRate;
 };

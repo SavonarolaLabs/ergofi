@@ -3,6 +3,8 @@
 	import type { OpenOrderParams } from './plugins';
 	import { VERIFIED_ASSETS } from './maps/verifiedAssets';
 	import { ASSET_ICONS } from './maps/assetIcons';
+	import { onMount } from 'svelte';
+	import { assetsPriceRates, loadPriceRates } from './pricesStore';
 
 	const timeUnits = ['days', 'months'];
 	const BLOCKS_PER_DAY = 720; // Предположение
@@ -23,6 +25,12 @@
 	let selectedAsset = VERIFIED_ASSETS[0].metadata.name;
 	let loading = false;
 	let error = '';
+
+	onMount(() => {
+		loadPriceRates().then(() => {
+			console.log($assetsPriceRates); // Значение обновится после завершения загрузки
+		});
+	});
 
 	// геты
 	function getTokenId(assetName: string) {

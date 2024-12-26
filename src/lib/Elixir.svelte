@@ -13,8 +13,8 @@
 
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
-		const channelTopic = 'sigmausd_transactions';
-		//const channelTopic = 'transactions';
+		//const channelTopic = 'sigmausd_transactions';
+		const channelTopic = 'transactions';
 
 		const channel = socket.channel('mempool:' + channelTopic, {});
 

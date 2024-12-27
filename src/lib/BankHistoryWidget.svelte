@@ -3,11 +3,41 @@
 	import Spinner from './Spinner.svelte';
 
 	import { mempool_transactions } from './stores/mempoolTranscations';
-	import SpinnerBar from './SpinnerBar.svelte';
-	import { fly } from 'svelte/transition';
-	import { txToSigmaUSDInteraction } from './interaction';
 	import { prepared_interactions } from './stores/preparedInteractions';
 
+	import SpinnerBar from './SpinnerBar.svelte';
+	import { fly } from 'svelte/transition';
+	import { txToSigmaUSDInteraction } from './interaction'; // your custom function
+
+	/**
+	 * We maintain a Set of items currently in blink phase.
+	 * When fly transition finishes, we add the ID => triggers blink.
+	 * When blink animation finishes, we remove the ID => stops blinking.
+	 */
+	let blinkingItems = new Set<string>();
+
+	/**
+	 * Called after the fly transition's `introend`.
+	 * We create a NEW Set so Svelte sees the change (reactivity).
+	 */
+	function handleFlyEnd(interactionId: string) {
+		console.log('fly ended for:', interactionId);
+		blinkingItems = new Set(blinkingItems);
+		blinkingItems.add(interactionId);
+	}
+
+	/**
+	 * Called when the blink animation finishes.
+	 * Removing the ID from the Set ends the blink.
+	 */
+	function handleBlinkEnd(interactionId: string) {
+		blinkingItems = new Set(blinkingItems);
+		blinkingItems.delete(interactionId);
+	}
+
+	/**
+	 * Format a timestamp as "5m ago", "2h ago", etc.
+	 */
 	function formatTimeAgo(timestamp: number): string {
 		const time = formatDistanceToNowStrict(new Date(timestamp));
 		return (
@@ -18,16 +48,31 @@
 				.replace(/ seconds?/, 's') + ' ago'
 		);
 	}
+
+	/**
+	 * Show + or - sign plus 2 decimal places
+	 */
 	function formatAmount(amount: number): string {
 		return `${amount > 0 ? '+' : ''}${amount.toFixed(2)}`;
 	}
 </script>
 
+<!-- MAIN LAYOUT -->
 <div class="widget">
 	<div class="tx-list w-full">
 		{#each $prepared_interactions as interaction (interaction.id)}
-			<!-- negative y so it appears to drop in from above -->
-			<div class="row" transition:fly={{ y: -20, opacity: 0, duration: 300 }}>
+			<!-- 
+				1) Fly in from above
+				2) on:introend => handleFlyEnd(interaction.id)
+				3) .blink-twice if in blinkingItems
+				4) on:animationend => handleBlinkEnd(interaction.id)
+			-->
+			<div
+				class="row {blinkingItems.has(interaction.id) ? 'blink-twice' : ''}"
+				transition:fly={{ y: -20, opacity: 0, duration: 300 }}
+				on:introend={() => handleFlyEnd(interaction.id)}
+				on:animationend={() => handleBlinkEnd(interaction.id)}
+			>
 				<div class="left pb-1">
 					<div>
 						<div class="flex items-center gap-1 uppercase text-gray-400">
@@ -35,7 +80,9 @@
 							<span class="blink ml-6">{interaction.type} @{interaction.price}</span>
 						</div>
 					</div>
-					<span class="text-sm text-gray-500">{formatTimeAgo(interaction.timestamp)}</span>
+					<span class="text-sm text-gray-500">
+						{formatTimeAgo(interaction.timestamp)}
+					</span>
 				</div>
 				<div class="flex flex-col">
 					<div>
@@ -45,14 +92,14 @@
 						<span class="text-lg text-gray-500"> SigUSD </span>
 					</div>
 					<div class="pr-10 text-right text-gray-500">
-						{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>
+						{formatAmount(interaction.ergAmount)}
+						<span style="margin-left:7px;">ERG</span>
 					</div>
 				</div>
 			</div>
 		{/each}
 
 		{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction (interaction.id)}
-			<!-- Keep mempool rows without fly to preserve layout/order -->
 			<div class="row">
 				<div class="left pb-1">
 					<div>
@@ -76,7 +123,9 @@
 							{/if}
 						</div>
 					</div>
-					<span class="text-sm text-gray-500">{formatTimeAgo(interaction.timestamp)}</span>
+					<span class="text-sm text-gray-500">
+						{formatTimeAgo(interaction.timestamp)}
+					</span>
 				</div>
 				<div class="flex flex-col">
 					<div>
@@ -86,7 +135,8 @@
 						<span class="text-lg text-gray-500"> SigUSD </span>
 					</div>
 					<div class="pr-10 text-right text-gray-500">
-						{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>
+						{formatAmount(interaction.ergAmount)}
+						<span style="margin-left:7px;">ERG</span>
 					</div>
 				</div>
 			</div>
@@ -115,10 +165,12 @@
 			opacity: 0.3;
 		}
 	}
+
 	.tx-list {
 		overflow-y: auto;
 		max-height: calc(100vh - 288px);
 	}
+
 	.widget {
 		display: flex;
 		flex-direction: column;
@@ -127,14 +179,39 @@
 		width: 430px;
 		height: 100%;
 	}
+
 	.row {
 		display: flex;
 		justify-content: space-between;
 		align-items: end;
 		padding: 0.5rem 1rem;
 	}
+
 	.left {
 		display: flex;
 		flex-direction: column;
+	}
+
+	/* 
+	 Two-blink animation after 'fly' finishes.
+	 Duration: 1s, you can tweak it. 
+	 The animation ends => triggers on:animationend => handleBlinkEnd()
+	*/
+	.blink-twice {
+		animation: doubleBlink 0.6s ease-in-out forwards;
+	}
+
+	@keyframes doubleBlink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		25%,
+		75% {
+			opacity: 0;
+		}
+		50% {
+			opacity: 1;
+		}
 	}
 </style>

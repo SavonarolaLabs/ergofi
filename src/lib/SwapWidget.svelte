@@ -44,7 +44,8 @@
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 	import { mempoolDummy } from './mempoolDummy';
-	import { addPreparedInteraction } from './stores/preparedInteractions';
+	import { addPreparedInteraction, prepared_interactions } from './stores/preparedInteractions';
+	import { mempool_transactions } from './stores/mempoolTranscations';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -227,6 +228,14 @@
 		}
 	}
 
+	function addMempoolTransaction(tx) {
+		prepared_interactions.update((l) => l.filter((t) => t.transactionId != tx.id));
+		mempool_transactions.update((l) => [tx, ...l]);
+	}
+
+	async function handleSwapButton2(event: Event) {
+		addMempoolTransaction(mempoolDummy);
+	}
 	async function handleSwapButton(event: Event) {
 		addPreparedInteraction(mempoolDummy);
 		return;
@@ -1027,5 +1036,11 @@
 		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
 	>
 		Swap
+	</button>
+	<button
+		on:click={handleSwapButton2}
+		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
+	>
+		Swap2
 	</button>
 </div>

@@ -8,6 +8,7 @@
 	import SpinnerBar from './SpinnerBar.svelte';
 	import { fly } from 'svelte/transition';
 	import { txToSigmaUSDInteraction } from './interaction'; // your custom function
+	import { onDestroy, onMount } from 'svelte';
 
 	/**
 	 * We maintain a Set of items currently in blink phase.
@@ -21,7 +22,6 @@
 	 * We create a NEW Set so Svelte sees the change (reactivity).
 	 */
 	function handleFlyEnd(interactionId: string) {
-		console.log('fly ended for:', interactionId);
 		blinkingItems = new Set(blinkingItems);
 		blinkingItems.add(interactionId);
 	}
@@ -55,6 +55,18 @@
 	function formatAmount(amount: number): string {
 		return `${amount > 0 ? '+' : ''}${amount.toFixed(2)}`;
 	}
+
+	let intervalId: number;
+
+	onMount(() => {
+		intervalId = setInterval(() => {
+			prepared_interactions.update((current) => [...current]);
+		}, 1000);
+	});
+
+	onDestroy(() => {
+		clearInterval(intervalId);
+	});
 </script>
 
 <!-- MAIN LAYOUT -->
@@ -69,15 +81,15 @@
 			-->
 			<div
 				class="row {blinkingItems.has(interaction.id) ? 'blink-twice' : ''}"
-				transition:fly={{ y: -20, opacity: 0, duration: 300 }}
+				in:fly={{ y: -20, opacity: 0, duration: 300 }}
 				on:introend={() => handleFlyEnd(interaction.id)}
 				on:animationend={() => handleBlinkEnd(interaction.id)}
 			>
 				<div class="left pb-1">
-					<div>
+					<div class="blink">
 						<div class="flex items-center gap-1 uppercase text-gray-400">
 							<SpinnerBar size={2.2} />
-							<span class="blink ml-6">{interaction.type} @{interaction.price}</span>
+							<span class=" ml-3">{interaction.type} @{interaction.price}</span>
 						</div>
 					</div>
 					<span class="text-sm text-gray-500">

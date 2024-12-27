@@ -8,14 +8,7 @@
 		web3wallet_connected,
 		web3wallet_wallet_name
 	} from './stores/web3wallet';
-
-	function nanoErgToErg(erg: bigint | undefined): string {
-		if (typeof erg == 'bigint') {
-			return (Number(erg) / 10 ** 9).toLocaleString('US');
-		} else {
-			return '0.00';
-		}
-	}
+	import { nanoErgToErg } from './utils';
 </script>
 
 <div class="w-wallet group relative">

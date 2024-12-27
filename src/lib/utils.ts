@@ -17,3 +17,25 @@ export function maxBigInt(...args: bigint[]): bigint {
 export function absBigInt(arg: bigint): bigint {
 	return arg >= 0n ? arg : -arg;
 }
+
+export function nanoErgToErg(erg: bigint | undefined): string {
+	if (typeof erg == 'bigint') {
+		return (Number(erg) / 10 ** 9).toLocaleString('en-US', {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		});
+	} else {
+		return '0.00';
+	}
+}
+
+export function centsToUsd(erg: bigint | undefined): string {
+	if (typeof erg == 'bigint') {
+		return (Number(erg) / 10 ** 2).toLocaleString('en-US', {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 2
+		});
+	} else {
+		return '0.00';
+	}
+}

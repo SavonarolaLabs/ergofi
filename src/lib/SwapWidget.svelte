@@ -28,7 +28,12 @@
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { history } from '../data/history';
-	import { ergStringToNanoErgBigInt, usdStringToCentBigInt } from './utils';
+	import {
+		centsToUsd,
+		ergStringToNanoErgBigInt,
+		nanoErgToErg,
+		usdStringToCentBigInt
+	} from './utils';
 	import {
 		reserve_boarder_left_ERG,
 		reserve_boarder_left_USD,
@@ -36,6 +41,8 @@
 		reserve_boarder_right_USD,
 		reserve_rate
 	} from './stores/bank';
+	import { web3wallet_confirmedTokens } from './stores/web3wallet';
+	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -905,7 +912,17 @@
 	<div class="relative mb-6 rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 			<span class="text-sm text-gray-500 dark:text-gray-400">From</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400">Balance: 0.0</span>
+			<span class="text-sm text-gray-500 dark:text-gray-400"
+				>Balance: {#if selectedCurrency == 'ERG'}
+					{nanoErgToErg(
+						$web3wallet_confirmedTokens.find((x) => x.tokenId == ERGO_TOKEN_ID)?.amount
+					)}
+				{:else}
+					{centsToUsd(
+						$web3wallet_confirmedTokens.find((x) => x.tokenId == SigUSD_TOKEN_ID)?.amount
+					)}
+				{/if}</span
+			>
 		</div>
 		<div
 			style="border: none!important; outline: none!important; box-shadow: none!important;"
@@ -949,7 +966,7 @@
 	<div class="relative rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 			<span class="text-sm text-gray-500 dark:text-gray-400">To</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400">Price: {swapPrice}</span>
+			<span class="text-sm text-gray-500 dark:text-gray-400">Real Rate: {swapPrice}</span>
 		</div>
 		<div
 			style="border: none!important; outline: none!important; box-shadow: none!important;"

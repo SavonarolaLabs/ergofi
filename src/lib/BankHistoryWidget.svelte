@@ -13,6 +13,8 @@
 	import { bankBoxChains } from './stores/transactions';
 	import { ErgoAddress } from '@fleet-sdk/core';
 	import { mempool_transactions } from './stores/mempoolTranscations';
+	import { prepared_transactions } from './stores/preparedTranscations';
+	import SpinnerBar from './SpinnerBar.svelte';
 
 	type Interaction = {
 		id: string;
@@ -104,6 +106,30 @@
 
 <div class="widget">
 	<div class="tx-list w-full">
+		{#each $prepared_transactions.map(txToSigmaUSDInteraction) as interaction}
+			<div class="row">
+				<div class="left pb-1">
+					<div>
+						<div class="flex items-center gap-1 uppercase text-gray-400">
+							<SpinnerBar size={2.2} />
+							<span class="blink ml-6">{interaction.type} @{interaction.price}</span>
+						</div>
+					</div>
+					<span class="text-sm text-gray-500">{formatTimeAgo(interaction.timestamp)}</span>
+				</div>
+				<div class="flex flex-col">
+					<div>
+						<span class="mr-1 text-3xl">
+							{formatAmount(interaction.amount)}
+						</span>
+						<span class="text-lg text-gray-500"> SigUSD </span>
+					</div>
+					<div class="pr-10 text-right text-gray-500">
+						{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>
+					</div>
+				</div>
+			</div>
+		{/each}
 		{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction}
 			<div class="row">
 				<div class="left pb-1">
@@ -147,6 +173,26 @@
 </div>
 
 <style>
+	.blink {
+		display: inline-block;
+		animation: heartbeat 1.5s ease-in-out infinite;
+	}
+
+	@keyframes heartbeat {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		30% {
+			opacity: 0.3;
+		}
+		40% {
+			opacity: 1;
+		}
+		70% {
+			opacity: 0.3;
+		}
+	}
 	.tx-list {
 		overflow-y: auto;
 		max-height: calc(100vh - 288px);

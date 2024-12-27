@@ -6,11 +6,10 @@
 
 	onMount(() => {
 		let x = mempoolDummy;
-		mempool_transactions.set([x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]);
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
-		//const channelTopic = 'sigmausd_transactions';
-		const channelTopic = 'transactions';
+		const channelTopic = 'sigmausd_transactions';
+		//const channelTopic = 'transactions';
 
 		const channel = socket.channel('mempool:' + channelTopic, {});
 
@@ -30,12 +29,7 @@
 		channel.on(channelTopic, (payload) => {
 			console.log(channelTopic, payload);
 
-			if (payload.transactions.length < 1) {
-				mempool_transactions.set([x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]);
-			} else {
-				mempool_transactions.set(payload.transactions);
-				mempool_transactions.set([x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x, x]);
-			}
+			mempool_transactions.set(payload.transactions);
 		});
 
 		return () => {

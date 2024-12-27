@@ -45,6 +45,7 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 	import { prepared_transactions } from './stores/preparedTranscations';
 	import { mempoolDummy } from './mempoolDummy';
+	import { addPreparedInteraction } from './stores/preparedInteractions';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -228,7 +229,7 @@
 	}
 
 	async function handleSwapButton(event: Event) {
-		prepared_transactions.update((l) => [...l, mempoolDummy]);
+		addPreparedInteraction(mempoolDummy);
 		return;
 		// TODO: change based on lastInput
 		if (lastInput == 'From') {

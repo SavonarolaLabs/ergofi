@@ -43,7 +43,6 @@
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
-	import { prepared_transactions } from './stores/preparedTranscations';
 	import { mempoolDummy } from './mempoolDummy';
 	import { addPreparedInteraction } from './stores/preparedInteractions';
 

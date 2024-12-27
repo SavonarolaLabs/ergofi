@@ -13,7 +13,7 @@ export function txToSigmaUSDInteraction(tx): Interaction {
 	);
 
 	return {
-		id: crypto.randomUUID(), // or a unique string from tx
+		id: crypto.randomUUID(),
 		transactionId: tx.id,
 		amount: Number(txData.amount.split(' ')[0]),
 		timestamp: Date.now(),

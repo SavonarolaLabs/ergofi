@@ -103,53 +103,61 @@
 </script>
 
 <div class="widget">
-	{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction}
-		<div class="row">
-			<div class="left pb-1">
-				<div>
-					<div class="flex items-center gap-1 uppercase text-gray-400">
-						{#if interaction.confirmed}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 512 512"
-								width="1em"
-								fill="currentColor"
-								style="margin-left:2px;margin-right:2px;"
-								><path
-									d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
-								/></svg
-							>
-							{interaction.type} @{interaction.price}
-						{:else}
-							<Spinner size={16} />
-							{interaction.type} @{interaction.price}
-						{/if}
+	<div class="tx-list w-full">
+		{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction}
+			<div class="row">
+				<div class="left pb-1">
+					<div>
+						<div class="flex items-center gap-1 uppercase text-gray-400">
+							{#if interaction.confirmed}
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 512 512"
+									width="1em"
+									fill="currentColor"
+									style="margin-left:2px;margin-right:2px;"
+									><path
+										d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
+									/></svg
+								>
+								{interaction.type} @{interaction.price}
+							{:else}
+								<Spinner size={16} />
+								{interaction.type} @{interaction.price}
+							{/if}
+						</div>
+					</div>
+					<span class="text-sm text-gray-500">{formatTimeAgo(interaction.timestamp)}</span>
+				</div>
+				<div class="flex flex-col">
+					<div>
+						<span class="mr-1 text-3xl">
+							{formatAmount(interaction.amount)}
+						</span>
+						<span class="text-lg text-gray-500"> SigUSD </span>
+					</div>
+					<div class="pr-10 text-right text-gray-500">
+						{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>
 					</div>
 				</div>
-				<span class="text-sm text-gray-500">{formatTimeAgo(interaction.timestamp)}</span>
 			</div>
-			<div class="flex flex-col">
-				<div>
-					<span class="mr-1 text-3xl">
-						{formatAmount(interaction.amount)}
-					</span>
-					<span class="text-lg text-gray-500"> SigUSD </span>
-				</div>
-				<div class="pr-10 text-right text-gray-500">
-					{formatAmount(interaction.ergAmount)} <span style="margin-left:7px;">ERG</span>
-				</div>
-			</div>
-		</div>
-	{/each}
+		{/each}
+	</div>
 	<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 </div>
 
 <style>
+	.tx-list {
+		overflow-y: auto;
+		max-height: calc(100vh - 288px);
+	}
 	.widget {
 		display: flex;
 		flex-direction: column;
+		justify-content: end;
 		gap: 1rem;
 		width: 430px;
+		height: 100%;
 	}
 	.row {
 		display: flex;

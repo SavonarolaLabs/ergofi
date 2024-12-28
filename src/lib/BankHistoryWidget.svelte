@@ -2,12 +2,11 @@
 	import { formatDistanceToNowStrict } from 'date-fns';
 	import Spinner from './Spinner.svelte';
 
-	import { mempool_transactions } from './stores/mempoolTranscations';
 	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
 
 	import SpinnerBar from './SpinnerBar.svelte';
+	import BankUTXO from './BankUTXO.svelte';
 	import { fly } from 'svelte/transition';
-	import { txToSigmaUSDInteraction } from './interaction'; // your custom function
 	import { onDestroy, onMount } from 'svelte';
 
 	/**
@@ -154,6 +153,7 @@
 			</div>
 		{/each}
 	</div>
+	<BankUTXO></BankUTXO>
 	<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 </div>
 

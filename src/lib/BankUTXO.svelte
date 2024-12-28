@@ -40,7 +40,7 @@
 			</span>
 			<span class="text-lg"> SigUSD </span>
 		</div>
-		<div class="pr-10 text-right">
+		<div class="pr-8 text-right">
 			{bank.ergAmount.toLocaleString('en-US')}
 			<span style="margin-left:7px;">ERG</span>
 		</div>

@@ -102,7 +102,7 @@
 						</span>
 						<span class="text-lg text-gray-500"> SigUSD </span>
 					</div>
-					<div class="pr-10 text-right text-gray-500">
+					<div class="pr-8 text-right text-gray-500">
 						{formatAmount(interaction.ergAmount)}
 						<span style="margin-left:7px;">ERG</span>
 					</div>
@@ -145,7 +145,7 @@
 						</span>
 						<span class="text-lg text-gray-500"> SigUSD </span>
 					</div>
-					<div class="pr-10 text-right text-gray-500">
+					<div class="pr-8 text-right text-gray-500">
 						{formatAmount(interaction.ergAmount)}
 						<span style="margin-left:7px;">ERG</span>
 					</div>

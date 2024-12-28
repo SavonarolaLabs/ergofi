@@ -10,7 +10,7 @@
 	<Navbar></Navbar>
 	<div class="flex grow">
 		<div class="flex grow flex-col">
-			<div class="p-4">
+			<div class="p-4" style="display:none">
 				<LoanWidget></LoanWidget>
 			</div>
 			<div class="flex grow items-end justify-start">

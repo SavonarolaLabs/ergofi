@@ -3,7 +3,7 @@
 	import Spinner from './Spinner.svelte';
 
 	import { mempool_transactions } from './stores/mempoolTranscations';
-	import { prepared_interactions } from './stores/preparedInteractions';
+	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
 
 	import SpinnerBar from './SpinnerBar.svelte';
 	import { fly } from 'svelte/transition';
@@ -111,7 +111,7 @@
 			</div>
 		{/each}
 
-		{#each $mempool_transactions.map(txToSigmaUSDInteraction) as interaction (interaction.id)}
+		{#each $mempool_interactions as interaction (interaction.id)}
 			<div class="row">
 				<div class="left pb-1">
 					<div>

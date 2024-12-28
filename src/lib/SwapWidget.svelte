@@ -44,7 +44,11 @@
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 	import { mempoolDummy } from './mempoolDummy';
-	import { addPreparedInteraction, prepared_interactions } from './stores/preparedInteractions';
+	import {
+		addPreparedInteraction,
+		prepared_interactions,
+		updateMempoolInteractions
+	} from './stores/preparedInteractions';
 	import { mempool_transactions } from './stores/mempoolTranscations';
 
 	onMount(async () => {
@@ -228,13 +232,9 @@
 		}
 	}
 
-	function addMempoolTransaction(tx) {
-		prepared_interactions.update((l) => l.filter((t) => t.transactionId != tx.id));
-		mempool_transactions.update((l) => [tx, ...l]);
-	}
-
 	async function handleSwapButton2(event: Event) {
-		addMempoolTransaction(mempoolDummy);
+		updateMempoolInteractions([mempoolDummy]);
+		//updateMempoolInteractions([mempoolDummy]);
 	}
 	async function handleSwapButton(event: Event) {
 		addPreparedInteraction(mempoolDummy);

@@ -1,5 +1,5 @@
-import { writable, type Writable } from 'svelte/store';
-import { SIGUSD_BANK_TREE } from '$lib/api/ergoNode';
+import { get, writable, type Writable } from 'svelte/store';
+import { SIGUSD_BANK_TREE, type MempoolTransaction } from '$lib/api/ergoNode';
 import {
 	calculateAddressInfo,
 	calculateOperationInfo,
@@ -7,10 +7,54 @@ import {
 } from '$lib/TransactionUtils';
 
 export const prepared_interactions: Writable<Interaction[]> = writable([]);
+export const mempool_interactions: Writable<Interaction[]> = writable([]);
 
 export function addPreparedInteraction(tx) {
 	let i = txToSigmaUSDInteraction(tx);
 	prepared_interactions.update((l) => [i, ...l]);
+}
+
+function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]) {
+	const txIdsInMempool = txList.map((x) => x.id);
+
+	let notYetInMempool = get(prepared_interactions);
+	const beforeUpdateCount = notYetInMempool.length;
+
+	let notYetInMempoolUpdated = notYetInMempool.filter(
+		(t) => !txIdsInMempool.includes(t.transactionId)
+	);
+	const afterUpdateCount = notYetInMempoolUpdated.length;
+
+	if (afterUpdateCount < beforeUpdateCount) {
+		prepared_interactions.set(notYetInMempoolUpdated);
+	}
+}
+
+function updateAssumedInMempoolInteractions(txList: MempoolTransaction[]) {
+	const txIdsInMempool = txList.map((x) => x.id);
+
+	let assumedInMempool = get(mempool_interactions);
+	const beforeUpdateCount = assumedInMempool.length;
+
+	let assumedInMempoolUpdated = assumedInMempool.filter((t) =>
+		txIdsInMempool.includes(t.transactionId)
+	);
+	let alreadyKnownTxIds = assumedInMempoolUpdated.map((x) => x.transactionId);
+	let newInteractions: Interaction[] = txList
+		.filter((tx) => !alreadyKnownTxIds.includes(tx.id))
+		.map(txToSigmaUSDInteraction);
+	const afterUpdateCount = assumedInMempoolUpdated.length;
+
+	if (beforeUpdateCount == afterUpdateCount && newInteractions.length == 0) {
+		return;
+	} else {
+		mempool_interactions.set([...newInteractions, ...assumedInMempoolUpdated]);
+	}
+}
+
+export function updateMempoolInteractions(txList: MempoolTransaction[]) {
+	updateNotYetInMempoolInteractions(txList);
+	updateAssumedInMempoolInteractions(txList);
 }
 
 export function txToSigmaUSDInteraction(tx): Interaction {

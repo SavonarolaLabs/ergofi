@@ -234,7 +234,6 @@
 
 	async function handleSwapButton2(event: Event) {
 		updateMempoolInteractions([mempoolDummy]);
-		//updateMempoolInteractions([mempoolDummy]);
 	}
 	async function handleSwapButton(event: Event) {
 		addPreparedInteraction(mempoolDummy);

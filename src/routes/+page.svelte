@@ -18,11 +18,22 @@
 			</div>
 		</div>
 
-		<div class="justify-left flex grow items-center">
+		<div class="justify-left tachikoma-bg flex grow items-center">
 			<div>
 				<SwapWidget></SwapWidget>
 			</div>
 		</div>
 	</div>
 </div>
+
 <!-- <Elixir></Elixir> -->
+<style>
+	.tachikoma-bg {
+		background-size: contain;
+		background-image: url('/tachikoma.jpg');
+		background-repeat: no-repeat;
+		background-position-x: right;
+		background-position-y: bottom;
+		background-size: 640px;
+	}
+</style>

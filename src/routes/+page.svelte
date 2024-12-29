@@ -6,20 +6,16 @@
 	import Navbar from '$lib/Navbar.svelte';
 </script>
 
-<div class="flex flex-col" style="height:100vh;">
+<div class="flex flex-col tachikoma-bg" style="height:100vh;">
 	<Navbar></Navbar>
 	<div class="flex grow">
-		<div class="flex grow flex-col">
-			<div class="p-4" style="display:none">
-				<LoanWidget></LoanWidget>
-			</div>
+		<div class="flex flex-col">
 			<div class="flex grow items-end justify-start">
 				<BankHistoryWidget></BankHistoryWidget>
 			</div>
 		</div>
-
-		<div class="justify-left tachikoma-bg flex grow items-center">
-			<div>
+		<div class="justify-left flex grow items-center">
+			<div style="margin-top:-10%; margin-left:20%;">
 				<SwapWidget></SwapWidget>
 			</div>
 		</div>

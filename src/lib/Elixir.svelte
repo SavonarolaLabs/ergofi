@@ -9,8 +9,8 @@
 		let x = mempoolDummy;
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
-		//const channelTopic = 'sigmausd_transactions';
-		const channelTopic = 'transactions';
+		const channelTopic = 'sigmausd_transactions';
+		//const channelTopic = 'transactions';
 
 		const channel = socket.channel('mempool:' + channelTopic, {});
 
@@ -38,6 +38,7 @@
 	});
 </script>
 
+<div style="display:none">
 <h1>SigmaUSD Transactions</h1>
 {#if $mempool_transactions.length > 0}
 	<ul>
@@ -48,3 +49,5 @@
 {:else}
 	<p>No transactions in the mempool.</p>
 {/if}
+
+</div>

@@ -32,6 +32,7 @@
 		centsToUsd,
 		ergStringToNanoErgBigInt,
 		nanoErgToErg,
+		oracleRateToUsd,
 		usdStringToCentBigInt
 	} from './utils';
 	import {
@@ -49,10 +50,10 @@
 	import { mempoolDummy } from './mempoolDummy';
 	import {
 		addPreparedInteraction,
+		cancelPreparedInteraction,
 		prepared_interactions,
 		updateMempoolInteractions
 	} from './stores/preparedInteractions';
-	import { mempool_transactions } from './stores/mempoolTranscations';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -60,6 +61,9 @@
 		loading = false;
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
+		oraclePriceSigUsd.subscribe((val)=>{
+			window.document.title = `SigUSD @${oracleRateToUsd(val)}`
+		})
 	});
 
 	const FEE_UI = 10n; //0.1%
@@ -231,12 +235,7 @@
 		}
 	}
 
-	async function handleSwapButton2(event: Event) {
-		updateMempoolInteractions([mempoolDummy]);
-	}
 	async function handleSwapButton(event: Event) {
-		addPreparedInteraction(mempoolDummy);
-		return;
 		// TODO: change based on lastInput
 		if (lastInput == 'From') {
 			if (selectedCurrency == 'ERG') {
@@ -451,11 +450,16 @@
 
 		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 		console.log(tx);
-		const signed = await ergo.sign_tx(tx);
+		try{
+			addPreparedInteraction(tx);
+			const signed = await ergo.sign_tx(tx);
+			const txId = await ergo.submit_tx(signed);
 
-		const txId = await ergo.submit_tx(signed);
-		console.log({ signed });
-		console.log({ txId });
+			console.log({ signed });
+			console.log({ txId });
+		}catch(e){
+			cancelPreparedInteraction(tx);
+		}
 		//		console.log(txId);
 	}
 
@@ -1034,12 +1038,5 @@
 		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
 	>
 		Swap
-	</button>
-	<button
-		style="display:none"
-		on:click={handleSwapButton2}
-		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-black text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
-	>
-		Swap2
 	</button>
 </div>

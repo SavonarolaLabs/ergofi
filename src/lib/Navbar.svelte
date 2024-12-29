@@ -1,9 +1,9 @@
 <script lang="ts">
-	import ThemeToggle from '$lib/ThemeToggle.svelte';
 	import ConnectWallet from './ConnectWallet.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 </script>
 
-<nav class="sticky top-0 flex items-center justify-between px-6 py-3">
+<nav class="sticky top-0 flex items-center justify-between px-6 py-3" style="background: #16151f;">
 	<div class="flex items-center text-gray-300">
 		<span class="text-xl font-medium">Ergfi</span>
 		<span class="text-md mx-2">/</span>
@@ -11,8 +11,9 @@
 	</div>
 
 	<div class="flex gap-2">
-		<ThemeToggle></ThemeToggle>
-		<!-- <WalletButton></WalletButton> -->
+		<div style="visibility:hidden;">
+			<ThemeToggle></ThemeToggle>
+		</div>
 		<ConnectWallet></ConnectWallet>
 	</div>
 </nav>

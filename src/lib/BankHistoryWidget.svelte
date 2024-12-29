@@ -1,26 +1,6 @@
 <script lang="ts">
 	import { formatDistanceToNowStrict } from 'date-fns';
 	import Spinner from './Spinner.svelte';
-	import { exampleTxs } from './sampleTx';
-	import {
-		calculateAddressInfo,
-		calculateOperationInfo,
-		calculateTokenAmount,
-		calculateErgoAmount,
-		centsToUsd,
-		getErgoTreesByType,
-		getOtherThanSpecifiedTrees,
-		nanoErgToErg,
-		returnInputsExcept,
-		returnOutputsExcept,
-		type OperationInfo
-	} from './TransactionUtils';
-	import { MINER_TREE, SIGUSD_BANK_TREE, TOKEN_SIGRSV, TOKEN_SIGUSD } from './api/ergoNode';
-	import { bankBoxChains } from './stores/transactions';
-	import { ErgoAddress } from '@fleet-sdk/core';
-	import { mempool_transactions } from './stores/mempoolTranscations';
-	//import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
-
 	import {
 		mempool_interactions,
 		prepared_interactions,
@@ -99,14 +79,14 @@
 
 <!-- MAIN LAYOUT -->
 <div class="widget">
-	<div>
+	<div class="pl-2">
 		<BankUTXO></BankUTXO>
 		{#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
 			<BankUTXO confirmed={false}></BankUTXO>
 		{/if}
 	</div>
 	<div>
-		<div class="tx-list w-full">
+		<div class="tx-list w-full pl-2">
 			{#each $prepared_interactions as interaction (interaction.id)}
 				<!-- 
 				1) Fly in from above
@@ -147,6 +127,7 @@
 			{/each}
 
 			{#each $mempool_interactions as interaction (interaction.id)}
+			<a href="https://explorer.ergoplatform.com/en/transactions/{interaction.transactionId}">
 				<div class="row">
 					<div class="left pb-1">
 						<div>
@@ -187,9 +168,9 @@
 						</div>
 					</div>
 				</div>
+			</a>
 			{/each}
 		</div>
-
 		<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 	</div>
 </div>
@@ -217,7 +198,7 @@
 
 	.tx-list {
 		overflow-y: auto;
-		max-height: calc(100vh - 288px);
+		max-height: calc(100vh - 368px);
 	}
 
 	.widget {

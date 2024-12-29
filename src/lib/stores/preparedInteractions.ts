@@ -46,6 +46,12 @@ export function addPreparedInteraction(tx) {
 	prepared_interactions.update((l) => [i, ...l]);
 }
 
+export function cancelPreparedInteraction(tx:MempoolTransaction) {
+	const interactions = get(prepared_interactions).filter(x =>x.transactionId != tx.id);
+	prepared_interactions.set(interactions);
+	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+}
+
 function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]) {
 	const txIdsInMempool = txList.map((x) => x.id);
 

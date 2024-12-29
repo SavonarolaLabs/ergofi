@@ -18,11 +18,11 @@ export function absBigInt(arg: bigint): bigint {
 	return arg >= 0n ? arg : -arg;
 }
 
-export function nanoErgToErg(erg: bigint | undefined): string {
+export function nanoErgToErg(erg: bigint | undefined, maxDigits = 2): string {
 	if (typeof erg == 'bigint') {
 		return (Number(erg) / 10 ** 9).toLocaleString('en-US', {
 			minimumFractionDigits: 0,
-			maximumFractionDigits: 2
+			maximumFractionDigits: maxDigits
 		});
 	} else {
 		return '0.00';
@@ -38,4 +38,11 @@ export function centsToUsd(erg: bigint | undefined): string {
 	} else {
 		return '0.00';
 	}
+}
+
+export function oracleRateToUsd(rate: bigint): string {
+	return (10 ** 7 / Number(rate)).toLocaleString('en-US', {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	});
 }

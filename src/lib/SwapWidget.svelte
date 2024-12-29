@@ -35,6 +35,9 @@
 		usdStringToCentBigInt
 	} from './utils';
 	import {
+		bankBoxInCircSigUsd,
+		bankBoxInErg,
+		oraclePriceSigUsd,
 		reserve_boarder_left_ERG,
 		reserve_boarder_left_USD,
 		reserve_boarder_right_ERG,
@@ -69,10 +72,6 @@
 
 	const directionBuy = 1n;
 	const directionSell = -1n;
-
-	const bankBoxInErg = writable<bigint>(1653105734759386n);
-	const bankBoxInCircSigUsd = writable<bigint>(46260638n);
-	const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 	// TODO: type definition for OracleBox
 	const oracle_box = writable<Output>();

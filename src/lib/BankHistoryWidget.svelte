@@ -2,7 +2,11 @@
 	import { formatDistanceToNowStrict } from 'date-fns';
 	import Spinner from './Spinner.svelte';
 
-	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
+	import {
+		mempool_interactions,
+		prepared_interactions,
+		savePreparedInteractionsToLocalStorage
+	} from './stores/preparedInteractions';
 
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
@@ -59,8 +63,13 @@
 
 	onMount(() => {
 		intervalId = setInterval(() => {
-			prepared_interactions.update((current) => [...current]);
+			prepared_interactions.update((current) =>
+				current.filter((x) => x.timestamp >= Date.now() - 60000)
+			);
 		}, 1000);
+		prepared_interactions.subscribe((x) => {
+			savePreparedInteractionsToLocalStorage();
+		});
 	});
 
 	onDestroy(() => {
@@ -140,7 +149,7 @@
 				</div>
 				<div class="flex flex-col">
 					<div>
-						<span class="mr-1 text-3xl">
+						<span class="mr-1 text-3xl" class:text-gray-500={!interaction.own}>
 							{formatAmount(interaction.amount)}
 						</span>
 						<span class="text-lg text-gray-500"> SigUSD </span>

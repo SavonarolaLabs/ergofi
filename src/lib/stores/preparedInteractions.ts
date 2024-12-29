@@ -6,11 +6,28 @@ import {
 	type OperationInfo
 } from '$lib/TransactionUtils';
 
-export const prepared_interactions: Writable<Interaction[]> = writable([]);
+export const prepared_interactions: Writable<Interaction[]> = writable(
+	loadPreparedInteractionsFromLocalStorage()
+);
 export const mempool_interactions: Writable<Interaction[]> = writable([]);
+
+export function savePreparedInteractionsToLocalStorage() {
+	const interactions = get(prepared_interactions);
+	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+}
+
+export function loadPreparedInteractionsFromLocalStorage(): Interaction[] {
+	const interactions = localStorage.getItem('prepared_interactions');
+	if (interactions) {
+		return JSON.parse(interactions);
+	} else {
+		return [];
+	}
+}
 
 export function addPreparedInteraction(tx) {
 	let i = txToSigmaUSDInteraction(tx);
+	i.own = true;
 	prepared_interactions.update((l) => [i, ...l]);
 }
 
@@ -84,4 +101,5 @@ export type Interaction = {
 	type: 'Buy' | 'Sell';
 	ergAmount: number;
 	confirmed: boolean;
+	own: boolean;
 };

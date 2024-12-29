@@ -33,11 +33,7 @@ export function calculateAddressInfo(tx: any, ergoTree: string): AddressInfo {
 	};
 }
 
-export function returnOutputsExcept(
-	tx: any,
-	includeTrees?: string[], // Опционально
-	exceptTrees?: string[] // Опционально
-) {
+export function returnOutputsExcept(tx: any, includeTrees?: string[], exceptTrees?: string[]) {
 	if (!tx?.outputs) {
 		return [];
 	}
@@ -47,6 +43,96 @@ export function returnOutputsExcept(
 		const isInExceptTrees = exceptTrees ? exceptTrees.includes(o.ergoTree) : false; // Если exceptTrees не указан, ничего не исключаем
 		return isInIncludeTrees && !isInExceptTrees; // Включаем, если входит в include и не входит в except
 	});
+}
+export function returnInputsExcept(tx: any, includeTrees?: string[], exceptTrees?: string[]) {
+	if (!tx?.inputs) {
+		return [];
+	}
+
+	return tx.inputs.filter((i) => {
+		const isInIncludeTrees = includeTrees ? includeTrees.includes(i.ergoTree) : true; // Если includeTrees не указан, включаем все
+		const isInExceptTrees = exceptTrees ? exceptTrees.includes(i.ergoTree) : false; // Если exceptTrees не указан, ничего не исключаем
+		return isInIncludeTrees && !isInExceptTrees; // Включаем, если входит в include и не входит в except
+	});
+}
+
+export function calculateTokenAmount(boxes: any[], tokenId: string): bigint {
+	// Инициализация суммы
+	let totalAmount = 0n;
+
+	// Проходим по всем box
+	for (const box of boxes) {
+		if (box.assets && Array.isArray(box.assets)) {
+			// Фильтруем assets по tokenId
+			for (const asset of box.assets) {
+				if (asset.tokenId === tokenId) {
+					// Суммируем количество
+					totalAmount += BigInt(asset.amount || 0);
+				}
+			}
+		}
+	}
+	return totalAmount;
+}
+
+export function calculateErgoAmount(boxes: any[]): bigint {
+	// Инициализация суммы для ERG
+	let totalErgo = 0n;
+
+	// Проходим по всем box
+	for (const box of boxes) {
+		// Проверяем наличие значения ERG в текущем box
+		if (box.value) {
+			// Добавляем значение ERG
+			totalErgo += BigInt(box.value || 0);
+		}
+	}
+
+	return totalErgo;
+}
+
+export function getErgoTreesByType(tx: any): {
+	inputsErgoTrees: string[];
+	outputsErgoTrees: string[];
+} {
+	// Множества для хранения уникальных значений
+	const inputsErgoTrees = new Set<string>();
+	const outputsErgoTrees = new Set<string>();
+
+	// Обрабатываем inputs
+	if (tx.inputs && Array.isArray(tx.inputs)) {
+		for (const input of tx.inputs) {
+			if (input.ergoTree) {
+				inputsErgoTrees.add(input.ergoTree);
+			}
+		}
+	}
+
+	// Обрабатываем outputs
+	if (tx.outputs && Array.isArray(tx.outputs)) {
+		for (const output of tx.outputs) {
+			if (output.ergoTree) {
+				outputsErgoTrees.add(output.ergoTree);
+			}
+		}
+	}
+
+	// Возвращаем массивы из множеств
+	return {
+		inputsErgoTrees: Array.from(inputsErgoTrees),
+		outputsErgoTrees: Array.from(outputsErgoTrees)
+	};
+}
+
+export function getOtherThanSpecifiedTrees(
+	ergoTrees: string[],
+	specifiedTrees: string[]
+): string[] {
+	// Фильтруем все деревья, которых нет в specifiedTrees
+	const otherTrees = ergoTrees.filter((tree) => !specifiedTrees.includes(tree));
+
+	// Если нет других деревьев, возвращаем пустой массив
+	return otherTrees.length > 0 ? otherTrees : [];
 }
 
 export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): OperationInfo {
@@ -112,6 +198,36 @@ export function calculateErgoStatsByErgoTree(tx: any, address: string): TokenSta
 		output: outputAmount,
 		difference: outputAmount - inputAmount
 	};
+}
+
+export function findPotentialFeeTrees(
+	otherOutputsErgoTrees: string[],
+	inputsErgoTrees: string[],
+	outputBoxes: any[],
+	ergoDifference: number
+): string[] {
+	const threshold = Math.abs(ergoDifference) * 0.05; // 5% от абсолютного значения
+
+	// Массив для хранения деревьев, которые соответствуют условиям
+	const potentialFeeTrees: string[] = [];
+
+	for (const tree of otherOutputsErgoTrees) {
+		// Проверяем, есть ли дерево в inputsErgoTrees
+		if (!inputsErgoTrees.includes(tree)) {
+			// Находим соответствующий outputBox для этого дерева
+			const outputBox = outputBoxes.find((box) => box.ergoTree === tree);
+			if (
+				outputBox &&
+				BigInt(outputBox.value) < BigInt(threshold) && // Значение Ergo меньше порога
+				(!outputBox.assets || outputBox.assets.length === 0) // В боксе нет assets
+			) {
+				// Добавляем дерево, если оно соответствует всем условиям
+				potentialFeeTrees.push(tree);
+			}
+		}
+	}
+
+	return potentialFeeTrees;
 }
 
 export function shorten(value: string | undefined): string {

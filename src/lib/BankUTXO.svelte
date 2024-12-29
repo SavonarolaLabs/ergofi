@@ -8,8 +8,9 @@
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
 
+	export let confirmed = true;
+
 	const bank = {
-		confirmed: true,
 		type: 'UTxO',
 		price: 1.77,
 		reserveRatio: 551,
@@ -22,7 +23,7 @@
 	<div class="left pb-1">
 		<div>
 			<div class="flex items-center gap-1 uppercase">
-				{#if bank.confirmed}
+				{#if confirmed}
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em"
 						><path
 							fill="currentColor"

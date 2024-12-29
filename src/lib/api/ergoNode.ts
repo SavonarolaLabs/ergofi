@@ -1,7 +1,7 @@
 import { parse } from '@fleet-sdk/serializer';
 
 //const NODE_URL = 'http://213.239.193.208:9053';
-const NODE_URL = 'http://localhost:9053';
+const NODE_URL = 'https://ergfi.xyz:9443';
 
 export const ORACLE_ERG_USD_NFT =
 	'011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f';

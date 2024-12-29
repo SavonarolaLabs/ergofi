@@ -3,13 +3,14 @@
 	import { onMount } from 'svelte';
 	import { mempool_transactions } from './stores/mempoolTranscations';
 	import { mempoolDummy } from './mempoolDummy';
+	import { updateMempoolInteractions } from './stores/preparedInteractions';
 
 	onMount(() => {
 		let x = mempoolDummy;
 		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
 		socket.connect();
-		const channelTopic = 'sigmausd_transactions';
-		//const channelTopic = 'transactions';
+		//const channelTopic = 'sigmausd_transactions';
+		const channelTopic = 'transactions';
 
 		const channel = socket.channel('mempool:' + channelTopic, {});
 
@@ -23,13 +24,11 @@
 			});
 
 		channel.on('all_transactions', (payload) => {
-			console.log('all_transactions', { payload });
+			updateMempoolInteractions(payload.transactions);
 		});
 
 		channel.on(channelTopic, (payload) => {
-			console.log(channelTopic, payload);
-
-			mempool_transactions.set(payload.transactions);
+			updateMempoolInteractions(payload.transactions);
 		});
 
 		return () => {

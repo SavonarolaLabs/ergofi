@@ -26,7 +26,7 @@
 	</div>
 </div>
 
-<!-- <Elixir></Elixir> -->
+<Elixir></Elixir>
 <style>
 	.tachikoma-bg {
 		background-size: contain;

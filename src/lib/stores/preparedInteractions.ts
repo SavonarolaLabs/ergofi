@@ -171,7 +171,7 @@ function txToSigmaUSDInteraction(tx): Interaction {
 		id: crypto.randomUUID(),
 		transactionId: tx.id,
 		amount: Number(deltaToken),
-		timestamp: Date.now(),
+		timestamp: tx.creationTimestamp ?? Date.now(),
 		price: Number(tokenPrice),
 		type: txData.operation,
 		ergAmount: Number(deltaErg),

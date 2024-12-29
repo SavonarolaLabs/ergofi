@@ -218,7 +218,7 @@ export function findPotentialFeeTrees(
 			const outputBox = outputBoxes.find((box) => box.ergoTree === tree);
 			if (
 				outputBox &&
-				BigInt(outputBox.value) < BigInt(threshold) && // Значение Ergo меньше порога
+				BigInt(outputBox.value) < BigInt(Math.floor(threshold)) && // Значение Ergo меньше порога
 				(!outputBox.assets || outputBox.assets.length === 0) // В боксе нет assets
 			) {
 				// Добавляем дерево, если оно соответствует всем условиям

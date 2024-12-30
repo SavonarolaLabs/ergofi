@@ -67,6 +67,7 @@
 			prepared_interactions.update((current) =>
 				current.filter((x) => x.timestamp >= Date.now() - 60000)
 			);
+			mempool_interactions.set($mempool_interactions);
 		}, 1000);
 		prepared_interactions.subscribe((x) => {
 			savePreparedInteractionsToLocalStorage();

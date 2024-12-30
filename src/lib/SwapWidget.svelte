@@ -63,9 +63,9 @@
 		loading = false;
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
-		oraclePriceSigUsd.subscribe((val)=>{
-			window.document.title = `SigUSD @${oracleRateToUsd(val)}`
-		})
+		oraclePriceSigUsd.subscribe((val) => {
+			window.document.title = `SigUSD @${oracleRateToUsd(val)}`;
+		});
 	});
 
 	const FEE_UI = 10n; //0.1%
@@ -452,14 +452,13 @@
 
 		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 		const interactionId = addPreparedInteraction(tx);
-		try{
+		try {
 			const signed = await ergo.sign_tx(tx);
-			addSignedInteraction(tx, interactionId);
-			const txId = await ergo.submit_tx(signed);
+			addSignedInteraction(signed, interactionId);
 
-			console.log({ signed });
+			const txId = await ergo.submit_tx(signed);
 			console.log({ txId });
-		}catch(e){
+		} catch (e) {
 			cancelPreparedInteractionById(interactionId);
 		}
 		//		console.log(txId);

@@ -97,7 +97,6 @@
 				3) .blink-twice if in blinkingItems
 				4) on:animationend => handleBlinkEnd(interaction.id)
 			-->
-				{shorten(interaction.transactionId)}
 				<div
 					class="row {blinkingItems.has(interaction.id) ? 'blink-twice' : ''}"
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
@@ -131,8 +130,6 @@
 			{/each}
 
 			{#each $mempool_interactions as interaction (interaction.id)}
-				{shorten(interaction.transactionId)}
-
 				<a href="https://explorer.ergoplatform.com/en/transactions/{interaction.transactionId}">
 					<div class="row">
 						<div class="left pb-1">

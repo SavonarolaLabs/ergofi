@@ -50,7 +50,9 @@
 	import { mempoolDummy } from './mempoolDummy';
 	import {
 		addPreparedInteraction,
+		addSignedInteraction,
 		cancelPreparedInteraction,
+		cancelPreparedInteractionById,
 		prepared_interactions,
 		updateMempoolInteractions
 	} from './stores/preparedInteractions';
@@ -69,7 +71,7 @@
 	const FEE_UI = 10n; //0.1%
 	const FEE_UI_DENOM = 100_00n;
 	const FEE_MINING_MIN = RECOMMENDED_MIN_FEE_VALUE;
-	const BASE_INPUT_AMOUNT_ERG = 100n; //100 ERG
+	const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
 	const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
 	const uiFeeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
@@ -449,16 +451,16 @@
 		const height = await ergo.get_current_height();
 
 		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-		console.log(tx);
+		const interactionId = addPreparedInteraction(tx);
 		try{
-			addPreparedInteraction(tx);
 			const signed = await ergo.sign_tx(tx);
+			addSignedInteraction(tx, interactionId);
 			const txId = await ergo.submit_tx(signed);
 
 			console.log({ signed });
 			console.log({ txId });
 		}catch(e){
-			cancelPreparedInteraction(tx);
+			cancelPreparedInteractionById(interactionId);
 		}
 		//		console.log(txId);
 	}

@@ -32,7 +32,6 @@ export function asBigInt(v: bigint | string | number) {
 }
 
 export function sumNanoErg(boxes: Box[]): bigint {
-	console.log(boxes);
 	return boxes.reduce((a: bigint, b: Box<Amount>) => asBigInt(a) + asBigInt(b.value), 0n);
 }
 

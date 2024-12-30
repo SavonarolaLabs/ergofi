@@ -9,9 +9,10 @@
 
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
-	import { fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 	//import { txToSigmaUSDInteraction } from './interaction'; // your custom function
 	import { onDestroy, onMount } from 'svelte';
+	import { shorten } from './TransactionUtils';
 
 	/**
 	 * We maintain a Set of items currently in blink phase.
@@ -82,7 +83,9 @@
 	<div class="pl-2">
 		<BankUTXO></BankUTXO>
 		{#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
-			<BankUTXO confirmed={false}></BankUTXO>
+			<div in:fade={{ delay: 0, duration: 400 }} out:fly={{ y: -20, opacity: 0, duration: 300 }}>
+				<BankUTXO confirmed={false}></BankUTXO>
+			</div>
 		{/if}
 	</div>
 	<div>
@@ -94,6 +97,7 @@
 				3) .blink-twice if in blinkingItems
 				4) on:animationend => handleBlinkEnd(interaction.id)
 			-->
+				{shorten(interaction.transactionId)}
 				<div
 					class="row {blinkingItems.has(interaction.id) ? 'blink-twice' : ''}"
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
@@ -127,48 +131,50 @@
 			{/each}
 
 			{#each $mempool_interactions as interaction (interaction.id)}
-			<a href="https://explorer.ergoplatform.com/en/transactions/{interaction.transactionId}">
-				<div class="row">
-					<div class="left pb-1">
-						<div>
-							<div class="flex items-center gap-1 uppercase text-gray-400">
-								{#if interaction.confirmed}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 512 512"
-										width="1em"
-										fill="currentColor"
-										style="margin-left:2px;margin-right:2px;"
-									>
-										<path
-											d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
-										/>
-									</svg>
-									{interaction.type} @{interaction.price}
-								{:else}
-									<Spinner size={16} />
-									{interaction.type} @{interaction.price}
-								{/if}
+				{shorten(interaction.transactionId)}
+
+				<a href="https://explorer.ergoplatform.com/en/transactions/{interaction.transactionId}">
+					<div class="row">
+						<div class="left pb-1">
+							<div>
+								<div class="flex items-center gap-1 uppercase text-gray-400">
+									{#if interaction.confirmed}
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 512 512"
+											width="1em"
+											fill="currentColor"
+											style="margin-left:2px;margin-right:2px;"
+										>
+											<path
+												d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
+											/>
+										</svg>
+										{interaction.type} @{interaction.price}
+									{:else}
+										<Spinner size={16} />
+										{interaction.type} @{interaction.price}
+									{/if}
+								</div>
+							</div>
+							<span class="text-sm text-gray-500">
+								{formatTimeAgo(interaction.timestamp)}
+							</span>
+						</div>
+						<div class="flex flex-col">
+							<div>
+								<span class="mr-1 text-3xl" class:text-gray-500={!interaction.own}>
+									{formatAmount(interaction.amount)}
+								</span>
+								<span class="text-lg text-gray-500"> SigUSD </span>
+							</div>
+							<div class="pr-8 text-right text-gray-500">
+								{formatAmount(interaction.ergAmount)}
+								<span style="margin-left:7px;">ERG</span>
 							</div>
 						</div>
-						<span class="text-sm text-gray-500">
-							{formatTimeAgo(interaction.timestamp)}
-						</span>
 					</div>
-					<div class="flex flex-col">
-						<div>
-							<span class="mr-1 text-3xl" class:text-gray-500={!interaction.own}>
-								{formatAmount(interaction.amount)}
-							</span>
-							<span class="text-lg text-gray-500"> SigUSD </span>
-						</div>
-						<div class="pr-8 text-right text-gray-500">
-							{formatAmount(interaction.ergAmount)}
-							<span style="margin-left:7px;">ERG</span>
-						</div>
-					</div>
-				</div>
-			</a>
+				</a>
 			{/each}
 		</div>
 		<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>

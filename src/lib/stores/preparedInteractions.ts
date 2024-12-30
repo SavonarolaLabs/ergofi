@@ -40,10 +40,31 @@ export function loadPreparedInteractionsFromLocalStorage(): Interaction[] {
 	}
 }
 
-export function addPreparedInteraction(tx) {
+export function addPreparedInteraction(tx):string {
 	let i = txToSigmaUSDInteraction(tx);
 	i.own = true;
+	console.log("new interaction")
+	console.log(i)
 	prepared_interactions.update((l) => [i, ...l]);
+	return i.id
+}
+
+export function addSignedInteraction(signedTx, uuid:string){
+	const i = get(prepared_interactions).find(x => x.id == uuid);
+	if(i){
+		prepared_interactions.update(l => {
+			l.forEach(x => {
+				if(x.id == uuid){
+					x.transactionId = signedTx.id
+				}; 
+			})
+			return l;
+		})
+		return i.id;
+	}else{
+		return addPreparedInteraction(signedTx);
+	}
+	
 }
 
 export function cancelPreparedInteraction(tx:MempoolTransaction) {
@@ -52,11 +73,21 @@ export function cancelPreparedInteraction(tx:MempoolTransaction) {
 	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
 }
 
-function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]) {
+export function cancelPreparedInteractionById(uuid:string) {
+	const interactions = get(prepared_interactions).filter(x =>x.id != uuid);
+	prepared_interactions.set(interactions);
+	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+}
+
+function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]):Interaction[] {
 	const txIdsInMempool = txList.map((x) => x.id);
 
 	let notYetInMempool = get(prepared_interactions);
 	const beforeUpdateCount = notYetInMempool.length;
+
+	let removedInteractions = notYetInMempool.filter(
+		(t) => txIdsInMempool.includes(t.transactionId)
+	);
 
 	let notYetInMempoolUpdated = notYetInMempool.filter(
 		(t) => !txIdsInMempool.includes(t.transactionId)
@@ -66,9 +97,10 @@ function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]) {
 	if (afterUpdateCount < beforeUpdateCount) {
 		prepared_interactions.set(notYetInMempoolUpdated);
 	}
+	return removedInteractions;
 }
 
-function updateAssumedInMempoolInteractions(txList: MempoolTransaction[]) {
+function updateAssumedInMempoolInteractions(txList: MempoolTransaction[], removedInteractions: Interaction[]=[]) {
 	const txIdsInMempool = txList.map((x) => x.id);
 
 	let assumedInMempool = get(mempool_interactions);
@@ -80,7 +112,7 @@ function updateAssumedInMempoolInteractions(txList: MempoolTransaction[]) {
 	let alreadyKnownTxIds = assumedInMempoolUpdated.map((x) => x.transactionId);
 	let newInteractions: Interaction[] = txList
 		.filter((tx) => !alreadyKnownTxIds.includes(tx.id))
-		.map(txToSigmaUSDInteraction);
+		.map(x=>mapOrUseRemovedInteraction(x, removedInteractions));
 	const afterUpdateCount = assumedInMempoolUpdated.length;
 
 	if (beforeUpdateCount == afterUpdateCount && newInteractions.length == 0) {
@@ -90,9 +122,13 @@ function updateAssumedInMempoolInteractions(txList: MempoolTransaction[]) {
 	}
 }
 
+function mapOrUseRemovedInteraction(t:MempoolTransaction, removedInteractions:Interaction[]){
+	return removedInteractions.find(rI => rI.transactionId == t.id) ?? txToSigmaUSDInteraction(t)
+}
+
 export function updateMempoolInteractions(txList: MempoolTransaction[]) {
-	updateNotYetInMempoolInteractions(txList);
-	updateAssumedInMempoolInteractions(txList);
+	const removedInteractions:Interaction[] = updateNotYetInMempoolInteractions(txList);
+	updateAssumedInMempoolInteractions(txList, removedInteractions);
 }
 
 export function txToSigmaUSDInteractionOLD(tx): Interaction {

@@ -10,6 +10,7 @@
 	} from './stores/preparedInteractions';
 	import { fade, fly } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
+	import { applyAnimation, blinkThreeTimes, rejectShake } from './animations';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -69,6 +70,7 @@
 					handleRemoval(item.id);
 				}
 			});
+			prepared_interactions.set($prepared_interactions);
 			mempool_interactions.set($mempool_interactions);
 		}, 1000);
 
@@ -92,6 +94,7 @@
 			type: 'BUY',
 			ergAmount: 100,
 			confirmed: false,
+			rejected: false,
 			own: true
 		};
 
@@ -99,50 +102,13 @@
 
 		setTimeout(() => {
 			prepared_interactions.update((l) => {
-				l.find((y) => y.id == x.id).confirmed = true;
+				l.find((y) => y.id == x.id).rejected = true;
 				return l;
 			});
-		}, 2000);
+		}, 4000);
 		setTimeout(() => {
 			prepared_interactions.update((l) => l.filter((y) => y.id != x.id));
-		}, 3000);
-	}
-
-	function blinkThreeTimes(
-		node: HTMLElement,
-		{ duration }: { duration: number }
-	): {
-		duration: number;
-		tick: (t: number) => void;
-	} {
-		function applyColorToAllElements(element: HTMLElement, color: string) {
-			element.style.setProperty('color', color, 'important');
-			Array.from(element.children).forEach((child) =>
-				applyColorToAllElements(child as HTMLElement, color)
-			);
-		}
-
-		applyColorToAllElements(node, 'green');
-
-		const keyframes: Keyframe[] = [
-			{ opacity: 1 },
-			{ opacity: 0, offset: 0.167 },
-			{ opacity: 1, offset: 0.333 },
-			{ opacity: 0, offset: 0.5 },
-			{ opacity: 1, offset: 0.667 },
-			{ opacity: 0, offset: 0.833 },
-			{ opacity: 1, offset: 1 }
-		];
-
-		const animation = node.animate(keyframes, {
-			duration,
-			easing: 'ease-in-out'
-		});
-
-		return {
-			duration,
-			tick: (t: number) => (animation.currentTime = (1 - t) * duration)
-		};
+		}, 5000);
 	}
 </script>
 
@@ -163,12 +129,24 @@
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
 					on:introend={() => handleFlyEnd(i.id)}
 					on:animationend={() => handleBlinkEnd(i.id)}
-					out:blinkThreeTimes={{ duration: 1000 }}
+					out:applyAnimation={{ interaction: i, duration: 1000 }}
 				>
 					<div class="left pb-1">
-						<div class="blink">
+						<div class:blink={!i.rejected && !i.confirmed}>
 							<div class="flex items-center gap-1 uppercase text-gray-400">
-								{#if i.confirmed}
+								{#if i.rejected}
+									<svg
+										fill="currentColor"
+										width="1em"
+										viewBox="0 0 24 24"
+										xmlns="http://www.w3.org/2000/svg"
+										><path
+											d="M9.172 16.242 12 13.414l2.828 2.828 1.414-1.414L13.414 12l2.828-2.828-1.414-1.414L12 10.586 9.172 7.758 7.758 9.172 10.586 12l-2.828 2.828z"
+										/><path
+											d="M12 22c5.514 0 10-4.486 10-10S17.514 2 12 2 2 6.486 2 12s4.486 10 10 10zm0-18c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8z"
+										/></svg
+									>
+								{:else if i.confirmed}
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 512 512"

@@ -73,9 +73,20 @@ export function cancelPreparedInteraction(tx: MempoolTransaction) {
 }
 
 export function cancelPreparedInteractionById(uuid: string) {
-	const interactions = get(prepared_interactions).filter((x) => x.id != uuid);
-	prepared_interactions.set(interactions);
-	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+	//TODO: first set cancel icon then remove from list
+
+	prepared_interactions.update((l) => {
+		const x = l.find((y) => y.id == uuid);
+		if (x) {
+			x.rejected = true;
+		}
+		return l;
+	});
+	setTimeout(() => {
+		const interactions = get(prepared_interactions).filter((x) => x.id != uuid);
+		prepared_interactions.set(interactions);
+		localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+	}, 1000);
 }
 
 function updateNotYetInMempoolInteractions(txList: MempoolTransaction[]): Interaction[] {
@@ -217,7 +228,8 @@ function txToSigmaUSDInteraction(tx): Interaction {
 		price: Number(tokenPrice),
 		type: txData.operation,
 		ergAmount: Number(deltaErg),
-		confirmed: false
+		confirmed: false,
+		rejected: false
 	};
 }
 
@@ -230,5 +242,6 @@ export type Interaction = {
 	type: 'Buy' | 'Sell';
 	ergAmount: number;
 	confirmed: boolean;
+	rejected: boolean;
 	own: boolean;
 };

@@ -7,7 +7,7 @@
 
 	onMount(() => {
 		let x = mempoolDummy;
-		const socket = new Socket('ws://localhost:4000/socket', { params: {} });
+		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
 		socket.connect();
 		const channelTopic = 'sigmausd_transactions';
 		//const channelTopic = 'transactions';
@@ -39,15 +39,14 @@
 </script>
 
 <div style="display:none">
-<h1>SigmaUSD Transactions</h1>
-{#if $mempool_transactions.length > 0}
-	<ul>
-		{#each $mempool_transactions as tx}
-			<li><strong>Transaction ID:</strong> {tx.id}</li>
-		{/each}
-	</ul>
-{:else}
-	<p>No transactions in the mempool.</p>
-{/if}
-
+	<h1>SigmaUSD Transactions</h1>
+	{#if $mempool_transactions.length > 0}
+		<ul>
+			{#each $mempool_transactions as tx}
+				<li><strong>Transaction ID:</strong> {tx.id}</li>
+			{/each}
+		</ul>
+	{:else}
+		<p>No transactions in the mempool.</p>
+	{/if}
 </div>

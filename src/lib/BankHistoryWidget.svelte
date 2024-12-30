@@ -12,6 +12,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	let blinkingItems = new Set<string>();
+	let removingItems = new Set<string>();
 
 	function handleFlyEnd(id: string) {
 		blinkingItems = new Set(blinkingItems);
@@ -23,12 +24,22 @@
 		blinkingItems.delete(id);
 	}
 
-	function handleOutroStart(id: string) {
+	async function handleRemoval(id: string) {
+		// Mark item for removal and trigger blink animation
+		removingItems = new Set(removingItems);
+		removingItems.add(id);
 		blinkingItems = new Set(blinkingItems);
 		blinkingItems.add(id);
-	}
 
-	function handleOutroEnd(id: string) {
+		// Wait for blink animation to complete
+		await new Promise((resolve) => setTimeout(resolve, 600));
+
+		// Remove the item
+		prepared_interactions.update((items) => items.filter((x) => x.id !== id));
+
+		// Cleanup sets
+		removingItems = new Set(removingItems);
+		removingItems.delete(id);
 		blinkingItems = new Set(blinkingItems);
 		blinkingItems.delete(id);
 	}
@@ -52,9 +63,15 @@
 
 	onMount(() => {
 		intervalId = setInterval(() => {
-			prepared_interactions.update((c) => c.filter((x) => x.timestamp >= Date.now() - 60000));
+			const currentTime = Date.now();
+			$prepared_interactions.forEach((item) => {
+				if (item.timestamp < currentTime - 60000 && !removingItems.has(item.id)) {
+					handleRemoval(item.id);
+				}
+			});
 			mempool_interactions.set($mempool_interactions);
 		}, 1000);
+
 		prepared_interactions.subscribe(() => {
 			savePreparedInteractionsToLocalStorage();
 		});
@@ -63,6 +80,70 @@
 	onDestroy(() => {
 		clearInterval(intervalId);
 	});
+
+	function addDummy() {
+		console.log('asdf');
+		const x = {
+			id: crypto.randomUUID(),
+			transactionId: crypto.randomUUID(),
+			amount: 123,
+			timestamp: Date.now(),
+			price: 32.22,
+			type: 'BUY',
+			ergAmount: 100,
+			confirmed: false,
+			own: true
+		};
+
+		prepared_interactions.update((l) => [x, ...l]);
+
+		setTimeout(() => {
+			prepared_interactions.update((l) => {
+				l.find((y) => y.id == x.id).confirmed = true;
+				return l;
+			});
+		}, 2000);
+		setTimeout(() => {
+			prepared_interactions.update((l) => l.filter((y) => y.id != x.id));
+		}, 3000);
+	}
+
+	function blinkThreeTimes(
+		node: HTMLElement,
+		{ duration }: { duration: number }
+	): {
+		duration: number;
+		tick: (t: number) => void;
+	} {
+		function applyColorToAllElements(element: HTMLElement, color: string) {
+			element.style.setProperty('color', color, 'important');
+			Array.from(element.children).forEach((child) =>
+				applyColorToAllElements(child as HTMLElement, color)
+			);
+		}
+
+		applyColorToAllElements(node, 'green');
+
+		const keyframes: Keyframe[] = [
+			{ opacity: 1 },
+			{ opacity: 0, offset: 0.167 },
+			{ opacity: 1, offset: 0.333 },
+			{ opacity: 0, offset: 0.5 },
+			{ opacity: 1, offset: 0.667 },
+			{ opacity: 0, offset: 0.833 },
+			{ opacity: 1, offset: 1 }
+		];
+
+		const animation = node.animate(keyframes, {
+			duration,
+			easing: 'ease-in-out'
+		});
+
+		return {
+			duration,
+			tick: (t: number) => (animation.currentTime = (1 - t) * duration)
+		};
+	}
 </script>
 
 <div class="widget">
@@ -82,15 +163,29 @@
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
 					on:introend={() => handleFlyEnd(i.id)}
 					on:animationend={() => handleBlinkEnd(i.id)}
-					out:fly={{ y: 0, opacity: 1, duration: 300 }}
-					on:outrostart={() => handleOutroStart(i.id)}
-					on:outroend={() => handleOutroEnd(i.id)}
+					out:blinkThreeTimes={{ duration: 1000 }}
 				>
 					<div class="left pb-1">
 						<div class="blink">
 							<div class="flex items-center gap-1 uppercase text-gray-400">
-								<SpinnerBar size={2.2} />
-								<span class="ml-3">{i.type} @{i.price}</span>
+								{#if i.confirmed}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 512 512"
+										width="1em"
+										fill="currentColor"
+										style="margin-left:2px;margin-right:2px;"
+									>
+										<path
+											d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
+										/>
+									</svg>
+								{:else}
+									<span class="mr-3">
+										<SpinnerBar size={2.2} />
+									</span>
+								{/if}
+								<span>{i.type} @{i.price}</span>
 							</div>
 						</div>
 						<span class="text-sm text-gray-500">{formatTimeAgo(i.timestamp)}</span>
@@ -151,11 +246,22 @@
 				</a>
 			{/each}
 		</div>
-		<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
+		<button on:click={addDummy}>
+			<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
+		</button>
 	</div>
 </div>
 
 <style>
+	@keyframes blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0;
+		}
+	}
 	.blink {
 		display: inline-block;
 		animation: heartbeat 1.5s ease-in-out infinite;

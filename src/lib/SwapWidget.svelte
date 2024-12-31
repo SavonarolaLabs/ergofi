@@ -455,9 +455,10 @@
 		try {
 			const signed = await ergo.sign_tx(tx);
 			addSignedInteraction(signed, interactionId);
+			console.log({ signed });
 
-			const txId = await ergo.submit_tx(signed);
-			console.log({ txId });
+			//const txId = await ergo.submit_tx(signed);
+			//console.log({ txId });
 		} catch (e) {
 			cancelPreparedInteractionById(interactionId);
 		}
@@ -810,7 +811,6 @@
 
 		const txId = await ergo.submit_tx(signed);
 		console.log(signed);
-		//		console.log(txId);
 	}
 
 	export async function buyERGWithUSDReversedTx(

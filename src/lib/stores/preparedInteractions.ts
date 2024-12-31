@@ -25,6 +25,7 @@ export const prepared_interactions: Writable<Interaction[]> = writable(
 	loadPreparedInteractionsFromLocalStorage()
 );
 export const mempool_interactions: Writable<Interaction[]> = writable([]);
+export const confirmed_interactions: Writable<Interaction[]> = writable([]);
 
 export function savePreparedInteractionsToLocalStorage() {
 	const interactions = get(prepared_interactions);

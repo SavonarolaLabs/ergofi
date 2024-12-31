@@ -4,6 +4,7 @@
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
 	import {
+		confirmed_interactions,
 		mempool_interactions,
 		prepared_interactions,
 		savePreparedInteractionsToLocalStorage
@@ -72,6 +73,7 @@
 			});
 			prepared_interactions.set($prepared_interactions);
 			mempool_interactions.set($mempool_interactions);
+			confirmed_interactions.set($confirmed_interactions);
 		}, 1000);
 
 		prepared_interactions.subscribe(() => {
@@ -95,20 +97,21 @@
 			ergAmount: 100,
 			confirmed: false,
 			rejected: false,
-			own: true
+			own: false
 		};
 
 		prepared_interactions.update((l) => [x, ...l]);
 
 		setTimeout(() => {
 			prepared_interactions.update((l) => {
-				l.find((y) => y.id == x.id).rejected = true;
+				//l.find((y) => y.id == x.id).rejected = true;
 				return l;
 			});
 		}, 4000);
 		setTimeout(() => {
 			prepared_interactions.update((l) => l.filter((y) => y.id != x.id));
-		}, 5000);
+			confirmed_interactions.update((l) => [x, ...l]);
+		}, 3000);
 	}
 </script>
 
@@ -170,7 +173,9 @@
 					</div>
 					<div class="flex flex-col">
 						<div>
-							<span class="mr-1 text-3xl">{formatAmount(i.amount)}</span>
+							<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
+								>{formatAmount(i.amount)}</span
+							>
 							<span class="text-lg text-gray-500"> SigUSD </span>
 						</div>
 						<div class="pr-8 text-right text-gray-500">
@@ -217,6 +222,44 @@
 							</div>
 							<div class="pr-8 text-right text-gray-500">
 								{formatAmount(m.ergAmount)}
+								<span style="margin-left:7px;">ERG</span>
+							</div>
+						</div>
+					</div>
+				</a>
+			{/each}
+
+			{#each $confirmed_interactions as c (c.id)}
+				<a href="https://explorer.ergoplatform.com/en/transactions/{c.transactionId}">
+					<div class="row text-green-500">
+						<div class="left pb-1">
+							<div>
+								<div class="flex items-center gap-1 uppercase">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 512 512"
+										width="1em"
+										fill="currentColor"
+										style="margin-left:2px;margin-right:2px;"
+									>
+										<path
+											d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
+										/>
+									</svg>
+									{c.type} @{c.price}
+								</div>
+							</div>
+							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>
+						</div>
+						<div class="flex flex-col">
+							<div>
+								<span class="mr-1 text-3xl">
+									{formatAmount(c.amount)}
+								</span>
+								<span class="text-lg"> SigUSD </span>
+							</div>
+							<div class="pr-8 text-right">
+								{formatAmount(c.ergAmount)}
 								<span style="margin-left:7px;">ERG</span>
 							</div>
 						</div>

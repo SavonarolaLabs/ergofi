@@ -13,6 +13,16 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { applyAnimation, blinkThreeTimes, rejectShake } from './animations';
 	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
+	import {
+		bankBoxInCircSigUsd,
+		bankBoxInErg,
+		oraclePriceSigUsd,
+		unconfirmed_bank_erg,
+		unconfrimed_bank_ratio,
+		unconfrimed_bank_usd
+	} from './stores/bank';
+	import { writable } from 'svelte/store';
+	import { calculateReserveRate } from './sigmaUSD';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -80,6 +90,14 @@
 		prepared_interactions.subscribe(() => {
 			savePreparedInteractionsToLocalStorage();
 		});
+
+		// add unconfirmed
+		prepared_interactions.subscribe(() => {
+			calculateUnconfirmed();
+		});
+		confirmed_interactions.subscribe(() => {
+			calculateUnconfirmed();
+		});
 	});
 
 	onDestroy(() => {
@@ -113,6 +131,26 @@
 			prepared_interactions.update((l) => l.filter((y) => y.id != x.id));
 			confirmed_interactions.update((l) => [x, ...l]);
 		}, 3000);
+	}
+
+	function calculateUnconfirmed() {
+		unconfirmed_bank_erg.set(10n * 10n ** 9n);
+		unconfrimed_bank_usd.set(1n);
+		unconfrimed_bank_ratio.set(7n);
+
+		const interactionsUnconfirmed = $mempool_interactions;
+
+		const interactionChanges = {
+			amount: interactionsUnconfirmed.reduce((a, e) => a + e.amount, 0),
+			erg: interactionsUnconfirmed.reduce((a, e) => a + e.ergAmount, 0)
+		};
+		const newBankErg = writable(0n);
+		newBankErg.set($bankBoxInErg + BigInt(interactionChanges.erg));
+
+		const unfonfirmed_bank_usd = $bankBoxInCircSigUsd + BigInt(interactionChanges.erg);
+
+		unconfrimed_bank_usd.set($prepared_interactions.reduce((a, e) => a + e.ergAmount, 0));
+		// const newReserveRate = calculateReserveRate($newBankErg, unfonfirmed_bank_usd, $oraclePriceSigUsd);
 	}
 </script>
 

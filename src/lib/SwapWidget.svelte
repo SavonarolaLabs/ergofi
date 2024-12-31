@@ -461,8 +461,8 @@
 			addSignedInteraction(signed, interactionId);
 			console.log({ signed });
 
-			const txId = await ergo.submit_tx(signed);
-			console.log({ txId });
+			//const txId = await ergo.submit_tx(signed);
+			//console.log({ txId });
 		} catch (e) {
 			cancelPreparedInteractionById(interactionId);
 		}

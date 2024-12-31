@@ -7,9 +7,11 @@
 		bankBoxInErg,
 		oraclePriceSigUsd,
 		reserve_boarder_left_USD,
-		reserve_rate
+		reserve_rate,
+		unconfirmed_bank_erg,
+		unconfrimed_bank_ratio,
+		unconfrimed_bank_usd
 	} from './stores/bank';
-	import { mempool_interactions } from './stores/preparedInteractions';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
 
 	export let confirmed = true;
@@ -21,17 +23,6 @@
 		amount: 1230000,
 		ergAmount: 1647597
 	};
-	const interactionsUnconfirmed = $mempool_interactions;
-
-	const interactionChanges = {
-		amount: interactionsUnconfirmed.reduce((a, e) => a + e.amount, 0),
-		erg: interactionsUnconfirmed.reduce((a, e) => a + e.ergAmount, 0)
-	};
-	const newBankErg = writable(0n);
-	newBankErg.set($bankBoxInErg + BigInt(interactionChanges.erg));
-
-	const newBankUSD = $bankBoxInCircSigUsd + BigInt(interactionChanges.erg);
-	const newReserveRate = calculateReserveRate($newBankErg, newBankUSD, $oraclePriceSigUsd);
 </script>
 
 <div class="row text-gray-500">
@@ -53,18 +44,18 @@
 			</div>
 		</div>
 		<span class="text-sm text-gray-500">
-			{$reserve_rate}% Reserve
+			{$unconfrimed_bank_ratio}% Reserve
 		</span>
 	</div>
 	<div class="flex flex-col text-gray-500">
 		<div>
 			<span class="mr-1 text-3xl">
-				{$reserve_boarder_left_USD.toLocaleString()}
+				{$unconfrimed_bank_usd.toLocaleString()}
 			</span>
 			<span class="text-lg"> SigUSD </span>
 		</div>
 		<div class="pr-8 text-right">
-			{nanoErgToErg($newBankErg, 0)}
+			{nanoErgToErg($unconfirmed_bank_erg, 0)}
 			<span style="margin-left:7px;">ERG</span>
 		</div>
 	</div>

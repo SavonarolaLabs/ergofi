@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { decodeBigInt, TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset, type Output } from './api/ergoNode';
 import { absBigInt, maxBigInt, minBigInt } from './utils';
 
@@ -167,4 +168,17 @@ export function calculateOutputSc(
 		outCircSigUSD,
 		outCircSigRSV
 	};
+}
+
+export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePrice: bigint) {
+	const bankERGBigNumber = BigNumber(bankErg.toString()).dividedBy(10 ** 9); //convert to ERG
+	const bankUSDBigNumber = BigNumber(bankUSD.toString()).dividedBy(100); //convert to USD
+	const price = BigNumber(10 ** 9)
+		.dividedBy(BigNumber(oraclePrice.toString()))
+		.dividedBy(100); //convert to ERG / USD price
+
+	const reserveRate = Number(
+		bankERGBigNumber.multipliedBy(price).dividedBy(bankUSDBigNumber).multipliedBy(100).toFixed(0)
+	);
+	return reserveRate; //%
 }

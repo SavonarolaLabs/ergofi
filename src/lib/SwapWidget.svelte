@@ -99,7 +99,11 @@
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
 
 	// Reserve Rate
-	function calculateReserveRate(inErg: bigint, inCircSigUSD: bigint, oraclePrice: bigint): any {
+	function calculateReserveRateAndBorders(
+		inErg: bigint,
+		inCircSigUSD: bigint,
+		oraclePrice: bigint
+	): any {
 		console.log(inErg, 'inErg');
 		console.log(oraclePrice, 'oraclePrice');
 
@@ -126,7 +130,7 @@
 
 		const reserveRate = Number(
 			bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
-		);
+		); // as function
 
 		const leftBorder = 4;
 		const rightBorder = 8;
@@ -204,7 +208,7 @@
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
 		oraclePriceSigUsd.set(oraclePrice);
-		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRate(
+		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
 			$bankBoxInErg,
 			$bankBoxInCircSigUsd,
 			$oraclePriceSigUsd
@@ -457,8 +461,8 @@
 			addSignedInteraction(signed, interactionId);
 			console.log({ signed });
 
-			//const txId = await ergo.submit_tx(signed);
-			//console.log({ txId });
+			const txId = await ergo.submit_tx(signed);
+			console.log({ txId });
 		} catch (e) {
 			cancelPreparedInteractionById(interactionId);
 		}

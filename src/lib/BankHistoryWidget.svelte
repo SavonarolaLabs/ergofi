@@ -12,6 +12,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
 	import { applyAnimation, blinkThreeTimes, rejectShake } from './animations';
+	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -120,7 +121,7 @@
 		<BankUTXO />
 		{#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
 			<div in:fade={{ duration: 400 }} out:fly={{ y: -20, opacity: 0, duration: 300 }}>
-				<BankUTXO confirmed={false} />
+				<BankUtxoUnconfirmed confirmed={false} />
 			</div>
 		{/if}
 	</div>

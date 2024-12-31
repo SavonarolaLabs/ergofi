@@ -19,7 +19,8 @@
 		oraclePriceSigUsd,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_ratio,
-		unconfrimed_bank_usd
+		unconfrimed_bank_usd,
+		unconfrimed_reserve_boarder_left_USD
 	} from './stores/bank';
 	import { writable } from 'svelte/store';
 	import { calculateReserveRate } from './sigmaUSD';
@@ -137,20 +138,23 @@
 		unconfirmed_bank_erg.set(10n * 10n ** 9n);
 		unconfrimed_bank_usd.set(1n);
 		unconfrimed_bank_ratio.set(7n);
+		unconfrimed_reserve_boarder_left_USD.set(666);
 
-		const interactionsUnconfirmed = $mempool_interactions;
+		const interactionsUnconfirmed = $prepared_interactions;
 
 		const interactionChanges = {
 			amount: interactionsUnconfirmed.reduce((a, e) => a + e.amount, 0),
 			erg: interactionsUnconfirmed.reduce((a, e) => a + e.ergAmount, 0)
 		};
+
 		const newBankErg = writable(0n);
 		newBankErg.set($bankBoxInErg + BigInt(interactionChanges.erg));
 
-		const unfonfirmed_bank_usd = $bankBoxInCircSigUsd + BigInt(interactionChanges.erg);
+		unconfirmed_bank_erg.set($bankBoxInErg + BigInt(interactionChanges.erg)); // if nanoergs - ok
+		unconfrimed_bank_usd.set($bankBoxInCircSigUsd + BigInt(interactionChanges.amount)); //if cents -ok - need to calculate left Border
 
-		unconfrimed_bank_usd.set($prepared_interactions.reduce((a, e) => a + e.ergAmount, 0));
-		// const newReserveRate = calculateReserveRate($newBankErg, unfonfirmed_bank_usd, $oraclePriceSigUsd);
+		//unconfrimed_bank_ratio.set(calculateReserveRate($unconfirmed_bank_erg, $bankBoxInErg,$oraclePriceSigUsd))
+		//unconfirmed_bank_erg.set($bankBoxInErg + 3_000_000_000_000_000n);
 	}
 </script>
 

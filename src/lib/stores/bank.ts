@@ -12,4 +12,5 @@ export const oraclePriceSigUsd = writable<bigint>(5405405n);
 
 export const unconfirmed_bank_erg = writable<bigint>(1653105734759386n);
 export const unconfrimed_bank_usd = writable<bigint>(46260638n);
+export const unconfrimed_reserve_boarder_left_USD = writable<number>(0);
 export const unconfrimed_bank_ratio = writable<bigint>(400n);

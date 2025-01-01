@@ -21,6 +21,19 @@ import {
 	type OperationInfo
 } from '$lib/TransactionUtils';
 
+export type Interaction = {
+	id: string;
+	transactionId: string;
+	amount: number;
+	timestamp: number;
+	price: number;
+	type: 'Buy' | 'Sell';
+	ergAmount: number;
+	confirmed: boolean;
+	rejected: boolean;
+	own: boolean;
+};
+
 export const prepared_interactions: Writable<Interaction[]> = writable(
 	loadPreparedInteractionsFromLocalStorage()
 );
@@ -28,34 +41,6 @@ export const mempool_interactions: Writable<Interaction[]> = writable([]);
 export const confirmed_interactions: Writable<Interaction[]> = writable(
 	loadConfirmedInteractionsFromLocalStorage()
 );
-
-export function saveConfirmedInteractionsToLocalStorage() {
-	const interactions = get(confirmed_interactions);
-	localStorage.setItem('confirmed_interactions', JSON.stringify(interactions));
-}
-
-export function loadConfirmedInteractionsFromLocalStorage(): Interaction[] {
-	const interactions = localStorage.getItem('confirmed_interactions');
-	if (interactions) {
-		return JSON.parse(interactions);
-	} else {
-		return [];
-	}
-}
-
-export function savePreparedInteractionsToLocalStorage() {
-	const interactions = get(prepared_interactions);
-	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
-}
-
-export function loadPreparedInteractionsFromLocalStorage(): Interaction[] {
-	const interactions = localStorage.getItem('prepared_interactions');
-	if (interactions) {
-		return JSON.parse(interactions);
-	} else {
-		return [];
-	}
-}
 
 export function addPreparedInteraction(tx): string {
 	let i = txToSigmaUSDInteraction(tx);
@@ -185,24 +170,6 @@ export function updateMempoolInteractions(txList: MempoolTransaction[]) {
 	}
 }
 
-export function txToSigmaUSDInteractionOLD(tx): Interaction {
-	const txData: OperationInfo = calculateOperationInfo(
-		calculateAddressInfo(tx, SIGUSD_BANK_TREE),
-		calculateAddressInfo(tx, tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree)
-	);
-
-	return {
-		id: crypto.randomUUID(),
-		transactionId: tx.id,
-		amount: Number(txData.amount.split(' ')[0]),
-		timestamp: Date.now(),
-		price: Number(txData.price),
-		type: txData.operation,
-		ergAmount: Number(txData.volume.split(' ')[0]),
-		confirmed: false
-	};
-}
-
 function txToSigmaUSDInteraction(tx): Interaction {
 	const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
 	const userTree = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
@@ -274,15 +241,32 @@ function txToSigmaUSDInteraction(tx): Interaction {
 	};
 }
 
-export type Interaction = {
-	id: string;
-	transactionId: string;
-	amount: number;
-	timestamp: number;
-	price: number;
-	type: 'Buy' | 'Sell';
-	ergAmount: number;
-	confirmed: boolean;
-	rejected: boolean;
-	own: boolean;
-};
+// localStorage
+
+export function saveConfirmedInteractionsToLocalStorage() {
+	const interactions = get(confirmed_interactions);
+	localStorage.setItem('confirmed_interactions', JSON.stringify(interactions));
+}
+
+export function loadConfirmedInteractionsFromLocalStorage(): Interaction[] {
+	const interactions = localStorage.getItem('confirmed_interactions');
+	if (interactions) {
+		return JSON.parse(interactions);
+	} else {
+		return [];
+	}
+}
+
+export function savePreparedInteractionsToLocalStorage() {
+	const interactions = get(prepared_interactions);
+	localStorage.setItem('prepared_interactions', JSON.stringify(interactions));
+}
+
+export function loadPreparedInteractionsFromLocalStorage(): Interaction[] {
+	const interactions = localStorage.getItem('prepared_interactions');
+	if (interactions) {
+		return JSON.parse(interactions);
+	} else {
+		return [];
+	}
+}

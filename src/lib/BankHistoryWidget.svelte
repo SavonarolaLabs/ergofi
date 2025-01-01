@@ -135,6 +135,7 @@
 	}
 
 	function calculateUnconfirmed() {
+		return;
 		unconfirmed_bank_erg.set(10n * 10n ** 9n);
 		unconfrimed_bank_usd.set(1n);
 		unconfrimed_bank_ratio.set(7n);

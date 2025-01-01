@@ -16,7 +16,7 @@
 		socket.connect();
 
 		// Choose which channel you want (options are "transactions" or "sigmausd_transactions")
-		const channelTopic = 'transactions';
+		const channelTopic = 'sigmausd_transactions';
 		const channelName = `mempool:${channelTopic}`;
 		const channel = socket.channel(channelName, {});
 
@@ -31,9 +31,9 @@
 				console.log('Unable to join:', resp);
 			});
 
-		channel.on('all_transactions', (payload) => {
-			handleMempoolSocketUpdate(payload);
-		});
+		// channel.on('all_transactions', (payload) => {
+		// 	handleMempoolSocketUpdate(payload);
+		// });
 		channel.on(channelTopic, (payload) => {
 			handleMempoolSocketUpdate(payload);
 		});

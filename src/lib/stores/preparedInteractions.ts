@@ -25,7 +25,23 @@ export const prepared_interactions: Writable<Interaction[]> = writable(
 	loadPreparedInteractionsFromLocalStorage()
 );
 export const mempool_interactions: Writable<Interaction[]> = writable([]);
-export const confirmed_interactions: Writable<Interaction[]> = writable([]);
+export const confirmed_interactions: Writable<Interaction[]> = writable(
+	loadConfirmedInteractionsFromLocalStorage()
+);
+
+export function saveConfirmedInteractionsToLocalStorage() {
+	const interactions = get(confirmed_interactions);
+	localStorage.setItem('confirmed_interactions', JSON.stringify(interactions));
+}
+
+export function loadConfirmedInteractionsFromLocalStorage(): Interaction[] {
+	const interactions = localStorage.getItem('confirmed_interactions');
+	if (interactions) {
+		return JSON.parse(interactions);
+	} else {
+		return [];
+	}
+}
 
 export function savePreparedInteractionsToLocalStorage() {
 	const interactions = get(prepared_interactions);
@@ -153,18 +169,12 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 
 function confirmInteractions(payload: MempoolSocketUpdate) {
 	if (payload.confirmed_transactions?.length > 0) {
-		console.log(
-			'confirmed ',
-			payload.confirmed_transactions.map((x) => x.id)
-		);
-
-		// get interactions mempool and intersect with confirmed_transactions
-		// put in confirmed interactions
 		const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
 		const intersect = get(mempool_interactions).filter((i) =>
 			confirmedTxIds.includes(i.transactionId)
 		);
 		confirmed_interactions.update((l) => [...intersect, ...l]);
+		//TODO: save to localstorage own confirmations
 	}
 }
 

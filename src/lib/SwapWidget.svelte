@@ -64,7 +64,7 @@
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
 		oraclePriceSigUsd.subscribe((val) => {
-			window.document.title = `SigUSD @${oracleRateToUsd(val)}`;
+			window.document.title = `↑${oracleRateToUsd(val)} ↓${oracleRateToUsd(val)} | SigUSD`;
 		});
 	});
 

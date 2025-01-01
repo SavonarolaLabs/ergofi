@@ -138,9 +138,41 @@ function mapOrUseRemovedInteraction(t: MempoolTransaction, removedInteractions: 
 	return removedInteractions.find((rI) => rI.transactionId == t.id) ?? txToSigmaUSDInteraction(t);
 }
 
+export type MempoolSocketUpdate = {
+	unconfirmed_transactions: MempoolTransaction[];
+	confirmed_transactions: MempoolTransaction[];
+};
+
+export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
+	console.log('handleMempoolSocketUpdate');
+	console.log('confirmed', payload.confirmed_transactions.length);
+	console.log('unconfirmed', payload.unconfirmed_transactions.length);
+	confirmInteractions(payload);
+	updateMempoolInteractions(payload.unconfirmed_transactions);
+}
+
+function confirmInteractions(payload: MempoolSocketUpdate) {
+	if (payload.confirmed_transactions?.length > 0) {
+		console.log(
+			'confirmed ',
+			payload.confirmed_transactions.map((x) => x.id)
+		);
+
+		// get interactions mempool and intersect with confirmed_transactions
+		// put in confirmed interactions
+		const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
+		const intersect = get(mempool_interactions).filter((i) =>
+			confirmedTxIds.includes(i.transactionId)
+		);
+		confirmed_interactions.update((l) => [...intersect, ...l]);
+	}
+}
+
 export function updateMempoolInteractions(txList: MempoolTransaction[]) {
-	const removedInteractions: Interaction[] = updateNotYetInMempoolInteractions(txList);
-	updateAssumedInMempoolInteractions(txList, removedInteractions);
+	if (txList?.length > 0) {
+		const removedInteractions: Interaction[] = updateNotYetInMempoolInteractions(txList);
+		updateAssumedInMempoolInteractions(txList, removedInteractions);
+	}
 }
 
 export function txToSigmaUSDInteractionOLD(tx): Interaction {
@@ -188,8 +220,6 @@ function txToSigmaUSDInteraction(tx): Interaction {
 		allUserAndFeeOutputs,
 		bank.ergoStats?.difference
 	); // [ FEES ]
-
-	console.log('feeTrees', { feeTrees });
 
 	const allUserOutputs = returnOutputsExcept(tx, undefined, [
 		SIGUSD_BANK_TREE,

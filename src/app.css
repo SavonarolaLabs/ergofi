@@ -34,3 +34,10 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
 	-moz-appearance: textfield; /* For Firefox */
 }
+
+@font-face {
+	font-family: 'Cyberpunk';
+	src: url('/Cyberpunk.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}

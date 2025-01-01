@@ -347,12 +347,16 @@
 			{/each}
 		</div>
 		<button on:click={addDummy}>
-			<h1 class="mb-2 text-9xl text-gray-700">SigmaUSD</h1>
+			<h1 class="punk mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 		</button>
 	</div>
 </div>
 
 <style>
+	.punk {
+		font-family: 'Cyberpunk', sans-serif;
+	}
+
 	@keyframes blink {
 		0%,
 		100% {

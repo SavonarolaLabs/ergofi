@@ -110,12 +110,15 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 function confirmMempoolInteractions(payload: MempoolSocketUpdate) {
 	if (payload.confirmed_transactions?.length > 0) {
 		const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
-		const updated = get(mempool_interactions).map((i) => {
+		const allUpdated = get(mempool_interactions).map((i) => {
 			if (confirmedTxIds.includes(i.transactionId)) i.confirmed = true;
 			return i;
 		});
-		mempool_interactions.set(updated);
-		return [];
+		const confirmed = get(mempool_interactions).filter((i) =>
+			confirmedTxIds.includes(i.transactionId)
+		);
+		mempool_interactions.set(allUpdated);
+		return confirmed;
 	}
 	return [];
 }
@@ -123,7 +126,7 @@ function removeConfirmedFromMempool() {
 	mempool_interactions.update((l) => l.filter((i) => !i.confirmed));
 }
 function addToConfirmed(confirmed: Interaction[]) {
-	mempool_interactions.update((l) => [...confirmed, ...l]);
+	confirmed_interactions.update((l) => [...confirmed, ...l]);
 }
 
 // removes from prepared those that are in mempool, returns list of removed

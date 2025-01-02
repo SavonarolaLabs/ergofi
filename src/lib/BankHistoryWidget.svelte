@@ -12,19 +12,8 @@
 	} from './stores/preparedInteractions';
 	import { fade, fly } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
-	import { applyAnimation, blinkThreeTimes, rejectShake } from './animations';
+	import { applyAnimation } from './animations';
 	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
-	import {
-		bankBoxInCircSigUsd,
-		bankBoxInErg,
-		oraclePriceSigUsd,
-		unconfirmed_bank_erg,
-		unconfrimed_bank_ratio,
-		unconfrimed_bank_usd,
-		unconfrimed_reserve_boarder_left_USD
-	} from './stores/bank';
-	import { writable } from 'svelte/store';
-	import { calculateReserveRate } from './sigmaUSD';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -129,29 +118,6 @@
 			confirmed_interactions.update((l) => [x, ...l]);
 		}, 3000);
 	}
-
-	function calculateUnconfirmed() {
-		unconfirmed_bank_erg.set(10n * 10n ** 9n);
-		unconfrimed_bank_usd.set(1n);
-		unconfrimed_bank_ratio.set(7n);
-		unconfrimed_reserve_boarder_left_USD.set(666);
-
-		const interactionsUnconfirmed = $prepared_interactions;
-
-		const interactionChanges = {
-			amount: interactionsUnconfirmed.reduce((a, e) => a + e.amount, 0),
-			erg: interactionsUnconfirmed.reduce((a, e) => a + e.ergAmount, 0)
-		};
-
-		const newBankErg = writable(0n);
-		newBankErg.set($bankBoxInErg + BigInt(interactionChanges.erg));
-
-		unconfirmed_bank_erg.set($bankBoxInErg + BigInt(interactionChanges.erg)); // if nanoergs - ok
-		unconfrimed_bank_usd.set($bankBoxInCircSigUsd + BigInt(interactionChanges.amount)); //if cents -ok - need to calculate left Border
-
-		//unconfrimed_bank_ratio.set(calculateReserveRate($unconfirmed_bank_erg, $bankBoxInErg,$oraclePriceSigUsd))
-		//unconfirmed_bank_erg.set($bankBoxInErg + 3_000_000_000_000_000n);
-	}
 </script>
 
 <div class="widget">
@@ -238,7 +204,10 @@
 			{/each}
 
 			{#each $mempool_interactions as m (m.id)}
-				<a href="https://explorer.ergoplatform.com/en/transactions/{m.transactionId}">
+				<a
+					href="https://sigmaverse.io/en/transactions/{m.transactionId}"
+					out:applyAnimation={{ interaction: c, duration: 1000 }}
+				>
 					<div class="row">
 						<div class="left pb-1">
 							<div>
@@ -293,7 +262,7 @@
 			{/each}
 
 			{#each $confirmed_interactions as c (c.id)}
-				<a href="https://explorer.ergoplatform.com/en/transactions/{c.transactionId}">
+				<a href="https://sigmaverse.io/en/transactions/{c.transactionId}">
 					<div class="row text-green-500">
 						<div class="left pb-1">
 							<div>

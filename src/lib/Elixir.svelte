@@ -1,13 +1,9 @@
 <script lang="ts">
 	import { Socket } from 'phoenix';
 	import { onMount } from 'svelte';
-	import { mempoolDummy } from './mempoolDummy';
 	import { handleMempoolSocketUpdate, mempool_interactions } from './stores/preparedInteractions';
 
 	onMount(() => {
-		let x = mempoolDummy;
-
-		// Connect your Phoenix socket
 		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
 		socket.connect();
 

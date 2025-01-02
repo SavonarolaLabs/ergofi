@@ -98,14 +98,14 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 
 	const unconfTxList = payload.unconfirmed_transactions;
 	if (unconfTxList?.length > 0) {
-		const removedFromPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
-		updateMempoolInteractions(unconfTxList, removedFromPreparedInteractions);
+		const removedPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
+		updateMempoolInteractions(unconfTxList, removedPreparedInteractions);
 	}
 }
 
 // removes from prepared those that are in mempool, returns list of removed
 function updatePreparedInteractions(unconfTxList: MempoolTransaction[]): Interaction[] {
-	const txIdsInMempool = txList.map((x) => x.id);
+	const txIdsInMempool = unconfTxList.map((x) => x.id);
 
 	let preparedInteractions = get(prepared_interactions);
 	const beforeUpdateCount = preparedInteractions.length;

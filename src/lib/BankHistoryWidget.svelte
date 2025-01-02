@@ -7,6 +7,7 @@
 		confirmed_interactions,
 		mempool_interactions,
 		prepared_interactions,
+		saveConfirmedInteractionsToLocalStorage,
 		savePreparedInteractionsToLocalStorage
 	} from './stores/preparedInteractions';
 	import { fade, fly } from 'svelte/transition';
@@ -91,13 +92,8 @@
 		prepared_interactions.subscribe(() => {
 			savePreparedInteractionsToLocalStorage();
 		});
-
-		// add unconfirmed
-		prepared_interactions.subscribe(() => {
-			calculateUnconfirmed();
-		});
 		confirmed_interactions.subscribe(() => {
-			calculateUnconfirmed();
+			saveConfirmedInteractionsToLocalStorage();
 		});
 	});
 
@@ -135,7 +131,6 @@
 	}
 
 	function calculateUnconfirmed() {
-		return;
 		unconfirmed_bank_erg.set(10n * 10n ** 9n);
 		unconfrimed_bank_usd.set(1n);
 		unconfrimed_bank_ratio.set(7n);

@@ -94,13 +94,36 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 		'unconfirmed',
 		payload.unconfirmed_transactions.length
 	);
-	confirmInteractions(payload); // this adds confirmed_, but doesn't remove mempool_
+	let confirmed = confirmMempoolInteractions(payload); // this sets confirmed = true
 
 	const unconfTxList = payload.unconfirmed_transactions;
 	if (unconfTxList?.length > 0) {
 		const removedPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
 		updateMempoolInteractions(unconfTxList, removedPreparedInteractions);
 	}
+	if (confirmed.length > 0) {
+		setTimeout(removeConfirmedFromMempool, 500);
+		setTimeout(() => addToConfirmed(confirmed), 1500);
+	}
+}
+
+function confirmMempoolInteractions(payload: MempoolSocketUpdate) {
+	if (payload.confirmed_transactions?.length > 0) {
+		const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
+		const updated = get(mempool_interactions).map((i) => {
+			if (confirmedTxIds.includes(i.transactionId)) i.confirmed = true;
+			return i;
+		});
+		mempool_interactions.set(updated);
+		return [];
+	}
+	return [];
+}
+function removeConfirmedFromMempool() {
+	mempool_interactions.update((l) => l.filter((i) => !i.confirmed));
+}
+function addToConfirmed(confirmed: Interaction[]) {
+	mempool_interactions.update((l) => [...confirmed, ...l]);
 }
 
 // removes from prepared those that are in mempool, returns list of removed
@@ -151,20 +174,6 @@ function updateMempoolInteractions(
 		return;
 	} else {
 		mempool_interactions.set([...yetUnknownInteractions, ...mempoolInteractionsKnown]);
-	}
-}
-
-//TODO: instead of this i want get a list of confirmed interactions,
-// set attribute confirmed in mempool_interactions,
-// remove from mempool_interactions
-// add to confrimed_interactions
-function confirmInteractions(payload: MempoolSocketUpdate) {
-	if (payload.confirmed_transactions?.length > 0) {
-		const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
-		const intersect = get(mempool_interactions).filter((i) =>
-			confirmedTxIds.includes(i.transactionId)
-		);
-		confirmed_interactions.update((l) => [...intersect, ...l]);
 	}
 }
 

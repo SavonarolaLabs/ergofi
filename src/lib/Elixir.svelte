@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { Socket } from 'phoenix';
 	import { onMount } from 'svelte';
-	import { handleMempoolSocketUpdate, mempool_interactions } from './stores/preparedInteractions';
+	import {
+		handleMempoolSocketUpdate,
+		initHistory,
+		mempool_interactions
+	} from './stores/preparedInteractions';
 
 	onMount(() => {
 		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
@@ -17,6 +21,7 @@
 			.join()
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${channelName}`);
+				initHistory(resp.history);
 				handleMempoolSocketUpdate(resp);
 			})
 			.receive('error', (resp) => {

@@ -47,6 +47,10 @@ export const confirmed_interactions: Writable<Interaction[]> = writable(
 	loadConfirmedInteractionsFromLocalStorage()
 );
 
+export function initHistory(txList: MempoolTransaction[]) {
+	confirmed_interactions.set(txList.slice(0, 3).map(txToSigmaUSDInteraction));
+}
+
 export function addPreparedInteraction(tx: MempoolTransaction): string {
 	let i = txToSigmaUSDInteraction(tx);
 	i.own = true;
@@ -181,6 +185,7 @@ function updateMempoolInteractions(
 }
 
 function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
+	console.log(tx);
 	const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
 	const userTree = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 	const user = calculateAddressInfo(tx, userTree); // [RECEIPT ADDRESS DIF]
@@ -242,7 +247,7 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 		id: crypto.randomUUID(),
 		transactionId: tx.id,
 		amount: Number(deltaToken),
-		timestamp: tx.creationTimestamp ?? Date.now(),
+		timestamp: tx.timestamp ? tx.timestamp : (tx.creationTimestamp ?? Date.now()),
 		price: Number(tokenPrice),
 		type: txData.operation,
 		ergAmount: Number(deltaErg),

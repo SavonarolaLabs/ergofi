@@ -2,11 +2,7 @@
 	import { Socket } from 'phoenix';
 	import { onMount } from 'svelte';
 	import { mempoolDummy } from './mempoolDummy';
-	import {
-		handleMempoolSocketUpdate,
-		mempool_interactions,
-		updateMempoolInteractions
-	} from './stores/preparedInteractions';
+	import { handleMempoolSocketUpdate, mempool_interactions } from './stores/preparedInteractions';
 
 	onMount(() => {
 		let x = mempoolDummy;
@@ -25,7 +21,7 @@
 			.join()
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${channelName}`);
-				updateMempoolInteractions(resp.unconfirmed_transactions);
+				handleMempoolSocketUpdate(resp);
 			})
 			.receive('error', (resp) => {
 				console.log('Unable to join:', resp);

@@ -11,7 +11,6 @@
 	import {
 		calculateOutputSc,
 		calculateSigUsdRateWithFee,
-		calculateSigUsdRateWithFeeFromErg,
 		calculateSigUsdRateWithFeeReversed,
 		extractBoxesData,
 		type OracleBoxesData
@@ -47,14 +46,10 @@
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
-	import { mempoolDummy } from './mempoolDummy';
 	import {
 		addPreparedInteraction,
 		addSignedInteraction,
-		cancelPreparedInteraction,
-		cancelPreparedInteractionById,
-		prepared_interactions,
-		updateMempoolInteractions
+		cancelPreparedInteractionById
 	} from './stores/preparedInteractions';
 
 	onMount(async () => {

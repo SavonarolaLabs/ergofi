@@ -105,18 +105,21 @@
 			own: false
 		};
 
-		prepared_interactions.update((l) => [x, ...l]);
+		mempool_interactions.update((l) => [x, ...l]);
 
 		setTimeout(() => {
-			prepared_interactions.update((l) => {
+			mempool_interactions.update((l) => {
+				l.find((y) => y.id == x.id).confirmed = true;
 				//l.find((y) => y.id == x.id).rejected = true;
 				return l;
 			});
-		}, 4000);
+		}, 2000);
 		setTimeout(() => {
-			prepared_interactions.update((l) => l.filter((y) => y.id != x.id));
+			mempool_interactions.update((l) => l.filter((y) => y.id != x.id));
+		}, 2500);
+		setTimeout(() => {
 			confirmed_interactions.update((l) => [x, ...l]);
-		}, 3000);
+		}, 3600);
 	}
 </script>
 
@@ -204,11 +207,8 @@
 			{/each}
 
 			{#each $mempool_interactions as m (m.id)}
-				<a
-					href="https://sigmaverse.io/en/transactions/{m.transactionId}"
-					out:applyAnimation={{ interaction: c, duration: 1000 }}
-				>
-					<div class="row">
+				<a href="https://sigmaverse.io/en/transactions/{m.transactionId}">
+					<div class="row" out:applyAnimation={{ interaction: m, duration: 1000 }}>
 						<div class="left pb-1">
 							<div>
 								<div class="flex items-center gap-1 uppercase text-gray-400">

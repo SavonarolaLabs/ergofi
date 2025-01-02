@@ -37,12 +37,12 @@ export function blinkThreeTimes(
 
 	const keyframes: Keyframe[] = [
 		{ opacity: 1 },
-		{ opacity: 0, offset: 0.167 },
-		{ opacity: 1, offset: 0.333 },
-		{ opacity: 0, offset: 0.5 },
-		{ opacity: 1, offset: 0.667 },
-		{ opacity: 0, offset: 0.833 },
-		{ opacity: 1, offset: 1 }
+		{ opacity: 0 },
+		{ opacity: 1 },
+		{ opacity: 0 },
+		{ opacity: 1 },
+		{ opacity: 0 },
+		{ opacity: 1 }
 	];
 
 	const animation = node.animate(keyframes, {

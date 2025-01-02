@@ -107,7 +107,7 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 	}
 	if (confirmed.length > 0) {
 		setTimeout(removeConfirmedFromMempool, 500);
-		setTimeout(() => addToConfirmed(confirmed), 1500);
+		setTimeout(() => addToConfirmed(confirmed), 1550);
 	}
 }
 

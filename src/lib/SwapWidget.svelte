@@ -150,6 +150,7 @@
 
 		return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 	}
+
 	// Fee Block
 	//----------------------------------- PRICE ADDITIONAL ----------------------------------------
 	function applyFee(inputERG: bigint) {
@@ -361,7 +362,7 @@
 		}
 
 		//Part 2 - Calculate Price
-		const {
+		let {
 			rateSCERG: contractRate,
 			fee: contractFee,
 			requestSC: contractUSD
@@ -373,6 +374,60 @@
 			direction
 		);
 
+		//---- DEBUG Price Calculation ----
+		// --------------------------------
+
+		//console.log(direction, 'direction');
+		if (direction == -1n) {
+			contractUSD = contractUSD + 1n;
+		}
+
+		//---------------------------------
+		//Part 2 - Calculate Price ()
+		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+			calculateSigUsdRateWithFee(
+				$bankBoxInErg,
+				$bankBoxInCircSigUsd,
+				$oraclePriceSigUsd,
+				contractUSD,
+				direction
+			);
+
+		// --------------------------------
+		// TODO: f55f
+		console.log('');
+		console.log(inputAmountNanoERG, ' Input ERG');
+		console.log(contractERG, ' Contract ERG');
+		console.log(contractErgCompare, ' contractErgCompare');
+		console.log(contractUSD, ' contractUSD');
+
+		// --------------------------------
+		// --------------------------------
+		if (direction == -1n) {
+			console.log('sell');
+			if (contractERG < contractErgCompare) {
+				console.log('Adjust FEE SELL');
+				//uiFeeErg = uiFeeErg - (-contractErgCompare + contractERG); // ITS NEGATIVE: GG
+				uiFeeErg = uiFeeErg + (contractErgCompare - contractERG); // Right
+			}
+		}
+
+		//
+		console.log('TOTAL USER ERG:', contractErgCompare - uiFeeErg - feeMining);
+
+		// // ------ TEST ------
+		// if (direction == 1n) {
+		// 	console.log('buy');
+		// 	// < probably this way
+		// 	if (contractERG > contractErgCompare) {
+		// 		console.log('Adjust FEE BUY');
+		// 		uiFeeErg = uiFeeErg + (-contractErgCompare + contractERG);
+		// 	}
+		// }
+
+		//if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (contractErgCompare - contractERG);
+
+		console.log(uiFeeErg, 'uiFeeErg');
 		const swapFee = contractFee + feeMining + uiFeeErg;
 		const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
@@ -431,15 +486,21 @@
 			totalSC,
 			direction
 		);
-
 		if (direction === 1n) {
 			//f2
 			({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
 		} else {
 			//f3
+			console.log('f3.price');
+			console.log(contractErgoRequired, ' contract ERG');
 			({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
 		}
 		const feeTotal = feeContract + feeMining + uiFeeErg;
+		console.log(contractErgoRequired - feeMining - uiFeeErg, ' final ERG');
+
+		console.log();
+		console.log();
+
 		const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
@@ -507,6 +568,22 @@
 		//Part 2 - Calculate Price ()
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		console.log(
+			contractRate,
+			' vs ',
+			contractRateCompare,
+			' contractRate ',
+			contractRate == contractRateCompare
+		);
+
+		console.log(
+			contractErg,
+			' vs ',
+			contractErgCompare,
+			' contractErg ',
+			contractErg == contractErgCompare
+		);
 
 		//Adjust fee
 		if (contractErg > contractErgCompare)
@@ -824,6 +901,7 @@
 		direction: bigint
 	): any {
 		//Part 0 - use Fee
+		console.log('------------- F4 STARTED NEW -------------');
 		let uiSwapFee;
 		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
 		uiSwapFee = abc;
@@ -842,7 +920,7 @@
 		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
+		let { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
 			inErg,
 			inCircSigUSD,
 			oraclePrice,
@@ -852,29 +930,37 @@
 
 		//---- DEBUG Price Calculation ----
 		//Part 2 - Calculate Price ()
+
+		//console.log(direction, 'direction');
+
+		if (direction == -1n) {
+			contractUSD = contractUSD + 1n;
+		}
+
+		// ADJUST contractUSD
+		// console.log(contractUSD, ' Initial Contract USD');
+		// contractUSD = contractUSD + 1n; //ADD 1 cent to recalculate one more BUT NEED TO DELETE IT AFTER ALL
+		// console.log(contractUSD, ' Adjasted Contract USD');
+
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
-		console.log(
-			contractRate,
-			' vs ',
-			contractRateCompare,
-			' contractRate ',
-			contractRate == contractRateCompare
-		);
+		console.log('P1:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErg, ' Contract ERG');
+		console.log(contractUSD, ' Contract USD');
 
-		console.log(
-			contractErg,
-			' vs ',
-			contractErgCompare,
-			' contractErg ',
-			contractErg == contractErgCompare
-		);
+		console.log('P2:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErgCompare, ' Contract ERG V2');
+		console.log(contractUSD, ' Contract USD');
 
 		//TODO: Change Price Calculations with same logic
 		//Adjust fee (-) cause sell
-		if (contractErg < contractErgCompare)
+		if (contractErg < contractErgCompare) {
 			uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
+			console.log('real sell - fee adjusted');
+		}
 		// //DEBUG RESULT: Need to Fix:
 
 		//Part 3 - Calculate BankBox
@@ -911,6 +997,101 @@
 		console.log(unsignedMintTransaction);
 		return unsignedMintTransaction;
 	}
+
+	export async function buyERGWithUSDReversedTx_OLD(
+		inputErg: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		utxos: Array<any>,
+		height: number,
+		direction: bigint
+	): any {
+		//Part 0 - use Fee
+		console.log('------------- F4 STARTED -------------');
+		let uiSwapFee;
+		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
+		uiSwapFee = abc;
+
+		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
+
+		//Part 2 - Calculate Price
+		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
+			inErg,
+			inCircSigUSD,
+			oraclePrice,
+			contractErg,
+			direction
+		);
+
+		//---- DEBUG Price Calculation ----
+		//Part 2 - Calculate Price ()
+		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		console.log('P1:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErg, ' Contract ERG');
+		console.log(contractUSD, ' Contract USD');
+
+		console.log('P2:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErgCompare, ' Contract ERG V2');
+		console.log(contractUSD, ' Contract USD');
+
+		//TODO: Change Price Calculations with same logic
+		//Adjust fee (-) cause sell
+		if (contractErg > contractErgCompare) {
+			uiSwapFee = uiSwapFee + (-contractErgCompare + contractErg);
+			console.log('real sell - fee adjusted');
+		}
+		// //DEBUG RESULT: Need to Fix:
+
+		//Part 3 - Calculate BankBox
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractUSD,
+			contractErgCompare,
+			direction
+		);
+
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildErgUSDTx(
+			direction,
+			contractErgCompare,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
+
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
+
 	//----------------------------------- PRICE/SWAP ----------------------------------------
 
 	$: toToken = selectedCurrency === 'ERG' ? 'SigUSD' : 'ERG';

@@ -18,11 +18,13 @@
 		unconfrimed_reserve_boarder_left_USD
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
-	import { mempool_interactions } from './stores/preparedInteractions';
+	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
 	import { onMount } from 'svelte';
 
 	onMount(() => {
 		updateUnconfirmedBank();
+		prepared_interactions.subscribe(updateUnconfirmedBank);
+		mempool_interactions.subscribe(updateUnconfirmedBank);
 	});
 
 	export let confirmed = true;

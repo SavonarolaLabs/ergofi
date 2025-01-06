@@ -29,7 +29,9 @@ import {
 	addPreparedInteraction,
 	addSignedInteraction,
 	cancelPreparedInteractionById,
-	mempool_interactions
+	mempool_interactions,
+	prepared_interactions,
+	type Interaction
 } from './stores/preparedInteractions';
 import {
 	ErgoAddress,
@@ -423,8 +425,8 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 		addSignedInteraction(signed, interactionId);
 		console.log({ signed });
 
-		const txId = await ergo.submit_tx(signed);
-		console.log({ txId });
+		//const txId = await ergo.submit_tx(signed);
+		//console.log({ txId });
 	} catch (e) {
 		cancelPreparedInteractionById(interactionId);
 	}
@@ -905,20 +907,26 @@ export function calculateReserveRateAndBorders(
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 }
 
-export function calculateMempoolIntractionsERGUSD() {
+export function calculateIntractionsERGUSD(interactions: Interaction[]) {
 	const ergAdd: bigint = BigInt(
-		get(mempool_interactions).reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9
+		(interactions.reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9).toFixed()
 	);
 	const usdAdd: bigint = BigInt(
-		get(mempool_interactions).reduce((a, e) => a + e.amount, 0) * 10 ** 2
+		(interactions.reduce((a, e) => a + e.amount, 0) * 10 ** 2).toFixed()
 	);
 	return { ergAdd, usdAdd };
 }
 
 export async function updateUnconfirmedBank() {
-	const { ergAdd, usdAdd } = calculateMempoolIntractionsERGUSD();
-	const newBankErg = get(bankBoxInErg) + ergAdd;
-	const newBankUsd = get(bankBoxInCircSigUsd) + usdAdd;
+	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(
+		get(mempool_interactions)
+	);
+	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } = calculateIntractionsERGUSD(
+		get(prepared_interactions)
+	);
+
+	const newBankErg = get(bankBoxInErg) + ergAddMem + ergAddPrep;
+	const newBankUsd = get(bankBoxInCircSigUsd) + usdAddMem + usdAddPrep;
 
 	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
 		newBankErg,

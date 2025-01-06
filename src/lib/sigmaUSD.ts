@@ -18,13 +18,18 @@ import {
 	bankBoxInErg,
 	fee_mining,
 	oracle_box,
-	oraclePriceSigUsd
+	oraclePriceSigUsd,
+	unconfirmed_bank_erg,
+	unconfrimed_bank_reserve_rate,
+	unconfrimed_bank_usd,
+	unconfrimed_reserve_boarder_left_USD
 } from './stores/bank';
 import { get } from 'svelte/store';
 import {
 	addPreparedInteraction,
 	addSignedInteraction,
-	cancelPreparedInteractionById
+	cancelPreparedInteractionById,
+	mempool_interactions
 } from './stores/preparedInteractions';
 import {
 	ErgoAddress,
@@ -898,4 +903,30 @@ export function calculateReserveRateAndBorders(
 	const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
 
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
+}
+
+export function calculateMempoolIntractionsERGUSD() {
+	const ergAdd: bigint = BigInt(
+		get(mempool_interactions).reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9
+	);
+	const usdAdd: bigint = BigInt(
+		get(mempool_interactions).reduce((a, e) => a + e.amount, 0) * 10 ** 2
+	);
+	return { ergAdd, usdAdd };
+}
+
+export async function updateUnconfirmedBank() {
+	const { ergAdd, usdAdd } = calculateMempoolIntractionsERGUSD();
+	const newBankErg = get(bankBoxInErg) + ergAdd;
+	const newBankUsd = get(bankBoxInCircSigUsd) + usdAdd;
+
+	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
+		newBankErg,
+		newBankUsd,
+		get(oraclePriceSigUsd)
+	);
+	unconfirmed_bank_erg.set(newBankErg);
+	unconfrimed_bank_usd.set(newBankUsd);
+	unconfrimed_reserve_boarder_left_USD.set(leftUSD);
+	unconfrimed_bank_reserve_rate.set(reserveRate);
 }

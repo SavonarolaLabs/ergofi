@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-	import { calculateReserveRate } from './sigmaUSD';
+	import {
+		calculateReserveRate,
+		calculateReserveRateAndBorders,
+		updateUnconfirmedBank
+	} from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
 		bankBoxInCircSigUsd,
@@ -9,10 +13,17 @@
 		reserve_boarder_left_USD,
 		reserve_rate,
 		unconfirmed_bank_erg,
-		unconfrimed_bank_ratio,
-		unconfrimed_bank_usd
+		unconfrimed_bank_reserve_rate,
+		unconfrimed_bank_usd,
+		unconfrimed_reserve_boarder_left_USD
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
+	import { mempool_interactions } from './stores/preparedInteractions';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		updateUnconfirmedBank();
+	});
 
 	export let confirmed = true;
 
@@ -44,13 +55,13 @@
 			</div>
 		</div>
 		<span class="text-sm text-gray-500">
-			{$unconfrimed_bank_ratio}% Reserve
+			{$unconfrimed_bank_reserve_rate}% Reserve
 		</span>
 	</div>
 	<div class="flex flex-col text-gray-500">
 		<div>
 			<span class="mr-1 text-3xl">
-				{$unconfrimed_bank_usd.toLocaleString()}
+				{$unconfrimed_reserve_boarder_left_USD.toLocaleString()}
 			</span>
 			<span class="text-lg"> SigUSD </span>
 		</div>

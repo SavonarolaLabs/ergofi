@@ -23,7 +23,8 @@
 		buyUSDInputERG,
 		sellUSDInputUSD,
 		buyUSDInputUSD,
-		sellUSDInputERG
+		sellUSDInputERG,
+		calculateReserveRateAndBorders
 	} from './sigmaUSD';
 	import {
 		getBankBox,
@@ -94,64 +95,6 @@
 	let lastInput: LastUserInput = 'From';
 
 	const currencies: Currency[] = ['ERG', 'SigUSD'];
-
-	// Reserve Rate
-	function calculateReserveRateAndBorders(
-		inErg: bigint,
-		inCircSigUSD: bigint,
-		oraclePrice: bigint
-	): any {
-		console.log(inErg, 'inErg');
-		console.log(oraclePrice, 'oraclePrice');
-
-		const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
-		const reserveRateOld = Number(
-			BigNumber(inErg.toString()) // nanoergi
-				.multipliedBy(oraclePriceErgCents)
-				.dividedBy(inCircSigUSD.toString())
-				.dividedBy(10 ** 9)
-				.multipliedBy(100)
-				.toFixed(0)
-		);
-
-		const leftBoarderValue = 400;
-		let leftBoarderDelta;
-		const rightBoarderValue = 800;
-		let rightBoarderDelta;
-		// Clear convert
-		const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
-		const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
-		const price = BigNumber(10 ** 9)
-			.dividedBy(BigNumber(oraclePrice.toString()))
-			.dividedBy(100); //convert to ERG / USD price
-
-		const reserveRate = Number(
-			bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
-		); // as function
-
-		const leftBorder = 4;
-		const rightBorder = 8;
-
-		function calculateBoarder(
-			boarder: number,
-			bankUSD: BigNumber,
-			bankERG: BigNumber,
-			price: BigNumber
-		) {
-			const a_Left = BigNumber(bankERG).multipliedBy(price);
-			const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
-			const delta_a_b_Left = a_Left.minus(b_Left);
-			const boarderUSD = delta_a_b_Left.dividedBy(boarder - 1);
-			return boarderUSD;
-		}
-
-		const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
-		const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
-		const leftERG = Number(BigNumber(leftUSD).dividedBy(price).toFixed(0));
-		const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
-
-		return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
-	}
 
 	//----------------------------------- Other ----------------------------------------
 

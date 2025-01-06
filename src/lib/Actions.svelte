@@ -1,9 +1,9 @@
 <script lang="ts">
 	import BigNumber from 'bignumber.js';
 	import {
-		calculateSigUsdRateWithFee,
+		calculateBankRateUSDInputUSD,
 		calculateSigUsdRateWithFeeFromErg,
-		calculateSigUsdRateWithFeeReversed,
+		calculateBankRateUSDInputERG,
 		extractBoxesData
 	} from './sigmaUSD';
 	import { onMount } from 'svelte';
@@ -121,7 +121,7 @@
 				rateSCERG,
 				fee: feeContract,
 				bcDeltaExpectedWithFee
-			} = calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, totalSC, direction);
+			} = calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, totalSC, direction);
 
 			const feeUI = (bcDeltaExpectedWithFee * FEE_UI) / FEE_UI_DENOM;
 			const miningFee = FEE_MINING_MIN;

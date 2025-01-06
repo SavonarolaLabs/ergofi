@@ -10,9 +10,11 @@
 	import BigNumber from 'bignumber.js';
 	import {
 		calculateOutputSc,
-		calculateSigUsdRateWithFee,
-		calculateSigUsdRateWithFeeReversed,
+		calculateBankRateUSDInputUSD,
+		calculateBankRateUSDInputERG,
 		extractBoxesData,
+		FEE_UI,
+		FEE_UI_DENOM,
 		type OracleBoxesData
 	} from './sigmaUSD';
 	import {
@@ -63,8 +65,6 @@
 		});
 	});
 
-	const FEE_UI = 10n; //0.1%
-	const FEE_UI_DENOM = 100_00n;
 	const FEE_MINING_MIN = RECOMMENDED_MIN_FEE_VALUE;
 	const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
 	const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
@@ -151,32 +151,30 @@
 		return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 	}
 
-	// Fee Block
-	//----------------------------------- PRICE ADDITIONAL ----------------------------------------
-	function applyFee(inputERG: bigint) {
+	//----------------------------------- FEE ----------------------------------------
+	export function applyFee(inputERG: bigint) {
 		const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
 		const contractERG = inputERG - feeMining - uiSwapFee;
 		return { uiSwapFee, contractERG };
 	}
 
-	function reverseFee(contractERG: bigint) {
+	export function reverseFee(contractERG: bigint) {
 		const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 		const inputERG = contractERG + feeMining + uiSwapFee;
 		return { inputERG, uiSwapFee };
 	}
 
-	function reverseFeeSell(contractERG: bigint) {
+	export function reverseFeeSell(contractERG: bigint) {
 		const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
 		const userERG = contractERG - feeMining - uiSwapFee;
 		return { userERG, uiSwapFee };
 	}
 
-	function applyFeeSell(inputERG: bigint) {
+	export function applyFeeSell(inputERG: bigint) {
 		const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 		const contractERG = inputERG + feeMining + uiSwapFee;
 		return { uiSwapFee, contractERG };
 	}
-
 	//----------------------------------- Other ----------------------------------------
 
 	function initialInputs() {
@@ -247,22 +245,22 @@
 				//CANT SIGN
 				console.log('f1');
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				await buyUSDWithERG(nanoErg);
+				await buyUSDInputERG(nanoErg);
 			} else {
 				console.log('f3');
 				const cents = usdStringToCentBigInt(fromAmount);
-				await buyERGWithUSD(cents);
+				await sellUSDInputUSD(cents);
 			}
 		} else {
 			if (selectedCurrency == 'ERG') {
 				console.log('f2');
 				const cents = usdStringToCentBigInt(toAmount);
-				await buyUSDWithERGReversed(cents);
+				await buyUSDInputUSD(cents);
 			} else {
 				//CANT SIGN
 				console.log('f4');
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
-				await buyERGWithUSDReversed(nanoErg);
+				await sellUSDInputERG(nanoErg);
 			}
 		}
 	}
@@ -273,7 +271,7 @@
 		recalculateInputsOnCurrencyChange();
 	}
 
-	function handleFromAmountChange(event) {
+	function handleFromAmountChange(event: Event) {
 		fromAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
 			// (f1.price)
@@ -294,7 +292,7 @@
 		lastInput = 'From';
 	}
 
-	function handleToAmountChange(event) {
+	function handleToAmountChange(event: Event) {
 		toAmount = event.target.value;
 		if (selectedCurrency == 'ERG') {
 			// (f2.price)
@@ -315,14 +313,14 @@
 		lastInput = 'To';
 	}
 
-	function handleFeeChange(event) {
+	function handleFeeChange(event: Event) {
 		feeMining = BigInt(Number(event.target.value) * 10 ** 9);
 		recalculateInputsOnCurrencyChange(); //TODO: To Amount Hadle
 	}
 
 	//----------------------------------- PRICE/SWAP ----------------------------------------
 	// (f1.price && f4.price)
-	function calculateInputsErg(direction: bigint, buyAmountInput: any): any {
+	export function calculateInputsErg(direction: bigint, buyAmountInput: any): any {
 		const inputAmountERG = new BigNumber(buyAmountInput);
 		if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
 			const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
@@ -342,7 +340,7 @@
 		}
 	}
 
-	function calculateInputsErgPrice(direction: bigint, buyAmount: BigNumber): any {
+	export function calculateInputsErgPrice(direction: bigint, buyAmount: BigNumber): any {
 		const inputAmountNanoERG = buyAmount
 			.multipliedBy('1000000000')
 			.integerValue(BigNumber.ROUND_FLOOR)
@@ -366,16 +364,13 @@
 			rateSCERG: contractRate,
 			fee: contractFee,
 			requestSC: contractUSD
-		} = calculateSigUsdRateWithFeeReversed(
+		} = calculateBankRateUSDInputERG(
 			$bankBoxInErg,
 			$bankBoxInCircSigUsd,
 			$oraclePriceSigUsd,
 			contractERG,
 			direction
 		);
-
-		//---- DEBUG Price Calculation ----
-		// --------------------------------
 
 		//console.log(direction, 'direction');
 		if (direction == -1n) {
@@ -385,7 +380,7 @@
 		//---------------------------------
 		//Part 2 - Calculate Price ()
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-			calculateSigUsdRateWithFee(
+			calculateBankRateUSDInputUSD(
 				$bankBoxInErg,
 				$bankBoxInCircSigUsd,
 				$oraclePriceSigUsd,
@@ -393,15 +388,13 @@
 				direction
 			);
 
-		// --------------------------------
-		// TODO: f55f
+		// TODO: --------------------------------
 		console.log('');
 		console.log(inputAmountNanoERG, ' Input ERG');
 		console.log(contractERG, ' Contract ERG');
 		console.log(contractErgCompare, ' contractErgCompare');
 		console.log(contractUSD, ' contractUSD');
 
-		// --------------------------------
 		// --------------------------------
 		if (direction == -1n) {
 			console.log('sell');
@@ -427,7 +420,7 @@
 
 		//if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (contractErgCompare - contractERG);
 
-		console.log(uiFeeErg, 'uiFeeErg');
+		//console.log(uiFeeErg, 'uiFeeErg');
 		const swapFee = contractFee + feeMining + uiFeeErg;
 		const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
@@ -443,7 +436,7 @@
 	}
 
 	// (f3.price && f2.price)
-	function calculateInputsUsd(direction: bigint, buyTotalInput: any): any {
+	export function calculateInputsUsd(direction: bigint, buyTotalInput: any): any {
 		const totalSigUSD = new BigNumber(buyTotalInput)
 			.multipliedBy('100')
 			.integerValue(BigNumber.ROUND_CEIL);
@@ -469,7 +462,7 @@
 		}
 	}
 
-	function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber): any {
+	export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber): any {
 		const totalSC = BigInt(buyTotal.toString());
 
 		let uiFeeErg: bigint;
@@ -479,7 +472,7 @@
 			rateSCERG,
 			fee: feeContract,
 			bcDeltaExpectedWithFee: contractErgoRequired
-		} = calculateSigUsdRateWithFee(
+		} = calculateBankRateUSDInputUSD(
 			$bankBoxInErg,
 			$bankBoxInCircSigUsd,
 			$oraclePriceSigUsd,
@@ -505,15 +498,15 @@
 		return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 	}
 
-	// (f1) BUY USD -> SELL ERG
-	async function buyUSDWithERG(inputErg: bigint = 1_000_000_000n) {
-		const direction = 1n;
+	// (f1)
+	async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 		await window.ergoConnector.nautilus.connect();
 		const me = await ergo.get_change_address();
 		const utxos = await ergo.get_utxos();
 		const height = await ergo.get_current_height();
 
-		const tx = await buyUSDWithERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+		const direction = 1n;
+		const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 		const interactionId = addPreparedInteraction(tx);
 		try {
 			const signed = await ergo.sign_tx(tx);
@@ -528,7 +521,7 @@
 		//		console.log(txId);
 	}
 
-	export async function buyUSDWithERGTx(
+	export async function buyUSDInputERGTx(
 		inputErg: bigint,
 		holderBase58PK: string,
 		bankBase58PK: string,
@@ -556,7 +549,7 @@
 		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
 		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
+		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
 			inErg,
 			inCircSigUSD,
 			oraclePrice,
@@ -567,23 +560,7 @@
 		//---- DEBUG Price Calculation ----
 		//Part 2 - Calculate Price ()
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		console.log(
-			contractRate,
-			' vs ',
-			contractRateCompare,
-			' contractRate ',
-			contractRate == contractRateCompare
-		);
-
-		console.log(
-			contractErg,
-			' vs ',
-			contractErgCompare,
-			' contractErg ',
-			contractErg == contractErgCompare
-		);
+			calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
 		//Adjust fee
 		if (contractErg > contractErgCompare)
@@ -603,7 +580,7 @@
 		);
 
 		//Part 4 - Calculate TX
-		const unsignedMintTransaction = buildErgUSDTx(
+		const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
 			direction,
 			contractErgCompare,
 			contractUSD,
@@ -625,7 +602,305 @@
 		return unsignedMintTransaction;
 	}
 
-	export function buildErgUSDTx(
+	// (f2)
+	async function buyUSDInputUSD(inputUSD: bigint = 1_00n) {
+		await window.ergoConnector.nautilus.connect();
+		const me = await ergo.get_change_address();
+		const utxos = await ergo.get_utxos();
+		const height = await ergo.get_current_height();
+
+		const direction = 1n;
+		const tx = await buyUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+
+		console.log(tx);
+		const signed = await ergo.sign_tx(tx);
+
+		const txId = await ergo.submit_tx(signed);
+		console.log(signed);
+		//		console.log(txId);
+	}
+
+	export async function buyUSDInputUSDTx(
+		inputUSD: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		utxos: Array<any>,
+		height: number,
+		direction: bigint
+	): any {
+		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
+
+		const contractUSD = inputUSD;
+
+		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
+
+		//Part 2 - Calculate Price
+		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+			calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		//Part 3 - Calculate BankBox
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractUSD,
+			contractErg,
+			direction
+		);
+
+		//Part 0 - use Fee Reversed
+		const { inputERG, uiSwapFee } = reverseFee(contractErg);
+
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
+			direction,
+			contractErg,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		); //UserErg is not important?
+
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
+
+	// (f3)
+	async function sellUSDInputUSD(inputUSD: bigint = 1_00n) {
+		await window.ergoConnector.nautilus.connect();
+		const me = await ergo.get_change_address();
+		const utxos = await ergo.get_utxos();
+		const height = await ergo.get_current_height();
+
+		const direction = -1n;
+		const tx = await sellUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+
+		console.log(tx);
+		const signed = await ergo.sign_tx(tx);
+
+		const txId = await ergo.submit_tx(signed);
+		console.log(signed);
+	}
+
+	export async function sellUSDInputUSDTx(
+		inputUSD: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		utxos: Array<any>,
+		height: number,
+		direction: bigint
+	): any {
+		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
+
+		const contractUSD = inputUSD;
+
+		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
+
+		//Part 2 - Calculate Price
+		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
+			calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		//Part 3 - Calculate BankBox
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractUSD,
+			contractERG,
+			direction
+		);
+
+		// PART X
+		const { userERG, uiSwapFee } = reverseFeeSell(contractERG);
+		console.log(contractUSD, 'USD -> ERG ', userERG);
+
+		// PART X - Build
+		const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
+			direction,
+			contractERG,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
+
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
+
+	// (f4)
+	async function sellUSDInputERG(inputErg: bigint = 1_000_000_000n) {
+		await window.ergoConnector.nautilus.connect();
+		const me = await ergo.get_change_address();
+		const utxos = await ergo.get_utxos();
+		const height = await ergo.get_current_height();
+
+		const direction = -1n;
+		const tx = await sellUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+
+		console.log(tx);
+		const signed = await ergo.sign_tx(tx);
+
+		const txId = await ergo.submit_tx(signed);
+		console.log(signed);
+	}
+
+	export async function sellUSDInputERGTx(
+		inputErg: bigint,
+		holderBase58PK: string,
+		bankBase58PK: string,
+		utxos: Array<any>,
+		height: number,
+		direction: bigint
+	): any {
+		//Part 0 - use Fee
+		console.log('------------- F4 STARTED NEW -------------');
+		let uiSwapFee;
+		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
+		uiSwapFee = abc;
+
+		//Part 1 - Get Oracle
+		await fetchLatestOracleAndBankBox();
+		const {
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			bankBox,
+			oracleBox
+		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
+
+		//Part 2 - Calculate Price
+		let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
+			inErg,
+			inCircSigUSD,
+			oraclePrice,
+			contractErg,
+			direction
+		);
+
+		//---- DEBUG Price Calculation ----
+		//Part 2 - Calculate Price ()
+
+		//console.log(direction, 'direction');
+
+		if (direction == -1n) {
+			contractUSD = contractUSD + 1n;
+		}
+
+		// ADJUST contractUSD
+		// console.log(contractUSD, ' Initial Contract USD');
+		// contractUSD = contractUSD + 1n; //ADD 1 cent to recalculate one more BUT NEED TO DELETE IT AFTER ALL
+		// console.log(contractUSD, ' Adjasted Contract USD');
+
+		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+			calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+
+		console.log('P1:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErg, ' Contract ERG');
+		console.log(contractUSD, ' Contract USD');
+
+		console.log('P2:');
+		console.log(inputErg, ' Initial ERG');
+		console.log(contractErgCompare, ' Contract ERG V2');
+		console.log(contractUSD, ' Contract USD');
+
+		//TODO: Change Price Calculations with same logic
+		//Adjust fee (-) cause sell
+		if (contractErg < contractErgCompare) {
+			uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
+			console.log('real sell - fee adjusted');
+		}
+		// //DEBUG RESULT: Need to Fix:
+
+		//Part 3 - Calculate BankBox
+		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractUSD,
+			contractErgCompare,
+			direction
+		);
+
+		//Part 4 - Calculate TX
+		const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
+			direction,
+			contractErgCompare,
+			contractUSD,
+			holderBase58PK,
+			bankBase58PK,
+			height,
+			bankBox,
+			oracleBox,
+			uiSwapFee,
+			utxos,
+			outErg,
+			outSigUSD,
+			outSigRSV,
+			outCircSigUSD,
+			outCircSigRSV
+		);
+
+		console.log(unsignedMintTransaction);
+		return unsignedMintTransaction;
+	}
+
+	// TOOL:
+	export function buildTx_SIGUSD_ERG_USD(
 		direction: bigint,
 		contractErg: bigint,
 		contractUSD: bigint,
@@ -683,412 +958,6 @@
 
 		unsignedMintTransaction.dataInputs = [oracleBox];
 
-		return unsignedMintTransaction;
-	}
-
-	// (f2) BUY USD --> SELL ERG (From Finall USD AMOUNT)
-	async function buyUSDWithERGReversed(
-		inputUSD: bigint = 1_00n,
-		inputErg: bigint = 1_000_000_000n
-	) {
-		const direction = 1n;
-		await window.ergoConnector.nautilus.connect();
-		const me = await ergo.get_change_address();
-		const utxos = await ergo.get_utxos();
-		const height = await ergo.get_current_height();
-
-		const tx = await buyUSDWithERGReversedTxV2(
-			inputUSD,
-			me,
-			SIGUSD_BANK_ADDRESS,
-			utxos,
-			height,
-			direction
-		);
-
-		console.log(tx);
-		const signed = await ergo.sign_tx(tx);
-
-		const txId = await ergo.submit_tx(signed);
-		console.log(signed);
-		//		console.log(txId);
-	}
-
-	export async function buyUSDWithERGReversedTxV2(
-		inputUSD: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint
-	): any {
-		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
-
-		const contractUSD = inputUSD;
-
-		//Part 1 - Get Oracle
-		await fetchLatestOracleAndBankBox();
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
-
-		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractErg,
-			direction
-		);
-
-		//Part 0 - use Fee Reversed
-		const { inputERG, uiSwapFee } = reverseFee(contractErg);
-
-		//Part 4 - Calculate TX
-		const unsignedMintTransaction = buildErgUSDTx(
-			direction,
-			contractErg,
-			contractUSD,
-			holderBase58PK,
-			bankBase58PK,
-			height,
-			bankBox,
-			oracleBox,
-			uiSwapFee,
-			utxos,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		); //UserErg is not important?
-
-		console.log(unsignedMintTransaction);
-		return unsignedMintTransaction;
-	}
-
-	// (f3) SELL USD -> BUY ERG
-	async function buyERGWithUSD(inputUSD: bigint = 1_00n) {
-		const direction = -1n;
-		await window.ergoConnector.nautilus.connect();
-		const me = await ergo.get_change_address();
-		const utxos = await ergo.get_utxos();
-		const height = await ergo.get_current_height();
-
-		const tx = await buyERGWithUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-		console.log(tx);
-		const signed = await ergo.sign_tx(tx);
-
-		const txId = await ergo.submit_tx(signed);
-		console.log(signed);
-	}
-
-	export async function buyERGWithUSDTx(
-		inputUSD: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint
-	): any {
-		const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-		const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-		const uiAddr = ErgoAddress.fromBase58(uiFeeAddress);
-
-		const contractUSD = inputUSD;
-
-		//Part 1 - Get Oracle
-		await fetchLatestOracleAndBankBox();
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
-
-		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractERG,
-			direction
-		);
-
-		// PART X
-		const { userERG, uiSwapFee } = reverseFeeSell(contractERG);
-		console.log(contractUSD, 'USD -> ERG ', userERG);
-
-		// PART X - Build
-		const unsignedMintTransaction = buildErgUSDTx(
-			direction,
-			contractERG,
-			contractUSD,
-			holderBase58PK,
-			bankBase58PK,
-			height,
-			bankBox,
-			oracleBox,
-			uiSwapFee,
-			utxos,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		);
-
-		console.log(unsignedMintTransaction);
-		return unsignedMintTransaction;
-	}
-
-	// (f4)
-	async function buyERGWithUSDReversed(inputErg: bigint = 1_000_000_000n) {
-		const direction = -1n;
-		await window.ergoConnector.nautilus.connect();
-		const me = await ergo.get_change_address();
-		const utxos = await ergo.get_utxos();
-		const height = await ergo.get_current_height();
-
-		const tx = await buyERGWithUSDReversedTx(
-			inputErg,
-			me,
-			SIGUSD_BANK_ADDRESS,
-			utxos,
-			height,
-			direction
-		);
-		console.log(tx);
-		const signed = await ergo.sign_tx(tx);
-
-		const txId = await ergo.submit_tx(signed);
-		console.log(signed);
-	}
-
-	export async function buyERGWithUSDReversedTx(
-		inputErg: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint
-	): any {
-		//Part 0 - use Fee
-		console.log('------------- F4 STARTED NEW -------------');
-		let uiSwapFee;
-		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
-		uiSwapFee = abc;
-
-		//Part 1 - Get Oracle
-		await fetchLatestOracleAndBankBox();
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
-
-		//Part 2 - Calculate Price
-		let { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
-			inErg,
-			inCircSigUSD,
-			oraclePrice,
-			contractErg,
-			direction
-		);
-
-		//---- DEBUG Price Calculation ----
-		//Part 2 - Calculate Price ()
-
-		//console.log(direction, 'direction');
-
-		if (direction == -1n) {
-			contractUSD = contractUSD + 1n;
-		}
-
-		// ADJUST contractUSD
-		// console.log(contractUSD, ' Initial Contract USD');
-		// contractUSD = contractUSD + 1n; //ADD 1 cent to recalculate one more BUT NEED TO DELETE IT AFTER ALL
-		// console.log(contractUSD, ' Adjasted Contract USD');
-
-		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		console.log('P1:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErg, ' Contract ERG');
-		console.log(contractUSD, ' Contract USD');
-
-		console.log('P2:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErgCompare, ' Contract ERG V2');
-		console.log(contractUSD, ' Contract USD');
-
-		//TODO: Change Price Calculations with same logic
-		//Adjust fee (-) cause sell
-		if (contractErg < contractErgCompare) {
-			uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
-			console.log('real sell - fee adjusted');
-		}
-		// //DEBUG RESULT: Need to Fix:
-
-		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractErgCompare,
-			direction
-		);
-
-		//Part 4 - Calculate TX
-		const unsignedMintTransaction = buildErgUSDTx(
-			direction,
-			contractErgCompare,
-			contractUSD,
-			holderBase58PK,
-			bankBase58PK,
-			height,
-			bankBox,
-			oracleBox,
-			uiSwapFee,
-			utxos,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		);
-
-		console.log(unsignedMintTransaction);
-		return unsignedMintTransaction;
-	}
-
-	export async function buyERGWithUSDReversedTx_OLD(
-		inputErg: bigint,
-		holderBase58PK: string,
-		bankBase58PK: string,
-		utxos: Array<any>,
-		height: number,
-		direction: bigint
-	): any {
-		//Part 0 - use Fee
-		console.log('------------- F4 STARTED -------------');
-		let uiSwapFee;
-		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
-		uiSwapFee = abc;
-
-		//Part 1 - Get Oracle
-		await fetchLatestOracleAndBankBox();
-		const {
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			bankBox,
-			oracleBox
-		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
-
-		//Part 2 - Calculate Price
-		const { rateSCERG: contractRate, requestSC: contractUSD } = calculateSigUsdRateWithFeeReversed(
-			inErg,
-			inCircSigUSD,
-			oraclePrice,
-			contractErg,
-			direction
-		);
-
-		//---- DEBUG Price Calculation ----
-		//Part 2 - Calculate Price ()
-		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-			calculateSigUsdRateWithFee(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
-
-		console.log('P1:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErg, ' Contract ERG');
-		console.log(contractUSD, ' Contract USD');
-
-		console.log('P2:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErgCompare, ' Contract ERG V2');
-		console.log(contractUSD, ' Contract USD');
-
-		//TODO: Change Price Calculations with same logic
-		//Adjust fee (-) cause sell
-		if (contractErg > contractErgCompare) {
-			uiSwapFee = uiSwapFee + (-contractErgCompare + contractErg);
-			console.log('real sell - fee adjusted');
-		}
-		// //DEBUG RESULT: Need to Fix:
-
-		//Part 3 - Calculate BankBox
-		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractUSD,
-			contractErgCompare,
-			direction
-		);
-
-		//Part 4 - Calculate TX
-		const unsignedMintTransaction = buildErgUSDTx(
-			direction,
-			contractErgCompare,
-			contractUSD,
-			holderBase58PK,
-			bankBase58PK,
-			height,
-			bankBox,
-			oracleBox,
-			uiSwapFee,
-			utxos,
-			outErg,
-			outSigUSD,
-			outSigRSV,
-			outCircSigUSD,
-			outCircSigRSV
-		);
-
-		console.log(unsignedMintTransaction);
 		return unsignedMintTransaction;
 	}
 

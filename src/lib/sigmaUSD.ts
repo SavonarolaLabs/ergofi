@@ -13,11 +13,14 @@ export type OracleBoxesData = {
 	oracleBox: Output;
 };
 
-const FEE = 200n;
-const FEE_DENOM = 10_000n;
+const FEE_BANK = 200n; //2%
+const FEE_BANK_DENOM = 10_000n;
 
-// Измененная функция calculateSigUsdRateWithFee, теперь возвращает также fee
-export function calculateSigUsdRateWithFee(
+export const FEE_UI = 10n; //0.1%
+export const FEE_UI_DENOM = 100_00n;
+
+// SigUSD
+export function calculateBankRateUSDInputUSD(
 	inErg: bigint,
 	inCircSigUSD: bigint,
 	oraclePrice: bigint,
@@ -33,16 +36,39 @@ export function calculateSigUsdRateWithFee(
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
 
 	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
-	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
+	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 
 	const bcDeltaExpectedWithFee = bcDeltaExpected + fee * direction;
 	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee); // X
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
+export function calculateBankRateUSDInputERG(
+	inErg: bigint,
+	inCircSigUSD: bigint,
+	oraclePrice: bigint,
+	requestErg: bigint,
+	direction: bigint
+): { rateSCERG: number; fee: bigint; requestSC: bigint } {
+	//------------- STABLE PART ---------------
+	let rateSCERG: number;
+	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
+	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
+	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
+	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
+	const requestSC =
+		(requestErg * FEE_BANK_DENOM) / (scNominalPrice * (FEE_BANK_DENOM + FEE_BANK * direction));
 
-// Измененная функция calculateSigRsvRateWithFee, теперь возвращает также fee
-export function calculateSigRsvRateWithFee(
+	// 2 more params
+	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
+	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
+	rateSCERG = Number(requestSC) / Number(requestErg);
+
+	return { rateSCERG, fee, requestSC }; //cents for nanoerg
+}
+
+// SigRSV - pause
+export function calculateBankRateRSVInputRSV(
 	inErg: bigint,
 	inCircSigUSD: bigint,
 	inCircSigRSV: bigint,
@@ -57,63 +83,14 @@ export function calculateSigRsvRateWithFee(
 	const equityIn = inErg - liabilitiesIn;
 	const equityRate = equityIn / inCircSigRSV; // nanoergs per RSV
 	const bcDeltaExpected = equityRate * requestRSV;
-	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
+	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 	const bcDeltaExpectedWithFee = bcDeltaExpected + direction * fee;
 	rateRSVERG = Number(requestRSV) / Number(bcDeltaExpectedWithFee);
 
 	return { rateRSVERG, fee, bcDeltaExpectedWithFee };
 }
 
-// Новая функция для SigUSD, принимающая Total на вход
-export function calculateSigUsdRateWithFeeFromErg(
-	inErg: bigint,
-	inCircSigUSD: bigint,
-	oraclePrice: bigint,
-	ergRequest: bigint,
-	direction: bigint
-): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-
-	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
-	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
-
-	const feeMultiplierNumerator = FEE_DENOM + direction * FEE;
-	const feeMultiplierDenominator = FEE_DENOM;
-
-	const bcDeltaExpected = (ergRequest * feeMultiplierDenominator) / feeMultiplierNumerator;
-	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
-	const requestSC = bcDeltaExpected / scNominalPrice;
-
-	const rateSCERG = Number(requestSC) / Number(ergRequest);
-	return { rateSCERG, fee, requestSC };
-}
-
-export function calculateSigUsdRateWithFeeReversed(
-	inErg: bigint,
-	inCircSigUSD: bigint,
-	oraclePrice: bigint,
-	requestErg: bigint,
-	direction: bigint
-): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	//------------- STABLE PART ---------------
-	let rateSCERG: number;
-	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
-	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
-	const requestSC = (requestErg * FEE_DENOM) / (scNominalPrice * (FEE_DENOM + FEE * direction));
-
-	// 2 more params
-	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
-	const fee = absBigInt((bcDeltaExpected * FEE) / FEE_DENOM);
-	rateSCERG = Number(requestSC) / Number(requestErg);
-
-	return { rateSCERG, fee, requestSC }; //cents for nanoerg
-}
-
 // Вспомогательные функции
-
 export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
 	const inErg = BigInt(bankBox.value);
 	const inSigUSD = BigInt(
@@ -181,4 +158,29 @@ export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePri
 		bankERGBigNumber.multipliedBy(price).dividedBy(bankUSDBigNumber).multipliedBy(100).toFixed(0)
 	);
 	return reserveRate; //%
+}
+
+// ------------- OLD -------------
+export function calculateSigUsdRateWithFeeFromErg(
+	inErg: bigint,
+	inCircSigUSD: bigint,
+	oraclePrice: bigint,
+	ergRequest: bigint,
+	direction: bigint
+): { rateSCERG: number; fee: bigint; requestSC: bigint } {
+	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
+	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
+
+	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
+	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
+
+	const feeMultiplierNumerator = FEE_BANK_DENOM + direction * FEE_BANK;
+	const feeMultiplierDenominator = FEE_BANK_DENOM;
+
+	const bcDeltaExpected = (ergRequest * feeMultiplierDenominator) / feeMultiplierNumerator;
+	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
+	const requestSC = bcDeltaExpected / scNominalPrice;
+
+	const rateSCERG = Number(requestSC) / Number(ergRequest);
+	return { rateSCERG, fee, requestSC };
 }

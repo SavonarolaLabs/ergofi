@@ -200,31 +200,6 @@ export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePri
 	return reserveRate; //%
 }
 
-// ------------- OLD -------------
-export function calculateSigUsdRateWithFeeFromErg(
-	inErg: bigint,
-	inCircSigUSD: bigint,
-	oraclePrice: bigint,
-	ergRequest: bigint,
-	direction: bigint
-): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
-	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-
-	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
-	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
-
-	const feeMultiplierNumerator = FEE_BANK_DENOM + direction * FEE_BANK;
-	const feeMultiplierDenominator = FEE_BANK_DENOM;
-
-	const bcDeltaExpected = (ergRequest * feeMultiplierDenominator) / feeMultiplierNumerator;
-	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
-	const requestSC = bcDeltaExpected / scNominalPrice;
-
-	const rateSCERG = Number(requestSC) / Number(ergRequest);
-	return { rateSCERG, fee, requestSC };
-}
-
 //----------------------------------- FEE ----------------------------------------
 export function applyFee(inputERG: bigint) {
 	const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;

@@ -802,7 +802,6 @@
 		direction: bigint
 	): any {
 		//Part 0 - use Fee
-		console.log('------------- F4 STARTED NEW -------------');
 		let uiSwapFee;
 		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
 		uiSwapFee = abc;
@@ -820,7 +819,7 @@
 			oracleBox
 		}: OracleBoxesData = await extractBoxesData($oracle_box, $bank_box);
 
-		//Part 2 - Calculate Price
+		//Part 2.1 - Calculate Price
 		let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
 			inErg,
 			inCircSigUSD,
@@ -829,40 +828,18 @@
 			direction
 		);
 
-		//---- DEBUG Price Calculation ----
-		//Part 2 - Calculate Price ()
-
-		//console.log(direction, 'direction');
-
+		//Part 2.2 - Reversed round UP ()
 		if (direction == -1n) {
 			contractUSD = contractUSD + 1n;
 		}
 
-		// ADJUST contractUSD
-		// console.log(contractUSD, ' Initial Contract USD');
-		// contractUSD = contractUSD + 1n; //ADD 1 cent to recalculate one more BUT NEED TO DELETE IT AFTER ALL
-		// console.log(contractUSD, ' Adjasted Contract USD');
-
 		const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 			calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
-		console.log('P1:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErg, ' Contract ERG');
-		console.log(contractUSD, ' Contract USD');
-
-		console.log('P2:');
-		console.log(inputErg, ' Initial ERG');
-		console.log(contractErgCompare, ' Contract ERG V2');
-		console.log(contractUSD, ' Contract USD');
-
-		//TODO: Change Price Calculations with same logic
-		//Adjust fee (-) cause sell
 		if (contractErg < contractErgCompare) {
 			uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
 			console.log('real sell - fee adjusted');
 		}
-		// //DEBUG RESULT: Need to Fix:
 
 		//Part 3 - Calculate BankBox
 		const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(

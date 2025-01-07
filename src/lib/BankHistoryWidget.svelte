@@ -196,7 +196,7 @@
 							<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
 								>{formatAmount(i.amount)}</span
 							>
-							<span class="text-lg text-gray-500"> SigUSD </span>
+							<span class="text-lg text-gray-500"> {i.amountCurrency} </span>
 						</div>
 						<div class="pr-8 text-right text-gray-500">
 							{formatAmount(i.ergAmount)}
@@ -250,7 +250,7 @@
 								<span class="mr-1 text-3xl" class:text-gray-500={!m.own}
 									>{formatAmount(m.amount)}</span
 								>
-								<span class="text-lg text-gray-500"> SigUSD </span>
+								<span class="text-lg text-gray-500"> {m.amountCurrency} </span>
 							</div>
 							<div class="pr-8 text-right text-gray-500">
 								{formatAmount(m.ergAmount)}
@@ -300,7 +300,7 @@
 								<span class="mr-1 text-3xl">
 									{formatAmount(c.amount)}
 								</span>
-								<span class="text-lg"> SigUSD </span>
+								<span class="text-lg"> {c.amountCurrency} </span>
 							</div>
 							<div class="pr-8 text-right">
 								{formatAmount(c.ergAmount)}

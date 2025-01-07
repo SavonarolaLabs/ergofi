@@ -30,6 +30,7 @@ export type Interaction = {
 	id: string;
 	transactionId: string;
 	amount: number;
+	amountCurrency: string;
 	timestamp: number;
 	price: number;
 	type: 'Buy' | 'Sell';
@@ -222,6 +223,7 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 	let deltaToken;
 	let deltaErg;
 	let tokenPrice;
+	let currency;
 
 	if (txData.pair == 'USD/ERG') {
 		//calculate TOKEN_SIGUSD and Value
@@ -232,6 +234,7 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 			Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs))
 		);
 		tokenPrice = -(deltaToken / deltaErg).toFixed(2);
+		currency = 'SigUSD';
 	} else {
 		//calculate TOKEN_SIGRSV and Value
 		const outSigRSV = calculateTokenAmount(allUserOutputs, TOKEN_SIGRSV); //RSV OUT
@@ -241,12 +244,14 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 			Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs))
 		);
 		tokenPrice = -(deltaToken / deltaErg).toFixed(2);
+		currency = 'SigRSV';
 	}
 
 	return {
 		id: crypto.randomUUID(),
 		transactionId: tx.id,
 		amount: Number(deltaToken),
+		amountCurrency: currency,
 		timestamp: tx.timestamp ? tx.timestamp : (tx.creationTimestamp ?? Date.now()),
 		price: Number(tokenPrice),
 		type: txData.operation,

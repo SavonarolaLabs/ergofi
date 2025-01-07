@@ -47,6 +47,8 @@
 	} from './utils';
 	import {
 		bank_box,
+		bank_price_usd_buy,
+		bank_price_usd_sell,
 		bankBoxInCircSigUsd,
 		bankBoxInErg,
 		fee_mining,
@@ -60,11 +62,6 @@
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
-	import {
-		addPreparedInteraction,
-		addSignedInteraction,
-		cancelPreparedInteractionById
-	} from './stores/preparedInteractions';
 
 	onMount(async () => {
 		await updateBankBoxAndOracle();
@@ -73,7 +70,7 @@
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
 		oraclePriceSigUsd.subscribe((val) => {
-			window.document.title = `↑${oracleRateToUsd(val)} ↓${oracleRateToUsd(val)} | SigUSD`;
+			window.document.title = `↑${$bank_price_usd_sell} ↓${$bank_price_usd_buy} | SigUSD`;
 		});
 	});
 
@@ -99,13 +96,20 @@
 	//----------------------------------- Other ----------------------------------------
 
 	function initialInputs() {
-		const { totalSigUSD, finalPrice, totalFee } = calculateInputsErg(
+		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
 		);
+		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsErg(
+			directionSell,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
+		);
+		bank_price_usd_buy.set(finalPriceBuy);
+		bank_price_usd_sell.set(finalPriceSell);
+
 		fromAmount = BASE_INPUT_AMOUNT_ERG.toString();
-		toAmount = totalSigUSD;
-		swapPrice = finalPrice;
+		toAmount = totalSigUSDBuy;
+		swapPrice = finalPriceBuy;
 	}
 
 	async function updateBankBoxAndOracle() {

@@ -5,7 +5,6 @@
 		extractBoxesData,
 		BASE_INPUT_AMOUNT_ERG,
 		calculateInputsErg,
-		fetchLatestOracleAndBankBox,
 		calculateInputsUsd,
 		buyUSDInputERG,
 		sellUSDInputUSD,
@@ -40,7 +39,6 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 
 	onMount(async () => {
-		await fetchLatestOracleAndBankBox();
 		oracle_box.subscribe(async (oracleBox) => {
 			if ($bank_box && oracleBox) {
 				await updateBankBoxAndOracle(oracleBox, $bank_box);

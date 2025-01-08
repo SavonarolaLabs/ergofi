@@ -60,10 +60,6 @@ export const FEE_UI_DENOM = 100_00n;
 export const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
-export async function fetchLatestOracleAndBankBox() {
-	bank_box.set(await getBankBox());
-}
-
 // SigUSD
 export function calculateBankRateUSDInputUSD(
 	inErg: bigint,
@@ -471,7 +467,6 @@ export async function buyUSDInputERGTx(
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
-	await fetchLatestOracleAndBankBox();
 	const {
 		inErg,
 		inSigUSD,
@@ -569,7 +564,6 @@ export async function buyUSDInputUSDTx(
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
-	await fetchLatestOracleAndBankBox();
 	const {
 		inErg,
 		inSigUSD,
@@ -655,7 +649,6 @@ export async function sellUSDInputUSDTx(
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
-	await fetchLatestOracleAndBankBox();
 	const {
 		inErg,
 		inSigUSD,
@@ -741,7 +734,6 @@ export async function sellUSDInputERGTx(
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
-	await fetchLatestOracleAndBankBox();
 	const {
 		inErg,
 		inSigUSD,

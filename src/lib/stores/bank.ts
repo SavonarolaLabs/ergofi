@@ -1,5 +1,7 @@
-import type { Output } from '$lib/api/ergoNode';
+import type { MempoolTransaction, Output } from '$lib/api/ergoNode';
 import { get, writable } from 'svelte/store';
+import type { MempoolSocketUpdate } from './preparedInteractions';
+import { getBankBoxOutput } from '$lib/utils';
 
 export const reserve_rate = writable<number>(0);
 export const reserve_boarder_left_USD = writable<number>(0);
@@ -53,5 +55,21 @@ export function handleOracleBoxesUpdate(message: OracleData) {
 		if (get(oracle_box)?.boxId == message.confirmed_erg_usd[0].boxId) return;
 		console.log('handleOracleBoxesUpdate', message.confirmed_erg_usd[0]);
 		oracle_box.set(message.confirmed_erg_usd[0]);
+	}
+}
+
+export function updateBestBankBox(payload: MempoolSocketUpdate) {
+	if (payload.history && payload.history.length > 0) {
+		const mostRecent = payload.history.reduce(
+			(latest, current) => (!latest || current.timestamp > latest.timestamp ? current : latest),
+			null
+		);
+		if (mostRecent) {
+			let bankBox = getBankBoxOutput(mostRecent);
+			if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
+				bank_box.set(bankBox);
+				console.log({ bank_box: bankBox });
+			}
+		}
 	}
 }

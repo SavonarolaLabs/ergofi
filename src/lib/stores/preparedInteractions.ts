@@ -24,6 +24,7 @@ import {
 export type MempoolSocketUpdate = {
 	unconfirmed_transactions: MempoolTransaction[];
 	confirmed_transactions: MempoolTransaction[];
+	history?: MempoolTransaction[];
 };
 
 export type Interaction = {

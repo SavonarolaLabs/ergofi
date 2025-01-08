@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { Socket } from 'phoenix';
 	import { handleMempoolSocketUpdate, initHistory } from './stores/preparedInteractions';
-	import { handleOracleBoxesUpdate } from './stores/bank';
+	import { handleOracleBoxesUpdate, updateBestBankBox } from './stores/bank';
 
 	onMount(() => {
 		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
@@ -18,8 +18,8 @@
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${sigmausdChannelName}`);
 				initHistory(resp.history);
-				console.log('sigmausd_transactions:', resp.history);
 				handleMempoolSocketUpdate(resp);
+				updateBestBankBox(resp);
 			})
 			.receive('error', (resp) => {
 				console.error('Unable to join sigmausd_transactions:', resp);
@@ -27,6 +27,7 @@
 
 		sigmausdChannel.on(sigmausdChannelTopic, (payload) => {
 			handleMempoolSocketUpdate(payload);
+			updateBestBankBox(payload);
 		});
 
 		// Handle oracle_boxes channel

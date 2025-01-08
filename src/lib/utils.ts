@@ -1,5 +1,6 @@
 import { parse } from '@fleet-sdk/serializer';
 import BigNumber from 'bignumber.js';
+import { TOKEN_BANK_NFT, type MempoolTransaction, type Output } from './api/ergoNode';
 
 export function ergStringToNanoErgBigInt(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());
@@ -51,4 +52,10 @@ export function oracleRateToUsd(rate: bigint): string {
 export function decodeBigInt(register: string): bigint {
 	const parsed = parse<bigint>(register);
 	return parsed;
+}
+
+export function getBankBoxOutput(tx: MempoolTransaction): Output | undefined {
+	return tx.outputs.find((output) =>
+		output.assets.some((asset) => asset.tokenId === TOKEN_BANK_NFT)
+	);
 }

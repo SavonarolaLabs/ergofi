@@ -147,6 +147,7 @@ export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxe
 	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
 	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
 	// ORACLE PRICE / 100n
+	console.log('oracle box:', oracleBox);
 	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
 
 	return {

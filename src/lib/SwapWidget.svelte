@@ -38,18 +38,18 @@
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
+	import { get } from 'svelte/store';
 
 	onMount(async () => {
 		await fetchLatestOracleAndBankBox();
-		// only bank box
 		oracle_box.subscribe(async (oracleBox) => {
-			if ($bank_box) {
+			if ($bank_box && oracleBox) {
 				await updateBankBoxAndOracle(oracleBox, $bank_box);
 				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 			}
 		});
 		bank_box.subscribe(async (bankBox) => {
-			if ($oracle_box) {
+			if ($oracle_box && bankBox) {
 				await updateBankBoxAndOracle($oracle_box, bankBox);
 				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 			}
@@ -112,7 +112,7 @@
 	}
 
 	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		console.log('update start');
+		console.log('update start', oracleBox, bankBox);
 		const {
 			inErg,
 

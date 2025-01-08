@@ -51,6 +51,7 @@ type OracleData = {
 export function handleOracleBoxesUpdate(message: OracleData) {
 	if (message.confirmed_erg_usd.length > 0) {
 		if (get(oracle_box)?.boxId == message.confirmed_erg_usd[0].boxId) return;
+		console.log('handleOracleBoxesUpdate', message.confirmed_erg_usd[0]);
 		oracle_box.set(message.confirmed_erg_usd[0]);
 	}
 }

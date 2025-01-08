@@ -1,7 +1,5 @@
 import BigNumber from 'bignumber.js';
 import {
-	getBankBox,
-	getOracleBox,
 	SIGUSD_BANK_ADDRESS,
 	TOKEN_BANK_NFT,
 	TOKEN_SIGRSV,
@@ -444,8 +442,8 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 		addSignedInteraction(signed, interactionId);
 		console.log({ signed });
 
-		//const txId = await ergo.submit_tx(signed);
-		//console.log({ txId });
+		const txId = await ergo.submit_tx(signed);
+		console.log({ txId });
 	} catch (e) {
 		cancelPreparedInteractionById(interactionId);
 	}

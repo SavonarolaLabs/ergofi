@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { Socket } from 'phoenix';
 	import { handleMempoolSocketUpdate, initHistory } from './stores/preparedInteractions';
+	import { handleOracleBoxesUpdate } from './stores/bank';
 
 	onMount(() => {
 		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
@@ -38,6 +39,7 @@
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${oracleBoxesChannelName}`);
 				console.log('oracle_boxes:', resp);
+				handleOracleBoxesUpdate(resp);
 			})
 			.receive('error', (resp) => {
 				console.error('Unable to join oracle_boxes:', resp);
@@ -45,6 +47,7 @@
 
 		oracleBoxesChannel.on(oracleBoxesChannelTopic, (payload) => {
 			console.log('Update received for oracle_boxes:', payload);
+			handleOracleBoxesUpdate(payload);
 		});
 
 		// Cleanup on component unmount

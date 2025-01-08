@@ -22,3 +22,34 @@ export const fee_mining = writable<bigint>(10_000_000n); //0.01 ERG
 
 export const oracle_box = writable<Output>();
 export const bank_box = writable<Output>();
+
+type ErgoBox = {
+	additionalRegisters: Record<string, string>;
+	address: string;
+	assets: {
+		amount: number;
+		tokenId: string;
+	}[];
+	boxId: string;
+	creationHeight: number;
+	ergoTree: string;
+	globalIndex: number;
+	inclusionHeight: number;
+	index: number;
+	spentTransactionId: string | null;
+	transactionId: string;
+	value: number;
+};
+
+type OracleData = {
+	confirmed_erg_usd: ErgoBox[];
+	confirmed_erg_xau: ErgoBox[];
+	unconfirmed_erg_usd: ErgoBox[];
+	unconfirmed_erg_xau: ErgoBox[];
+};
+
+export function handleOracleBoxesUpdate(message: OracleData) {
+	if (message.confirmed_erg_usd.length > 0) {
+		oracle_box.set(message.confirmed_erg_usd[0]);
+	}
+}

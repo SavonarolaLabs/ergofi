@@ -1,5 +1,5 @@
 import type { Output } from '$lib/api/ergoNode';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export const reserve_rate = writable<number>(0);
 export const reserve_boarder_left_USD = writable<number>(0);
@@ -50,6 +50,7 @@ type OracleData = {
 
 export function handleOracleBoxesUpdate(message: OracleData) {
 	if (message.confirmed_erg_usd.length > 0) {
+		if (get(oracle_box)?.boxId == message.confirmed_erg_usd[0].boxId) return;
 		oracle_box.set(message.confirmed_erg_usd[0]);
 	}
 }

@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import {
-	decodeBigInt,
 	getBankBox,
 	getOracleBox,
 	SIGUSD_BANK_ADDRESS,
@@ -11,7 +10,7 @@ import {
 	type Asset,
 	type Output
 } from './api/ergoNode';
-import { absBigInt, maxBigInt, minBigInt } from './utils';
+import { absBigInt, decodeBigInt, maxBigInt, minBigInt } from './utils';
 import {
 	bank_box,
 	bankBoxInCircSigUsd,

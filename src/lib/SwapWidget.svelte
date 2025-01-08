@@ -1,21 +1,8 @@
 <script lang="ts">
-	import {
-		ErgoAddress,
-		OutputBuilder,
-		RECOMMENDED_MIN_FEE_VALUE,
-		SAFE_MIN_BOX_VALUE,
-		SLong,
-		TransactionBuilder
-	} from '@fleet-sdk/core';
+	import { RECOMMENDED_MIN_FEE_VALUE, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 	import BigNumber from 'bignumber.js';
 	import {
-		calculateOutputSc,
-		calculateBankRateUSDInputUSD,
-		calculateBankRateUSDInputERG,
 		extractBoxesData,
-		FEE_UI,
-		FEE_UI_DENOM,
-		type OracleBoxesData,
 		BASE_INPUT_AMOUNT_ERG,
 		calculateInputsErg,
 		fetchLatestOracleAndBankBox,
@@ -26,23 +13,11 @@
 		sellUSDInputERG,
 		calculateReserveRateAndBorders
 	} from './sigmaUSD';
-	import {
-		getBankBox,
-		getOracleBox,
-		SIGUSD_BANK_ADDRESS,
-		TOKEN_BANK_NFT,
-		TOKEN_SIGRSV,
-		TOKEN_SIGUSD,
-		type Output
-	} from '$lib/api/ergoNode';
-	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
-	import { history } from '../data/history';
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
 		nanoErgToErg,
-		oracleRateToUsd,
 		usdStringToCentBigInt
 	} from './utils';
 	import {
@@ -115,6 +90,7 @@
 	async function updateBankBoxAndOracle() {
 		console.log('update start');
 		await fetchLatestOracleAndBankBox();
+
 		const {
 			inErg,
 

@@ -1,5 +1,3 @@
-import { parse } from '@fleet-sdk/serializer';
-
 //const NODE_URL = 'http://213.239.193.208:9053';
 const NODE_URL = 'https://ergfi.xyz:9443';
 
@@ -159,9 +157,4 @@ export async function getBankBox(): Promise<Output> {
 	let data = await resp.json();
 	let bankBox = data[0];
 	return bankBox;
-}
-
-export function decodeBigInt(register: string): bigint {
-	const parsed = parse<bigint>(register);
-	return parsed;
 }

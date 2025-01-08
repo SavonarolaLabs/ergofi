@@ -1,3 +1,4 @@
+import { parse } from '@fleet-sdk/serializer';
 import BigNumber from 'bignumber.js';
 
 export function ergStringToNanoErgBigInt(erg: string): bigint {
@@ -45,4 +46,9 @@ export function oracleRateToUsd(rate: bigint): string {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
 	});
+}
+
+export function decodeBigInt(register: string): bigint {
+	const parsed = parse<bigint>(register);
+	return parsed;
 }

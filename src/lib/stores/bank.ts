@@ -59,17 +59,20 @@ export function handleOracleBoxesUpdate(message: OracleData) {
 }
 
 export function updateBestBankBox(payload: MempoolSocketUpdate) {
-	if (payload.history && payload.history.length > 0) {
-		const mostRecent = payload.history.reduce(
-			(latest, current) => (!latest || current.timestamp > latest.timestamp ? current : latest),
-			null
-		);
-		if (mostRecent) {
-			let bankBox = getBankBoxOutput(mostRecent);
-			if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
-				bank_box.set(bankBox);
-				console.log({ bank_box: bankBox });
-			}
+	const txList = [
+		...(payload.history ?? []),
+		...payload.confirmed_transactions,
+		...payload.unconfirmed_transactions
+	];
+	const mostRecentTx = txList.reduce(
+		(latest, current) => (!latest || current.timestamp > latest.timestamp ? current : latest),
+		null
+	);
+	if (mostRecentTx) {
+		let bankBox = getBankBoxOutput(mostRecentTx);
+		if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
+			bank_box.set(bankBox);
+			console.log({ bank_box: bankBox });
 		}
 	}
 }

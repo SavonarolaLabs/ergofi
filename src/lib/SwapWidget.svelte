@@ -38,7 +38,6 @@
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
-	import { get } from 'svelte/store';
 
 	onMount(async () => {
 		await fetchLatestOracleAndBankBox();

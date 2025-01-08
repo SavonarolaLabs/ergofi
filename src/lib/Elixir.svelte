@@ -37,7 +37,7 @@
 			.join()
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${oracleBoxesChannelName}`);
-				//handleMempoolSocketUpdate(resp);
+				console.log('oracle_boxes:', resp);
 			})
 			.receive('error', (resp) => {
 				console.error('Unable to join oracle_boxes:', resp);
@@ -45,7 +45,6 @@
 
 		oracleBoxesChannel.on(oracleBoxesChannelTopic, (payload) => {
 			console.log('Update received for oracle_boxes:', payload);
-			//handleMempoolSocketUpdate(payload);
 		});
 
 		// Cleanup on component unmount

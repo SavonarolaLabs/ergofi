@@ -61,7 +61,6 @@ export const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
 export async function fetchLatestOracleAndBankBox() {
-	oracle_box.set(await getOracleBox());
 	bank_box.set(await getBankBox());
 }
 
@@ -233,11 +232,23 @@ export function applyFeeSell(inputERG: bigint) {
 
 //----------------------------------- PRICE/SWAP ----------------------------------------
 // (f1.price && f4.price)
-export function calculateInputsErg(direction: bigint, buyAmountInput: any): any {
+export function calculateInputsErg(
+	direction: bigint,
+	buyAmountInput: any,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	oraclePriceSigUsd: bigint
+): any {
 	const inputAmountERG = new BigNumber(buyAmountInput);
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
 		const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-			calculateInputsErgPrice(direction, inputAmountERG);
+			calculateInputsErgPrice(
+				direction,
+				inputAmountERG,
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				oraclePriceSigUsd
+			);
 
 		const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
 		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
@@ -245,7 +256,13 @@ export function calculateInputsErg(direction: bigint, buyAmountInput: any): any 
 		return { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg };
 	} else {
 		const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-			calculateInputsErgPrice(direction, new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()));
+			calculateInputsErgPrice(
+				direction,
+				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				oraclePriceSigUsd
+			);
 		const totalSigUSD = '';
 		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
 		const totalFee = '';
@@ -253,7 +270,13 @@ export function calculateInputsErg(direction: bigint, buyAmountInput: any): any 
 	}
 }
 
-export function calculateInputsErgPrice(direction: bigint, buyAmount: BigNumber): any {
+export function calculateInputsErgPrice(
+	direction: bigint,
+	buyAmount: BigNumber,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	oraclePriceSigUsd: bigint
+): any {
 	const inputAmountNanoERG = buyAmount
 		.multipliedBy('1000000000')
 		.integerValue(BigNumber.ROUND_FLOOR)
@@ -278,9 +301,9 @@ export function calculateInputsErgPrice(direction: bigint, buyAmount: BigNumber)
 		fee: contractFee,
 		requestSC: contractUSD
 	} = calculateBankRateUSDInputERG(
-		get(bankBoxInErg),
-		get(bankBoxInCircSigUsd),
-		get(oraclePriceSigUsd),
+		bankBoxInErg,
+		bankBoxInCircSigUsd,
+		oraclePriceSigUsd,
 		contractERG,
 		direction
 	);
@@ -294,9 +317,9 @@ export function calculateInputsErgPrice(direction: bigint, buyAmount: BigNumber)
 	//Part 2 - Calculate Price ()
 	const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 		calculateBankRateUSDInputUSD(
-			get(bankBoxInErg),
-			get(bankBoxInCircSigUsd),
-			get(oraclePriceSigUsd),
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			oraclePriceSigUsd,
 			contractUSD,
 			direction
 		);

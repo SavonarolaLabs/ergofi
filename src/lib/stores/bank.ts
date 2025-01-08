@@ -20,10 +20,10 @@ export const unconfrimed_bank_reserve_rate = writable<bigint>(400n);
 
 export const fee_mining = writable<bigint>(10_000_000n); //0.01 ERG
 
-export const oracle_box = writable<Output>();
-export const bank_box = writable<Output>();
+export const oracle_box = writable<ErgoBox>();
+export const bank_box = writable<ErgoBox>();
 
-type ErgoBox = {
+export type ErgoBox = {
 	additionalRegisters: Record<string, string>;
 	address: string;
 	assets: {

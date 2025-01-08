@@ -33,14 +33,27 @@
 		reserve_boarder_left_USD,
 		reserve_boarder_right_ERG,
 		reserve_boarder_right_USD,
-		reserve_rate
+		reserve_rate,
+		type ErgoBox
 	} from './stores/bank';
 	import { web3wallet_confirmedTokens } from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 
 	onMount(async () => {
-		await updateBankBoxAndOracle();
-		initialInputs();
+		await fetchLatestOracleAndBankBox();
+		// only bank box
+		oracle_box.subscribe(async (oracleBox) => {
+			if ($bank_box) {
+				await updateBankBoxAndOracle(oracleBox, $bank_box);
+				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
+			}
+		});
+		bank_box.subscribe(async (bankBox) => {
+			if ($oracle_box) {
+				await updateBankBoxAndOracle($oracle_box, bankBox);
+				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
+			}
+		});
 		loading = false;
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
@@ -70,14 +83,25 @@
 
 	//----------------------------------- Other ----------------------------------------
 
-	function initialInputs() {
+	function initialInputs(
+		bankBoxInErg: bigint,
+		bankBoxInCircSigUsd: bigint,
+		oraclePriceSigUsd: bigint
+	) {
+		console.log('initial Inputs Start');
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsErg(
 			directionBuy,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			oraclePriceSigUsd
 		);
 		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsErg(
 			directionSell,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString())
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			oraclePriceSigUsd
 		);
 		bank_price_usd_buy.set(finalPriceBuy);
 		bank_price_usd_sell.set(finalPriceSell);
@@ -87,19 +111,18 @@
 		swapPrice = finalPriceBuy;
 	}
 
-	async function updateBankBoxAndOracle() {
+	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
 		console.log('update start');
-		await fetchLatestOracleAndBankBox();
-
 		const {
 			inErg,
 
 			inCircSigUSD,
 			oraclePrice
-		} = await extractBoxesData($oracle_box, $bank_box);
+		} = await extractBoxesData(oracleBox, bankBox);
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
 		oraclePriceSigUsd.set(oraclePrice);
+
 		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
 			$bankBoxInErg,
 			$bankBoxInCircSigUsd,
@@ -112,13 +135,20 @@
 		reserve_boarder_right_ERG.set(rightERG);
 	}
 
-	function recalculateInputsOnCurrencyChange() {
+	function recalculateInputsOnCurrencyChange(
+		bankBoxInErg: bigint,
+		bankBoxInCircSigUsd: bigint,
+		oraclePriceSigUsd: bigint
+	) {
 		// TODO: Recalculate based on lastInput
 		if (fromAmount !== '') {
 			if (selectedCurrency == 'ERG') {
 				const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
 					directionBuy,
-					fromAmount
+					fromAmount,
+					bankBoxInErg,
+					bankBoxInCircSigUsd,
+					oraclePriceSigUsd
 				);
 				toAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
@@ -164,7 +194,7 @@
 	function handleCurrencyChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		selectedCurrency = target.value as Currency;
-		recalculateInputsOnCurrencyChange();
+		recalculateInputsOnCurrencyChange($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 	}
 
 	function handleFromAmountChange(event: Event) {
@@ -173,7 +203,10 @@
 			// (f1.price)
 			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
 				directionBuy,
-				fromAmount
+				fromAmount,
+				$bankBoxInErg,
+				$bankBoxInCircSigUsd,
+				$oraclePriceSigUsd
 			);
 			toAmount = totalSigUSD;
 			globalUiFeeErg = uiFeeErg;
@@ -199,7 +232,10 @@
 			// (f4.price)
 			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
 				directionSell,
-				toAmount
+				toAmount,
+				$bankBoxInErg,
+				$bankBoxInCircSigUsd,
+				$oraclePriceSigUsd
 			);
 			fromAmount = totalSigUSD;
 			globalUiFeeErg = uiFeeErg;
@@ -211,7 +247,7 @@
 
 	function handleFeeChange(event: Event) {
 		fee_mining.set(BigInt(Number(event.target.value) * 10 ** 9));
-		recalculateInputsOnCurrencyChange(); //TODO: To Amount Hadle
+		recalculateInputsOnCurrencyChange($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd); //TODO: To Amount Hadle
 	}
 
 	//----------------------------------- PRICE/SWAP ----------------------------------------

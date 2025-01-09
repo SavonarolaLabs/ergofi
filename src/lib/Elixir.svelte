@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Socket } from 'phoenix';
-	import { handleMempoolSocketUpdate, initHistory } from './stores/preparedInteractions';
+	import {
+		handleMempoolSocketUpdate,
+		initHistory,
+		prepared_interactions
+	} from './stores/preparedInteractions';
 	import { handleOracleBoxesUpdate, updateBestBankBox } from './stores/bank';
 
 	onMount(() => {
@@ -19,7 +23,7 @@
 				console.log(`Joined successfully ${sigmausdChannelName}`);
 				initHistory(resp.history);
 				handleMempoolSocketUpdate(resp);
-				updateBestBankBox(resp);
+				updateBestBankBox(resp, $prepared_interactions);
 			})
 			.receive('error', (resp) => {
 				console.error('Unable to join sigmausd_transactions:', resp);
@@ -27,7 +31,7 @@
 
 		sigmausdChannel.on(sigmausdChannelTopic, (payload) => {
 			handleMempoolSocketUpdate(payload);
-			updateBestBankBox(payload);
+			updateBestBankBox(payload, $prepared_interactions);
 		});
 
 		// Handle oracle_boxes channel

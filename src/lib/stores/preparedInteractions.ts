@@ -30,6 +30,7 @@ export type MempoolSocketUpdate = {
 export type Interaction = {
 	id: string;
 	transactionId: string;
+	tx?: MempoolTransaction;
 	amount: number;
 	amountCurrency: string;
 	timestamp: number;
@@ -56,6 +57,7 @@ export function initHistory(txList: MempoolTransaction[]) {
 export function addPreparedInteraction(tx: MempoolTransaction): string {
 	let i = txToSigmaUSDInteraction(tx);
 	i.own = true;
+	i.tx = tx;
 	prepared_interactions.update((l) => [i, ...l]);
 	return i.id;
 }
@@ -68,6 +70,7 @@ export function addSignedInteraction(signedTx: MempoolTransaction, uuid: string)
 			l.forEach((x) => {
 				if (x.id == uuid) {
 					x.transactionId = signedTx.id;
+					x.tx = signedTx;
 				}
 			});
 			return l;

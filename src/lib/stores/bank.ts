@@ -1,7 +1,6 @@
-import type { MempoolTransaction, Output } from '$lib/api/ergoNode';
 import { get, writable } from 'svelte/store';
-import type { MempoolSocketUpdate } from './preparedInteractions';
-import { getBankBoxOutput } from '$lib/utils';
+import type { Interaction, MempoolSocketUpdate } from './preparedInteractions';
+import { getMaxFeeLeaf } from './bankBoxSelection';
 
 export const reserve_rate = writable<number>(0);
 export const reserve_boarder_left_USD = writable<number>(0);
@@ -58,21 +57,24 @@ export function handleOracleBoxesUpdate(message: OracleData) {
 	}
 }
 
-export function updateBestBankBox(payload: MempoolSocketUpdate) {
+export function updateBestBankBox(
+	payload: MempoolSocketUpdate,
+	preparedInteractions: Interaction[]
+) {
+	const preparedTxs = preparedInteractions
+		.filter((i) => i.transactionId && !i.rejected)
+		.map((i) => i.tx);
 	const txList = [
-		...(payload.history ?? []),
-		...payload.confirmed_transactions,
-		...payload.unconfirmed_transactions
+		...(payload.history?.[0] ? [payload.history[0]] : []),
+		...(payload.confirmed_transactions?.[0] ? [payload.confirmed_transactions[0]] : []),
+		...payload.unconfirmed_transactions,
+		...preparedTxs
 	];
-	const mostRecentTx = txList.reduce(
-		(latest, current) => (!latest || current.timestamp > latest.timestamp ? current : latest),
-		null
-	);
-	if (mostRecentTx) {
-		let bankBox = getBankBoxOutput(mostRecentTx);
-		if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
-			bank_box.set(bankBox);
-			console.log({ bank_box: bankBox });
-		}
+	if (txList.length < 1) return;
+
+	let bankBox = getMaxFeeLeaf(txList);
+	if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
+		bank_box.set(bankBox);
+		console.warn('updated best bank box:', { bank_box: bankBox });
 	}
 }

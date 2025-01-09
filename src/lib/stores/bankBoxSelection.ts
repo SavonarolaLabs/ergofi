@@ -15,7 +15,6 @@ export function getMaxFeeLeaf(txList: MempoolTransaction[]): Output | undefined 
 		.map((tx) => txToBoxChainLink(tx, bankOutputs))
 		.filter((x): x is BoxChainLink => !!x);
 	const chains = buildChains(links);
-	console.warn({ chains });
 
 	return getLeafOfMaxFeeChain(chains)?.box;
 }

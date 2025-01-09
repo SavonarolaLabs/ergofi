@@ -14,6 +14,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { applyAnimation } from './animations';
 	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
+	import numeral from 'numeral';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -59,8 +60,15 @@
 		);
 	}
 
-	function formatAmount(a: number): string {
-		return `${a > 0 ? '+' : ''}${a.toFixed(2)}`;
+	function formatAmount(value: number) {
+		if (value >= 1000) {
+			let formatted = numeral(value).format('0.0a').replace('m', 'M');
+			if (formatted.includes('.0')) {
+				formatted = formatted.replace('.0', ''); // Remove trailing `.0`
+			}
+			return formatted;
+		}
+		return numeral(value).format('0.00'); // Keeps smaller numbers as '300.00'
 	}
 
 	let intervalId: number;
@@ -295,16 +303,16 @@
 							</div>
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>
 						</div>
-						<div class="flex flex-col">
+						<div class="flex flex-col items-end">
 							<div>
 								<span class="mr-1 text-3xl">
 									{formatAmount(c.amount)}
 								</span>
 								<span class="text-lg"> {c.amountCurrency} </span>
 							</div>
-							<div class="pr-8 text-right">
+							<div class="text-right">
 								{formatAmount(c.ergAmount)}
-								<span style="margin-left:7px;">ERG</span>
+								<span style="margin-left:7px; padding-right:30px;">ERG</span>
 							</div>
 						</div>
 					</div>

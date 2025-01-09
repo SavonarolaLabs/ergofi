@@ -19,12 +19,15 @@
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/eslint": "^9.6.0",
 		"@types/lodash-es": "^4.17.12",
+		"@types/numeral": "^2.0.5",
 		"@types/phoenix": "^1.6.5",
 		"autoprefixer": "^10.4.20",
 		"eslint": "^9.7.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.36.0",
 		"globals": "^15.0.0",
+		"i": "^0.3.7",
+		"npm": "^11.0.0",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.5",
@@ -48,6 +51,7 @@
 		"idb": "^8.0.0",
 		"lodash-es": "^4.17.21",
 		"lucide-svelte": "^0.461.0",
+		"numeral": "^2.0.6",
 		"phoenix": "^1.7.14"
 	}
 }

@@ -1,20 +1,10 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
-	import {
-		calculateReserveRate,
-		calculateReserveRateAndBorders,
-		updateUnconfirmedBank
-	} from './sigmaUSD';
+	import { updateUnconfirmedBank } from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
-		bankBoxInCircSigUsd,
-		bankBoxInErg,
 		oraclePriceSigUsd,
-		reserve_boarder_left_USD,
-		reserve_rate,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_reserve_rate,
-		unconfrimed_bank_usd,
 		unconfrimed_reserve_boarder_left_USD
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';

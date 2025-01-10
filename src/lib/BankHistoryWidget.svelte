@@ -199,16 +199,16 @@
 						</div>
 						<span class="text-sm text-gray-500">{formatTimeAgo(i.timestamp)}</span>
 					</div>
-					<div class="flex flex-col">
+					<div class="flex flex-col items-end">
 						<div>
 							<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
 								>{formatAmount(i.amount)}</span
 							>
 							<span class="text-lg text-gray-500"> {i.amountCurrency} </span>
 						</div>
-						<div class="pr-8 text-right text-gray-500">
+						<div class="text-right text-gray-500">
 							{formatAmount(i.ergAmount)}
-							<span style="margin-left:7px;">ERG</span>
+							<span style="margin-left:5px; padding-right:30px;">ERG</span>
 						</div>
 					</div>
 				</div>
@@ -253,16 +253,16 @@
 							</div>
 							<span class="text-sm text-gray-500">{formatTimeAgo(m.timestamp)}</span>
 						</div>
-						<div class="flex flex-col">
+						<div class="flex flex-col items-end">
 							<div>
 								<span class="mr-1 text-3xl" class:text-gray-500={!m.own}
 									>{formatAmount(m.amount)}</span
 								>
 								<span class="text-lg text-gray-500"> {m.amountCurrency} </span>
 							</div>
-							<div class="pr-8 text-right text-gray-500">
+							<div class="text-right text-gray-500">
 								{formatAmount(m.ergAmount)}
-								<span style="margin-left:7px;">ERG</span>
+								<span style="margin-left:5px; padding-right:30px;">ERG</span>
 							</div>
 						</div>
 					</div>
@@ -312,7 +312,7 @@
 							</div>
 							<div class="text-right">
 								{formatAmount(c.ergAmount)}
-								<span style="margin-left:7px; padding-right:30px;">ERG</span>
+								<span style="margin-left:5px; padding-right:30px;">ERG</span>
 							</div>
 						</div>
 					</div>

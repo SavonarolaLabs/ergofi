@@ -104,6 +104,7 @@
 			id: crypto.randomUUID(),
 			transactionId: crypto.randomUUID(),
 			amount: 123,
+			amountCurrency: 'SigUSD',
 			timestamp: Date.now(),
 			price: 32.22,
 			type: 'BUY',
@@ -126,7 +127,7 @@
 			mempool_interactions.update((l) => l.filter((y) => y.id != x.id));
 		}, 2500);
 		setTimeout(() => {
-			confirmed_interactions.update((l) => [x, ...l]);
+			confirmed_interactions.update((l) => [x, ...l].slice(0, 3));
 		}, 3600);
 	}
 </script>

@@ -54,8 +54,11 @@
 		loading = false;
 		console.log(SAFE_MIN_BOX_VALUE);
 		console.log(RECOMMENDED_MIN_FEE_VALUE);
-		oraclePriceSigUsd.subscribe((val) => {
-			window.document.title = `↑${$bank_price_usd_sell} ↓${$bank_price_usd_buy} | SigUSD`;
+		bank_price_usd_sell.subscribe((val) => {
+			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;
+		});
+		bank_price_usd_buy.subscribe((val) => {
+			window.document.title = `↑${$bank_price_usd_sell} ↓${val} | SigUSD`;
 		});
 	});
 

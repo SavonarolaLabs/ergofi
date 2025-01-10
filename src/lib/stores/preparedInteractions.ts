@@ -135,7 +135,7 @@ function removeConfirmedFromMempool() {
 	mempool_interactions.update((l) => l.filter((i) => !i.confirmed));
 }
 function addToConfirmed(confirmed: Interaction[]) {
-	confirmed_interactions.update((l) => [...confirmed, ...l]);
+	confirmed_interactions.update((l) => [...confirmed, ...l].slice(0, 3));
 }
 
 // removes from prepared those that are in mempool, returns list of removed

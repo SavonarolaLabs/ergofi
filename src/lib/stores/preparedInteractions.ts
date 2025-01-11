@@ -104,14 +104,15 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 		payload.unconfirmed_transactions.length
 	);
 	let confirmed = confirmMempoolInteractions(payload); // this sets confirmed = true
+	rejectMempoolInteractions(payload); // this sets rejected = true
 
 	const unconfTxList = payload.unconfirmed_transactions;
 	if (unconfTxList?.length > 0) {
 		const removedPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
-		updateMempoolInteractions(unconfTxList, removedPreparedInteractions);
+		addPreparedToMempoolInteractions(unconfTxList, removedPreparedInteractions);
 	}
 	if (confirmed.length > 0) {
-		setTimeout(removeConfirmedFromMempool, 500);
+		setTimeout(removeConfirmedAndRejectedFromMempool, 500);
 		setTimeout(() => addToConfirmed(confirmed), 1550);
 	}
 }
@@ -131,8 +132,25 @@ function confirmMempoolInteractions(payload: MempoolSocketUpdate) {
 	}
 	return [];
 }
-function removeConfirmedFromMempool() {
-	mempool_interactions.update((l) => l.filter((i) => !i.confirmed));
+
+function rejectMempoolInteractions(payload: MempoolSocketUpdate) {
+	const confirmedTxIds = payload.confirmed_transactions.map((tx) => tx.id);
+	const unconfirmedTxIds = payload.unconfirmed_transactions.map((tx) => tx.id);
+	const mempoolTxIds = get(mempool_interactions).map((tx) => tx.transactionId);
+	const rejectedTxIds = mempoolTxIds.filter(
+		(m) => !confirmedTxIds.includes(m) && unconfirmedTxIds.includes(m)
+	);
+	if (rejectedTxIds.length > 0) {
+		const allUpdated = get(mempool_interactions).map((i) => {
+			if (rejectedTxIds.includes(i.transactionId)) i.rejected = true;
+			return i;
+		});
+		mempool_interactions.set(allUpdated);
+	}
+}
+
+function removeConfirmedAndRejectedFromMempool() {
+	mempool_interactions.update((l) => l.filter((i) => !i.confirmed && !i.rejected));
 }
 function addToConfirmed(confirmed: Interaction[]) {
 	confirmed_interactions.update((l) => [...confirmed, ...l].slice(0, 3));
@@ -160,21 +178,21 @@ function updatePreparedInteractions(unconfTxList: MempoolTransaction[]): Interac
 	return ackInteractions;
 }
 
-function updateMempoolInteractions(
-	txList: MempoolTransaction[],
+function addPreparedToMempoolInteractions(
+	unconfTxList: MempoolTransaction[],
 	removedInteractions: Interaction[] = []
 ) {
-	const txIdsInMempool = txList.map((x) => x.id);
+	const txIdsUnconfirmed = unconfTxList.map((x) => x.id);
 
 	let mempoolInteractions = get(mempool_interactions);
 	const beforeUpdateCount = mempoolInteractions.length;
 
 	let mempoolInteractionsKnown = mempoolInteractions.filter((t) =>
-		txIdsInMempool.includes(t.transactionId)
+		txIdsUnconfirmed.includes(t.transactionId)
 	);
 	let alreadyKnownTxIds = mempoolInteractionsKnown.map((x) => x.transactionId);
 
-	let yetUnknownInteractions: Interaction[] = txList
+	let yetUnknownInteractions: Interaction[] = unconfTxList
 		.filter((tx) => !alreadyKnownTxIds.includes(tx.id))
 		.map(
 			(tx) =>
@@ -185,7 +203,7 @@ function updateMempoolInteractions(
 	if (beforeUpdateCount == afterUpdateCount && yetUnknownInteractions.length == 0) {
 		return;
 	} else {
-		mempool_interactions.set([...yetUnknownInteractions, ...mempoolInteractionsKnown]);
+		mempool_interactions.set([...yetUnknownInteractions, ...mempoolInteractions]);
 	}
 }
 

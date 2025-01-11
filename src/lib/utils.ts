@@ -2,6 +2,8 @@ import { parse } from '@fleet-sdk/serializer';
 import BigNumber from 'bignumber.js';
 import { TOKEN_BANK_NFT, type MempoolTransaction, type Output } from './api/ergoNode';
 import { ErgoAddress } from '@fleet-sdk/core';
+import { formatDistanceToNowStrict } from 'date-fns';
+import numeral from 'numeral';
 
 export function ergStringToNanoErgBigInt(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());
@@ -66,4 +68,27 @@ export function isOwnTx(tx: MempoolTransaction, ownAddressList: string[]): boole
 	const trees = ownAddressList.map((a: string) => ErgoAddress.fromBase58(a).ergoTree);
 
 	return tx.outputs.some((i) => trees.includes(i.ergoTree));
+}
+
+export function formatTimeAgo(timestamp: number): string {
+	const t = formatDistanceToNowStrict(new Date(timestamp));
+	return (
+		t
+			.replace(/ hours?/, 'h')
+			.replace(/ minutes?/, 'm')
+			.replace(/ days?/, 'd')
+			.replace(/ seconds?/, 's') + ' ago'
+	);
+}
+
+export function formatAmount(value: number): string {
+	const prefix = value > 0 ? '+' : '';
+	if (Math.abs(value) >= 1000) {
+		let formatted = numeral(value).format('0.0a').replace('m', 'M');
+		if (formatted.includes('.0')) {
+			formatted = formatted.replace('.0', '');
+		}
+		return prefix + formatted;
+	}
+	return prefix + numeral(value).format('0.00');
 }

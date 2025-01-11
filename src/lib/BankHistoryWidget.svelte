@@ -15,6 +15,9 @@
 	import { applyAnimation } from './animations';
 	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
 	import numeral from 'numeral';
+	import { formatAmount, formatTimeAgo } from './utils';
+	import CheckCircle from './icons/CheckCircle.svelte';
+	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -47,29 +50,6 @@
 		removingItems.delete(id);
 		blinkingItems = new Set(blinkingItems);
 		blinkingItems.delete(id);
-	}
-
-	function formatTimeAgo(timestamp: number): string {
-		const t = formatDistanceToNowStrict(new Date(timestamp));
-		return (
-			t
-				.replace(/ hours?/, 'h')
-				.replace(/ minutes?/, 'm')
-				.replace(/ days?/, 'd')
-				.replace(/ seconds?/, 's') + ' ago'
-		);
-	}
-
-	function formatAmount(value: number) {
-		const prefix = value > 0 ? '+' : '';
-		if (Math.abs(value) >= 1000) {
-			let formatted = numeral(value).format('0.0a').replace('m', 'M');
-			if (formatted.includes('.0')) {
-				formatted = formatted.replace('.0', '');
-			}
-			return prefix + formatted;
-		}
-		return prefix + numeral(value).format('0.00');
 	}
 
 	let intervalId: number;
@@ -244,27 +224,9 @@
 								<div class="flex items-center gap-1 uppercase text-gray-400">
 									{#if m.confirmed}
 										{#if m.own}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												viewBox="0 0 512 512"
-												width="1em"
-												fill="currentColor"
-												><path
-													d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
-												/></svg
-											>
+											<CheckCircleFilled></CheckCircleFilled>
 										{:else}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												viewBox="0 0 512 512"
-												width="1em"
-												fill="currentColor"
-												style="margin-left:2px;margin-right:2px;"
-											>
-												<path
-													d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
-												/>
-											</svg>
+											<CheckCircle></CheckCircle>
 										{/if}
 										{#if m.amountCurrency == 'SigUSD'}
 											{m.type == 'Buy' ? 'Sell' : 'Buy'}
@@ -322,27 +284,9 @@
 							<div>
 								<div class="flex items-center gap-1 uppercase">
 									{#if c.own}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 512 512"
-											width="1em"
-											fill="currentColor"
-											><path
-												d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
-											/></svg
-										>
+										<CheckCircleFilled></CheckCircleFilled>
 									{:else}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 512 512"
-											width="1em"
-											fill="currentColor"
-											style="margin-left:2px;margin-right:2px;"
-										>
-											<path
-												d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
-											/>
-										</svg>
+										<CheckCircle></CheckCircle>
 									{/if}
 
 									{#if c.amountCurrency == 'SigUSD'}

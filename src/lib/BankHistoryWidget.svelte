@@ -61,14 +61,15 @@
 	}
 
 	function formatAmount(value: number) {
+		const prefix = value > 0 ? '+' : '';
 		if (Math.abs(value) >= 1000) {
 			let formatted = numeral(value).format('0.0a').replace('m', 'M');
 			if (formatted.includes('.0')) {
-				formatted = formatted.replace('.0', ''); // Remove trailing `.0`
+				formatted = formatted.replace('.0', '');
 			}
-			return formatted;
+			return prefix + formatted;
 		}
-		return numeral(value).format('0.00'); // Keeps smaller numbers as '300.00'
+		return prefix + numeral(value).format('0.00');
 	}
 
 	let intervalId: number;
@@ -107,8 +108,8 @@
 			amountCurrency: 'SigUSD',
 			timestamp: Date.now(),
 			price: 32.22,
-			type: 'BUY',
-			ergAmount: 100,
+			type: 'Buy',
+			ergAmount: -100,
 			confirmed: false,
 			rejected: false,
 			own: false
@@ -153,7 +154,7 @@
 				>
 					<div class="left pb-1">
 						<div class:blink={!i.rejected && !i.confirmed}>
-							<div class="flex items-center gap-1 uppercase text-gray-400">
+							<div class="flex items-center gap-1 text-gray-400">
 								{#if i.rejected}
 									<svg
 										fill="currentColor"
@@ -195,22 +196,42 @@
 										<SpinnerBar size={2.2} />
 									</span>
 								{/if}
-								<span>{i.type} @{i.price}</span>
+								<span>
+									{#if i.amountCurrency == 'SigUSD'}
+										{i.type == 'Buy' ? 'Sell' : 'Buy'}
+									{:else}
+										{i.type}
+									{/if}
+									@{i.price}</span
+								>
 							</div>
 						</div>
 						<span class="text-sm text-gray-500">{formatTimeAgo(i.timestamp)}</span>
 					</div>
 					<div class="flex flex-col items-end">
-						<div>
-							<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
-								>{formatAmount(i.amount)}</span
-							>
-							<span class="text-lg text-gray-500"> {i.amountCurrency} </span>
-						</div>
-						<div class="text-right text-gray-500">
-							{formatAmount(i.ergAmount)}
-							<span style="margin-left:5px; padding-right:30px;">ERG</span>
-						</div>
+						{#if i.amountCurrency == 'SigUSD'}
+							<div>
+								<span class="mr-1 text-3xl">
+									{formatAmount(i.ergAmount)}
+								</span>
+								<span class="text-lg" style="padding-right:22px;">ERG</span>
+							</div>
+							<div class="text-right">
+								{formatAmount(i.amount)}
+								<span style="margin-left:5px;">{i.amountCurrency}</span>
+							</div>
+						{:else}
+							<div>
+								<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
+									>{formatAmount(i.amount)}</span
+								>
+								<span class="text-lg text-gray-500"> {i.amountCurrency} </span>
+							</div>
+							<div class="text-right text-gray-500">
+								{formatAmount(i.ergAmount)}
+								<span style="margin-left:5px; padding-right:30px;">ERG</span>
+							</div>
+						{/if}
 					</div>
 				</div>
 			{/each}
@@ -245,26 +266,50 @@
 												/>
 											</svg>
 										{/if}
-										{m.type} @{m.price}
+										{#if m.amountCurrency == 'SigUSD'}
+											{m.type == 'Buy' ? 'Sell' : 'Buy'}
+										{:else}
+											{m.type}
+										{/if}
+
+										@{m.price}
 									{:else}
 										<Spinner size={16} />
-										{m.type} @{m.price}
+										{#if m.amountCurrency == 'SigUSD'}
+											{m.type == 'Buy' ? 'Sell' : 'Buy'}
+										{:else}
+											{m.type}
+										{/if}
+										@{m.price}
 									{/if}
 								</div>
 							</div>
 							<span class="text-sm text-gray-500">{formatTimeAgo(m.timestamp)}</span>
 						</div>
 						<div class="flex flex-col items-end">
-							<div>
-								<span class="mr-1 text-3xl" class:text-gray-500={!m.own}
-									>{formatAmount(m.amount)}</span
-								>
-								<span class="text-lg text-gray-500"> {m.amountCurrency} </span>
-							</div>
-							<div class="text-right text-gray-500">
-								{formatAmount(m.ergAmount)}
-								<span style="margin-left:5px; padding-right:30px;">ERG</span>
-							</div>
+							{#if m.amountCurrency == 'SigUSD'}
+								<div>
+									<span class="mr-1 text-3xl">
+										{formatAmount(m.ergAmount)}
+									</span>
+									<span class="text-lg" style="padding-right:22px;">ERG</span>
+								</div>
+								<div class="text-right">
+									{formatAmount(m.amount)}
+									<span style="margin-left:5px;">{m.amountCurrency}</span>
+								</div>
+							{:else}
+								<div>
+									<span class="mr-1 text-3xl" class:text-gray-500={!m.own}
+										>{formatAmount(m.amount)}</span
+									>
+									<span class="text-lg text-gray-500"> {m.amountCurrency} </span>
+								</div>
+								<div class="text-right text-gray-500">
+									{formatAmount(m.ergAmount)}
+									<span style="margin-left:5px; padding-right:30px;">ERG</span>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</a>
@@ -299,22 +344,42 @@
 											/>
 										</svg>
 									{/if}
-									{c.type} @{c.price}
+
+									{#if c.amountCurrency == 'SigUSD'}
+										{c.type == 'Buy' ? 'Sell' : 'Buy'}
+									{:else}
+										{c.type}
+									{/if}
+
+									@{c.price}
 								</div>
 							</div>
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>
 						</div>
 						<div class="flex flex-col items-end">
-							<div>
-								<span class="mr-1 text-3xl">
+							{#if c.amountCurrency == 'SigUSD'}
+								<div>
+									<span class="mr-1 text-3xl">
+										{formatAmount(c.ergAmount)}
+									</span>
+									<span class="text-lg" style="padding-right:22px;">ERG</span>
+								</div>
+								<div class="text-right">
 									{formatAmount(c.amount)}
-								</span>
-								<span class="text-lg"> {c.amountCurrency} </span>
-							</div>
-							<div class="text-right">
-								{formatAmount(c.ergAmount)}
-								<span style="margin-left:5px; padding-right:30px;">ERG</span>
-							</div>
+									<span style="margin-left:5px;">{c.amountCurrency}</span>
+								</div>
+							{:else}
+								<div>
+									<span class="mr-1 text-3xl">
+										{formatAmount(c.amount)}
+									</span>
+									<span class="text-lg"> {c.amountCurrency} </span>
+								</div>
+								<div class="text-right">
+									{formatAmount(c.ergAmount)}
+									<span style="margin-left:5px; padding-right:30px;">ERG</span>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</a>

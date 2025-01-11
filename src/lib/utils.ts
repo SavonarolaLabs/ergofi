@@ -1,6 +1,7 @@
 import { parse } from '@fleet-sdk/serializer';
 import BigNumber from 'bignumber.js';
 import { TOKEN_BANK_NFT, type MempoolTransaction, type Output } from './api/ergoNode';
+import { ErgoAddress } from '@fleet-sdk/core';
 
 export function ergStringToNanoErgBigInt(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());
@@ -58,4 +59,10 @@ export function getBankBoxOutput(tx: MempoolTransaction): Output | undefined {
 	return tx.outputs.find((output) =>
 		output.assets.some((asset) => asset.tokenId === TOKEN_BANK_NFT)
 	);
+}
+
+export function isOwnTx(tx: MempoolTransaction, ownAddressList: string[]): boolean {
+	const trees = ownAddressList.map((a: string) => ErgoAddress.fromBase58(a).ergoTree);
+
+	return tx.outputs.some((i) => trees.includes(i.ergoTree));
 }

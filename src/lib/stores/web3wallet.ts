@@ -5,12 +5,14 @@ import { ERGO_TOKEN_ID } from './ergoTokens';
 
 export const web3wallet_connected = writable(false);
 export const web3wallet_wallet_name = writable('');
+export const web3wallet_wallet_change_address = writable('');
 export const web3wallet_available_wallets = writable([]);
 export const web3wallet_confirmedTokens: Writable<TokenAmount<bigint>[]> = writable([]);
 
 export async function loadWeb3WalletTokens() {
 	try {
 		const utxo = await ergo.get_utxos();
+
 		const tokens = utxo.flatMap((box) => box.assets).reduce(sumAssets, []);
 
 		const erg: bigint = sumNanoErg(utxo);
@@ -19,6 +21,9 @@ export async function loadWeb3WalletTokens() {
 		} else {
 			web3wallet_confirmedTokens.set(tokens);
 		}
+
+		const addr = await ergo.get_change_address();
+		web3wallet_wallet_change_address.set(addr);
 	} catch (e) {
 		console.warn(`Failed to load ${get(web3wallet_wallet_name)} balance.`);
 	}
@@ -53,6 +58,7 @@ export async function disconnectWeb3Wallet() {
 	await window.ergoConnector[get(web3wallet_wallet_name)].disconnect();
 	web3wallet_connected.set(false);
 	web3wallet_wallet_name.set('');
+	web3wallet_wallet_change_address.set('');
 	localStorage.removeItem('ui_web3wallet_wallet_name');
 }
 

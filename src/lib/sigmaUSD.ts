@@ -437,11 +437,14 @@ async function getWeb3WalletData() {
 	return { me, utxos, height };
 }
 
-async function createInteractionAndSubmitTx(unsignedTx: ErgoUnsignedTransaction) {
-	const interactionId = addPreparedInteraction(unsignedTx);
+async function createInteractionAndSubmitTx(
+	unsignedTx: ErgoUnsignedTransaction,
+	ownAddressList: string[]
+) {
+	const interactionId = addPreparedInteraction(unsignedTx, ownAddressList);
 	try {
 		const signed = await ergo.sign_tx(unsignedTx);
-		addSignedInteraction(signed, interactionId);
+		addSignedInteraction(signed, interactionId, ownAddressList);
 		console.log({ signed });
 
 		const txId = await ergo.submit_tx(signed);
@@ -458,7 +461,7 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 
 	const direction = 1n;
 	const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx);
+	await createInteractionAndSubmitTx(tx, [me]);
 }
 
 export async function buyUSDInputERGTx(
@@ -546,7 +549,7 @@ export async function buyUSDInputUSD(inputUSD: bigint = 1_00n) {
 
 	const direction = 1n;
 	const tx = await buyUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx);
+	await createInteractionAndSubmitTx(tx, [me]);
 }
 
 export async function buyUSDInputUSDTx(
@@ -623,7 +626,7 @@ export async function sellUSDInputUSD(inputUSD: bigint = 1_00n) {
 
 	const direction = -1n;
 	const tx = await sellUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx);
+	await createInteractionAndSubmitTx(tx, [me]);
 }
 
 export async function sellUSDInputUSDTx(
@@ -701,7 +704,7 @@ export async function sellUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 
 	const direction = -1n;
 	const tx = await sellUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx);
+	await createInteractionAndSubmitTx(tx, [me]);
 }
 
 export async function sellUSDInputERGTx(

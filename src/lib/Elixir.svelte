@@ -7,6 +7,7 @@
 		prepared_interactions
 	} from './stores/preparedInteractions';
 	import { handleOracleBoxesUpdate, updateBestBankBox } from './stores/bank';
+	import { web3wallet_wallet_change_address } from './stores/web3wallet';
 
 	onMount(() => {
 		const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
@@ -21,7 +22,10 @@
 			.join()
 			.receive('ok', (resp) => {
 				console.log(`Joined successfully ${sigmausdChannelName}`);
-				initHistory(resp.history);
+				initHistory(
+					resp.history,
+					$web3wallet_wallet_change_address ? [$web3wallet_wallet_change_address] : []
+				);
 				handleMempoolSocketUpdate(resp);
 				updateBestBankBox(resp, $prepared_interactions);
 			})

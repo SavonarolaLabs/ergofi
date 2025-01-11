@@ -20,6 +20,7 @@ import {
 	returnOutputsExcept,
 	type OperationInfo
 } from '$lib/TransactionUtils';
+import { isOwnTx } from '$lib/utils';
 
 export type MempoolSocketUpdate = {
 	unconfirmed_transactions: MempoolTransaction[];
@@ -50,20 +51,25 @@ export const confirmed_interactions: Writable<Interaction[]> = writable(
 	loadConfirmedInteractionsFromLocalStorage()
 );
 
-export function initHistory(txList: MempoolTransaction[]) {
-	confirmed_interactions.set(txList.slice(0, 3).map(txToSigmaUSDInteraction));
+export function initHistory(txList: MempoolTransaction[], ownAddressList: string[]) {
+	confirmed_interactions.set(
+		txList.slice(0, 3).map((x) => txToSigmaUSDInteraction(x, ownAddressList))
+	);
 }
 
-export function addPreparedInteraction(tx: MempoolTransaction): string {
-	let i = txToSigmaUSDInteraction(tx);
-	i.own = true;
+export function addPreparedInteraction(tx: MempoolTransaction, ownAddressList: string[]): string {
+	let i = txToSigmaUSDInteraction(tx, ownAddressList);
 	i.tx = tx;
 	prepared_interactions.update((l) => [i, ...l]);
 	return i.id;
 }
 
 // set transactionId if exists, else create new
-export function addSignedInteraction(signedTx: MempoolTransaction, uuid: string): string {
+export function addSignedInteraction(
+	signedTx: MempoolTransaction,
+	uuid: string,
+	ownAddressList: string[]
+): string {
 	const i = get(prepared_interactions).find((x) => x.id == uuid);
 	if (i) {
 		prepared_interactions.update((l) => {
@@ -77,7 +83,7 @@ export function addSignedInteraction(signedTx: MempoolTransaction, uuid: string)
 		});
 		return i.id;
 	} else {
-		return addPreparedInteraction(signedTx);
+		return addPreparedInteraction(signedTx, ownAddressList);
 	}
 }
 
@@ -189,7 +195,8 @@ function updatePreparedInteractions(unconfTxList: MempoolTransaction[]): Interac
 
 function addPreparedToMempoolInteractions(
 	unconfTxList: MempoolTransaction[],
-	removedInteractions: Interaction[] = []
+	removedInteractions: Interaction[] = [],
+	ownAddressList: string[]
 ) {
 	const txIdsUnconfirmed = unconfTxList.map((x) => x.id);
 
@@ -205,7 +212,8 @@ function addPreparedToMempoolInteractions(
 		.filter((tx) => !alreadyKnownTxIds.includes(tx.id))
 		.map(
 			(tx) =>
-				removedInteractions.find((rI) => rI.transactionId == tx.id) ?? txToSigmaUSDInteraction(tx)
+				removedInteractions.find((rI) => rI.transactionId == tx.id) ??
+				txToSigmaUSDInteraction(tx, ownAddressList)
 		);
 	const afterUpdateCount = mempoolInteractionsKnown.length;
 
@@ -216,7 +224,7 @@ function addPreparedToMempoolInteractions(
 	}
 }
 
-function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
+function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[]): Interaction {
 	console.log(tx);
 	const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
 	const userTree = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
@@ -281,6 +289,7 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 	return {
 		id: crypto.randomUUID(),
 		transactionId: tx.id,
+		tx: tx,
 		amount: Number(deltaToken),
 		amountCurrency: currency,
 		timestamp: tx.timestamp ? tx.timestamp : (tx.creationTimestamp ?? Date.now()),
@@ -288,7 +297,8 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction): Interaction {
 		type: txData.operation,
 		ergAmount: Number(deltaErg),
 		confirmed: false,
-		rejected: false
+		rejected: false,
+		own: isOwnTx(tx, ownAddressList)
 	};
 }
 

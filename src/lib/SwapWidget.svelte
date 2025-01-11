@@ -16,6 +16,7 @@
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
+		isOwnTx,
 		nanoErgToErg,
 		usdStringToCentBigInt
 	} from './utils';
@@ -35,8 +36,12 @@
 		reserve_rate,
 		type ErgoBox
 	} from './stores/bank';
-	import { web3wallet_confirmedTokens } from './stores/web3wallet';
+	import {
+		web3wallet_confirmedTokens,
+		web3wallet_wallet_change_address
+	} from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
+	import { confirmed_interactions } from './stores/preparedInteractions';
 
 	onMount(async () => {
 		oracle_box.subscribe(async (oracleBox) => {
@@ -59,6 +64,17 @@
 		});
 		bank_price_usd_buy.subscribe((val) => {
 			window.document.title = `↑${$bank_price_usd_sell} ↓${val} | SigUSD`;
+		});
+
+		web3wallet_wallet_change_address.subscribe((addr) => {
+			if (addr) {
+				confirmed_interactions.update((l) =>
+					l.map((i) => {
+						i.own = isOwnTx(i.tx, [addr]);
+						return i;
+					})
+				);
+			}
 		});
 	});
 

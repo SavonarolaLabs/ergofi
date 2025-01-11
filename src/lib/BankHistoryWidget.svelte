@@ -18,6 +18,7 @@
 	import { formatAmount, formatTimeAgo } from './utils';
 	import CheckCircle from './icons/CheckCircle.svelte';
 	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';
+	import XCircle from './icons/XCircle.svelte';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -136,40 +137,12 @@
 						<div class:blink={!i.rejected && !i.confirmed}>
 							<div class="flex items-center gap-1 text-gray-400">
 								{#if i.rejected}
-									<svg
-										fill="currentColor"
-										width="1em"
-										viewBox="0 0 24 24"
-										xmlns="http://www.w3.org/2000/svg"
-										><path
-											d="M9.172 16.242 12 13.414l2.828 2.828 1.414-1.414L13.414 12l2.828-2.828-1.414-1.414L12 10.586 9.172 7.758 7.758 9.172 10.586 12l-2.828 2.828z"
-										/><path
-											d="M12 22c5.514 0 10-4.486 10-10S17.514 2 12 2 2 6.486 2 12s4.486 10 10 10zm0-18c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8z"
-										/></svg
-									>
+									<XCircle></XCircle>
 								{:else if i.confirmed}
 									{#if i.own}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 512 512"
-											width="1em"
-											fill="currentColor"
-											><path
-												d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
-											/></svg
-										>
+										<CheckCircleFilled></CheckCircleFilled>
 									{:else}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											viewBox="0 0 512 512"
-											width="1em"
-											fill="currentColor"
-											style="margin-left:2px;margin-right:2px;"
-										>
-											<path
-												d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"
-											/>
-										</svg>
+										<CheckCircle></CheckCircle>
 									{/if}
 								{:else}
 									<span class="mr-3">
@@ -222,7 +195,9 @@
 						<div class="left pb-1">
 							<div>
 								<div class="flex items-center gap-1 uppercase text-gray-400">
-									{#if m.confirmed}
+									{#if m.rejected}
+										<XCircle></XCircle>
+									{:else if m.confirmed}
 										{#if m.own}
 											<CheckCircleFilled></CheckCircleFilled>
 										{:else}

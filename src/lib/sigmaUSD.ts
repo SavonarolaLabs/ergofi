@@ -445,9 +445,9 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 		const txId = await ergo.submit_tx(signed);
 		console.log({ txId });
 	} catch (e) {
+		console.log(e);
 		cancelPreparedInteractionById(interactionId);
 	}
-	//		console.log(txId);
 }
 
 export async function buyUSDInputERGTx(

@@ -111,8 +111,9 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 		const removedPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
 		addPreparedToMempoolInteractions(unconfTxList, removedPreparedInteractions);
 	}
+
+	setTimeout(removeConfirmedAndRejectedFromMempool, 500);
 	if (confirmed.length > 0) {
-		setTimeout(removeConfirmedAndRejectedFromMempool, 500);
 		setTimeout(() => addToConfirmed(confirmed), 1550);
 	}
 }
@@ -138,19 +139,27 @@ function rejectMempoolInteractions(payload: MempoolSocketUpdate) {
 	const unconfirmedTxIds = payload.unconfirmed_transactions.map((tx) => tx.id);
 	const mempoolTxIds = get(mempool_interactions).map((tx) => tx.transactionId);
 	const rejectedTxIds = mempoolTxIds.filter(
-		(m) => !confirmedTxIds.includes(m) && unconfirmedTxIds.includes(m)
+		(m) => !confirmedTxIds.includes(m) && !unconfirmedTxIds.includes(m)
 	);
 	if (rejectedTxIds.length > 0) {
 		const allUpdated = get(mempool_interactions).map((i) => {
-			if (rejectedTxIds.includes(i.transactionId)) i.rejected = true;
+			if (rejectedTxIds.includes(i.transactionId)) {
+				i.rejected = true;
+				console.warn('SET REJECTED', { i });
+			}
 			return i;
 		});
 		mempool_interactions.set(allUpdated);
+		console.log({ mempool_interactions: get(mempool_interactions) });
 	}
 }
 
 function removeConfirmedAndRejectedFromMempool() {
-	mempool_interactions.update((l) => l.filter((i) => !i.confirmed && !i.rejected));
+	const before = get(mempool_interactions);
+	const updated = before.filter((i) => !(i.confirmed || i.rejected));
+	if (before.length > updated.length) {
+		mempool_interactions.set(updated);
+	}
 }
 function addToConfirmed(confirmed: Interaction[]) {
 	confirmed_interactions.update((l) => [...confirmed, ...l].slice(0, 3));

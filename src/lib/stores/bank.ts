@@ -67,10 +67,32 @@ export function updateBestBankBox(
 		.map((i) => i.tx);
 	const txList = [
 		...(payload.history?.[0] ? [payload.history[0]] : []),
+		//...(payload.history?.[0] ? [payload.history[0]] : []),
+		//...payload.history,
 		...(payload.confirmed_transactions?.[0] ? [payload.confirmed_transactions[0]] : []),
 		...payload.unconfirmed_transactions,
 		...preparedTxs
 	];
+	if (txList.length < 1) return;
+
+	let bankBox = getMaxFeeLeaf(txList);
+	if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
+		bank_box.set(bankBox);
+		console.warn('updated best bank box:', { bank_box: bankBox });
+	}
+}
+
+export function updateBestBankBoxLocal(
+	confirmedInteractions: Interaction[],
+	mempoolInteractionts: Interaction[],
+	preparedInteractions: Interaction[]
+) {
+	const txList = [
+		...confirmedInteractions.map((i) => i.tx).slice(0, 1),
+		...mempoolInteractionts.map((i) => i.tx),
+		...preparedInteractions.map((i) => i.tx)
+	];
+
 	if (txList.length < 1) return;
 
 	let bankBox = getMaxFeeLeaf(txList);

@@ -62,6 +62,7 @@ export function getBankBoxOutput(tx: MempoolTransaction): Output | undefined {
 }
 
 export function isOwnTx(tx: MempoolTransaction, ownAddressList: string[]): boolean {
+	if (!ownAddressList) return false;
 	const trees = ownAddressList.map((a: string) => ErgoAddress.fromBase58(a).ergoTree);
 
 	return tx.outputs.some((i) => trees.includes(i.ergoTree));

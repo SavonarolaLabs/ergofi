@@ -15,13 +15,12 @@ export function getMaxFeeLeaf(txList: MempoolTransaction[]): Output | undefined 
 		.map((tx) => txToBoxChainLink(tx, bankOutputs))
 		.filter((x): x is BoxChainLink => !!x);
 	const chains = buildChains(links);
-
+	console.log({ chains });
 	return getLeafOfMaxFeeChain(chains)?.box;
 }
 
 function getLeafOfMaxFeeChain(chains: BoxChainLink[][]): BoxChainLink | undefined {
 	if (chains.length === 0) return undefined;
-
 	const maxFeeChain = chains.reduce((maxChain, currentChain) => {
 		const currentFeeSum = currentChain.reduce((sum, link) => sum + link.minerFee, 0);
 		const maxFeeSum = maxChain.reduce((sum, link) => sum + link.minerFee, 0);

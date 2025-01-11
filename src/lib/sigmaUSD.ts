@@ -19,13 +19,15 @@ import {
 	unconfirmed_bank_erg,
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
-	unconfrimed_reserve_boarder_left_USD
+	unconfrimed_reserve_boarder_left_USD,
+	updateBestBankBoxLocal
 } from './stores/bank';
 import { get } from 'svelte/store';
 import {
 	addPreparedInteraction,
 	addSignedInteraction,
 	cancelPreparedInteractionById,
+	confirmed_interactions,
 	mempool_interactions,
 	prepared_interactions,
 	type Interaction
@@ -414,8 +416,8 @@ export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber):
 		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
 	} else {
 		//f3
-		console.log('f3.price');
-		console.log(contractErgoRequired, ' contract ERG');
+		//console.log('f3.price');
+		//console.log(contractErgoRequired, ' contract ERG');
 		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
 	}
 	const feeTotal = feeContract + get(fee_mining) + uiFeeErg;
@@ -447,8 +449,14 @@ async function createInteractionAndSubmitTx(
 		addSignedInteraction(signed, interactionId, ownAddressList);
 		console.log({ signed });
 
-		const txId = await ergo.submit_tx(signed);
-		console.log({ txId });
+		updateBestBankBoxLocal(
+			get(confirmed_interactions),
+			get(mempool_interactions),
+			get(prepared_interactions)
+		);
+
+		// const txId = await ergo.submit_tx(signed);
+		// console.log({ txId });
 	} catch (e) {
 		console.log(e);
 		cancelPreparedInteractionById(interactionId);
@@ -857,8 +865,8 @@ export function calculateReserveRateAndBorders(
 	inCircSigUSD: bigint,
 	oraclePrice: bigint
 ): any {
-	console.log(inErg, 'inErg');
-	console.log(oraclePrice, 'oraclePrice');
+	// console.log(inErg, 'inErg');
+	// console.log(oraclePrice, 'oraclePrice');
 
 	const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
 	const reserveRateOld = Number(

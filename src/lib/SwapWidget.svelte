@@ -165,26 +165,19 @@
 	//----------------------------------- Handlers ----------------------------------------
 
 	async function handleSwapButton(event: Event) {
-		// TODO: change based on lastInput
 		if (lastInput == 'From') {
 			if (selectedCurrency == 'ERG') {
-				//CANT SIGN
-				console.log('f1');
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
 				await buyUSDInputERG(nanoErg);
 			} else {
-				console.log('f3');
 				const cents = usdStringToCentBigInt(fromAmount);
 				await sellUSDInputUSD(cents);
 			}
 		} else {
 			if (selectedCurrency == 'ERG') {
-				console.log('f2');
 				const cents = usdStringToCentBigInt(toAmount);
 				await buyUSDInputUSD(cents);
 			} else {
-				//CANT SIGN
-				console.log('f4');
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
 				await sellUSDInputERG(nanoErg);
 			}

@@ -32,6 +32,7 @@ import {
 } from './stores/preparedInteractions';
 import {
 	ErgoAddress,
+	ErgoUnsignedTransaction,
 	OutputBuilder,
 	SAFE_MIN_BOX_VALUE,
 	SLong,
@@ -427,18 +428,19 @@ export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber):
 	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 }
 
-// (f1)
-export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
+// Web3 Wallet interactions
+async function getWeb3WalletData() {
 	await window.ergoConnector.nautilus.connect();
 	const me = await ergo.get_change_address();
 	const utxos = await ergo.get_utxos();
 	const height = await ergo.get_current_height();
+	return { me, utxos, height };
+}
 
-	const direction = 1n;
-	const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	const interactionId = addPreparedInteraction(tx);
+async function createInteractionAndSubmitTx(unsignedTx: ErgoUnsignedTransaction) {
+	const interactionId = addPreparedInteraction(unsignedTx);
 	try {
-		const signed = await ergo.sign_tx(tx);
+		const signed = await ergo.sign_tx(unsignedTx);
 		addSignedInteraction(signed, interactionId);
 		console.log({ signed });
 
@@ -448,6 +450,15 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 		console.log(e);
 		cancelPreparedInteractionById(interactionId);
 	}
+}
+
+// (f1)
+export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+
+	const direction = 1n;
+	const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	await createInteractionAndSubmitTx(tx);
 }
 
 export async function buyUSDInputERGTx(
@@ -531,20 +542,11 @@ export async function buyUSDInputERGTx(
 
 // (f2)
 export async function buyUSDInputUSD(inputUSD: bigint = 1_00n) {
-	await window.ergoConnector.nautilus.connect();
-	const me = await ergo.get_change_address();
-	const utxos = await ergo.get_utxos();
-	const height = await ergo.get_current_height();
+	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = 1n;
 	const tx = await buyUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-
-	console.log(tx);
-	const signed = await ergo.sign_tx(tx);
-
-	const txId = await ergo.submit_tx(signed);
-	console.log(signed);
-	//		console.log(txId);
+	await createInteractionAndSubmitTx(tx);
 }
 
 export async function buyUSDInputUSDTx(
@@ -617,19 +619,11 @@ export async function buyUSDInputUSDTx(
 
 // (f3)
 export async function sellUSDInputUSD(inputUSD: bigint = 1_00n) {
-	await window.ergoConnector.nautilus.connect();
-	const me = await ergo.get_change_address();
-	const utxos = await ergo.get_utxos();
-	const height = await ergo.get_current_height();
+	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = -1n;
 	const tx = await sellUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-
-	console.log(tx);
-	const signed = await ergo.sign_tx(tx);
-
-	const txId = await ergo.submit_tx(signed);
-	console.log(signed);
+	await createInteractionAndSubmitTx(tx);
 }
 
 export async function sellUSDInputUSDTx(
@@ -703,19 +697,11 @@ export async function sellUSDInputUSDTx(
 
 // (f4)
 export async function sellUSDInputERG(inputErg: bigint = 1_000_000_000n) {
-	await window.ergoConnector.nautilus.connect();
-	const me = await ergo.get_change_address();
-	const utxos = await ergo.get_utxos();
-	const height = await ergo.get_current_height();
+	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = -1n;
 	const tx = await sellUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-
-	console.log(tx);
-	const signed = await ergo.sign_tx(tx);
-
-	const txId = await ergo.submit_tx(signed);
-	console.log(signed);
+	await createInteractionAndSubmitTx(tx);
 }
 
 export async function sellUSDInputERGTx(

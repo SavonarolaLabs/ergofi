@@ -61,7 +61,7 @@
 	}
 
 	function formatAmount(value: number) {
-		if (value >= 1000) {
+		if (Math.abs(value) >= 1000) {
 			let formatted = numeral(value).format('0.0a').replace('m', 'M');
 			if (formatted.includes('.0')) {
 				formatted = formatted.replace('.0', ''); // Remove trailing `.0`

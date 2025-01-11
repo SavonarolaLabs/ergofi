@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
+
 	import { RECOMMENDED_MIN_FEE_VALUE, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 	import BigNumber from 'bignumber.js';
 	import {
@@ -12,7 +15,7 @@
 		sellUSDInputERG,
 		calculateReserveRateAndBorders
 	} from './sigmaUSD';
-	import { onMount } from 'svelte';
+
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
@@ -20,6 +23,7 @@
 		nanoErgToErg,
 		usdStringToCentBigInt
 	} from './utils';
+
 	import {
 		bank_box,
 		bank_price_usd_buy,
@@ -43,22 +47,75 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
 
-	onMount(async () => {
+	type Currency = 'ERG' | 'SigUSD';
+	type LastUserInput = 'From' | 'To';
+	const directionBuy = 1n;
+	const directionSell = -1n;
+
+	/* ---------------------------------------
+	 * 1) Create a localStorage-based store
+	 * ------------------------------------- */
+	function createSelectedCurrencyStore() {
+		// Read from localStorage if it exists; else default to 'ERG'
+		const stored = localStorage.getItem('selectedCurrency');
+		const initial: Currency = stored === 'SigUSD' ? 'SigUSD' : 'ERG';
+
+		const store = writable<Currency>(initial);
+
+		// Whenever it changes, save to localStorage
+		store.subscribe((val) => {
+			localStorage.setItem('selectedCurrency', val);
+		});
+
+		return store;
+	}
+
+	// This is your "selectedCurrency" store
+	export const selectedCurrencyStore = createSelectedCurrencyStore();
+
+	/* ---------------------------------------
+	 * 2) Local variables + references
+	 * ------------------------------------- */
+	let loading = true;
+	let fromAmount = '';
+	let toAmount = '';
+	let swapPrice: number = 0.0;
+	let globalUiFeeErg;
+	let globalContractERG;
+	let lastInput: LastUserInput = 'From';
+
+	let minerFee = 0.01;
+	let showFeeSlider = false;
+
+	// Provide the same array you used
+	const currencies: Currency[] = ['ERG', 'SigUSD'];
+
+	/* ---------------------------------------
+	 * 3) onMount: load / subscribe / etc.
+	 * ------------------------------------- */
+	onMount(() => {
+		// Restore from->to if stored
+		loadSwapWidgetCurrencyPair();
+
 		oracle_box.subscribe(async (oracleBox) => {
 			if ($bank_box && oracleBox) {
 				await updateBankBoxAndOracle(oracleBox, $bank_box);
 				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 			}
 		});
+
 		bank_box.subscribe(async (bankBox) => {
 			if ($oracle_box && bankBox) {
 				await updateBankBoxAndOracle($oracle_box, bankBox);
 				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 			}
 		});
+
 		loading = false;
-		console.log(SAFE_MIN_BOX_VALUE);
-		console.log(RECOMMENDED_MIN_FEE_VALUE);
+
+		console.log('SAFE_MIN_BOX_VALUE', SAFE_MIN_BOX_VALUE);
+		console.log('RECOMMENDED_MIN_FEE_VALUE', RECOMMENDED_MIN_FEE_VALUE);
+
 		bank_price_usd_sell.subscribe((val) => {
 			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;
 		});
@@ -68,8 +125,8 @@
 
 		web3wallet_wallet_change_address.subscribe((addr) => {
 			if (addr) {
-				confirmed_interactions.update((l) =>
-					l.map((i) => {
+				confirmed_interactions.update((list) =>
+					list.map((i) => {
 						i.own = isOwnTx(i.tx, [addr]);
 						return i;
 					})
@@ -78,33 +135,33 @@
 		});
 	});
 
-	const directionBuy = 1n;
-	const directionSell = -1n;
+	/* ---------------------------------------
+	 * 4) BankBox + Oracle helper
+	 * ------------------------------------- */
+	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
+		const { inErg, inCircSigUSD, oraclePrice } = await extractBoxesData(oracleBox, bankBox);
+		bankBoxInErg.set(inErg);
+		bankBoxInCircSigUsd.set(inCircSigUSD);
+		oraclePriceSigUsd.set(oraclePrice);
 
-	// TODO: type definition for OracleBox
+		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd
+		);
 
-	type Currency = 'ERG' | 'SigUSD';
-	type LastUserInput = 'From' | 'To';
-
-	let loading = true;
-	let fromAmount = '';
-	let toAmount = '';
-	let selectedCurrency: Currency = 'ERG';
-	let swapPrice: number = 0.0;
-	let globalUiFeeErg;
-	let globalContractERG;
-	let lastInput: LastUserInput = 'From';
-
-	const currencies: Currency[] = ['ERG', 'SigUSD'];
-
-	//----------------------------------- Other ----------------------------------------
+		reserve_rate.set(reserveRate);
+		reserve_boarder_left_USD.set(leftUSD);
+		reserve_boarder_left_ERG.set(leftERG);
+		reserve_boarder_right_USD.set(rightUSD);
+		reserve_boarder_right_ERG.set(rightERG);
+	}
 
 	function initialInputs(
 		bankBoxInErg: bigint,
 		bankBoxInCircSigUsd: bigint,
 		oraclePriceSigUsd: bigint
 	) {
-		console.log('initial Inputs Start');
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
@@ -119,36 +176,13 @@
 			bankBoxInCircSigUsd,
 			oraclePriceSigUsd
 		);
+
 		bank_price_usd_buy.set(finalPriceBuy);
 		bank_price_usd_sell.set(finalPriceSell);
 
-		fromAmount = BASE_INPUT_AMOUNT_ERG.toString();
-		toAmount = totalSigUSDBuy;
-		swapPrice = finalPriceBuy;
-	}
-
-	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		console.log('update start', oracleBox, bankBox);
-		const {
-			inErg,
-
-			inCircSigUSD,
-			oraclePrice
-		} = await extractBoxesData(oracleBox, bankBox);
-		bankBoxInErg.set(inErg);
-		bankBoxInCircSigUsd.set(inCircSigUSD);
-		oraclePriceSigUsd.set(oraclePrice);
-
-		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
-			$bankBoxInErg,
-			$bankBoxInCircSigUsd,
-			$oraclePriceSigUsd
-		);
-		reserve_rate.set(reserveRate);
-		reserve_boarder_left_USD.set(leftUSD);
-		reserve_boarder_left_ERG.set(leftERG);
-		reserve_boarder_right_USD.set(rightUSD);
-		reserve_boarder_right_ERG.set(rightERG);
+		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"
+		toAmount = totalSigUSDBuy; // e.g. "10"
+		swapPrice = finalPriceBuy; // e.g. real rate
 	}
 
 	function recalculateInputsOnCurrencyChange(
@@ -156,10 +190,9 @@
 		bankBoxInCircSigUsd: bigint,
 		oraclePriceSigUsd: bigint
 	) {
-		// TODO: Recalculate based on lastInput
 		if (fromAmount !== '') {
-			if (selectedCurrency == 'ERG') {
-				const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
+			if ($selectedCurrencyStore === 'ERG') {
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
 					directionBuy,
 					fromAmount,
 					bankBoxInErg,
@@ -171,18 +204,19 @@
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else {
-				const { totalErg, finalPrice, totalFee } = calculateInputsUsd(directionSell, fromAmount);
+				const { totalErg, finalPrice } = calculateInputsUsd(directionSell, fromAmount);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			}
 		}
 	}
 
-	//----------------------------------- Handlers ----------------------------------------
-
-	async function handleSwapButton(event: Event) {
-		if (lastInput == 'From') {
-			if (selectedCurrency == 'ERG') {
+	/* ---------------------------------------
+	 * 5) Handlers
+	 * ------------------------------------- */
+	async function handleSwapButton() {
+		if (lastInput === 'From') {
+			if ($selectedCurrencyStore === 'ERG') {
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
 				await buyUSDInputERG(nanoErg);
 			} else {
@@ -190,7 +224,7 @@
 				await sellUSDInputUSD(cents);
 			}
 		} else {
-			if (selectedCurrency == 'ERG') {
+			if ($selectedCurrencyStore === 'ERG') {
 				const cents = usdStringToCentBigInt(toAmount);
 				await buyUSDInputUSD(cents);
 			} else {
@@ -202,15 +236,14 @@
 
 	function handleCurrencyChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
-		selectedCurrency = target.value as Currency;
+		selectedCurrencyStore.set(target.value as Currency); // Store-based update
 		recalculateInputsOnCurrencyChange($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 	}
 
 	function handleFromAmountChange(event: Event) {
-		fromAmount = event.target.value;
-		if (selectedCurrency == 'ERG') {
-			// (f1.price)
-			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
+		fromAmount = (event.target as HTMLInputElement).value;
+		if ($selectedCurrencyStore === 'ERG') {
+			const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
 				directionBuy,
 				fromAmount,
 				$bankBoxInErg,
@@ -222,8 +255,7 @@
 			globalContractERG = contractERG;
 			swapPrice = finalPrice;
 		} else {
-			// (f3.price)
-			const { totalErg, finalPrice, totalFee } = calculateInputsUsd(directionSell, fromAmount);
+			const { totalErg, finalPrice } = calculateInputsUsd(directionSell, fromAmount);
 			toAmount = totalErg;
 			swapPrice = finalPrice;
 		}
@@ -231,15 +263,13 @@
 	}
 
 	function handleToAmountChange(event: Event) {
-		toAmount = event.target.value;
-		if (selectedCurrency == 'ERG') {
-			// (f2.price)
-			const { totalErg, finalPrice, totalFee } = calculateInputsUsd(directionBuy, toAmount);
+		toAmount = (event.target as HTMLInputElement).value;
+		if ($selectedCurrencyStore === 'ERG') {
+			const { totalErg, finalPrice } = calculateInputsUsd(directionBuy, toAmount);
 			fromAmount = totalErg;
 			swapPrice = finalPrice;
 		} else {
-			// (f4.price)
-			const { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg } = calculateInputsErg(
+			const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
 				directionSell,
 				toAmount,
 				$bankBoxInErg,
@@ -255,32 +285,60 @@
 	}
 
 	function handleFeeChange(event: Event) {
-		fee_mining.set(BigInt(Number(event.target.value) * 10 ** 9));
-		recalculateInputsOnCurrencyChange($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd); //TODO: To Amount Hadle
+		fee_mining.set(BigInt(Number((event.target as HTMLInputElement).value) * 10 ** 9));
+		recalculateInputsOnCurrencyChange($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 	}
 
-	//----------------------------------- PRICE/SWAP ----------------------------------------
+	const toggleFeeSlider = () => {
+		showFeeSlider = !showFeeSlider;
+	};
 
-	$: toToken = selectedCurrency === 'ERG' ? 'SigUSD' : 'ERG';
+	/* ---------------------------------------
+	 * 6) Reactive statements
+	 * ------------------------------------- */
+	// 'toToken' depends on the store-based 'selectedCurrency'
+	$: toToken = $selectedCurrencyStore === 'ERG' ? 'SigUSD' : 'ERG';
+
+	// Keep your original color scheme; no changes
 	$: tokenColor = {
 		ERG: 'bg-orange-500',
 		SigUSD: 'bg-green-500'
 	};
 
-	let minerFee = 0.01;
-	let showFeeSlider = false;
-	const toggleFeeSlider = () => {
-		showFeeSlider = !showFeeSlider;
-	};
+	// Keep your original saving logic if you want to store both "from" & "to" as a pair
+	$: saveSwapWidgetCurrencyPair(toToken);
+
+	/* ---------------------------------------
+	 * 7) load/save from localStorage (FROM/TO)
+	 * ------------------------------------- */
+	function saveSwapWidgetCurrencyPair(_: any): void {
+		localStorage.setItem(
+			'swapWidgetCurrencyPair',
+			JSON.stringify({ from: $selectedCurrencyStore, to: toToken })
+		);
+	}
+
+	function loadSwapWidgetCurrencyPair() {
+		const data = localStorage.getItem('swapWidgetCurrencyPair');
+		if (data) {
+			const { from, to } = JSON.parse(data);
+			selectedCurrencyStore.set(from); // set the store from localStorage
+			toToken = to; // keep your 'toToken' consistent
+		}
+	}
 </script>
 
+<!-- -----------------------------------------
+     8) Your original markup (colors intact!)
+     --------------------------------------- -->
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
 	<!-- From Input -->
 	<div class="relative mb-6 rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 			<span class="text-sm text-gray-500 dark:text-gray-400">From</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400"
-				>Balance: {#if selectedCurrency == 'ERG'}
+			<span class="text-sm text-gray-500 dark:text-gray-400">
+				Balance:
+				{#if $selectedCurrencyStore === 'ERG'}
 					{nanoErgToErg(
 						$web3wallet_confirmedTokens.find((x) => x.tokenId == ERGO_TOKEN_ID)?.amount
 					)}
@@ -288,8 +346,8 @@
 					{centsToUsd(
 						$web3wallet_confirmedTokens.find((x) => x.tokenId == SigUSD_TOKEN_ID)?.amount
 					)}
-				{/if}</span
-			>
+				{/if}
+			</span>
 		</div>
 		<div
 			style="border: none!important; outline: none!important; box-shadow: none!important;"
@@ -307,9 +365,10 @@
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
 				class="dark:broder relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
 			>
-				<div class="h-5 w-5 flex-shrink-0 {tokenColor[selectedCurrency]} rounded-full"></div>
+				<!-- Color is the same: {tokenColor[$selectedCurrencyStore]} -->
+				<div class="h-5 w-5 flex-shrink-0 {tokenColor[$selectedCurrencyStore]} rounded-full"></div>
 				<select
-					bind:value={selectedCurrency}
+					bind:value={$selectedCurrencyStore}
 					on:change={handleCurrencyChange}
 					class="w-full cursor-pointer bg-transparent font-medium text-gray-900 outline-none dark:text-gray-100"
 				>
@@ -351,6 +410,7 @@
 				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
 				class="broder relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
 			>
+				<!-- Same color logic: {tokenColor[toToken]} -->
 				<div class="h-5 w-5 {tokenColor[toToken]} rounded-full" />
 				<span class="ml-3 font-medium text-gray-800 dark:text-gray-400">{toToken}</span>
 			</div>

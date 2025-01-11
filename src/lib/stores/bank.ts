@@ -92,7 +92,7 @@ export function updateBestBankBoxLocal(
 		...mempoolInteractionts.map((i) => i.tx),
 		...preparedInteractions.map((i) => i.tx)
 	];
-
+	console.log({ txList });
 	if (txList.length < 1) return;
 
 	let bankBox = getMaxFeeLeaf(txList);

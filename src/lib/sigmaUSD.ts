@@ -144,7 +144,7 @@ export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxe
 	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
 	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
 	// ORACLE PRICE / 100n
-	console.log('oracle box:', oracleBox);
+	//console.log('oracle box:', oracleBox);
 	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
 
 	return {
@@ -306,7 +306,7 @@ export function calculateInputsErgPrice(
 		direction
 	);
 
-	//console.log(direction, 'direction');
+	////console.log(direction, 'direction');
 	if (direction == -1n) {
 		contractUSD = contractUSD + 1n;
 	}
@@ -323,38 +323,38 @@ export function calculateInputsErgPrice(
 		);
 
 	// TODO: --------------------------------
-	console.log('');
-	console.log(inputAmountNanoERG, ' Input ERG');
-	console.log(contractERG, ' Contract ERG');
-	console.log(contractErgCompare, ' contractErgCompare');
-	console.log(contractUSD, ' contractUSD');
+	//console.log('');
+	//console.log(inputAmountNanoERG, ' Input ERG');
+	//console.log(contractERG, ' Contract ERG');
+	//console.log(contractErgCompare, ' contractErgCompare');
+	//console.log(contractUSD, ' contractUSD');
 
 	// --------------------------------
 	if (direction == -1n) {
-		console.log('sell');
+		//console.log('sell');
 		if (contractERG < contractErgCompare) {
-			console.log('Adjust FEE SELL');
+			//console.log('Adjust FEE SELL');
 			//uiFeeErg = uiFeeErg - (-contractErgCompare + contractERG); // ITS NEGATIVE: GG
 			uiFeeErg = uiFeeErg + (contractErgCompare - contractERG); // Right
 		}
 	}
 
 	//
-	console.log('TOTAL USER ERG:', contractErgCompare - uiFeeErg - get(fee_mining));
+	//console.log('TOTAL USER ERG:', contractErgCompare - uiFeeErg - get(fee_mining));
 
 	// // ------ TEST ------
 	// if (direction == 1n) {
-	// 	console.log('buy');
+	// 	//console.log('buy');
 	// 	// < probably this way
 	// 	if (contractERG > contractErgCompare) {
-	// 		console.log('Adjust FEE BUY');
+	// 		//console.log('Adjust FEE BUY');
 	// 		uiFeeErg = uiFeeErg + (-contractErgCompare + contractERG);
 	// 	}
 	// }
 
 	//if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (contractErgCompare - contractERG);
 
-	//console.log(uiFeeErg, 'uiFeeErg');
+	////console.log(uiFeeErg, 'uiFeeErg');
 	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
 	const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
@@ -416,15 +416,15 @@ export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber):
 		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
 	} else {
 		//f3
-		//console.log('f3.price');
-		//console.log(contractErgoRequired, ' contract ERG');
+		////console.log('f3.price');
+		////console.log(contractErgoRequired, ' contract ERG');
 		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
 	}
 	const feeTotal = feeContract + get(fee_mining) + uiFeeErg;
-	console.log(contractErgoRequired - get(fee_mining) - uiFeeErg, ' final ERG');
+	//console.log(contractErgoRequired - get(fee_mining) - uiFeeErg, ' final ERG');
 
-	console.log();
-	console.log();
+	//console.log();
+	//console.log();
 
 	const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
@@ -447,7 +447,7 @@ async function createInteractionAndSubmitTx(
 	try {
 		const signed = await ergo.sign_tx(unsignedTx);
 		addSignedInteraction(signed, interactionId, ownAddressList);
-		console.log({ signed });
+		//console.log({ signed });
 
 		updateBestBankBoxLocal(
 			get(confirmed_interactions),
@@ -456,9 +456,9 @@ async function createInteractionAndSubmitTx(
 		);
 
 		// const txId = await ergo.submit_tx(signed);
-		// console.log({ txId });
+		// //console.log({ txId });
 	} catch (e) {
-		console.log(e);
+		//console.log(e);
 		cancelPreparedInteractionById(interactionId);
 	}
 }
@@ -547,7 +547,7 @@ export async function buyUSDInputERGTx(
 		outCircSigRSV
 	);
 
-	console.log(unsignedMintTransaction);
+	//console.log(unsignedMintTransaction);
 	return unsignedMintTransaction;
 }
 
@@ -624,7 +624,7 @@ export async function buyUSDInputUSDTx(
 		outCircSigRSV
 	); //UserErg is not important?
 
-	console.log(unsignedMintTransaction);
+	//console.log(unsignedMintTransaction);
 	return unsignedMintTransaction;
 }
 
@@ -681,7 +681,7 @@ export async function sellUSDInputUSDTx(
 
 	// PART X
 	const { userERG, uiSwapFee } = reverseFeeSell(contractERG);
-	console.log(contractUSD, 'USD -> ERG ', userERG);
+	//console.log(contractUSD, 'USD -> ERG ', userERG);
 
 	// PART X - Build
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
@@ -702,7 +702,7 @@ export async function sellUSDInputUSDTx(
 		outCircSigRSV
 	);
 
-	console.log(unsignedMintTransaction);
+	//console.log(unsignedMintTransaction);
 	return unsignedMintTransaction;
 }
 
@@ -759,7 +759,7 @@ export async function sellUSDInputERGTx(
 
 	if (contractErg < contractErgCompare) {
 		uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
-		console.log('real sell - fee adjusted');
+		//console.log('real sell - fee adjusted');
 	}
 
 	//Part 3 - Calculate BankBox
@@ -793,7 +793,7 @@ export async function sellUSDInputERGTx(
 		outCircSigRSV
 	);
 
-	console.log(unsignedMintTransaction);
+	//console.log(unsignedMintTransaction);
 	return unsignedMintTransaction;
 }
 
@@ -831,7 +831,7 @@ export function buildTx_SIGUSD_ERG_USD(
 		});
 
 	// ---------- Receipt ------------
-	console.log('direction=', direction, ' -1n?', direction == -1n);
+	//console.log('direction=', direction, ' -1n?', direction == -1n);
 	const receiptBox = new OutputBuilder(
 		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
 		myAddr
@@ -865,8 +865,8 @@ export function calculateReserveRateAndBorders(
 	inCircSigUSD: bigint,
 	oraclePrice: bigint
 ): any {
-	// console.log(inErg, 'inErg');
-	// console.log(oraclePrice, 'oraclePrice');
+	// //console.log(inErg, 'inErg');
+	// //console.log(oraclePrice, 'oraclePrice');
 
 	const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
 	const reserveRateOld = Number(

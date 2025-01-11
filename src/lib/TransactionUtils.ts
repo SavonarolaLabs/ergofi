@@ -146,7 +146,7 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 
 	if (bank.usdStats?.difference !== 0) {
 		pair = 'USD/ERG';
-		operation = bank.usdStats!.difference! < 0 ? 'buy' : 'sell';
+		operation = bank.usdStats!.difference! < 0 ? 'Buy' : 'Sell';
 		amount = -centsToUsd(bank.usdStats!.difference!) + ' USD';
 		priceErgUsd = (-(bank.usdStats!.difference! / bank.ergoStats!.difference!) * 10 ** 7).toFixed(
 			2
@@ -155,7 +155,7 @@ export function calculateOperationInfo(bank: AddressInfo, user: AddressInfo): Op
 		price = (-(user.usdStats!.difference! / user.ergoStats!.difference!) * 10 ** 7).toFixed(2);
 	} else {
 		pair = 'RSV/ERG';
-		operation = bank.rsvStats!.difference! < 0 ? 'buy' : 'sell';
+		operation = bank.rsvStats!.difference! < 0 ? 'Buy' : 'Sell';
 		amount = -bank.rsvStats!.difference! + ' RSV';
 		priceErgSigRSV = (
 			-(bank.rsvStats!.difference! / bank.ergoStats!.difference!) *

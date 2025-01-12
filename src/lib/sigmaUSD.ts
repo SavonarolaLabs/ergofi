@@ -70,18 +70,17 @@ export function calculateBankRateUSDInputUSD(
 	direction: bigint
 ): { rateSCERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
 	let rateSCERG: number;
-
+	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
+	// Stable PART --------
 
-	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
+	const bcDeltaExpected = scNominalPrice * requestSC;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
-
 	const bcDeltaExpectedWithFee = bcDeltaExpected + fee * direction;
-	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee); // X
+	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee);
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
@@ -92,17 +91,17 @@ export function calculateBankRateUSDInputERG(
 	requestErg: bigint,
 	direction: bigint
 ): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	//------------- STABLE PART ---------------
 	let rateSCERG: number;
+	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
 	const liableRate = liabilitiesIn / inCircSigUSD; // nanoerg for cent
 	const scNominalPrice = minBigInt(liableRate, oraclePrice); // nanoerg for cent
+	// Stable PART --------
+
 	const requestSC =
 		(requestErg * FEE_BANK_DENOM) / (scNominalPrice * (FEE_BANK_DENOM + FEE_BANK * direction));
-
-	// 2 more params
-	const bcDeltaExpected = scNominalPrice * requestSC; // TO CHANGE
+	const bcDeltaExpected = scNominalPrice * requestSC;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 	rateSCERG = Number(requestSC) / Number(requestErg);
 
@@ -119,17 +118,44 @@ export function calculateBankRateRSVInputRSV(
 	direction: bigint
 ): { rateRSVERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
 	let rateRSVERG: number;
+	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
-
 	const equityIn = inErg - liabilitiesIn;
 	const equityRate = equityIn / inCircSigRSV; // nanoergs per RSV
+	// Stable PART --------
+
 	const bcDeltaExpected = equityRate * requestRSV;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 	const bcDeltaExpectedWithFee = bcDeltaExpected + direction * fee;
 	rateRSVERG = Number(requestRSV) / Number(bcDeltaExpectedWithFee);
 
 	return { rateRSVERG, fee, bcDeltaExpectedWithFee };
+}
+
+export function calculateBankRateRSVInputERG(
+	inErg: bigint,
+	inCircSigUSD: bigint,
+	inCircSigRSV: bigint,
+	oraclePrice: bigint,
+	requestErg: bigint,
+	direction: bigint
+): { rateRSVERG: number; fee: bigint; requestRSV: bigint } {
+	let rateRSVERG: number;
+	// Stable PART --------
+	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
+	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
+	const equityIn = inErg - liabilitiesIn;
+	const equityRate = equityIn / inCircSigRSV; // nanoergs per RSV
+	// Stable PART --------
+
+	const requestRSV =
+		(requestErg * FEE_BANK_DENOM) / (equityRate * (FEE_BANK_DENOM + FEE_BANK * direction));
+	const bcDeltaExpected = equityRate * requestRSV;
+	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
+	rateRSVERG = Number(requestRSV) / Number(requestErg);
+
+	return { rateRSVERG, fee, requestRSV };
 }
 
 // Вспомогательные функции

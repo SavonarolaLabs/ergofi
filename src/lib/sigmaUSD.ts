@@ -456,7 +456,7 @@ async function createInteractionAndSubmitTx(
 		);
 
 		// const txId = await ergo.submit_tx(signed);
-		// //console.log({ txId });
+		// console.log({ txId });
 	} catch (e) {
 		//console.log(e);
 		cancelPreparedInteractionById(interactionId);
@@ -917,13 +917,13 @@ export function calculateReserveRateAndBorders(
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 }
 
-// (f5 RSV) ------------------------------------------------------------------
+// (f6 RSV (f2 analog)) ------------------------------------------------------------------
 
-export async function buyRSVInputRSV(requestRSV: bigint = 220000n) {
+export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
 	const { me, utxos, height } = await getWeb3WalletData();
 	const direction = 1n;
 	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	//await createInteractionAndSubmitTx(tx, [me]);
+	await createInteractionAndSubmitTx(tx, [me]);
 }
 
 // ---- TX + NO FEE
@@ -941,7 +941,7 @@ export async function buyRSVInputRSVTx(
 
 	const contractRSV = requestRSV;
 
-	// if buy RSV Input ERG -> Clear Fee
+	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
 	// ---------------------------------
 
 	//Part 1 - Get Oracle
@@ -968,24 +968,22 @@ export async function buyRSVInputRSVTx(
 			direction
 		);
 
-	// delete Price -> add RSV + ERG -> Delete requestERG output?
-	const { requestErg, outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } =
-		calculateOutputRsv(
-			inErg,
-			inSigUSD,
-			inSigRSV,
-			inCircSigUSD,
-			inCircSigRSV,
-			contractRSV,
-			contractRate,
-			direction
-		);
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		contractRSV,
+		contractErg,
+		direction
+	);
 
-	// if buy RSV Input RSV -> Fee Reversed
+	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
 	const { inputERG, uiSwapFee } = reverseFee(contractErg);
-
 	// BUILD RSV TX FUNCTION --------
+
 	//Part 4 - Calculate TX
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
 		direction,
@@ -1017,28 +1015,16 @@ function calculateOutputRsv(
 	inCircSigUSD: bigint,
 	inCircSigRSV: bigint,
 	requestRSV: bigint,
-	rateWithFee: number,
+	requestErg: bigint,
 	direction: bigint
 ) {
-	const requestErg = BigInt(Math.floor(Number(requestRSV) / rateWithFee));
-	console.log('🚀 ~ requestErg:', requestErg);
-	console.log('🚀 ~ requestRSV:', requestRSV);
-
-	const outErg = inErg + direction * requestErg;
-	console.log('🚀 ~ inErg:', inErg);
-	console.log('🚀 ~ outErg:', outErg);
-
-	const outSigRSV = inSigRSV - direction * requestRSV;
-	console.log('🚀 ~ outSigRSV:', outSigRSV);
-
-	const outCircSigRSV = inCircSigRSV + direction * requestRSV;
-	console.log('🚀 ~ outCircSigRSV:', outCircSigRSV);
-
+	const outErg = inErg + requestErg * direction;
+	const outSigRSV = inSigRSV - requestRSV * direction;
+	const outCircSigRSV = inCircSigRSV + requestRSV * direction;
 	const outSigUSD = inSigUSD;
 	const outCircSigUSD = inCircSigUSD;
 
 	return {
-		requestErg,
 		outErg,
 		outSigUSD,
 		outSigRSV,

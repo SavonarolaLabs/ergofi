@@ -917,6 +917,204 @@ export function calculateReserveRateAndBorders(
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 }
 
+// (f5 RSV) ------------------------------------------------------------------
+
+export async function buyRSVInputRSV(requestRSV: bigint = 220000n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+	const direction = 1n;
+	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	//await createInteractionAndSubmitTx(tx, [me]);
+}
+
+// ---- TX + NO FEE
+export async function buyRSVInputRSVTx(
+	requestRSV: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	utxos: Array<any>,
+	height: number,
+	direction: bigint
+): any {
+	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+	//direction = 1n; // 1n or -1n
+
+	const contractRSV = requestRSV;
+
+	// if buy RSV Input ERG -> Clear Fee
+	// ---------------------------------
+
+	//Part 1 - Get Oracle
+	const {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+
+	// ----------------- REWORK? ----------------
+	//Part 2 - Calculate Price
+	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+		calculateBankRateRSVInputRSV(
+			inErg,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			requestRSV,
+			direction
+		);
+
+	// delete Price -> add RSV + ERG -> Delete requestERG output?
+	const { requestErg, outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } =
+		calculateOutputRsv(
+			inErg,
+			inSigUSD,
+			inSigRSV,
+			inCircSigUSD,
+			inCircSigRSV,
+			contractRSV,
+			contractRate,
+			direction
+		);
+
+	// if buy RSV Input RSV -> Fee Reversed
+	//Part 0 - use Fee Reversed
+	const { inputERG, uiSwapFee } = reverseFee(contractErg);
+
+	// BUILD RSV TX FUNCTION --------
+	//Part 4 - Calculate TX
+	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
+		direction,
+		contractErg,
+		contractRSV,
+		holderBase58PK,
+		bankBase58PK,
+		height,
+		bankBox,
+		oracleBox,
+		uiSwapFee,
+		utxos,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
+
+	return unsignedMintTransaction;
+}
+// ---
+
+// ------------------------------------------------------------------
+function calculateOutputRsv(
+	inErg: bigint,
+	inSigUSD: bigint,
+	inSigRSV: bigint,
+	inCircSigUSD: bigint,
+	inCircSigRSV: bigint,
+	requestRSV: bigint,
+	rateWithFee: number,
+	direction: bigint
+) {
+	const requestErg = BigInt(Math.floor(Number(requestRSV) / rateWithFee));
+	console.log('🚀 ~ requestErg:', requestErg);
+	console.log('🚀 ~ requestRSV:', requestRSV);
+
+	const outErg = inErg + direction * requestErg;
+	console.log('🚀 ~ inErg:', inErg);
+	console.log('🚀 ~ outErg:', outErg);
+
+	const outSigRSV = inSigRSV - direction * requestRSV;
+	console.log('🚀 ~ outSigRSV:', outSigRSV);
+
+	const outCircSigRSV = inCircSigRSV + direction * requestRSV;
+	console.log('🚀 ~ outCircSigRSV:', outCircSigRSV);
+
+	const outSigUSD = inSigUSD;
+	const outCircSigUSD = inCircSigUSD;
+
+	return {
+		requestErg,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	};
+}
+// ------------------------------------------------------------------
+
+// TOOL:
+export function buildTx_SIGUSD_ERG_RSV(
+	direction: bigint,
+	contractErg: bigint,
+	contractRSV: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	height: number,
+	bankBox: any,
+	oracleBox: any,
+	uiSwapFee: bigint,
+	utxos: Array<any>,
+	outErg: bigint,
+	outSigUSD: bigint,
+	outSigRSV: bigint,
+	outCircSigUSD: bigint,
+	outCircSigRSV: bigint
+) {
+	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
+
+	//OLD
+
+	//STANDART BANK OUT
+	const BankOutBox = new OutputBuilder(outErg, bankAddr)
+		.addTokens([
+			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
+			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
+			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
+		])
+		.setAdditionalRegisters({
+			R4: SLong(BigInt(outCircSigUSD)).toHex(),
+			R5: SLong(BigInt(outCircSigRSV)).toHex()
+		});
+
+	// ---------- Receipt ------------
+	const receiptBox = new OutputBuilder(
+		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
+		myAddr
+	).setAdditionalRegisters({
+		R4: SLong(BigInt(direction * contractRSV)).toHex(),
+		R5: SLong(BigInt(direction * contractErg)).toHex()
+	});
+
+	if (direction == 1n) {
+		receiptBox.addTokens({ tokenId: TOKEN_SIGRSV, amount: contractRSV });
+	}
+
+	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
+
+	const unsignedMintTransaction = new TransactionBuilder(height)
+		.from([bankBox, ...utxos])
+		.to([BankOutBox, receiptBox, uiFeeBox])
+		.sendChangeTo(myAddr)
+		.payFee(get(fee_mining))
+		.build()
+		.toEIP12Object();
+
+	unsignedMintTransaction.dataInputs = [oracleBox];
+
+	return unsignedMintTransaction;
+}
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+
 export function calculateIntractionsERGUSD(interactions: Interaction[]) {
 	const ergAdd: bigint = BigInt(
 		(interactions.reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9).toFixed()
@@ -927,6 +1125,7 @@ export function calculateIntractionsERGUSD(interactions: Interaction[]) {
 	return { ergAdd, usdAdd };
 }
 
+//+RSV
 export async function updateUnconfirmedBank() {
 	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(
 		get(mempool_interactions)

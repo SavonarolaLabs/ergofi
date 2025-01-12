@@ -85,7 +85,7 @@
 		return {
 			ERG: 'bg-orange-500',
 			SigUSD: 'bg-green-500',
-			SigRSV: 'bg-yellow-500'
+			SigRSV: 'bg-yellow-300'
 		}[c];
 	}
 

@@ -225,7 +225,7 @@
 										{c.type}
 									{/if}
 
-									@<SubNumber value={c.price}></SubNumber>
+									@<SubNumber value={1 / c.price}></SubNumber>
 								</div>
 							</div>
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>

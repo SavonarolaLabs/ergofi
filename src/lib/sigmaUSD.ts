@@ -883,6 +883,112 @@ export async function sellUSDInputERGTx(
 	return unsignedMintTransaction;
 }
 
+// f5 (f1 analog)
+export async function buyRSVInputERG(inputErg: bigint = 1_000_000_000n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+
+	const direction = 1n;
+	const tx = await buyRSVInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	await createInteractionAndSubmitTx(tx, [me]);
+}
+export async function buyRSVInputERGTx(
+	inputErg: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	utxos: Array<any>,
+	height: number,
+	direction: bigint
+): any {
+	//direction = 1n; // 1n or -1n
+	//Part 0 - use Fee
+	let uiSwapFee;
+
+	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg);
+	uiSwapFee = abc;
+
+	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
+	// ---------------------------------
+
+	//Part 1 - Get Oracle
+	const {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+
+	// ----------------- REWORK? ----------------
+	//Part 2 - Calculate Price (REVERSED)
+	const { rateRSVERG: contractRate, requestRSV: contractRSV } = calculateBankRateRSVInputERG(
+		inErg,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		contractErg,
+		direction
+	);
+
+	// Input ERG -> Contract ERG -> Contract RSV
+
+	//---- DEBUG Price Calculation ----
+	//Part 2 - Calculate Price ()
+	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+		calculateBankRateRSVInputRSV(
+			inErg,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			contractRSV,
+			direction
+		);
+
+	console.log('---------F5---------');
+	console.log(inputErg, 'Input ERG');
+	console.log(contractErg, 'Contract ERG');
+	console.log(contractErg, ' -> ', contractRSV, ' ERG -> RSV');
+	console.log(contractErgCompare, ' <- ', contractRSV, ' ERG <- RSV');
+
+	//Adjust fee
+	if (contractErg > contractErgCompare) uiSwapFee = uiSwapFee + (-contractErgCompare + contractErg);
+	// //DEBUG RESULT: Need to Fix:   ----------------------
+
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		contractRSV,
+		contractErgCompare,
+		direction
+	);
+
+	//Part 4 - Calculate TX
+	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
+		direction,
+		contractErgCompare,
+		contractRSV,
+		holderBase58PK,
+		bankBase58PK,
+		height,
+		bankBox,
+		oracleBox,
+		uiSwapFee,
+		utxos,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
+
+	return unsignedMintTransaction;
+}
+
 // (f6 RSV (f2 analog)) ------------------------------------------------------------------
 export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
 	const { me, utxos, height } = await getWeb3WalletData();

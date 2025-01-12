@@ -14,7 +14,8 @@
 		sellUSDInputERG,
 		calculateReserveRateAndBorders,
 		buyRSVInputRSV,
-		sellRSVInputRSV
+		sellRSVInputRSV,
+		buyRSVInputERG
 	} from './sigmaUSD';
 
 	import {
@@ -126,6 +127,7 @@
 				);
 			}
 		});
+		confirmed_interactions.set([]);
 	});
 
 	/* ---------------------------------------
@@ -317,9 +319,9 @@
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
 				await buyUSDInputERG(nanoErg);
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
-				// placeholder: call your own function for ERG -> RSV
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				console.log('Swapping ERG->SigRSV with', nanoErg.toString(), 'nanoERGs');
+				console.log('F5 go go');
+				await buyRSVInputERG(nanoErg);
 			} else if (fromCurrency === 'SigUSD') {
 				const cents = usdStringToCentBigInt(fromAmount);
 				await sellUSDInputUSD(cents);

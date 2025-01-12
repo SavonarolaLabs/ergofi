@@ -17,7 +17,8 @@
 		buyRSVInputERG,
 		sellRSVInputERG,
 		extractBoxesData,
-		calculateInputsRSVErgInErg
+		calculateInputsRSVErgInErg,
+		calculateInputsRSVErgInRSV
 	} from './sigmaUSD';
 
 	import {
@@ -232,8 +233,14 @@
 				swapPrice = finalPrice;
 			} else {
 				// fromCurrency === 'SigRSV' -> 'ERG'
-				// Placeholder: treat like SigUSD->ERG
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount);
+				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
+					directionSell,
+					fromAmount,
+					$bankBoxInErg,
+					$bankBoxInCircSigUsd,
+					$bankBoxInCircSigRsv,
+					$oraclePriceSigUsd
+				);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			}
@@ -246,7 +253,14 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// user typed in "SigRSV"
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount);
+				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
+					directionBuy,
+					toAmount,
+					$bankBoxInErg,
+					$bankBoxInCircSigUsd,
+					$bankBoxInCircSigRsv,
+					$oraclePriceSigUsd
+				);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {

@@ -54,10 +54,8 @@
 		blinkingItems.delete(id);
 	}
 
-	let intervalId: number;
-
 	onMount(() => {
-		intervalId = setInterval(() => {
+		let intervalId = setInterval(() => {
 			const currentTime = Date.now();
 			$prepared_interactions.forEach((item) => {
 				if (item.timestamp < currentTime - 60000 && !removingItems.has(item.id)) {
@@ -75,10 +73,9 @@
 		confirmed_interactions.subscribe(() => {
 			saveConfirmedInteractionsToLocalStorage();
 		});
-	});
-
-	onDestroy(() => {
-		clearInterval(intervalId);
+		return () => {
+			clearInterval(intervalId);
+		};
 	});
 
 	function addDummy() {

@@ -20,6 +20,7 @@
 	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';
 	import XCircle from './icons/XCircle.svelte';
 	import InteractionAmountColumn from './InteractionAmountColumn.svelte';
+	import SubNumber from './SubNumber.svelte';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -153,7 +154,7 @@
 									{:else}
 										{i.type}
 									{/if}
-									@{i.price}</span
+									@<SubNumber value={i.price}></SubNumber></span
 								>
 							</div>
 						</div>
@@ -185,7 +186,7 @@
 											{m.type}
 										{/if}
 
-										@{m.price}
+										@<SubNumber value={m.price}></SubNumber>
 									{:else}
 										<Spinner size={16} />
 										{#if m.amountCurrency == 'SigUSD'}
@@ -193,7 +194,7 @@
 										{:else}
 											{m.type}
 										{/if}
-										@{m.price}
+										@<SubNumber value={m.price}></SubNumber>
 									{/if}
 								</div>
 							</div>
@@ -224,7 +225,7 @@
 										{c.type}
 									{/if}
 
-									@{c.price}
+									@<SubNumber value={c.price}></SubNumber>
 								</div>
 							</div>
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>

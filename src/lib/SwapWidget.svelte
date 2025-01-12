@@ -213,7 +213,7 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// ERG -> SigRSV (placeholder, treat like ERG->SigUSD)
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
+				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
 					fromAmount,
 					$bankBoxInErg,
@@ -222,7 +222,7 @@
 					$oraclePriceSigUsd
 				);
 
-				toAmount = totalSigUSD; // rename to, e.g., totalSigRSV if you have a separate function
+				toAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;

@@ -78,7 +78,6 @@ export function updateBestBankBox(
 	let bankBox = getMaxFeeLeaf(txList);
 	if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
 		bank_box.set(bankBox);
-		console.warn('updated best bank box:', { bank_box: bankBox });
 	}
 }
 
@@ -98,6 +97,5 @@ export function updateBestBankBoxLocal(
 	let bankBox = getMaxFeeLeaf(txList);
 	if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
 		bank_box.set(bankBox);
-		console.warn('updated best bank box:', { bank_box: bankBox });
 	}
 }

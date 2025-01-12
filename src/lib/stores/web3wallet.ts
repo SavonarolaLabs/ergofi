@@ -22,8 +22,12 @@ export async function loadWeb3WalletTokens() {
 			web3wallet_confirmedTokens.set(tokens);
 		}
 
-		const addr = await ergo.get_change_address();
-		web3wallet_wallet_change_address.set(addr);
+		try {
+			const addr = await ergo.get_change_address();
+			web3wallet_wallet_change_address.set(addr);
+		} catch (e) {
+			console.error(e);
+		}
 	} catch (e) {
 		console.warn(`Failed to load ${get(web3wallet_wallet_name)} balance.`);
 	}

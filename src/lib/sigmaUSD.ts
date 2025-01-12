@@ -58,8 +58,9 @@ const FEE_BANK_DENOM = 10_000n;
 export const FEE_UI = 10n; //0.1%
 export const FEE_UI_DENOM = 100_00n;
 
-export const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
+export const BASE_INPUT_AMOUNT_ERG = 1n; //1 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
+export const BASE_INPUT_AMOUNT_RSV = 10_000n; //10k RSV
 
 // BankRate
 export function calculateBankRateUSDInputUSD(
@@ -330,8 +331,9 @@ export function applyFeeSell(inputERG: bigint) {
 }
 
 // Swap Price
+// SigUSD - ERG
 // (f1.price && f4.price)
-export function calculateInputsErg(
+export function calculateInputsUsdErgInErg(
 	direction: bigint,
 	buyAmountInput: any,
 	bankBoxInErg: bigint,
@@ -341,7 +343,7 @@ export function calculateInputsErg(
 	const inputAmountERG = new BigNumber(buyAmountInput);
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
 		const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-			calculateInputsErgPrice(
+			calculateInputsUsdErgInErgPrice(
 				direction,
 				inputAmountERG,
 				bankBoxInErg,
@@ -355,7 +357,7 @@ export function calculateInputsErg(
 		return { totalSigUSD, finalPrice, totalFee, contractERG, uiFeeErg };
 	} else {
 		const { contractRate, contractFee, contractUSD, contractERG, uiFeeErg, swapFee, swapRate } =
-			calculateInputsErgPrice(
+			calculateInputsUsdErgInErgPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 				bankBoxInErg,
@@ -368,7 +370,7 @@ export function calculateInputsErg(
 		return { totalSigUSD, finalPrice, totalFee };
 	}
 }
-export function calculateInputsErgPrice(
+export function calculateInputsUsdErgInErgPrice(
 	direction: bigint,
 	buyAmount: BigNumber,
 	bankBoxInErg: bigint,
@@ -470,14 +472,14 @@ export function calculateInputsErgPrice(
 }
 
 // (f3.price && f2.price)
-export function calculateInputsUsd(direction: bigint, buyTotalInput: any): any {
+export function calculateInputsUsdErgInUsd(direction: bigint, buyTotalInput: any): any {
 	const totalSigUSD = new BigNumber(buyTotalInput)
 		.multipliedBy('100')
 		.integerValue(BigNumber.ROUND_CEIL);
 
 	if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
 		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-			calculateInputsUsdPrice(direction, totalSigUSD);
+			calculateInputsUsdErgInUsdPrice(direction, totalSigUSD);
 
 		//---------------------------------
 		const totalErg = new BigNumber(totalErgoRequired.toString()).dividedBy('1000000000').toFixed(9);
@@ -486,14 +488,14 @@ export function calculateInputsUsd(direction: bigint, buyTotalInput: any): any {
 		return { totalErg, finalPrice, totalFee };
 	} else {
 		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-			calculateInputsUsdPrice(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
+			calculateInputsUsdErgInUsdPrice(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
 		const totalErg = '';
 		const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 		const totalFee = '';
 		return { totalErg, finalPrice, totalFee };
 	}
 }
-export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber): any {
+export function calculateInputsUsdErgInUsdPrice(direction: bigint, buyTotal: BigNumber): any {
 	const totalSC = BigInt(buyTotal.toString());
 
 	let uiFeeErg: bigint;
@@ -528,6 +530,130 @@ export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber):
 	const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 }
+// SigUSD - ERG
+// (f5.price && f8.price)
+//buyRSVInputERG //sellRSVInputERG
+export function calculateInputsRSVErgInErg(
+	direction: bigint,
+	buyAmountInput: any,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	bankBoxInCircSigRSV: bigint,
+	oraclePriceSigUsd: bigint
+): any {
+	const inputAmountERG = new BigNumber(buyAmountInput);
+	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+		const { contractRate, contractFee, contractRSV, contractERG, uiFeeErg, swapFee, swapRate } =
+			calculateInputsRSVErgInErgPrice(
+				direction,
+				inputAmountERG,
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				bankBoxInCircSigRSV,
+				oraclePriceSigUsd
+			); // CHANGE TO RSV
+
+		const totalSigRSV = new BigNumber(contractRSV).toFixed(0);
+		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
+		return { totalSigRSV, finalPrice, totalFee, contractERG, uiFeeErg };
+	} else {
+		const { contractRate, contractFee, contractRSV, contractERG, uiFeeErg, swapFee, swapRate } =
+			calculateInputsRSVErgInErgPrice(
+				direction,
+				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				bankBoxInCircSigRSV,
+				oraclePriceSigUsd
+			);
+		const totalSigRSV = '';
+		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const totalFee = '';
+		return { totalSigRSV, finalPrice, totalFee };
+	}
+}
+export function calculateInputsRSVErgInErgPrice(
+	direction: bigint,
+	buyAmount: BigNumber,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	bankBoxInCircSigRSV: bigint,
+	oraclePriceSigUsd: bigint
+): any {
+	const inputAmountNanoERG = buyAmount
+		.multipliedBy('1000000000')
+		.integerValue(BigNumber.ROUND_FLOOR)
+		.toFixed(0);
+	const inputErg = BigInt(inputAmountNanoERG);
+
+	let uiFeeErg: bigint;
+	let contractERG: bigint;
+
+	if (direction === 1n) {
+		//f5
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+	} else {
+		//f8
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg));
+	}
+
+	// CHANGE FUNCTION <--------
+	//Part 2 - Calculate Price
+	let {
+		rateRSVERG: contractRate,
+		fee: contractFee,
+		requestRSV: contractRSV
+	} = calculateBankRateRSVInputERG(
+		bankBoxInErg,
+		bankBoxInCircSigUsd,
+		bankBoxInCircSigRSV,
+		oraclePriceSigUsd,
+		contractERG,
+		direction
+	);
+
+	if (direction == -1n) {
+		contractRSV = contractRSV + 1n;
+	}
+
+	//Part 2 - Calculate Price ()
+	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+		calculateBankRateRSVInputRSV(
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			bankBoxInCircSigRSV,
+			oraclePriceSigUsd,
+			contractRSV,
+			direction
+		);
+
+	// --------------------------------
+	if (direction == 1n) {
+		if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (-contractErgCompare + contractERG);
+	}
+
+	if (direction == -1n) {
+		if (contractERG < contractErgCompare) {
+			uiFeeErg = uiFeeErg + (contractErgCompare - contractERG); // Right
+		}
+	}
+
+	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
+	const swapRate = new BigNumber(contractRSV.toString()).dividedBy(inputAmountNanoERG.toString());
+
+	return {
+		contractRate,
+		contractFee,
+		contractRSV,
+		contractERG,
+		uiFeeErg,
+		swapFee, //totalFee
+		swapRate //totalRate
+	};
+}
+// (f6.price && f7.price)
+//buyRSVInputRSV //sellRSVInputRSV
 
 // Web3 Wallet interactions
 async function getWeb3WalletData() {

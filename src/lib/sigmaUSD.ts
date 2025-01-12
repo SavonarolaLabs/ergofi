@@ -61,7 +61,7 @@ export const FEE_UI_DENOM = 100_00n;
 export const BASE_INPUT_AMOUNT_ERG = 1n; //100 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 
-// SigUSD
+// BankRate
 export function calculateBankRateUSDInputUSD(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -107,8 +107,6 @@ export function calculateBankRateUSDInputERG(
 
 	return { rateSCERG, fee, requestSC }; //cents for nanoerg
 }
-
-// SigRSV - pause
 export function calculateBankRateRSVInputRSV(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -132,7 +130,6 @@ export function calculateBankRateRSVInputRSV(
 
 	return { rateRSVERG, fee, bcDeltaExpectedWithFee };
 }
-
 export function calculateBankRateRSVInputERG(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -157,34 +154,7 @@ export function calculateBankRateRSVInputERG(
 
 	return { rateRSVERG, fee, requestRSV };
 }
-
-// Вспомогательные функции
-export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
-	const inErg = BigInt(bankBox.value);
-	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
-	);
-	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
-	);
-	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
-	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
-	// ORACLE PRICE / 100n
-	//console.log('oracle box:', oracleBox);
-	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
-
-	return {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox,
-		oracleBox
-	};
-}
-
+// BankBox Out
 export function calculateOutputSc(
 	inErg: bigint,
 	inSigUSD: bigint,
@@ -215,7 +185,59 @@ export function calculateOutputSc(
 		outCircSigRSV
 	};
 }
+export function calculateOutputRsv(
+	inErg: bigint,
+	inSigUSD: bigint,
+	inSigRSV: bigint,
+	inCircSigUSD: bigint,
+	inCircSigRSV: bigint,
+	requestRSV: bigint,
+	requestErg: bigint,
+	direction: bigint
+) {
+	const outErg = inErg + requestErg * direction;
+	const outSigRSV = inSigRSV - requestRSV * direction;
+	const outCircSigRSV = inCircSigRSV + requestRSV * direction;
+	const outSigUSD = inSigUSD;
+	const outCircSigUSD = inCircSigUSD;
 
+	return {
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	};
+}
+
+// Вспомогательные функции
+export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
+	const inErg = BigInt(bankBox.value);
+	const inSigUSD = BigInt(
+		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
+	);
+	const inSigRSV = BigInt(
+		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
+	);
+	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
+	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
+	// ORACLE PRICE / 100n
+	//console.log('oracle box:', oracleBox);
+	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
+
+	return {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	};
+}
+
+// Reserve Rate
 export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePrice: bigint) {
 	const bankERGBigNumber = BigNumber(bankErg.toString()).dividedBy(10 ** 9); //convert to ERG
 	const bankUSDBigNumber = BigNumber(bankUSD.toString()).dividedBy(100); //convert to USD
@@ -228,33 +250,86 @@ export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePri
 	);
 	return reserveRate; //%
 }
+export function calculateReserveRateAndBorders(
+	inErg: bigint,
+	inCircSigUSD: bigint,
+	oraclePrice: bigint
+): any {
+	// //console.log(inErg, 'inErg');
+	// //console.log(oraclePrice, 'oraclePrice');
 
-//----------------------------------- FEE ----------------------------------------
+	const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
+	const reserveRateOld = Number(
+		BigNumber(inErg.toString()) // nanoergi
+			.multipliedBy(oraclePriceErgCents)
+			.dividedBy(inCircSigUSD.toString())
+			.dividedBy(10 ** 9)
+			.multipliedBy(100)
+			.toFixed(0)
+	);
+
+	const leftBoarderValue = 400;
+	let leftBoarderDelta;
+	const rightBoarderValue = 800;
+	let rightBoarderDelta;
+	// Clear convert
+	const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
+	const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
+	const price = BigNumber(10 ** 9)
+		.dividedBy(BigNumber(oraclePrice.toString()))
+		.dividedBy(100); //convert to ERG / USD price
+
+	const reserveRate = Number(
+		bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
+	); // as function
+
+	const leftBorder = 4;
+	const rightBorder = 8;
+
+	function calculateBoarder(
+		boarder: number,
+		bankUSD: BigNumber,
+		bankERG: BigNumber,
+		price: BigNumber
+	) {
+		const a_Left = BigNumber(bankERG).multipliedBy(price);
+		const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
+		const delta_a_b_Left = a_Left.minus(b_Left);
+		const boarderUSD = delta_a_b_Left.dividedBy(boarder - 1);
+		return boarderUSD;
+	}
+
+	const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
+	const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
+	const leftERG = Number(BigNumber(leftUSD).dividedBy(price).toFixed(0));
+	const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
+
+	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
+}
+
+// Fee
 export function applyFee(inputERG: bigint) {
 	const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
 	const contractERG = inputERG - get(fee_mining) - uiSwapFee;
 	return { uiSwapFee, contractERG };
 }
-
 export function reverseFee(contractERG: bigint) {
 	const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 	const inputERG = contractERG + get(fee_mining) + uiSwapFee;
 	return { inputERG, uiSwapFee };
 }
-
 export function reverseFeeSell(contractERG: bigint) {
 	const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
 	const userERG = contractERG - get(fee_mining) - uiSwapFee;
 	return { userERG, uiSwapFee };
 }
-
 export function applyFeeSell(inputERG: bigint) {
 	const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 	const contractERG = inputERG + get(fee_mining) + uiSwapFee;
 	return { uiSwapFee, contractERG };
 }
 
-//----------------------------------- PRICE/SWAP ----------------------------------------
+// Swap Price
 // (f1.price && f4.price)
 export function calculateInputsErg(
 	direction: bigint,
@@ -293,7 +368,6 @@ export function calculateInputsErg(
 		return { totalSigUSD, finalPrice, totalFee };
 	}
 }
-
 export function calculateInputsErgPrice(
 	direction: bigint,
 	buyAmount: BigNumber,
@@ -419,7 +493,6 @@ export function calculateInputsUsd(direction: bigint, buyTotalInput: any): any {
 		return { totalErg, finalPrice, totalFee };
 	}
 }
-
 export function calculateInputsUsdPrice(direction: bigint, buyTotal: BigNumber): any {
 	const totalSC = BigInt(buyTotal.toString());
 
@@ -464,7 +537,6 @@ async function getWeb3WalletData() {
 	const height = await ergo.get_current_height();
 	return { me, utxos, height };
 }
-
 async function createInteractionAndSubmitTx(
 	unsignedTx: ErgoUnsignedTransaction,
 	ownAddressList: string[]
@@ -497,7 +569,6 @@ export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 	const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export async function buyUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
@@ -585,7 +656,6 @@ export async function buyUSDInputUSD(inputUSD: bigint = 1_00n) {
 	const tx = await buyUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export async function buyUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
@@ -658,7 +728,6 @@ export async function sellUSDInputUSD(inputUSD: bigint = 1_00n) {
 	const tx = await sellUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export async function sellUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
@@ -732,7 +801,6 @@ export async function sellUSDInputERG(inputErg: bigint = 1_000_000_000n) {
 	const tx = await sellUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export async function sellUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
@@ -813,126 +881,6 @@ export async function sellUSDInputERGTx(
 
 	//console.log(unsignedMintTransaction);
 	return unsignedMintTransaction;
-}
-
-// TOOL:
-export function buildTx_SIGUSD_ERG_USD(
-	direction: bigint,
-	contractErg: bigint,
-	contractUSD: bigint,
-	holderBase58PK: string,
-	bankBase58PK: string,
-	height: number,
-	bankBox: any,
-	oracleBox: any,
-	uiSwapFee: bigint,
-	utxos: Array<any>,
-	outErg: bigint,
-	outSigUSD: bigint,
-	outSigRSV: bigint,
-	outCircSigUSD: bigint,
-	outCircSigRSV: bigint
-) {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
-
-	const BankOutBox = new OutputBuilder(outErg, bankAddr)
-		.addTokens([
-			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-		])
-		.setAdditionalRegisters({
-			R4: SLong(BigInt(outCircSigUSD)).toHex(),
-			R5: SLong(BigInt(outCircSigRSV)).toHex()
-		});
-
-	// ---------- Receipt ------------
-	//console.log('direction=', direction, ' -1n?', direction == -1n);
-	const receiptBox = new OutputBuilder(
-		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
-		myAddr
-	).setAdditionalRegisters({
-		R4: SLong(BigInt(direction * contractUSD)).toHex(),
-		R5: SLong(BigInt(direction * contractErg)).toHex()
-	});
-
-	if (direction == 1n) {
-		receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: contractUSD });
-	}
-
-	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
-
-	const unsignedMintTransaction = new TransactionBuilder(height)
-		.from([bankBox, ...utxos])
-		.to([BankOutBox, receiptBox, uiFeeBox])
-		.sendChangeTo(myAddr)
-		.payFee(get(fee_mining))
-		.build()
-		.toEIP12Object();
-
-	unsignedMintTransaction.dataInputs = [oracleBox];
-
-	return unsignedMintTransaction;
-}
-
-// Reserve Rate
-export function calculateReserveRateAndBorders(
-	inErg: bigint,
-	inCircSigUSD: bigint,
-	oraclePrice: bigint
-): any {
-	// //console.log(inErg, 'inErg');
-	// //console.log(oraclePrice, 'oraclePrice');
-
-	const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
-	const reserveRateOld = Number(
-		BigNumber(inErg.toString()) // nanoergi
-			.multipliedBy(oraclePriceErgCents)
-			.dividedBy(inCircSigUSD.toString())
-			.dividedBy(10 ** 9)
-			.multipliedBy(100)
-			.toFixed(0)
-	);
-
-	const leftBoarderValue = 400;
-	let leftBoarderDelta;
-	const rightBoarderValue = 800;
-	let rightBoarderDelta;
-	// Clear convert
-	const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
-	const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
-	const price = BigNumber(10 ** 9)
-		.dividedBy(BigNumber(oraclePrice.toString()))
-		.dividedBy(100); //convert to ERG / USD price
-
-	const reserveRate = Number(
-		bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
-	); // as function
-
-	const leftBorder = 4;
-	const rightBorder = 8;
-
-	function calculateBoarder(
-		boarder: number,
-		bankUSD: BigNumber,
-		bankERG: BigNumber,
-		price: BigNumber
-	) {
-		const a_Left = BigNumber(bankERG).multipliedBy(price);
-		const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
-		const delta_a_b_Left = a_Left.minus(b_Left);
-		const boarderUSD = delta_a_b_Left.dividedBy(boarder - 1);
-		return boarderUSD;
-	}
-
-	const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
-	const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
-	const leftERG = Number(BigNumber(leftUSD).dividedBy(price).toFixed(0));
-	const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
-
-	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
 }
 
 // (f6 RSV (f2 analog)) ------------------------------------------------------------------
@@ -1027,7 +975,6 @@ export async function sellRSVInputRSV(requestRSV: bigint = 2200n) {
 	const tx = await sellRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export async function sellRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
@@ -1101,36 +1048,99 @@ export async function sellRSVInputRSVTx(
 	return unsignedMintTransaction;
 }
 
-// ---
-
-// ------------------------------------------------------------------
-function calculateOutputRsv(
-	inErg: bigint,
-	inSigUSD: bigint,
-	inSigRSV: bigint,
-	inCircSigUSD: bigint,
-	inCircSigRSV: bigint,
-	requestRSV: bigint,
-	requestErg: bigint,
-	direction: bigint
-) {
-	const outErg = inErg + requestErg * direction;
-	const outSigRSV = inSigRSV - requestRSV * direction;
-	const outCircSigRSV = inCircSigRSV + requestRSV * direction;
-	const outSigUSD = inSigUSD;
-	const outCircSigUSD = inCircSigUSD;
-
-	return {
-		outErg,
-		outSigUSD,
-		outSigRSV,
-		outCircSigUSD,
-		outCircSigRSV
-	};
+// TODO: ADD RSV
+export function calculateIntractionsERGUSD(interactions: Interaction[]) {
+	const ergAdd: bigint = BigInt(
+		(interactions.reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9).toFixed()
+	);
+	const usdAdd: bigint = BigInt(
+		(interactions.reduce((a, e) => a + e.amount, 0) * 10 ** 2).toFixed()
+	);
+	return { ergAdd, usdAdd };
 }
-// ------------------------------------------------------------------
+export async function updateUnconfirmedBank() {
+	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(
+		get(mempool_interactions)
+	);
+	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } = calculateIntractionsERGUSD(
+		get(prepared_interactions)
+	);
 
-// TOOL:
+	const newBankErg = get(bankBoxInErg) + ergAddMem + ergAddPrep;
+	const newBankUsd = get(bankBoxInCircSigUsd) + usdAddMem + usdAddPrep;
+
+	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
+		newBankErg,
+		newBankUsd,
+		get(oraclePriceSigUsd)
+	);
+	unconfirmed_bank_erg.set(newBankErg);
+	unconfrimed_bank_usd.set(newBankUsd);
+	unconfrimed_reserve_boarder_left_USD.set(leftUSD);
+	unconfrimed_bank_reserve_rate.set(reserveRate);
+}
+
+// TX
+export function buildTx_SIGUSD_ERG_USD(
+	direction: bigint,
+	contractErg: bigint,
+	contractUSD: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	height: number,
+	bankBox: any,
+	oracleBox: any,
+	uiSwapFee: bigint,
+	utxos: Array<any>,
+	outErg: bigint,
+	outSigUSD: bigint,
+	outSigRSV: bigint,
+	outCircSigUSD: bigint,
+	outCircSigRSV: bigint
+) {
+	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
+
+	const BankOutBox = new OutputBuilder(outErg, bankAddr)
+		.addTokens([
+			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
+			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
+			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
+		])
+		.setAdditionalRegisters({
+			R4: SLong(BigInt(outCircSigUSD)).toHex(),
+			R5: SLong(BigInt(outCircSigRSV)).toHex()
+		});
+
+	// ---------- Receipt ------------
+	//console.log('direction=', direction, ' -1n?', direction == -1n);
+	const receiptBox = new OutputBuilder(
+		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
+		myAddr
+	).setAdditionalRegisters({
+		R4: SLong(BigInt(direction * contractUSD)).toHex(),
+		R5: SLong(BigInt(direction * contractErg)).toHex()
+	});
+
+	if (direction == 1n) {
+		receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: contractUSD });
+	}
+
+	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
+
+	const unsignedMintTransaction = new TransactionBuilder(height)
+		.from([bankBox, ...utxos])
+		.to([BankOutBox, receiptBox, uiFeeBox])
+		.sendChangeTo(myAddr)
+		.payFee(get(fee_mining))
+		.build()
+		.toEIP12Object();
+
+	unsignedMintTransaction.dataInputs = [oracleBox];
+
+	return unsignedMintTransaction;
+}
 export function buildTx_SIGUSD_ERG_RSV(
 	direction: bigint,
 	contractErg: bigint,
@@ -1192,40 +1202,4 @@ export function buildTx_SIGUSD_ERG_RSV(
 	unsignedMintTransaction.dataInputs = [oracleBox];
 
 	return unsignedMintTransaction;
-}
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
-
-export function calculateIntractionsERGUSD(interactions: Interaction[]) {
-	const ergAdd: bigint = BigInt(
-		(interactions.reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9).toFixed()
-	);
-	const usdAdd: bigint = BigInt(
-		(interactions.reduce((a, e) => a + e.amount, 0) * 10 ** 2).toFixed()
-	);
-	return { ergAdd, usdAdd };
-}
-
-//+RSV
-export async function updateUnconfirmedBank() {
-	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(
-		get(mempool_interactions)
-	);
-	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } = calculateIntractionsERGUSD(
-		get(prepared_interactions)
-	);
-
-	const newBankErg = get(bankBoxInErg) + ergAddMem + ergAddPrep;
-	const newBankUsd = get(bankBoxInCircSigUsd) + usdAddMem + usdAddPrep;
-
-	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
-		newBankErg,
-		newBankUsd,
-		get(oraclePriceSigUsd)
-	);
-	unconfirmed_bank_erg.set(newBankErg);
-	unconfrimed_bank_usd.set(newBankUsd);
-	unconfrimed_reserve_boarder_left_USD.set(leftUSD);
-	unconfrimed_bank_reserve_rate.set(reserveRate);
 }

@@ -115,7 +115,6 @@
 		});
 
 		bank_price_usd_sell.subscribe((val) => {
-			console.log({ val });
 			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;
 		});
 		bank_price_usd_buy.subscribe((val) => {
@@ -132,7 +131,6 @@
 				);
 			}
 		});
-		confirmed_interactions.set([]);
 	});
 
 	/* ---------------------------------------

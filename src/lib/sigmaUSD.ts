@@ -918,15 +918,12 @@ export function calculateReserveRateAndBorders(
 }
 
 // (f6 RSV (f2 analog)) ------------------------------------------------------------------
-
 export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
 	const { me, utxos, height } = await getWeb3WalletData();
 	const direction = 1n;
 	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
-// ---- TX + NO FEE
 export async function buyRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
@@ -1005,6 +1002,92 @@ export async function buyRSVInputRSVTx(
 
 	return unsignedMintTransaction;
 }
+
+// (f7 RSV (f3 analog)) ------------------------------------------------------------------
+
+export async function sellRSVInputRSV(requestRSV: bigint = 2200n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+	const direction = -1n;
+	const tx = await sellRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	await createInteractionAndSubmitTx(tx, [me]);
+}
+
+export async function sellRSVInputRSVTx(
+	requestRSV: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	utxos: Array<any>,
+	height: number,
+	direction: bigint
+): any {
+	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
+	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+
+	const contractRSV = requestRSV; // ?
+
+	//Part 1 - Get Oracle
+	const {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+
+	// ----------------- REWORK? ----------------
+	//Part 2 - Calculate Price
+	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+		calculateBankRateRSVInputRSV(
+			inErg,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			requestRSV,
+			direction
+		);
+
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		contractRSV,
+		contractErg,
+		direction
+	);
+
+	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
+	//Part 0 - use Fee Reversed
+	// PART X
+	const { userERG, uiSwapFee } = reverseFeeSell(contractErg);
+	//console.log(contractUSD, 'USD -> ERG ', userERG);
+
+	//Part 4 - Calculate TX
+	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
+		direction,
+		contractErg,
+		contractRSV,
+		holderBase58PK,
+		bankBase58PK,
+		height,
+		bankBox,
+		oracleBox,
+		uiSwapFee,
+		utxos,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
+
+	return unsignedMintTransaction;
+}
+
 // ---
 
 // ------------------------------------------------------------------

@@ -13,7 +13,8 @@
 		buyUSDInputUSD,
 		sellUSDInputERG,
 		calculateReserveRateAndBorders,
-		buyRSVInputRSV
+		buyRSVInputRSV,
+		sellRSVInputRSV
 	} from './sigmaUSD';
 
 	import {
@@ -324,9 +325,11 @@
 				await sellUSDInputUSD(cents);
 			} else {
 				// fromCurrency=SigRSV
-				const cents = usdStringToCentBigInt(fromAmount);
+				const rsv = BigInt(fromAmount);
 				// placeholder: sellRSVInputRSV(cents)
-				console.log('SigRSV->ERG (from typed) not fully implemented. Value:', cents.toString());
+				//console.log('SigRSV->ERG (from typed) not fully implemented. Value:', rsv.toString());
+				console.log('f7');
+				await sellRSVInputRSV(rsv);
 			}
 		} else {
 			// lastInput === 'To'
@@ -337,7 +340,8 @@
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// placeholder
 				const rsv = BigInt(toAmount);
-				console.log('ERG->SigRSV (to typed) not fully implemented. Value:', rsv.toString());
+				// console.log('ERG->SigRSV (to typed) not fully implemented. Value:', rsv.toString());
+				console.log('f6');
 				await buyRSVInputRSV(rsv);
 			} else if (fromCurrency === 'SigUSD') {
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);

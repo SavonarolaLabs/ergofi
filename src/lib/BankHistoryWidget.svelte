@@ -19,6 +19,7 @@
 	import CheckCircle from './icons/CheckCircle.svelte';
 	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';
 	import XCircle from './icons/XCircle.svelte';
+	import InteractionAmountColumn from './InteractionAmountColumn.svelte';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -135,7 +136,7 @@
 				>
 					<div class="left pb-1">
 						<div class:blink={!i.rejected && !i.confirmed}>
-							<div class="flex items-center gap-1 text-gray-400">
+							<div class="flex items-center gap-1 uppercase text-gray-400">
 								{#if i.rejected}
 									<XCircle></XCircle>
 								{:else if i.confirmed}
@@ -162,27 +163,7 @@
 						<span class="text-sm">{formatTimeAgo(i.timestamp)}</span>
 					</div>
 					<div class="flex flex-col items-end" class:text-white={i.own}>
-						{#if i.amountCurrency == 'SigUSD'}
-							<div>
-								<span class="mr-1 text-3xl">
-									{formatAmount(i.ergAmount)}
-								</span>
-								<span class="text-lg" style="padding-right:22px;">ERG</span>
-							</div>
-							<div class="text-right">
-								{formatAmount(i.amount)}
-								<span style="margin-left:5px;">{i.amountCurrency}</span>
-							</div>
-						{:else}
-							<div>
-								<span class="mr-1 text-3xl">{formatAmount(i.amount)}</span>
-								<span class="text-lg"> {i.amountCurrency} </span>
-							</div>
-							<div class="text-right">
-								{formatAmount(i.ergAmount)}
-								<span style="margin-left:5px; padding-right:30px;">ERG</span>
-							</div>
-						{/if}
+						<InteractionAmountColumn {i}></InteractionAmountColumn>
 					</div>
 				</div>
 			{/each}
@@ -222,27 +203,7 @@
 							<span class="text-sm">{formatTimeAgo(m.timestamp)}</span>
 						</div>
 						<div class="flex flex-col items-end" class:text-white={m.own}>
-							{#if m.amountCurrency == 'SigUSD'}
-								<div>
-									<span class="mr-1 text-3xl">
-										{formatAmount(m.ergAmount)}
-									</span>
-									<span class="text-lg" style="padding-right:22px;">ERG</span>
-								</div>
-								<div class="text-right">
-									{formatAmount(m.amount)}
-									<span style="margin-left:5px;">{m.amountCurrency}</span>
-								</div>
-							{:else}
-								<div>
-									<span class="mr-1 text-3xl">{formatAmount(m.amount)}</span>
-									<span class="text-lg"> {m.amountCurrency} </span>
-								</div>
-								<div class="text-right">
-									{formatAmount(m.ergAmount)}
-									<span style="margin-left:5px; padding-right:30px;">ERG</span>
-								</div>
-							{/if}
+							<InteractionAmountColumn i={m}></InteractionAmountColumn>
 						</div>
 					</div>
 				</a>
@@ -272,29 +233,7 @@
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>
 						</div>
 						<div class="flex flex-col items-end">
-							{#if c.amountCurrency == 'SigUSD'}
-								<div>
-									<span class="mr-1 text-3xl">
-										{formatAmount(c.ergAmount)}
-									</span>
-									<span class="text-lg" style="padding-right:22px;">ERG</span>
-								</div>
-								<div class="text-right">
-									{formatAmount(c.amount)}
-									<span style="margin-left:5px;">{c.amountCurrency}</span>
-								</div>
-							{:else}
-								<div>
-									<span class="mr-1 text-3xl">
-										{formatAmount(c.amount)}
-									</span>
-									<span class="text-lg"> {c.amountCurrency} </span>
-								</div>
-								<div class="text-right">
-									{formatAmount(c.ergAmount)}
-									<span style="margin-left:5px; padding-right:30px;">ERG</span>
-								</div>
-							{/if}
+							<InteractionAmountColumn i={c}></InteractionAmountColumn>
 						</div>
 					</div>
 				</a>

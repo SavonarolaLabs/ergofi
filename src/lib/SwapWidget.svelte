@@ -212,7 +212,7 @@
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
-				// ERG -> SigRSV (placeholder, treat like ERG->SigUSD)
+				// ERG -> SigRSV
 				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
 					fromAmount,
@@ -221,7 +221,6 @@
 					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd
 				);
-
 				toAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
@@ -267,16 +266,16 @@
 			} else {
 				// fromCurrency === 'SigRSV' && toCurrency === 'ERG'
 				// user typed in "ERG" => figure out how many SigRSV
-				// placeholder: treat it like SigUSDcalculateInputsUsdErgInputUsd
-
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
+				// ERG -> SigRSV
+				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionSell,
 					toAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
+					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd
 				);
-				fromAmount = totalSigUSD;
+				fromAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;

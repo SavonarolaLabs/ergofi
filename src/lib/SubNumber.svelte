@@ -5,7 +5,7 @@
 		const str = num.toString();
 		const match = str.match(/^0\.(0+)/); // Match leading zeros after the decimal
 		const zeros = match ? match[1].length : 0;
-		const significantDigits = str.slice(zeros + 2); // Remove "0." and leading zeros
+		const significantDigits = str.slice(zeros + 2, zeros + 5); // Limit to 3 significant digits
 		return { zeros, significantDigits };
 	}
 </script>

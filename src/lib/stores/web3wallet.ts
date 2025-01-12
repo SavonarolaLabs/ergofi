@@ -13,7 +13,13 @@ export async function loadWeb3WalletTokens() {
 	try {
 		const utxo = await ergo.get_utxos();
 
-		const tokens = utxo.flatMap((box) => box.assets).reduce(sumAssets, []);
+		const tokens = utxo
+			.flatMap((box) => box.assets)
+			.reduce(sumAssets, [])
+			.map((t) => {
+				t.amount = BigInt(t.amount);
+				return t;
+			});
 
 		const erg: bigint = sumNanoErg(utxo);
 		if (erg > 0) {

@@ -3,9 +3,10 @@
 	import { writable } from 'svelte/store';
 
 	import BigNumber from 'bignumber.js';
-	import {calculateInputsUsdErgInputErgta,
+	import {
+		calculateInputsUsdErgInErg,
 		BASE_INPUT_AMOUNT_ERG,
-		calculatcalculateInputsUsdErgInputUsdulateInputsUsd,
+		calculateInputsUsdErgInUsd,
 		buyUSDInputERG,
 		sellUSDInputUSD,
 		buyUSDInputUSD,
@@ -14,7 +15,8 @@
 		buyRSVInputRSV,
 		sellRSVInputRSV,
 		buyRSVInputERG,
-		sellRSVInputERG
+		sellRSVInputERG,
+		extractBoxesData
 	} from './sigmaUSD';
 
 	import {
@@ -156,7 +158,8 @@
 		bankBoxInCircSigUsd: bigint,
 		oraclePriceSigUsd: bigint
 	) {
-		// Just as beforecalculateInputsUsdErgInputErg	const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsErg(
+		// Just as beforecalculateInputsUsdErgInputErg
+		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInErg,
@@ -192,12 +195,12 @@
 		if (lastInput === 'From') {
 			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
 				// ERG -> SigUSD (buy SigUSD with ERG)
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionBuy,
 					fromAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
-					$ocalculateInputsUsdErgInputErg
+					$oraclePriceSigUsd
 				);
 				toAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
@@ -205,9 +208,10 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// ERG -> SigRSV (placeholder, treat like ERG->SigUSD)
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionBuy,
-					fromAmount,calculateInputsUsdErgInputErg					$bankBoxInErg,
+					fromAmount,
+					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$oraclePriceSigUsd
 				);
@@ -217,50 +221,56 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {
 				// SigUSD -> ERG
-				const { totalErg, finalPrice } = calculateInputsUsd(directionSell, fromAmount);
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			} else {
 				// fromCurrency === 'SigRSV' -> 'ERG'
 				// Placeholder: treat like SigUSD->ERG
-				const { totalErg, finalPrice } = calculateInputsUsd(directionSell, fromAmount);
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			}
 		} else {
 			// lastInput === 'To' => user typed in `toAmount`
-			if (fromCurrency === 'ERcalculateInputsUsdErgInputUsd== 'SigUSD') {
+			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
 				// user typed in "SigUSD" => figure out how many ERG
-				const { totalErg, finalPrice } = calculateInputsUsd(directionBuy, toAmount);
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
-				// user tcalculateInputsUsdErgInputUsdconst { totalErg, finalPrice } = calculateInputsUsd(directionBuy, toAmount);
+				// user typed in "SigRSV"
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {
 				// user typed in "ERG" => figure out how many SigUSD
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
-					directionSell,
-					toAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
-					$oraclePriceSigUsd
-				);calculateInputsUsdErgInputUsdromAmount = totalSigUSD;
-				globalUiFeeErg = uiFeeErg;
-				globalContractERG = contractERG;
-				swapPrice = finalPrice;
-			} else {
-				// fromCurrency === 'SigRSV' && toCurrency === 'ERG'
-				// user typed in "ERG" => figure out how many SigRSV
-				// placeholder: treat it like SigUSDcalculateInputsUsdErgInputUsd				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsErg(
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionSell,
 					toAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$oraclePriceSigUsd
 				);
-				fromAmcalculateInputsUsdErgInputErgobalUiFeeErg = uiFeeErg;
+
+				fromAmount = totalSigUSD;
+				globalUiFeeErg = uiFeeErg;
+				globalContractERG = contractERG;
+				swapPrice = finalPrice;
+			} else {
+				// fromCurrency === 'SigRSV' && toCurrency === 'ERG'
+				// user typed in "ERG" => figure out how many SigRSV
+				// placeholder: treat it like SigUSDcalculateInputsUsdErgInputUsd
+
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
+					directionSell,
+					toAmount,
+					$bankBoxInErg,
+					$bankBoxInCircSigUsd,
+					$oraclePriceSigUsd
+				);
+				fromAmount = totalSigUSD;
+				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			}
@@ -272,7 +282,7 @@
 	 * ------------------------------------- */
 	function handleFromCurrencyChange(event: Event) {
 		const newVal = (event.target as HTMLSelectElement).value as Currency;
-		fromCurrenccalculateInputsUsdErgInputErg
+		fromCurrency = newVal;
 
 		// If we switched fromCurrency to something else,
 		// check if we need to force toCurrency = ERG

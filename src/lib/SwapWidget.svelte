@@ -91,9 +91,6 @@
 	 * 3) onMount: load / subscribe / etc.
 	 * ------------------------------------- */
 	onMount(() => {
-		// Restore from->to if stored
-		loadSwapWidgetCurrencyPair();
-
 		oracle_box.subscribe(async (oracleBox) => {
 			if ($bank_box && oracleBox) {
 				await updateBankBoxAndOracle(oracleBox, $bank_box);
@@ -293,33 +290,10 @@
 	// 'toToken' depends on the store-based 'selectedCurrency'
 	$: toToken = $selectedCurrencyStore === 'ERG' ? 'SigUSD' : 'ERG';
 
-	// Keep your original color scheme; no changes
 	$: tokenColor = {
 		ERG: 'bg-orange-500',
 		SigUSD: 'bg-green-500'
 	};
-
-	// Keep your original saving logic if you want to store both "from" & "to" as a pair
-	$: saveSwapWidgetCurrencyPair(toToken);
-
-	/* ---------------------------------------
-	 * 7) load/save from localStorage (FROM/TO)
-	 * ------------------------------------- */
-	function saveSwapWidgetCurrencyPair(_: any): void {
-		localStorage.setItem(
-			'swapWidgetCurrencyPair',
-			JSON.stringify({ from: $selectedCurrencyStore, to: toToken })
-		);
-	}
-
-	function loadSwapWidgetCurrencyPair() {
-		const data = localStorage.getItem('swapWidgetCurrencyPair');
-		if (data) {
-			const { from, to } = JSON.parse(data);
-			selectedCurrencyStore.set(from); // set the store from localStorage
-			toToken = to; // keep your 'toToken' consistent
-		}
-	}
 </script>
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">

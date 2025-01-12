@@ -53,7 +53,6 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
-	import type { Output } from './api/ergoNode';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';

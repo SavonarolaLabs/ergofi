@@ -756,8 +756,12 @@ async function createInteractionAndSubmitTx(
 			get(prepared_interactions)
 		);
 
-		const txId = await ergo.submit_tx(signed);
-		console.log({ txId });
+		try {
+			const txId = await ergo.submit_tx(signed);
+			console.log({ txId });
+		} catch (e) {
+			console.error(e);
+		}
 	} catch (e) {
 		//console.log(e);
 		cancelPreparedInteractionById(interactionId);

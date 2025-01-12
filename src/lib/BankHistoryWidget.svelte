@@ -154,8 +154,10 @@
 									{:else}
 										{i.type}
 									{/if}
-									@<SubNumber value={i.price}></SubNumber></span
-								>
+
+									@{#if i.amountCurrency == 'SigRSV'}<SubNumber value={1 / i.price}></SubNumber>
+									{:else}'SigRSV'}<SubNumber value={i.price}></SubNumber>{/if}
+								</span>
 							</div>
 						</div>
 						<span class="text-sm">{formatTimeAgo(i.timestamp)}</span>
@@ -186,7 +188,8 @@
 											{m.type}
 										{/if}
 
-										@<SubNumber value={m.price}></SubNumber>
+										@{#if m.amountCurrency == 'SigRSV'}<SubNumber value={1 / m.price}></SubNumber>
+										{:else}'SigRSV'}<SubNumber value={m.price}></SubNumber>{/if}
 									{:else}
 										<Spinner size={16} />
 										{#if m.amountCurrency == 'SigUSD'}
@@ -194,7 +197,8 @@
 										{:else}
 											{m.type}
 										{/if}
-										@<SubNumber value={m.price}></SubNumber>
+										@{#if m.amountCurrency == 'SigRSV'}<SubNumber value={m.price}></SubNumber>
+										{:else}'SigRSV'}<SubNumber value={m.price}></SubNumber>{/if}
 									{/if}
 								</div>
 							</div>
@@ -225,7 +229,9 @@
 										{c.type}
 									{/if}
 
-									@<SubNumber value={1 / c.price}></SubNumber>
+									@{#if c.amountCurrency == 'SigRSV'}
+										<SubNumber value={1 / c.price}></SubNumber>
+									{:else}<SubNumber value={c.price}></SubNumber>{/if}
 								</div>
 							</div>
 							<span class="text-sm">{formatTimeAgo(c.timestamp)}</span>

@@ -41,3 +41,7 @@ input[type='number'] {
 	font-weight: normal;
 	font-style: normal;
 }
+
+sub {
+	font-size: 80%;
+}

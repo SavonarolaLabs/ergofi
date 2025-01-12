@@ -73,7 +73,6 @@
 	/* ---------------------------------------
 	 * 2) Local variables + references
 	 * ------------------------------------- */
-	let loading = true;
 	let fromAmount = '';
 	let toAmount = '';
 	let swapPrice: number = 0.0;
@@ -104,8 +103,6 @@
 				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
 			}
 		});
-
-		loading = false;
 
 		bank_price_usd_sell.subscribe((val) => {
 			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;

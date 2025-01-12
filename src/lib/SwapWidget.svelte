@@ -53,6 +53,7 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
+	import type { Output } from './api/ergoNode';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -102,17 +103,11 @@
 	 * ------------------------------------- */
 	onMount(() => {
 		oracle_box.subscribe((oracleBox) => {
-			if ($bank_box && oracleBox) {
-				updateBankBoxAndOracle(oracleBox, $bank_box);
-				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
-			}
+			doRecalc(oracleBox, $bank_box);
 		});
 
 		bank_box.subscribe((bankBox) => {
-			if ($oracle_box && bankBox) {
-				updateBankBoxAndOracle($oracle_box, bankBox);
-				initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
-			}
+			doRecalc($oracle_box, bankBox);
 		});
 
 		bank_price_usd_sell.subscribe((val) => {
@@ -195,10 +190,16 @@
 	 * Recalculation logic
 	 * ------------------------------------- */
 	/**
-	 * doRecalc() updates `toAmount` (or `fromAmount`) + swapPrice
+	 * doRecalc($oracle_box, $bank_box) updates `toAmount` (or `fromAmount`) + swapPrice
 	 * depending on which field was last changed.
 	 */
-	function doRecalc() {
+	function doRecalc(oracleBox: ErgoBox, bankBox: ErgoBox) {
+		if (!oracleBox || !bankBox) return;
+		updateBankBoxAndOracle(oracleBox, bankBox);
+		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
+			initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
+		}
+
 		// If either side is empty, just zero out the other side
 		if (!fromAmount && !toAmount) {
 			swapPrice = 0;
@@ -322,26 +323,26 @@
 		}
 
 		// Recalc with updated from/to selection
-		doRecalc();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	function handleToCurrencyChange(event: Event) {
 		// Only matters if fromCurrency === 'ERG'
 		const newVal = (event.target as HTMLSelectElement).value as Currency;
 		toCurrency = newVal;
-		doRecalc();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
-		doRecalc();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	function handleToAmountChange(event: Event) {
 		toAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
-		doRecalc();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	async function handleSwapButton() {
@@ -391,7 +392,7 @@
 
 	function handleFeeChange(event: Event) {
 		fee_mining.set(BigInt(Number((event.target as HTMLInputElement).value) * 10 ** 9));
-		doRecalc();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	const toggleFeeSlider = () => {

@@ -78,39 +78,6 @@
 			clearInterval(intervalId);
 		};
 	});
-
-	function addDummy() {
-		console.log('asdf');
-		const x = {
-			id: crypto.randomUUID(),
-			transactionId: crypto.randomUUID(),
-			amount: 123,
-			amountCurrency: 'SigUSD',
-			timestamp: Date.now(),
-			price: 32.22,
-			type: 'Buy',
-			ergAmount: -100,
-			confirmed: false,
-			rejected: false,
-			own: false
-		};
-
-		mempool_interactions.update((l) => [x, ...l]);
-
-		setTimeout(() => {
-			mempool_interactions.update((l) => {
-				l.find((y) => y.id == x.id).confirmed = true;
-				//l.find((y) => y.id == x.id).rejected = true;
-				return l;
-			});
-		}, 2000);
-		setTimeout(() => {
-			mempool_interactions.update((l) => l.filter((y) => y.id != x.id));
-		}, 2500);
-		setTimeout(() => {
-			confirmed_interactions.update((l) => [x, ...l].slice(0, 3));
-		}, 3600);
-	}
 </script>
 
 <div class="widget">
@@ -122,7 +89,7 @@
 			</div>
 		{/if}
 	</div>
-	<div>
+	<div class="padding-bottom">
 		<div class="tx-list w-full pl-2">
 			{#each $prepared_interactions as i (i.id)}
 				<div
@@ -155,8 +122,11 @@
 										{i.type}
 									{/if}
 
-									@{#if i.amountCurrency == 'SigRSV'}<SubNumber value={1 / i.price}></SubNumber>
-									{:else}'SigRSV'}<SubNumber value={i.price}></SubNumber>{/if}
+									@{#if i.amountCurrency == 'SigRSV'}
+										<SubNumber value={1 / i.price}></SubNumber>
+									{:else}
+										<SubNumber value={i.price}></SubNumber>
+									{/if}
 								</span>
 							</div>
 						</div>
@@ -188,8 +158,11 @@
 											{m.type}
 										{/if}
 
-										@{#if m.amountCurrency == 'SigRSV'}<SubNumber value={1 / m.price}></SubNumber>
-										{:else}'SigRSV'}<SubNumber value={m.price}></SubNumber>{/if}
+										@{#if m.amountCurrency == 'SigRSV'}
+											<SubNumber value={1 / m.price}></SubNumber>
+										{:else}
+											<SubNumber value={m.price}></SubNumber>
+										{/if}
 									{:else}
 										<Spinner size={16} />
 										{#if m.amountCurrency == 'SigUSD'}
@@ -197,8 +170,11 @@
 										{:else}
 											{m.type}
 										{/if}
-										@{#if m.amountCurrency == 'SigRSV'}<SubNumber value={m.price}></SubNumber>
-										{:else}'SigRSV'}<SubNumber value={m.price}></SubNumber>{/if}
+										@{#if m.amountCurrency == 'SigRSV'}
+											<SubNumber value={m.price}></SubNumber>
+										{:else}
+											<SubNumber value={m.price}></SubNumber>
+										{/if}
 									{/if}
 								</div>
 							</div>
@@ -243,13 +219,22 @@
 				</a>
 			{/each}
 		</div>
-		<h1 class="punk mb-2 text-9xl text-gray-700">SigmaUSD</h1>
+		<h1 class="punk hidden-below-800 mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 	</div>
 </div>
 
 <style>
 	.punk {
 		font-family: 'Cyberpunk', sans-serif;
+	}
+
+	@media (max-height: 800px) {
+		.hidden-below-800 {
+			display: none;
+		}
+		.padding-bottom {
+			padding-bottom: 15px;
+		}
 	}
 
 	@keyframes blink {

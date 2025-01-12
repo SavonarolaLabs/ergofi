@@ -156,7 +156,6 @@ function rejectMempoolInteractions(payload: MempoolSocketUpdate) {
 			return i;
 		});
 		mempool_interactions.set(allUpdated);
-		console.log({ mempool_interactions: get(mempool_interactions) });
 	}
 }
 
@@ -225,7 +224,6 @@ function addPreparedToMempoolInteractions(
 }
 
 function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[]): Interaction {
-	console.log(tx);
 	const bank = calculateAddressInfo(tx, SIGUSD_BANK_TREE);
 	const userTree = tx.outputs[1]?.ergoTree || tx.inputs[0]?.ergoTree;
 	const user = calculateAddressInfo(tx, userTree); // [RECEIPT ADDRESS DIF]

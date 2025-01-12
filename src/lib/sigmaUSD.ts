@@ -1040,14 +1040,8 @@ export async function sellRSVInputERGTx(
 		direction
 	);
 
-	// Input ERG -> Contract ERG -> Contract RSV
-
 	//---- DEBUG Price Calculation ----
 	//Part 2 - Calculate Price ()
-	console.log('---------F8---------');
-	console.log(inputErg, 'Input ERG');
-	console.log(contractErg, 'Contract ERG');
-	console.log(contractErg, ' -> ', contractRSV, ' ERG -> RSV');
 	//Part 2.2 - Reversed round UP ()
 	if (direction == -1n) {
 		contractRSV = contractRSV + 1n;
@@ -1063,16 +1057,10 @@ export async function sellRSVInputERGTx(
 			direction
 		);
 
-	console.log(contractErgCompare, ' <- ', contractRSV, ' ERG <- RSV');
-
-	console.log(uiSwapFee, ' initial swapFee');
 	//Adjust fee
 	if (contractErg < contractErgCompare) {
 		uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
-		//console.log('real sell - fee adjusted');
 	}
-	// //DEBUG RESULT: Need to Fix:   ----------------------
-	console.log(uiSwapFee, ' changed swapFee');
 
 	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
 		inErg,

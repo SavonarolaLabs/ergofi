@@ -330,8 +330,7 @@ export function applyFeeSell(inputERG: bigint) {
 	return { uiSwapFee, contractERG };
 }
 
-// Swap Price
-// SigUSD - ERG
+// Swap Price | USD <-> ERG
 // (f1.price && f4.price)
 export function calculateInputsUsdErgInErg(
 	direction: bigint,
@@ -470,7 +469,6 @@ export function calculateInputsUsdErgInErgPrice(
 		swapRate //totalRate
 	};
 }
-
 // (f3.price && f2.price)
 export function calculateInputsUsdErgInUsd(direction: bigint, buyTotalInput: any): any {
 	const totalSigUSD = new BigNumber(buyTotalInput)
@@ -530,9 +528,9 @@ export function calculateInputsUsdErgInUsdPrice(direction: bigint, buyTotal: Big
 	const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
 }
-// SigUSD - ERG
+
+// Swap Price | RSV <-> ERG
 // (f5.price && f8.price)
-//buyRSVInputERG //sellRSVInputERG
 export function calculateInputsRSVErgInErg(
 	direction: bigint,
 	buyAmountInput: any,
@@ -652,9 +650,7 @@ export function calculateInputsRSVErgInErgPrice(
 		swapRate //totalRate
 	};
 }
-
 // (f6.price && f7.price)
-//buyRSVInputRSV //sellRSVInputRSV
 export function calculateInputsRSVErgInRSV(
 	direction: bigint,
 	inputRSV: any,
@@ -1090,7 +1086,7 @@ export async function sellUSDInputERGTx(
 	return unsignedMintTransaction;
 }
 
-// f5 (f1 analog)
+// (f5)
 export async function buyRSVInputERG(inputErg: bigint = 1_000_000_000n) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
@@ -1198,7 +1194,171 @@ export async function buyRSVInputERGTx(
 	return unsignedMintTransaction;
 }
 
-// f8 (f4 analog)
+// (f6)
+export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+	const direction = 1n;
+	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	await createInteractionAndSubmitTx(tx, [me]);
+}
+export async function buyRSVInputRSVTx(
+	requestRSV: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	utxos: Array<any>,
+	height: number,
+	direction: bigint
+): any {
+	//direction = 1n; // 1n or -1n
+
+	const contractRSV = requestRSV;
+
+	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
+	// ---------------------------------
+
+	//Part 1 - Get Oracle
+	const {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+
+	// ----------------- REWORK? ----------------
+	//Part 2 - Calculate Price
+	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+		calculateBankRateRSVInputRSV(
+			inErg,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			requestRSV,
+			direction
+		);
+
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		contractRSV,
+		contractErg,
+		direction
+	);
+
+	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
+	//Part 0 - use Fee Reversed
+	const { inputERG, uiSwapFee } = reverseFee(contractErg);
+	// BUILD RSV TX FUNCTION --------
+
+	//Part 4 - Calculate TX
+	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
+		direction,
+		contractErg,
+		contractRSV,
+		holderBase58PK,
+		bankBase58PK,
+		height,
+		bankBox,
+		oracleBox,
+		uiSwapFee,
+		utxos,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
+
+	return unsignedMintTransaction;
+}
+
+// (f7)
+export async function sellRSVInputRSV(requestRSV: bigint = 2200n) {
+	const { me, utxos, height } = await getWeb3WalletData();
+	const direction = -1n;
+	const tx = await sellRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	await createInteractionAndSubmitTx(tx, [me]);
+}
+export async function sellRSVInputRSVTx(
+	requestRSV: bigint,
+	holderBase58PK: string,
+	bankBase58PK: string,
+	utxos: Array<any>,
+	height: number,
+	direction: bigint
+): any {
+	const contractRSV = requestRSV; // ?
+
+	//Part 1 - Get Oracle
+	const {
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		bankBox,
+		oracleBox
+	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+
+	// ----------------- REWORK? ----------------
+	//Part 2 - Calculate Price
+	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
+		calculateBankRateRSVInputRSV(
+			inErg,
+			inCircSigUSD,
+			inCircSigRSV,
+			oraclePrice,
+			requestRSV,
+			direction
+		);
+
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+		inErg,
+		inSigUSD,
+		inSigRSV,
+		inCircSigUSD,
+		inCircSigRSV,
+		contractRSV,
+		contractErg,
+		direction
+	);
+
+	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
+	//Part 0 - use Fee Reversed
+	// PART X
+	const { userERG, uiSwapFee } = reverseFeeSell(contractErg);
+	//console.log(contractUSD, 'USD -> ERG ', userERG);
+
+	//Part 4 - Calculate TX
+	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
+		direction,
+		contractErg,
+		contractRSV,
+		holderBase58PK,
+		bankBase58PK,
+		height,
+		bankBox,
+		oracleBox,
+		uiSwapFee,
+		utxos,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
+
+	return unsignedMintTransaction;
+}
+
+// (f8)
 export async function sellRSVInputERG(inputErg: bigint = 1_000_000_000n) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
@@ -1284,171 +1444,6 @@ export async function sellRSVInputERGTx(
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
 		direction,
 		contractErgCompare,
-		contractRSV,
-		holderBase58PK,
-		bankBase58PK,
-		height,
-		bankBox,
-		oracleBox,
-		uiSwapFee,
-		utxos,
-		outErg,
-		outSigUSD,
-		outSigRSV,
-		outCircSigUSD,
-		outCircSigRSV
-	);
-
-	return unsignedMintTransaction;
-}
-
-// (f6 RSV (f2 analog)) ------------------------------------------------------------------
-export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
-	const { me, utxos, height } = await getWeb3WalletData();
-	const direction = 1n;
-	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
-export async function buyRSVInputRSVTx(
-	requestRSV: bigint,
-	holderBase58PK: string,
-	bankBase58PK: string,
-	utxos: Array<any>,
-	height: number,
-	direction: bigint
-): any {
-	//direction = 1n; // 1n or -1n
-
-	const contractRSV = requestRSV;
-
-	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
-	// ---------------------------------
-
-	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
-
-	// ----------------- REWORK? ----------------
-	//Part 2 - Calculate Price
-	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			requestRSV,
-			direction
-		);
-
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		contractRSV,
-		contractErg,
-		direction
-	);
-
-	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
-	//Part 0 - use Fee Reversed
-	const { inputERG, uiSwapFee } = reverseFee(contractErg);
-	// BUILD RSV TX FUNCTION --------
-
-	//Part 4 - Calculate TX
-	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
-		direction,
-		contractErg,
-		contractRSV,
-		holderBase58PK,
-		bankBase58PK,
-		height,
-		bankBox,
-		oracleBox,
-		uiSwapFee,
-		utxos,
-		outErg,
-		outSigUSD,
-		outSigRSV,
-		outCircSigUSD,
-		outCircSigRSV
-	);
-
-	return unsignedMintTransaction;
-}
-
-// (f7 RSV (f3 analog)) ------------------------------------------------------------------
-
-export async function sellRSVInputRSV(requestRSV: bigint = 2200n) {
-	const { me, utxos, height } = await getWeb3WalletData();
-	const direction = -1n;
-	const tx = await sellRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
-export async function sellRSVInputRSVTx(
-	requestRSV: bigint,
-	holderBase58PK: string,
-	bankBase58PK: string,
-	utxos: Array<any>,
-	height: number,
-	direction: bigint
-): any {
-	const contractRSV = requestRSV; // ?
-
-	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
-
-	// ----------------- REWORK? ----------------
-	//Part 2 - Calculate Price
-	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			requestRSV,
-			direction
-		);
-
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		contractRSV,
-		contractErg,
-		direction
-	);
-
-	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
-	//Part 0 - use Fee Reversed
-	// PART X
-	const { userERG, uiSwapFee } = reverseFeeSell(contractErg);
-	//console.log(contractUSD, 'USD -> ERG ', userERG);
-
-	//Part 4 - Calculate TX
-	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
-		direction,
-		contractErg,
 		contractRSV,
 		holderBase58PK,
 		bankBase58PK,

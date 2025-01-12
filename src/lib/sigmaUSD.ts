@@ -568,10 +568,6 @@ export async function buyUSDInputUSDTx(
 	height: number,
 	direction: bigint
 ): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
-
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
@@ -645,10 +641,6 @@ export async function sellUSDInputUSDTx(
 	height: number,
 	direction: bigint
 ): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
-
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
@@ -932,8 +924,6 @@ export async function buyRSVInputRSVTx(
 	height: number,
 	direction: bigint
 ): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
 	//direction = 1n; // 1n or -1n
 
 	const contractRSV = requestRSV;
@@ -1020,9 +1010,6 @@ export async function sellRSVInputRSVTx(
 	height: number,
 	direction: bigint
 ): any {
-	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
-	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
-
 	const contractRSV = requestRSV; // ?
 
 	//Part 1 - Get Oracle

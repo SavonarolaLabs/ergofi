@@ -21,7 +21,6 @@
 		sigmausdChannel
 			.join()
 			.receive('ok', (resp) => {
-				console.log(`Joined successfully ${sigmausdChannelName}`);
 				initHistory(
 					resp.history,
 					$web3wallet_wallet_change_address ? [$web3wallet_wallet_change_address] : []
@@ -46,8 +45,6 @@
 		oracleBoxesChannel
 			.join()
 			.receive('ok', (resp) => {
-				console.log(`Joined successfully ${oracleBoxesChannelName}`);
-				console.log('oracle_boxes:', resp);
 				handleOracleBoxesUpdate(resp);
 			})
 			.receive('error', (resp) => {
@@ -55,7 +52,6 @@
 			});
 
 		oracleBoxesChannel.on(oracleBoxesChannelTopic, (payload) => {
-			console.log('Update received for oracle_boxes:', payload);
 			handleOracleBoxesUpdate(payload);
 		});
 

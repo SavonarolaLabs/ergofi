@@ -7,7 +7,6 @@ export function applyAnimation(
 	duration: number;
 	tick: (t: number) => void;
 } | void {
-	console.log({ interaction });
 	if (interaction.confirmed) {
 		return blinkThreeTimes(node, { duration });
 	} else if (interaction.rejected) {

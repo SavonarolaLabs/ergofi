@@ -652,6 +652,7 @@ export function calculateInputsRSVErgInErgPrice(
 		swapRate //totalRate
 	};
 }
+
 // (f6.price && f7.price)
 //buyRSVInputRSV //sellRSVInputRSV
 

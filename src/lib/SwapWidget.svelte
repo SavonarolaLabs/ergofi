@@ -16,7 +16,8 @@
 		sellRSVInputRSV,
 		buyRSVInputERG,
 		sellRSVInputERG,
-		extractBoxesData
+		extractBoxesData,
+		calculateInputsRSVErgInErg
 	} from './sigmaUSD';
 
 	import {
@@ -31,6 +32,7 @@
 		bank_box,
 		bank_price_usd_buy,
 		bank_price_usd_sell,
+		bankBoxInCircSigRsv,
 		bankBoxInCircSigUsd,
 		bankBoxInErg,
 		fee_mining,
@@ -135,9 +137,12 @@
 	 * BankBox + Oracle helper
 	 * ------------------------------------- */
 	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		const { inErg, inCircSigUSD, oraclePrice } = extractBoxesData(oracleBox, bankBox);
+		const { inErg, inCircSigUSD, oraclePrice, inCircSigRSV } = extractBoxesData(oracleBox, bankBox);
 		bankBoxInErg.set(inErg);
 		bankBoxInCircSigUsd.set(inCircSigUSD);
+		bankBoxInCircSigRsv.set(inCircSigRSV);
+		//inCircSigRSV
+		//....
 		oraclePriceSigUsd.set(oraclePrice);
 
 		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
@@ -208,13 +213,15 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// ERG -> SigRSV (placeholder, treat like ERG->SigUSD)
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
+				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
 					fromAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
+					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd
 				);
+
 				toAmount = totalSigUSD; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;

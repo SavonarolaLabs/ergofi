@@ -115,6 +115,7 @@
 		});
 
 		bank_price_usd_sell.subscribe((val) => {
+			console.log({ val });
 			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;
 		});
 		bank_price_usd_buy.subscribe((val) => {
@@ -174,6 +175,16 @@
 		);
 
 		bank_price_usd_buy.set(finalPriceBuy);
+
+		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
+			directionSell,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			oraclePriceSigUsd
+		);
+
+		bank_price_usd_sell.set(finalPriceSell);
 
 		// We'll just set some starting example
 		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"

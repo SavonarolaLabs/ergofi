@@ -551,10 +551,10 @@ export function calculateInputsRSVErgInErg(
 				bankBoxInCircSigUsd,
 				bankBoxInCircSigRSV,
 				oraclePriceSigUsd
-			); // CHANGE TO RSV
+			);
 
 		const totalSigRSV = new BigNumber(contractRSV).toFixed(0);
-		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const finalPrice = new BigNumber(1000000000).multipliedBy(swapRate).toFixed(0);
 		const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
 		return { totalSigRSV, finalPrice, totalFee, contractERG, uiFeeErg };
 	} else {
@@ -568,7 +568,7 @@ export function calculateInputsRSVErgInErg(
 				oraclePriceSigUsd
 			);
 		const totalSigRSV = '';
-		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const finalPrice = new BigNumber(1000000000).multipliedBy(swapRate).toFixed(0);
 		const totalFee = '';
 		return { totalSigRSV, finalPrice, totalFee };
 	}
@@ -655,6 +655,106 @@ export function calculateInputsRSVErgInErgPrice(
 
 // (f6.price && f7.price)
 //buyRSVInputRSV //sellRSVInputRSV
+export function calculateInputsRSVErgInRSV(direction: bigint, inputRSV: any): any {
+	const totalRSV = new BigNumber(inputRSV).integerValue(BigNumber.ROUND_CEIL);
+
+	if (!totalRSV.isNaN() && totalRSV.gt(0)) {
+		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+			calculateInputsUsdErgInUsdPrice(direction, totalRSV);
+
+		//---------------------------------
+		const totalErg = new BigNumber(totalErgoRequired.toString()).dividedBy('1000000000').toFixed(9);
+		const finalPrice = new BigNumber(1000000000).multipliedBy(rateTotal).toFixed(0);
+		const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
+		return { totalErg, finalPrice, totalFee };
+	} else {
+		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+			calculateInputsUsdErgInUsdPrice(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
+		const totalErg = '';
+		const finalPrice = new BigNumber(1000000000).multipliedBy(rateTotal).toFixed(0);
+		const totalFee = '';
+		return { totalErg, finalPrice, totalFee };
+	}
+}
+export function calculateInputsRSVErgInRSVPrice(
+	direction: bigint,
+	buyAmount: BigNumber,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	bankBoxInCircSigRSV: bigint,
+	oraclePriceSigUsd: bigint
+): any {
+	const inputAmountNanoERG = buyAmount
+		.multipliedBy('1000000000')
+		.integerValue(BigNumber.ROUND_FLOOR)
+		.toFixed(0);
+	const inputErg = BigInt(inputAmountNanoERG);
+
+	let uiFeeErg: bigint;
+	let contractERG: bigint;
+
+	if (direction === 1n) {
+		//f5
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+	} else {
+		//f8
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg));
+	}
+
+	// CHANGE FUNCTION <--------
+	//Part 2 - Calculate Price
+	let {
+		rateRSVERG: contractRate,
+		fee: contractFee,
+		requestRSV: contractRSV
+	} = calculateBankRateRSVInputERG(
+		bankBoxInErg,
+		bankBoxInCircSigUsd,
+		bankBoxInCircSigRSV,
+		oraclePriceSigUsd,
+		contractERG,
+		direction
+	);
+
+	if (direction == -1n) {
+		contractRSV = contractRSV + 1n;
+	}
+
+	//Part 2 - Calculate Price ()
+	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
+		calculateBankRateRSVInputRSV(
+			bankBoxInErg,
+			bankBoxInCircSigUsd,
+			bankBoxInCircSigRSV,
+			oraclePriceSigUsd,
+			contractRSV,
+			direction
+		);
+
+	// --------------------------------
+	if (direction == 1n) {
+		if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (-contractErgCompare + contractERG);
+	}
+
+	if (direction == -1n) {
+		if (contractERG < contractErgCompare) {
+			uiFeeErg = uiFeeErg + (contractErgCompare - contractERG); // Right
+		}
+	}
+
+	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
+	const swapRate = new BigNumber(contractRSV.toString()).dividedBy(inputAmountNanoERG.toString());
+
+	return {
+		contractRate,
+		contractFee,
+		contractRSV,
+		contractERG,
+		uiFeeErg,
+		swapFee, //totalFee
+		swapRate //totalRate
+	};
+}
 
 // Web3 Wallet interactions
 async function getWeb3WalletData() {

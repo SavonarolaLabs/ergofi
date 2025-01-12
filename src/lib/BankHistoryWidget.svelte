@@ -243,9 +243,7 @@
 				</a>
 			{/each}
 		</div>
-		<button on:click={addDummy}>
-			<h1 class="punk mb-2 text-9xl text-gray-700">SigmaUSD</h1>
-		</button>
+		<h1 class="punk mb-2 text-9xl text-gray-700">SigmaUSD</h1>
 	</div>
 </div>
 

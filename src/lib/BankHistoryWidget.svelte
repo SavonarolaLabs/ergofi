@@ -127,7 +127,7 @@
 		<div class="tx-list w-full pl-2">
 			{#each $prepared_interactions as i (i.id)}
 				<div
-					class="row {blinkingItems.has(i.id) ? 'blink-twice' : ''}"
+					class="row text-gray-400 {blinkingItems.has(i.id) ? 'blink-twice' : ''}"
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
 					on:introend={() => handleFlyEnd(i.id)}
 					on:animationend={() => handleBlinkEnd(i.id)}
@@ -159,9 +159,9 @@
 								>
 							</div>
 						</div>
-						<span class="text-sm text-gray-500">{formatTimeAgo(i.timestamp)}</span>
+						<span class="text-sm">{formatTimeAgo(i.timestamp)}</span>
 					</div>
-					<div class="flex flex-col items-end">
+					<div class="flex flex-col items-end" class:text-white={i.own}>
 						{#if i.amountCurrency == 'SigUSD'}
 							<div>
 								<span class="mr-1 text-3xl">
@@ -175,12 +175,10 @@
 							</div>
 						{:else}
 							<div>
-								<span class="mr-1 text-3xl" class:text-gray-500={!i.own}
-									>{formatAmount(i.amount)}</span
-								>
-								<span class="text-lg text-gray-500"> {i.amountCurrency} </span>
+								<span class="mr-1 text-3xl">{formatAmount(i.amount)}</span>
+								<span class="text-lg"> {i.amountCurrency} </span>
 							</div>
-							<div class="text-right text-gray-500">
+							<div class="text-right">
 								{formatAmount(i.ergAmount)}
 								<span style="margin-left:5px; padding-right:30px;">ERG</span>
 							</div>
@@ -191,10 +189,10 @@
 
 			{#each $mempool_interactions as m (m.id)}
 				<a href="https://sigmaverse.io/en/transactions/{m.transactionId}">
-					<div class="row" out:applyAnimation={{ interaction: m, duration: 1000 }}>
+					<div class="row text-gray-500" out:applyAnimation={{ interaction: m, duration: 1000 }}>
 						<div class="left pb-1">
 							<div>
-								<div class="flex items-center gap-1 uppercase text-gray-400">
+								<div class="flex items-center gap-1 uppercase">
 									{#if m.rejected}
 										<XCircle></XCircle>
 									{:else if m.confirmed}
@@ -221,9 +219,9 @@
 									{/if}
 								</div>
 							</div>
-							<span class="text-sm text-gray-500">{formatTimeAgo(m.timestamp)}</span>
+							<span class="text-sm">{formatTimeAgo(m.timestamp)}</span>
 						</div>
-						<div class="flex flex-col items-end">
+						<div class="flex flex-col items-end" class:text-white={m.own}>
 							{#if m.amountCurrency == 'SigUSD'}
 								<div>
 									<span class="mr-1 text-3xl">
@@ -237,12 +235,10 @@
 								</div>
 							{:else}
 								<div>
-									<span class="mr-1 text-3xl" class:text-gray-500={!m.own}
-										>{formatAmount(m.amount)}</span
-									>
-									<span class="text-lg text-gray-500"> {m.amountCurrency} </span>
+									<span class="mr-1 text-3xl">{formatAmount(m.amount)}</span>
+									<span class="text-lg"> {m.amountCurrency} </span>
 								</div>
-								<div class="text-right text-gray-500">
+								<div class="text-right">
 									{formatAmount(m.ergAmount)}
 									<span style="margin-left:5px; padding-right:30px;">ERG</span>
 								</div>

@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 
-	import { RECOMMENDED_MIN_FEE_VALUE, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 	import BigNumber from 'bignumber.js';
 	import {
 		extractBoxesData,
@@ -69,9 +68,7 @@
 
 		return store;
 	}
-
-	// This is your "selectedCurrency" store
-	export const selectedCurrencyStore = createSelectedCurrencyStore();
+	const selectedCurrencyStore = createSelectedCurrencyStore();
 
 	/* ---------------------------------------
 	 * 2) Local variables + references
@@ -325,9 +322,6 @@
 	}
 </script>
 
-<!-- -----------------------------------------
-     8) Your original markup (colors intact!)
-     --------------------------------------- -->
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
 	<!-- From Input -->
 	<div class="relative mb-6 rounded-md dark:bg-gray-900">

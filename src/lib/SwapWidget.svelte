@@ -52,6 +52,7 @@
 	} from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
+	import SubNumber from './SubNumber.svelte';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -476,7 +477,11 @@
 	<div class="rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 			<span class="text-sm text-gray-500 dark:text-gray-400">To</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400">Real Rate: {swapPrice}</span>
+			<span class="text-sm text-gray-500 dark:text-gray-400"
+				>Real Rate:
+				{#if toCurrency == 'SigRSV'}<SubNumber value={1 / swapPrice}
+					></SubNumber>{:else}{swapPrice}{/if}</span
+			>
 		</div>
 
 		<div

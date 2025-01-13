@@ -8,7 +8,7 @@
 		<span class="text-xl font-medium">Ergfi</span>
 		<span class="text-md mx-2">/</span>
 		<span class="text-md">SigmaUSD</span>
-		<sup class="ml-1 text-xs text-gray-500">alpha 2</sup>
+		<sup class="ml-1 text-xs text-gray-500">alpha 3</sup>
 	</div>
 
 	<div class="flex gap-2">

@@ -93,7 +93,7 @@
 		<div class="tx-list w-full pl-2">
 			{#each $prepared_interactions as i (i.id)}
 				<div
-					class="row{blinkingItems.has(i.id) ? 'blink-twice' : ''}"
+					class="row {blinkingItems.has(i.id) ? 'blink-twice' : ''}"
 					class:text-white={i.own}
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
 					on:introend={() => handleFlyEnd(i.id)}

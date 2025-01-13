@@ -495,7 +495,7 @@
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
 	<!-- FROM SELECTION -->
-	<div class="mb-6 rounded-md dark:bg-gray-900">
+	<div class="rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-500 dark:text-gray-400">
 			<span class="text-sm">From</span>
 			<button
@@ -551,18 +551,19 @@
 	</div>
 
 	<!-- SWAP PAIR SELECTION -->
-	<div class="relative">
-		<div class="absolute flex w-full justify-center" style="z-index:5; top:-24px;">
+	<div class="relative" style="height:4px;">
+		<div class="absolute flex w-full justify-center" style="z-index:5;margin-top:-16px;">
 			<button
 				on:mouseenter={handleMouseEnter}
 				on:mouseleave={handleMouseLeave}
 				on:click={handleSwapPair}
-				class="rounded-md border-4 border-gray-800 bg-gray-900 px-5 py-1 text-gray-500 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+				class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-500 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+				style="width:42px;height:42px;"
 			>
 				{#if currencySwapHovered}
-					<ArrowUpDown />
+					<ArrowUpDown size={20} />
 				{:else}
-					<ArrowDown />
+					<ArrowDown></ArrowDown>
 				{/if}
 			</button>
 		</div>
@@ -633,11 +634,14 @@
 
 	<!-- Fee Settings -->
 	<div class="flex w-full justify-end">
-		<button class="my-4 flex cursor-pointer pr-4 text-blue-500" on:click={toggleFeeSlider}>
+		<button
+			class="my-4 flex cursor-pointer pr-4 text-gray-500 hover:text-white"
+			on:click={toggleFeeSlider}
+		>
 			{#if showFeeSlider}
 				Hide Fee Settings
 			{:else}
-				Fee Settings
+				Expert Fee Settings
 			{/if}
 		</button>
 	</div>

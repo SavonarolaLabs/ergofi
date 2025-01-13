@@ -102,7 +102,7 @@ export function cancelPreparedInteractionById(uuid: string) {
 	}, 1000);
 }
 
-export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
+export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate, ownAddressList: string[]) {
 	console.log(
 		'confirmed',
 		payload.confirmed_transactions.length,
@@ -115,7 +115,7 @@ export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate) {
 	const unconfTxList = payload.unconfirmed_transactions;
 	if (unconfTxList?.length > 0) {
 		const removedPreparedInteractions: Interaction[] = updatePreparedInteractions(unconfTxList);
-		addPreparedToMempoolInteractions(unconfTxList, removedPreparedInteractions);
+		addPreparedToMempoolInteractions(unconfTxList, removedPreparedInteractions, ownAddressList);
 	}
 
 	setTimeout(removeConfirmedAndRejectedFromMempool, 500);

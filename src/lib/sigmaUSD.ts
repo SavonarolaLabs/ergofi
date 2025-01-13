@@ -812,7 +812,9 @@ async function createInteractionAndSubmitTx(
 			const txId = await ergo.submit_tx(signed);
 			console.log({ txId });
 		} catch (e) {
+			console.error({ signed });
 			console.error(e);
+			cancelPreparedInteractionById(interactionId);
 		}
 	} catch (e) {
 		//console.log(e);

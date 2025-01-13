@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
 
 	import BigNumber from 'bignumber.js';
 	import {
@@ -24,6 +23,7 @@
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
+		formatAmount,
 		isOwnTx,
 		nanoErgToErg,
 		usdStringToCentBigInt
@@ -48,10 +48,10 @@
 	} from './stores/bank';
 	import {
 		web3wallet_confirmedTokens,
-		web3wallet_wallet_change_address
+		web3wallet_wallet_used_addresses
 	} from './stores/web3wallet';
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
-	import { confirmed_interactions } from './stores/preparedInteractions';
+	import { confirmed_interactions, mempool_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 	import WalletBalance from './icons/WalletBalance.svelte';
@@ -137,11 +137,17 @@
 			window.document.title = `↑${$bank_price_usd_sell} ↓${val} | SigUSD`;
 		});
 
-		web3wallet_wallet_change_address.subscribe((addr) => {
+		web3wallet_wallet_used_addresses.subscribe((addr) => {
 			if (addr) {
 				confirmed_interactions.update((list) =>
 					list.map((i) => {
-						i.own = isOwnTx(i.tx, [addr]);
+						i.own = isOwnTx(i.tx, addr);
+						return i;
+					})
+				);
+				mempool_interactions.update((list) =>
+					list.map((i) => {
+						i.own = isOwnTx(i.tx, addr);
 						return i;
 					})
 				);
@@ -488,7 +494,7 @@
 			// SigRSV
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigRSV_TOKEN_ID)?.amount || 0n;
-			return centsToUsd(amt); // if SigRSV uses different decimals, update accordingly
+			return amt; // if SigRSV uses different decimals, update accordingly
 		}
 	})();
 </script>

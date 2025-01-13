@@ -175,7 +175,7 @@
 											{m.type}
 										{/if}
 										@{#if m.amountCurrency == 'SigRSV'}
-											<SubNumber value={m.price}></SubNumber>
+											<SubNumber value={1 / m.price}></SubNumber>
 										{:else}
 											<SubNumber value={m.price}></SubNumber>
 										{/if}

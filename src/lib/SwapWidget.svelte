@@ -53,7 +53,7 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
-	import { ArrowDown } from 'lucide-svelte';
+	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -431,6 +431,16 @@
 		toCurrency = temp;
 	}
 
+	let currencySwapHovered = false;
+
+	function handleMouseEnter() {
+		currencySwapHovered = true;
+	}
+
+	function handleMouseLeave() {
+		currencySwapHovered = false;
+	}
+
 	/* ---------------------------------------
 	 *  Reactive / Derived
 	 * ------------------------------------- */
@@ -510,10 +520,16 @@
 	<div class="relative">
 		<div class="absolute flex w-full justify-center" style="z-index:5; top:-24px;">
 			<button
+				on:mouseenter={handleMouseEnter}
+				on:mouseleave={handleMouseLeave}
 				on:click={handleSwapPair}
-				class="rounded-md border-4 border-gray-800 bg-gray-900 px-5 py-1 text-gray-500 hover:text-white"
+				class="rounded-md border-4 border-gray-800 bg-gray-900 px-5 py-1 text-gray-500 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 			>
-				<ArrowDown></ArrowDown>
+				{#if currencySwapHovered}
+					<ArrowUpDown />
+				{:else}
+					<ArrowDown />
+				{/if}
 			</button>
 		</div>
 	</div>

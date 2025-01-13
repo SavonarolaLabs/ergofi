@@ -99,10 +99,29 @@
 		}[c];
 	}
 
+	function saveFromToCurrencyToLocalStorage() {
+		localStorage.setItem('fromCurrency', fromCurrency);
+		localStorage.setItem('toCurrency', toCurrency);
+	}
+
+	function loadFromToCurrencyFromLocalStorage() {
+		const savedFromCurrency = localStorage.getItem('fromCurrency');
+		const savedToCurrency = localStorage.getItem('toCurrency');
+
+		if (savedFromCurrency) {
+			fromCurrency = savedFromCurrency;
+		}
+
+		if (savedToCurrency) {
+			toCurrency = savedToCurrency;
+		}
+	}
+
 	/* ---------------------------------------
 	 * onMount: load / subscribe / etc.
 	 * ------------------------------------- */
 	onMount(() => {
+		loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
 			doRecalc(oracleBox, $bank_box);
 		});
@@ -346,6 +365,8 @@
 			toCurrency = allowed[0]; // pick first from allowed
 		}
 
+		// save currency selection
+		saveFromToCurrencyToLocalStorage();
 		// Recalc with updated from/to selection
 		doRecalc($oracle_box, $bank_box);
 	}
@@ -354,6 +375,7 @@
 		// Only matters if fromCurrency === 'ERG'
 		const newVal = (event.target as HTMLSelectElement).value as Currency;
 		toCurrency = newVal;
+		saveFromToCurrencyToLocalStorage();
 		doRecalc($oracle_box, $bank_box);
 	}
 
@@ -435,6 +457,8 @@
 		const temp = fromCurrency;
 		fromCurrency = toCurrency;
 		toCurrency = temp;
+		saveFromToCurrencyToLocalStorage();
+		doRecalc($oracle_box, $bank_box);
 	}
 
 	let currencySwapHovered = false;

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { formatDistanceToNowStrict } from 'date-fns';
 	import Spinner from './Spinner.svelte';
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
@@ -11,11 +10,10 @@
 		savePreparedInteractionsToLocalStorage
 	} from './stores/preparedInteractions';
 	import { fade, fly } from 'svelte/transition';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { applyAnimation } from './animations';
 	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
-	import numeral from 'numeral';
-	import { formatAmount, formatTimeAgo } from './utils';
+	import { formatTimeAgo } from './utils';
 	import CheckCircle from './icons/CheckCircle.svelte';
 	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';
 	import XCircle from './icons/XCircle.svelte';

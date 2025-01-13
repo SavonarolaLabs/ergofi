@@ -797,7 +797,9 @@ async function createInteractionAndSubmitTx(
 	const interactionId = addPreparedInteraction(unsignedTx, ownAddressList);
 	try {
 		const signed = await ergo.sign_tx(unsignedTx);
+
 		addSignedInteraction(signed, interactionId, ownAddressList);
+
 		//console.log({ signed });
 
 		updateBestBankBoxLocal(

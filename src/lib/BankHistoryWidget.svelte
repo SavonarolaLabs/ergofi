@@ -80,7 +80,7 @@
 	});
 </script>
 
-<div class="widget">
+<div class="widget text-gray-500">
 	<div class="pl-2">
 		<BankUTXO />
 		{#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
@@ -93,7 +93,8 @@
 		<div class="tx-list w-full pl-2">
 			{#each $prepared_interactions as i (i.id)}
 				<div
-					class="row text-gray-400 {blinkingItems.has(i.id) ? 'blink-twice' : ''}"
+					class="row{blinkingItems.has(i.id) ? 'blink-twice' : ''}"
+					class:text-white={i.own}
 					in:fly={{ y: -20, opacity: 0, duration: 300 }}
 					on:introend={() => handleFlyEnd(i.id)}
 					on:animationend={() => handleBlinkEnd(i.id)}
@@ -101,7 +102,7 @@
 				>
 					<div class="left pb-1">
 						<div class:blink={!i.rejected && !i.confirmed}>
-							<div class="flex items-center gap-1 uppercase text-gray-400">
+							<div class="flex items-center gap-1 uppercase">
 								{#if i.rejected}
 									<XCircle></XCircle>
 								{:else if i.confirmed}
@@ -132,6 +133,7 @@
 						</div>
 						<span class="text-sm">{formatTimeAgo(i.timestamp)}</span>
 					</div>
+
 					<div class="flex flex-col items-end" class:text-white={i.own}>
 						<InteractionAmountColumn {i}></InteractionAmountColumn>
 					</div>
@@ -140,7 +142,11 @@
 
 			{#each $mempool_interactions as m (m.id)}
 				<a href="https://sigmaverse.io/en/transactions/{m.transactionId}">
-					<div class="row text-gray-500" out:applyAnimation={{ interaction: m, duration: 1000 }}>
+					<div
+						class="row"
+						class:text-white={m.own}
+						out:applyAnimation={{ interaction: m, duration: 1000 }}
+					>
 						<div class="left pb-1">
 							<div>
 								<div class="flex items-center gap-1 uppercase">
@@ -180,7 +186,7 @@
 							</div>
 							<span class="text-sm">{formatTimeAgo(m.timestamp)}</span>
 						</div>
-						<div class="flex flex-col items-end" class:text-white={m.own}>
+						<div class="flex flex-col items-end">
 							<InteractionAmountColumn i={m}></InteractionAmountColumn>
 						</div>
 					</div>
@@ -189,7 +195,7 @@
 
 			{#each $confirmed_interactions as c (c.id)}
 				<a href="https://sigmaverse.io/en/transactions/{c.transactionId}">
-					<div class="row text-green-500">
+					<div class="row" class:text-green-500={c.own}>
 						<div class="left pb-1">
 							<div>
 								<div class="flex items-center gap-1 uppercase">

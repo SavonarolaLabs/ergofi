@@ -23,7 +23,6 @@
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
-		formatAmount,
 		isOwnTx,
 		nanoErgToErg,
 		usdStringToCentBigInt
@@ -67,7 +66,7 @@
 	 * Local variables
 	 * ------------------------------------- */
 	let fromCurrency: Currency = 'ERG'; // default to ERG
-	let toCurrency: Currency = 'SigUSD'; // default to SigUSD (when from=ERG)
+	let toCurrency: Currency = 'SigRSV'; // default to SigUSD (when from=ERG)
 	let fromAmount = '';
 	let toAmount = '';
 	let swapPrice: number = 0.0;

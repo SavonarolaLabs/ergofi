@@ -1678,21 +1678,24 @@ export function calculateIntractionsERGUSD(interactions: Interaction[]) {
 	);
 	return { ergAdd, usdAdd };
 }
-export async function updateUnconfirmedBank() {
-	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(
-		get(mempool_interactions)
-	);
-	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } = calculateIntractionsERGUSD(
-		get(prepared_interactions)
-	);
+export async function updateUnconfirmedBank(
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	oraclePriceSigUsd: bigint,
+	mempoolInteractions: Interaction[],
+	preparedInteractions: Interaction[]
+) {
+	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(mempoolInteractions);
+	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } =
+		calculateIntractionsERGUSD(preparedInteractions);
 
-	const newBankErg = get(bankBoxInErg) + ergAddMem + ergAddPrep;
-	const newBankUsd = get(bankBoxInCircSigUsd) + usdAddMem + usdAddPrep;
+	const newBankErg = bankBoxInErg + ergAddMem + ergAddPrep;
+	const newBankUsd = bankBoxInCircSigUsd + usdAddMem + usdAddPrep;
 
 	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
 		newBankErg,
 		newBankUsd,
-		get(oraclePriceSigUsd)
+		oraclePriceSigUsd
 	);
 	unconfirmed_bank_erg.set(newBankErg);
 	unconfrimed_bank_usd.set(newBankUsd);

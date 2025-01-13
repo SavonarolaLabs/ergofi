@@ -2,6 +2,8 @@
 	import { updateUnconfirmedBank } from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
+		bankBoxInCircSigUsd,
+		bankBoxInErg,
 		oraclePriceSigUsd,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_reserve_rate,
@@ -12,10 +14,20 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		updateUnconfirmedBank();
-		prepared_interactions.subscribe(updateUnconfirmedBank);
-		mempool_interactions.subscribe(updateUnconfirmedBank);
+		updateUnconfirmed();
+		prepared_interactions.subscribe(updateUnconfirmed);
+		mempool_interactions.subscribe(updateUnconfirmed);
 	});
+
+	function updateUnconfirmed() {
+		updateUnconfirmedBank(
+			$bankBoxInErg,
+			$bankBoxInCircSigUsd,
+			$oraclePriceSigUsd,
+			$mempool_interactions,
+			$prepared_interactions
+		);
+	}
 
 	export let confirmed = true;
 

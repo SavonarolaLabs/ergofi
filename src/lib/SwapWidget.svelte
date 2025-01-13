@@ -53,6 +53,7 @@
 	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
 	import { confirmed_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
+	import { ArrowDown } from 'lucide-svelte';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -424,6 +425,12 @@
 		showFeeSlider = !showFeeSlider;
 	};
 
+	function handleSwapPair() {
+		const temp = fromCurrency;
+		fromCurrency = toCurrency;
+		toCurrency = temp;
+	}
+
 	/* ---------------------------------------
 	 *  Reactive / Derived
 	 * ------------------------------------- */
@@ -499,6 +506,17 @@
 		</div>
 	</div>
 
+	<!-- SWAP PAIR SELECTION -->
+	<div class="relative">
+		<div class="absolute flex w-full justify-center" style="z-index:5; top:-24px;">
+			<button
+				on:click={handleSwapPair}
+				class="rounded-md border-4 border-gray-800 bg-gray-900 px-5 py-1 text-gray-500 hover:text-white"
+			>
+				<ArrowDown></ArrowDown>
+			</button>
+		</div>
+	</div>
 	<!-- TO SELECTION -->
 	<div class="rounded-md dark:bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">

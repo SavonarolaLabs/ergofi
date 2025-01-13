@@ -156,7 +156,8 @@
 	function initialInputs(
 		bankBoxInErg: bigint,
 		bankBoxInCircSigUsd: bigint,
-		oraclePriceSigUsd: bigint
+		oraclePriceSigUsd: bigint,
+		feeMining: bigint
 	) {
 		// Just as beforecalculateInputsUsdErgInputErg
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
@@ -164,7 +165,8 @@
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInErg,
 			bankBoxInCircSigUsd,
-			oraclePriceSigUsd
+			oraclePriceSigUsd,
+			feeMining
 		);
 
 		bank_price_usd_buy.set(finalPriceBuy);
@@ -174,7 +176,8 @@
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInErg,
 			bankBoxInCircSigUsd,
-			oraclePriceSigUsd
+			oraclePriceSigUsd,
+			feeMining
 		);
 
 		bank_price_usd_sell.set(finalPriceSell);
@@ -196,7 +199,7 @@
 		if (!oracleBox || !bankBox) return;
 		updateBankBoxAndOracle(oracleBox, bankBox);
 		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
-			initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd);
+			initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd, $fee_mining);
 		}
 
 		// If either side is empty, just zero out the other side
@@ -216,7 +219,8 @@
 					fromAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 				toAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
@@ -230,7 +234,8 @@
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 				toAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
@@ -238,7 +243,14 @@
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {
 				// SigUSD -> ERG
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount);
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
+					directionSell,
+					fromAmount,
+					$bankBoxInErg,
+					$bankBoxInCircSigUsd,
+					$oraclePriceSigUsd,
+					$fee_mining
+				);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			} else {
@@ -249,7 +261,8 @@
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 				toAmount = totalErg;
 				swapPrice = finalPrice;
@@ -258,7 +271,14 @@
 			// lastInput === 'To' => user typed in `toAmount`
 			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
 				// user typed in "SigUSD" => figure out how many ERG
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount);
+				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
+					directionBuy,
+					toAmount,
+					$bankBoxInErg,
+					$bankBoxInCircSigUsd,
+					$oraclePriceSigUsd,
+					$fee_mining
+				);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
@@ -269,7 +289,8 @@
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
@@ -280,7 +301,8 @@
 					toAmount,
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 
 				fromAmount = totalSigUSD;
@@ -297,7 +319,8 @@
 					$bankBoxInErg,
 					$bankBoxInCircSigUsd,
 					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd
+					$oraclePriceSigUsd,
+					$fee_mining
 				);
 				fromAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
 				globalUiFeeErg = uiFeeErg;
@@ -344,47 +367,50 @@
 		doRecalc($oracle_box, $bank_box);
 	}
 
+	// HERE:
+	// OBJECT $bank_box, $oracle_box, $fee_mining
+
 	async function handleSwapButton() {
 		// For demonstration, handle all 4 possible combos
 		if (lastInput === 'From') {
 			// user typed in fromAmount
 			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				await buyUSDInputERG(nanoErg);
+				await buyUSDInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				await buyRSVInputERG(nanoErg);
+				await buyRSVInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			} else if (fromCurrency === 'SigUSD') {
 				const cents = usdStringToCentBigInt(fromAmount);
-				await sellUSDInputUSD(cents);
+				await sellUSDInputUSD(cents, $bank_box, $oracle_box, $fee_mining);
 			} else {
 				// fromCurrency=SigRSV
 				const rsv = BigInt(fromAmount);
 				// placeholder: sellRSVInputRSV(cents)
 				//console.log('SigRSV->ERG (from typed) not fully implemented. Value:', rsv.toString());
 				console.log('f7');
-				await sellRSVInputRSV(rsv);
+				await sellRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
 			}
 		} else {
 			// lastInput === 'To'
 			// user typed in toAmount
 			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
 				const cents = usdStringToCentBigInt(toAmount);
-				await buyUSDInputUSD(cents);
+				await buyUSDInputUSD(cents, $bank_box, $oracle_box, $fee_mining);
 			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
 				// placeholder
 				const rsv = BigInt(toAmount);
 				// console.log('ERG->SigRSV (to typed) not fully implemented. Value:', rsv.toString());
 				console.log('f6');
-				await buyRSVInputRSV(rsv);
+				await buyRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
 			} else if (fromCurrency === 'SigUSD') {
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
-				await sellUSDInputERG(nanoErg);
+				await sellUSDInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			} else {
 				// fromCurrency=SigRSV
 				console.log('F8 GO GO');
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
-				await sellRSVInputERG(nanoErg);
+				await sellRSVInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			}
 		}
 	}

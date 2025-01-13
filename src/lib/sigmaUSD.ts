@@ -20,7 +20,8 @@ import {
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
 	unconfrimed_reserve_boarder_left_USD,
-	updateBestBankBoxLocal
+	updateBestBankBoxLocal,
+	type ErgoBox
 } from './stores/bank';
 import { get } from 'svelte/store';
 import {
@@ -309,24 +310,24 @@ export function calculateReserveRateAndBorders(
 }
 
 // Fee
-export function applyFee(inputERG: bigint) {
+export function applyFee(inputERG: bigint, feeMining: bigint) {
 	const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
-	const contractERG = inputERG - get(fee_mining) - uiSwapFee;
+	const contractERG = inputERG - feeMining - uiSwapFee;
 	return { uiSwapFee, contractERG };
 }
-export function reverseFee(contractERG: bigint) {
+export function reverseFee(contractERG: bigint, feeMining: bigint) {
 	const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const inputERG = contractERG + get(fee_mining) + uiSwapFee;
+	const inputERG = contractERG + feeMining + uiSwapFee;
 	return { inputERG, uiSwapFee };
 }
-export function reverseFeeSell(contractERG: bigint) {
+export function reverseFeeSell(contractERG: bigint, feeMining: bigint) {
 	const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
-	const userERG = contractERG - get(fee_mining) - uiSwapFee;
+	const userERG = contractERG - feeMining - uiSwapFee;
 	return { userERG, uiSwapFee };
 }
-export function applyFeeSell(inputERG: bigint) {
+export function applyFeeSell(inputERG: bigint, feeMining: bigint) {
 	const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const contractERG = inputERG + get(fee_mining) + uiSwapFee;
+	const contractERG = inputERG + feeMining + uiSwapFee;
 	return { uiSwapFee, contractERG };
 }
 
@@ -337,7 +338,8 @@ export function calculateInputsUsdErgInErg(
 	buyAmountInput: any,
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const inputAmountERG = new BigNumber(buyAmountInput);
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
@@ -347,7 +349,8 @@ export function calculateInputsUsdErgInErg(
 				inputAmountERG,
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 
 		const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
@@ -361,7 +364,8 @@ export function calculateInputsUsdErgInErg(
 				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 		const totalSigUSD = '';
 		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
@@ -374,7 +378,8 @@ export function calculateInputsUsdErgInErgPrice(
 	buyAmount: BigNumber,
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const inputAmountNanoERG = buyAmount
 		.multipliedBy('1000000000')
@@ -387,11 +392,11 @@ export function calculateInputsUsdErgInErgPrice(
 
 	if (direction === 1n) {
 		//f1
-		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg, feeMining));
 	} else {
 		//f4
 		//({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
-		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg));
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg, feeMining));
 	}
 
 	//Part 2 - Calculate Price
@@ -440,9 +445,6 @@ export function calculateInputsUsdErgInErgPrice(
 		}
 	}
 
-	//
-	//console.log('TOTAL USER ERG:', contractErgCompare - uiFeeErg - get(fee_mining));
-
 	// // ------ TEST ------
 	// if (direction == 1n) {
 	// 	//console.log('buy');
@@ -456,7 +458,7 @@ export function calculateInputsUsdErgInErgPrice(
 	//if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (contractErgCompare - contractERG);
 
 	////console.log(uiFeeErg, 'uiFeeErg');
-	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
+	const swapFee = contractFee + feeMining + uiFeeErg;
 	const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
 	return {
@@ -470,14 +472,28 @@ export function calculateInputsUsdErgInErgPrice(
 	};
 }
 // (f3.price && f2.price)
-export function calculateInputsUsdErgInUsd(direction: bigint, buyTotalInput: any): any {
+export function calculateInputsUsdErgInUsd(
+	direction: bigint,
+	buyTotalInput: any,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
+): any {
 	const totalSigUSD = new BigNumber(buyTotalInput)
 		.multipliedBy('100')
 		.integerValue(BigNumber.ROUND_CEIL);
 
 	if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
 		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-			calculateInputsUsdErgInUsdPrice(direction, totalSigUSD);
+			calculateInputsUsdErgInUsdPrice(
+				direction,
+				totalSigUSD,
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				oraclePriceSigUsd,
+				feeMining
+			);
 
 		//---------------------------------
 		const totalErg = new BigNumber(totalErgoRequired.toString()).dividedBy('1000000000').toFixed(9);
@@ -486,14 +502,28 @@ export function calculateInputsUsdErgInUsd(direction: bigint, buyTotalInput: any
 		return { totalErg, finalPrice, totalFee };
 	} else {
 		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
-			calculateInputsUsdErgInUsdPrice(direction, new BigNumber(BASE_INPUT_AMOUNT_USD.toString()));
+			calculateInputsUsdErgInUsdPrice(
+				direction,
+				new BigNumber(BASE_INPUT_AMOUNT_USD.toString()),
+				bankBoxInErg,
+				bankBoxInCircSigUsd,
+				oraclePriceSigUsd,
+				feeMining
+			);
 		const totalErg = '';
 		const finalPrice = new BigNumber(10000000).multipliedBy(rateTotal).toFixed(2);
 		const totalFee = '';
 		return { totalErg, finalPrice, totalFee };
 	}
 }
-export function calculateInputsUsdErgInUsdPrice(direction: bigint, buyTotal: BigNumber): any {
+export function calculateInputsUsdErgInUsdPrice(
+	direction: bigint,
+	buyTotal: BigNumber,
+	bankBoxInErg: bigint,
+	bankBoxInCircSigUsd: bigint,
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
+): any {
 	const totalSC = BigInt(buyTotal.toString());
 
 	let uiFeeErg: bigint;
@@ -504,23 +534,29 @@ export function calculateInputsUsdErgInUsdPrice(direction: bigint, buyTotal: Big
 		fee: feeContract,
 		bcDeltaExpectedWithFee: contractErgoRequired
 	} = calculateBankRateUSDInputUSD(
-		get(bankBoxInErg),
-		get(bankBoxInCircSigUsd),
-		get(oraclePriceSigUsd),
+		bankBoxInErg,
+		bankBoxInCircSigUsd,
+		oraclePriceSigUsd,
 		totalSC,
 		direction
 	);
 	if (direction === 1n) {
 		//f2
-		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
+		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
+			contractErgoRequired,
+			feeMining
+		));
 	} else {
 		//f3
 		////console.log('f3.price');
 		////console.log(contractErgoRequired, ' contract ERG');
-		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
+		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
+			contractErgoRequired,
+			feeMining
+		));
 	}
-	const feeTotal = feeContract + get(fee_mining) + uiFeeErg;
-	//console.log(contractErgoRequired - get(fee_mining) - uiFeeErg, ' final ERG');
+	const feeTotal = feeContract + feeMining + uiFeeErg;
+	//console.log(contractErgoRequired - feeMining - uiFeeErg, ' final ERG');
 
 	//console.log();
 	//console.log();
@@ -537,7 +573,8 @@ export function calculateInputsRSVErgInErg(
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
 	bankBoxInCircSigRSV: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const inputAmountERG = new BigNumber(buyAmountInput);
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
@@ -548,7 +585,8 @@ export function calculateInputsRSVErgInErg(
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
 				bankBoxInCircSigRSV,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 
 		const totalSigRSV = new BigNumber(contractRSV).toFixed(0);
@@ -563,7 +601,8 @@ export function calculateInputsRSVErgInErg(
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
 				bankBoxInCircSigRSV,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 		const totalSigRSV = '';
 		const finalPrice = new BigNumber(1000000000).multipliedBy(swapRate).toFixed(0);
@@ -577,7 +616,8 @@ export function calculateInputsRSVErgInErgPrice(
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
 	bankBoxInCircSigRSV: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const inputAmountNanoERG = buyAmount
 		.multipliedBy('1000000000')
@@ -590,10 +630,10 @@ export function calculateInputsRSVErgInErgPrice(
 
 	if (direction === 1n) {
 		//f5
-		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg));
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFee(inputErg, feeMining));
 	} else {
 		//f8
-		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg));
+		({ uiSwapFee: uiFeeErg, contractERG } = applyFeeSell(inputErg, feeMining));
 	}
 
 	// CHANGE FUNCTION <--------
@@ -637,7 +677,7 @@ export function calculateInputsRSVErgInErgPrice(
 		}
 	}
 
-	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
+	const swapFee = contractFee + feeMining + uiFeeErg;
 	const swapRate = new BigNumber(contractRSV.toString()).dividedBy(inputAmountNanoERG.toString());
 
 	return {
@@ -657,7 +697,8 @@ export function calculateInputsRSVErgInRSV(
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
 	bankBoxInCircSigRSV: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const totalRSV = new BigNumber(inputRSV).integerValue(BigNumber.ROUND_CEIL);
 
@@ -669,7 +710,8 @@ export function calculateInputsRSVErgInRSV(
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
 				bankBoxInCircSigRSV,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 
 		//---------------------------------
@@ -685,7 +727,8 @@ export function calculateInputsRSVErgInRSV(
 				bankBoxInErg,
 				bankBoxInCircSigUsd,
 				bankBoxInCircSigRSV,
-				oraclePriceSigUsd
+				oraclePriceSigUsd,
+				feeMining
 			);
 		const totalErg = '';
 		const finalPrice = new BigNumber(1000000000).multipliedBy(swapRate).toFixed(0);
@@ -699,7 +742,8 @@ export function calculateInputsRSVErgInRSVPrice(
 	bankBoxInErg: bigint,
 	bankBoxInCircSigUsd: bigint,
 	bankBoxInCircSigRSV: bigint,
-	oraclePriceSigUsd: bigint
+	oraclePriceSigUsd: bigint,
+	feeMining: bigint
 ): any {
 	const totalRSV = BigInt(inputRSV.toString());
 
@@ -721,12 +765,18 @@ export function calculateInputsRSVErgInRSVPrice(
 
 	if (direction === 1n) {
 		//f6
-		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(contractErgoRequired));
+		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
+			contractErgoRequired,
+			feeMining
+		));
 	} else {
 		//f7
-		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(contractErgoRequired));
+		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
+			contractErgoRequired,
+			feeMining
+		));
 	}
-	const swapFee = contractFee + get(fee_mining) + uiFeeErg;
+	const swapFee = contractFee + feeMining + uiFeeErg;
 
 	const swapRate = new BigNumber(totalRSV.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateRSVERG, contractFee, totalErgoRequired, swapFee, swapRate };
@@ -769,11 +819,26 @@ async function createInteractionAndSubmitTx(
 }
 
 // (f1)
-export async function buyUSDInputERG(inputErg: bigint = 1_000_000_000n) {
+export async function buyUSDInputERG(
+	inputErg: bigint = 1_000_000_000n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = 1n;
-	const tx = await buyUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await buyUSDInputERGTx(
+		inputErg,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function buyUSDInputERGTx(
@@ -782,12 +847,15 @@ export async function buyUSDInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	//Part 0 - use Fee
 	let uiSwapFee;
 
-	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg);
+	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
@@ -798,9 +866,9 @@ export async function buyUSDInputERGTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
@@ -848,7 +916,8 @@ export async function buyUSDInputERGTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	//console.log(unsignedMintTransaction);
@@ -856,11 +925,26 @@ export async function buyUSDInputERGTx(
 }
 
 // (f2)
-export async function buyUSDInputUSD(inputUSD: bigint = 1_00n) {
+export async function buyUSDInputUSD(
+	inputUSD: bigint = 1_00n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = 1n;
-	const tx = await buyUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await buyUSDInputUSDTx(
+		inputUSD,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function buyUSDInputUSDTx(
@@ -869,7 +953,10 @@ export async function buyUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	const contractUSD = inputUSD;
 
@@ -881,9 +968,9 @@ export async function buyUSDInputUSDTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
@@ -902,7 +989,7 @@ export async function buyUSDInputUSDTx(
 	);
 
 	//Part 0 - use Fee Reversed
-	const { inputERG, uiSwapFee } = reverseFee(contractErg);
+	const { inputERG, uiSwapFee } = reverseFee(contractErg, feeMining);
 
 	//Part 4 - Calculate TX
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
@@ -920,7 +1007,8 @@ export async function buyUSDInputUSDTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	); //UserErg is not important?
 
 	//console.log(unsignedMintTransaction);
@@ -928,11 +1016,26 @@ export async function buyUSDInputUSDTx(
 }
 
 // (f3)
-export async function sellUSDInputUSD(inputUSD: bigint = 1_00n) {
+export async function sellUSDInputUSD(
+	inputUSD: bigint = 1_00n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = -1n;
-	const tx = await sellUSDInputUSDTx(inputUSD, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await sellUSDInputUSDTx(
+		inputUSD,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function sellUSDInputUSDTx(
@@ -941,7 +1044,10 @@ export async function sellUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	const contractUSD = inputUSD;
 
@@ -953,9 +1059,9 @@ export async function sellUSDInputUSDTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
@@ -974,7 +1080,7 @@ export async function sellUSDInputUSDTx(
 	);
 
 	// PART X
-	const { userERG, uiSwapFee } = reverseFeeSell(contractERG);
+	const { userERG, uiSwapFee } = reverseFeeSell(contractERG, feeMining);
 	//console.log(contractUSD, 'USD -> ERG ', userERG);
 
 	// PART X - Build
@@ -993,7 +1099,8 @@ export async function sellUSDInputUSDTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	//console.log(unsignedMintTransaction);
@@ -1001,11 +1108,26 @@ export async function sellUSDInputUSDTx(
 }
 
 // (f4)
-export async function sellUSDInputERG(inputErg: bigint = 1_000_000_000n) {
+export async function sellUSDInputERG(
+	inputErg: bigint = 1_000_000_000n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = -1n;
-	const tx = await sellUSDInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await sellUSDInputERGTx(
+		inputErg,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function sellUSDInputERGTx(
@@ -1014,11 +1136,14 @@ export async function sellUSDInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	//Part 0 - use Fee
 	let uiSwapFee;
-	const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
+	const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
@@ -1029,9 +1154,9 @@ export async function sellUSDInputERGTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	//Part 2.1 - Calculate Price
 	let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
@@ -1083,7 +1208,8 @@ export async function sellUSDInputERGTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	//console.log(unsignedMintTransaction);
@@ -1091,11 +1217,26 @@ export async function sellUSDInputERGTx(
 }
 
 // (f5)
-export async function buyRSVInputERG(inputErg: bigint = 1_000_000_000n) {
+export async function buyRSVInputERG(
+	inputErg: bigint = 1_000_000_000n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = 1n;
-	const tx = await buyRSVInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await buyRSVInputERGTx(
+		inputErg,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function buyRSVInputERGTx(
@@ -1104,13 +1245,16 @@ export async function buyRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
 	//Part 0 - use Fee
 	let uiSwapFee;
 
-	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg);
+	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
@@ -1124,9 +1268,9 @@ export async function buyRSVInputERGTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)
@@ -1192,17 +1336,33 @@ export async function buyRSVInputERGTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	return unsignedMintTransaction;
 }
 
 // (f6)
-export async function buyRSVInputRSV(requestRSV: bigint = 2200n) {
+export async function buyRSVInputRSV(
+	requestRSV: bigint = 2200n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 	const direction = 1n;
-	const tx = await buyRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await buyRSVInputRSVTx(
+		requestRSV,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function buyRSVInputRSVTx(
@@ -1211,7 +1371,10 @@ export async function buyRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
 
@@ -1228,9 +1391,9 @@ export async function buyRSVInputRSVTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1257,7 +1420,7 @@ export async function buyRSVInputRSVTx(
 
 	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
-	const { inputERG, uiSwapFee } = reverseFee(contractErg);
+	const { inputERG, uiSwapFee } = reverseFee(contractErg, feeMining);
 	// BUILD RSV TX FUNCTION --------
 
 	//Part 4 - Calculate TX
@@ -1276,17 +1439,33 @@ export async function buyRSVInputRSVTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	return unsignedMintTransaction;
 }
 
 // (f7)
-export async function sellRSVInputRSV(requestRSV: bigint = 2200n) {
+export async function sellRSVInputRSV(
+	requestRSV: bigint = 2200n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 	const direction = -1n;
-	const tx = await sellRSVInputRSVTx(requestRSV, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await sellRSVInputRSVTx(
+		requestRSV,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function sellRSVInputRSVTx(
@@ -1295,7 +1474,10 @@ export async function sellRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	const contractRSV = requestRSV; // ?
 
@@ -1307,9 +1489,9 @@ export async function sellRSVInputRSVTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1337,7 +1519,7 @@ export async function sellRSVInputRSVTx(
 	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
 	// PART X
-	const { userERG, uiSwapFee } = reverseFeeSell(contractErg);
+	const { userERG, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
 	//console.log(contractUSD, 'USD -> ERG ', userERG);
 
 	//Part 4 - Calculate TX
@@ -1356,18 +1538,34 @@ export async function sellRSVInputRSVTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	return unsignedMintTransaction;
 }
 
 // (f8)
-export async function sellRSVInputERG(inputErg: bigint = 1_000_000_000n) {
+export async function sellRSVInputERG(
+	inputErg: bigint = 1_000_000_000n,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
+) {
 	const { me, utxos, height } = await getWeb3WalletData();
 
 	const direction = -1n;
-	const tx = await sellRSVInputERGTx(inputErg, me, SIGUSD_BANK_ADDRESS, utxos, height, direction);
+	const tx = await sellRSVInputERGTx(
+		inputErg,
+		me,
+		SIGUSD_BANK_ADDRESS,
+		utxos,
+		height,
+		direction,
+		bankBox,
+		oracleBox,
+		feeMining
+	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 export async function sellRSVInputERGTx(
@@ -1376,13 +1574,16 @@ export async function sellRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint
+	direction: bigint,
+	bankBox: ErgoBox,
+	oracleBox: ErgoBox,
+	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
 	//Part 0 - use Fee
 	let uiSwapFee;
 
-	const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg);
+	const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
@@ -1396,9 +1597,9 @@ export async function sellRSVInputERGTx(
 		inCircSigUSD,
 		inCircSigRSV,
 		oraclePrice,
-		bankBox,
-		oracleBox
-	}: OracleBoxesData = await extractBoxesData(get(oracle_box), get(bank_box));
+		bankBox: bankBoxDelete,
+		oracleBox: oracleBoxDelete
+	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)
@@ -1460,7 +1661,8 @@ export async function sellRSVInputERGTx(
 		outSigUSD,
 		outSigRSV,
 		outCircSigUSD,
-		outCircSigRSV
+		outCircSigRSV,
+		feeMining
 	);
 
 	return unsignedMintTransaction;
@@ -1514,7 +1716,8 @@ export function buildTx_SIGUSD_ERG_USD(
 	outSigUSD: bigint,
 	outSigRSV: bigint,
 	outCircSigUSD: bigint,
-	outCircSigRSV: bigint
+	outCircSigRSV: bigint,
+	feeMining: bigint
 ) {
 	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
 	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
@@ -1551,7 +1754,7 @@ export function buildTx_SIGUSD_ERG_USD(
 		.from([bankBox, ...utxos])
 		.to([BankOutBox, receiptBox, uiFeeBox])
 		.sendChangeTo(myAddr)
-		.payFee(get(fee_mining))
+		.payFee(feeMining)
 		.build()
 		.toEIP12Object();
 
@@ -1574,7 +1777,8 @@ export function buildTx_SIGUSD_ERG_RSV(
 	outSigUSD: bigint,
 	outSigRSV: bigint,
 	outCircSigUSD: bigint,
-	outCircSigRSV: bigint
+	outCircSigRSV: bigint,
+	feeMining: bigint
 ) {
 	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
 	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
@@ -1613,7 +1817,7 @@ export function buildTx_SIGUSD_ERG_RSV(
 		.from([bankBox, ...utxos])
 		.to([BankOutBox, receiptBox, uiFeeBox])
 		.sendChangeTo(myAddr)
-		.payFee(get(fee_mining))
+		.payFee(feeMining)
 		.build()
 		.toEIP12Object();
 

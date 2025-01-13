@@ -552,7 +552,7 @@
 
 	<!-- SWAP PAIR SELECTION -->
 	<div class="relative" style="height:4px;">
-		<div class="absolute flex w-full justify-center" style="z-index:5;margin-top:-16px;">
+		<div class="absolute flex w-full justify-center" style="z-index:5;margin-top:-18px;">
 			<button
 				on:mouseenter={handleMouseEnter}
 				on:mouseleave={handleMouseLeave}

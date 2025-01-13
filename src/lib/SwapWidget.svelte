@@ -54,6 +54,7 @@
 	import { confirmed_interactions } from './stores/preparedInteractions';
 	import SubNumber from './SubNumber.svelte';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
+	import WalletBalance from './icons/WalletBalance.svelte';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -416,6 +417,11 @@
 		}
 	}
 
+	function handleFromBalanceClick() {
+		fromAmount = fromBalance;
+		doRecalc($oracle_box, $bank_box);
+	}
+
 	function handleFeeChange(event: Event) {
 		fee_mining.set(BigInt(Number((event.target as HTMLInputElement).value) * 10 ** 9));
 		doRecalc($oracle_box, $bank_box);
@@ -466,11 +472,15 @@
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
 	<!-- FROM SELECTION -->
 	<div class="mb-6 rounded-md dark:bg-gray-900">
-		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
-			<span class="text-sm text-gray-500 dark:text-gray-400">From</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400">
-				Balance: {fromBalance}
-			</span>
+		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-500 dark:text-gray-400">
+			<span class="text-sm">From</span>
+			<button
+				class="flex items-center gap-1 text-sm hover:text-white"
+				on:click={handleFromBalanceClick}
+			>
+				<WalletBalance></WalletBalance>
+				{fromBalance}
+			</button>
 		</div>
 
 		<div

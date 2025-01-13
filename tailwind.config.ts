@@ -12,12 +12,18 @@ export default {
 		extend: {
 			colors: {
 				light: {
-					background: '#FFFFFF',
-					text: '#000000',
+					// background: '#FFFFFF',
+					// text: '#000000',
+					// accent: '#5054dd',
+					// secondary: '#4E4E50',
+					// gradientStart: '#171622',
+					// gradientEnd: '#202482'
+					background: '#16151f',
+					text: '#fdfdfd',
 					accent: '#5054dd',
 					secondary: '#4E4E50',
-					gradientStart: '#171622',
-					gradientEnd: '#202482'
+					gradientStart: '#fdfcfd',
+					gradientEnd: '#7e7f92'
 				},
 				dark: {
 					background: '#16151f',

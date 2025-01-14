@@ -417,7 +417,7 @@
 				const rsv = BigInt(fromAmount);
 				// placeholder: sellRSVInputRSV(cents)
 				//console.log('SigRSV->ERG (from typed) not fully implemented. Value:', rsv.toString());
-				console.log('f7');
+				// console.log('f7');
 				await sellRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
 			}
 		} else {
@@ -430,14 +430,14 @@
 				// placeholder
 				const rsv = BigInt(toAmount);
 				// console.log('ERG->SigRSV (to typed) not fully implemented. Value:', rsv.toString());
-				console.log('f6');
+				// console.log('f6');
 				await buyRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
 			} else if (fromCurrency === 'SigUSD') {
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
 				await sellUSDInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			} else {
 				// fromCurrency=SigRSV
-				console.log('F8 GO GO');
+				// console.log('F8 GO GO');
 				const nanoErg = ergStringToNanoErgBigInt(toAmount);
 				await sellRSVInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
 			}

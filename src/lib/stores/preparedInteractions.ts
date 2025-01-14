@@ -104,12 +104,6 @@ export function cancelPreparedInteractionById(uuid: string) {
 }
 
 export function handleMempoolSocketUpdate(payload: MempoolSocketUpdate, ownAddressList: string[]) {
-	console.log(
-		'confirmed',
-		payload.confirmed_transactions.length,
-		'unconfirmed',
-		payload.unconfirmed_transactions.length
-	);
 	let confirmed = confirmMempoolInteractions(payload); // this sets confirmed = true
 	rejectMempoolInteractions(payload); // this sets rejected = true
 

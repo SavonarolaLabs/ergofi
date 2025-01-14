@@ -21,7 +21,6 @@
 		sigmausdChannel
 			.join()
 			.receive('ok', (resp) => {
-				console.log({ resp });
 				initHistory(resp.history, $web3wallet_wallet_used_addresses);
 				handleMempoolSocketUpdate(resp, $web3wallet_wallet_used_addresses);
 				updateBestBankBox(resp, $prepared_interactions);

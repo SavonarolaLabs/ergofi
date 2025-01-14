@@ -139,7 +139,7 @@
 			{/each}
 
 			{#each $mempool_interactions as m (m.id)}
-				<a href="https://sigmaverse.io/en/transactions/{m.transactionId}">
+				<a href="https://explorer.ergoplatform.com/en/transactions/{m.transactionId}">
 					<div
 						class="row"
 						class:text-white={m.own}
@@ -192,7 +192,7 @@
 			{/each}
 
 			{#each $confirmed_interactions as c (c.id)}
-				<a href="https://sigmaverse.io/en/transactions/{c.transactionId}">
+				<a href="https://explorer.ergoplatform.com/en/transactions/{c.transactionId}">
 					<div class="row" class:text-green-500={c.own}>
 						<div class="left pb-1">
 							<div>

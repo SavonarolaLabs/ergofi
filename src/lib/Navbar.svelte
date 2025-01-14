@@ -16,7 +16,7 @@
 		<sup class="ml-1 text-xs text-gray-500">alpha 4</sup>
 	</div>
 
-	<div class="flex gap-2" style="height:52px;">
+	<div class="flex gap-3" style="height:52px;">
 		{#if $web3wallet_connected}
 			{#if !pending}
 				<div class="flex gap-1">
@@ -56,12 +56,8 @@
 									$web3wallet_confirmedTokens.find((x) => x.tokenId == ERGO_TOKEN_ID)?.amount
 								)}
 							</div>
-							<div class="text-sm leading-none">+100</div>
 						</div>
-						<div>
-							<div class="text-sm text-gray-500">ERG</div>
-							<div class="invisible leading-none">+100</div>
-						</div>
+						<div class="text-sm text-gray-500" style="padding-bottom:1.5px;">ERG</div>
 					</div>
 				</div>
 			{/if}

@@ -6,6 +6,7 @@ import { ERGO_TOKEN_ID } from './ergoTokens';
 export const web3wallet_connected = writable(false);
 export const web3wallet_wallet_name = writable('');
 export const web3wallet_wallet_used_addresses = writable([]);
+export const web3wallet_wallet_change_address = writable('');
 export const web3wallet_available_wallets = writable([]);
 export const web3wallet_confirmedTokens: Writable<TokenAmount<bigint>[]> = writable([]);
 
@@ -31,6 +32,8 @@ export async function loadWeb3WalletTokens() {
 		try {
 			const addresses = await ergo.get_used_addresses();
 			web3wallet_wallet_used_addresses.set(addresses);
+			const a = await ergo.get_change_address();
+			web3wallet_wallet_change_address.set(a);
 		} catch (e) {
 			console.error(e);
 		}
@@ -69,6 +72,7 @@ export async function disconnectWeb3Wallet() {
 	web3wallet_connected.set(false);
 	web3wallet_wallet_name.set('');
 	web3wallet_wallet_used_addresses.set([]);
+	web3wallet_wallet_change_address.set('');
 	localStorage.removeItem('ui_web3wallet_wallet_name');
 }
 

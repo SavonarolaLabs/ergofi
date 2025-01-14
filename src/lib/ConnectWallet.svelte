@@ -6,8 +6,10 @@
 		web3wallet_available_wallets,
 		web3wallet_confirmedTokens,
 		web3wallet_connected,
+		web3wallet_wallet_change_address,
 		web3wallet_wallet_name
 	} from './stores/web3wallet';
+	import { shorten } from './TransactionUtils';
 	import { nanoErgToErg } from './utils';
 </script>
 
@@ -16,7 +18,7 @@
 		<button
 			class="w-wallet text-md h-full rounded-md bg-gray-200 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
 		>
-			{nanoErgToErg($web3wallet_confirmedTokens.find((x) => x.tokenId == ERGO_TOKEN_ID)?.amount)} ERG
+			{shorten($web3wallet_wallet_change_address)}
 		</button>
 		<div
 			class="w-wallet absolute right-0 hidden w-48 rounded-md bg-gray-800 shadow-lg group-hover:block"

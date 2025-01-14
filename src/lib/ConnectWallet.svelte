@@ -14,7 +14,7 @@
 <div class="w-wallet group relative">
 	{#if $web3wallet_connected}
 		<button
-			class="w-wallet text-md rounded-md bg-gray-200 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+			class="w-wallet text-md h-full rounded-md bg-gray-200 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
 		>
 			{nanoErgToErg($web3wallet_confirmedTokens.find((x) => x.tokenId == ERGO_TOKEN_ID)?.amount)} ERG
 		</button>
@@ -54,7 +54,7 @@
 		</div>
 	{:else if $web3wallet_available_wallets.length}
 		<button
-			class="w-wallet text-md rounded-md bg-gray-200 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+			class=" w-wallet text-md h-full rounded-md bg-gray-200 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
 		>
 			CONNECT WALLET
 		</button>

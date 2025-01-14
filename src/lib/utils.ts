@@ -81,7 +81,9 @@ export function formatTimeAgo(timestamp: number): string {
 	);
 }
 
-export function formatAmount(value: number): string {
+export function formatAmount(value: bigint | number | undefined): string {
+	if (value == undefined) return '0';
+	if (typeof value == 'bigint') value = Number(value);
 	const prefix = value > 0 ? '+' : '';
 	if (Math.abs(value) >= 1000) {
 		let formatted = numeral(value).format('0.0a').replace('m', 'M');

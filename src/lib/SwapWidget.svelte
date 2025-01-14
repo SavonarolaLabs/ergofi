@@ -496,6 +496,10 @@
 			return amt; // if SigRSV uses different decimals, update accordingly
 		}
 	})();
+
+	// TODO: move to a separate file
+	//let mintWarning = 'SigUSD mint prohibited - Reserve below 400%';
+	let mintWarning = '';
 </script>
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
@@ -638,18 +642,24 @@
 	</div>
 
 	<!-- Fee Settings -->
-	<div class="flex w-full justify-end">
-		<button
-			class="my-4 flex cursor-pointer pr-4 text-gray-500 hover:text-white"
-			on:click={toggleFeeSlider}
-		>
-			{#if showFeeSlider}
-				Hide Fee Settings
-			{:else}
-				Expert Fee Settings
-			{/if}
-		</button>
-	</div>
+	{#if mintWarning}
+		<div class="my-4 flex flex w-full justify-center text-light-warning dark:text-dark-warning">
+			{mintWarning}
+		</div>
+	{:else}
+		<div class="flex w-full justify-end">
+			<button
+				class="my-4 flex cursor-pointer pr-4 text-gray-500 hover:text-white"
+				on:click={toggleFeeSlider}
+			>
+				{#if showFeeSlider}
+					Hide Fee Settings
+				{:else}
+					Expert Fee Settings
+				{/if}
+			</button>
+		</div>
+	{/if}
 	<div
 		class={`overflow-hidden transition-all duration-300 ${
 			showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
@@ -670,10 +680,19 @@
 	</div>
 
 	<!-- Swap Button -->
-	<button
-		on:click={handleSwapButton}
-		class="w-full rounded-lg bg-orange-500 py-3 font-medium text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-700"
-	>
-		Swap
-	</button>
+	{#if mintWarning}
+		<button
+			on:click={handleSwapButton}
+			class="w-full rounded-lg bg-gray-500 py-3 font-medium text-white hover:bg-orange-600 hover:text-white dark:bg-gray-600 dark:hover:bg-gray-500"
+		>
+			Swap
+		</button>
+	{:else}
+		<button
+			on:click={handleSwapButton}
+			class="w-full rounded-lg bg-orange-500 py-3 font-medium text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-500"
+		>
+			Swap
+		</button>
+	{/if}
 </div>

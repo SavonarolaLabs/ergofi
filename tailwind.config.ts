@@ -23,7 +23,8 @@ export default {
 					accent: '#5054dd',
 					secondary: '#4E4E50',
 					gradientStart: '#fdfcfd',
-					gradientEnd: '#7e7f92'
+					gradientEnd: '#7e7f92',
+					warning: '#ff7832'
 				},
 				dark: {
 					background: '#16151f',
@@ -31,7 +32,8 @@ export default {
 					accent: '#5054dd',
 					secondary: '#4E4E50',
 					gradientStart: '#fdfcfd',
-					gradientEnd: '#7e7f92'
+					gradientEnd: '#7e7f92',
+					warning: '#ff7832'
 				}
 			}
 		}

@@ -11,34 +11,37 @@ export const web3wallet_available_wallets = writable([]);
 export const web3wallet_confirmedTokens: Writable<TokenAmount<bigint>[]> = writable([]);
 
 export async function loadWeb3WalletTokens() {
-	try {
-		const utxo = await ergo.get_utxos();
-
-		const tokens = utxo
-			.flatMap((box) => box.assets)
-			.reduce(sumAssets, [])
-			.map((t) => {
-				t.amount = BigInt(t.amount);
-				return t;
-			});
-
-		const erg: bigint = sumNanoErg(utxo);
-		if (erg > 0) {
-			web3wallet_confirmedTokens.set([{ tokenId: ERGO_TOKEN_ID, amount: erg }, ...tokens]);
-		} else {
-			web3wallet_confirmedTokens.set(tokens);
-		}
-
+	if (get(web3wallet_wallet_name)) {
 		try {
-			const addresses = await ergo.get_used_addresses();
-			web3wallet_wallet_used_addresses.set(addresses);
-			const a = await ergo.get_change_address();
-			web3wallet_wallet_change_address.set(a);
+			const utxo = await ergo.get_utxos();
+
+			const tokens = utxo
+				.flatMap((box) => box.assets)
+				.reduce(sumAssets, [])
+				.map((t) => {
+					t.amount = BigInt(t.amount);
+					return t;
+				});
+
+			const erg: bigint = sumNanoErg(utxo);
+			if (erg > 0) {
+				web3wallet_confirmedTokens.set([{ tokenId: ERGO_TOKEN_ID, amount: erg }, ...tokens]);
+			} else {
+				web3wallet_confirmedTokens.set(tokens);
+			}
+
+			try {
+				const addresses = await ergo.get_used_addresses();
+				web3wallet_wallet_used_addresses.set(addresses);
+				const a = await ergo.get_change_address();
+				web3wallet_wallet_change_address.set(a);
+			} catch (e) {
+				console.error(e);
+			}
 		} catch (e) {
+			console.warn(`Failed to load ${get(web3wallet_wallet_name)} balance.`);
 			console.error(e);
 		}
-	} catch (e) {
-		console.warn(`Failed to load ${get(web3wallet_wallet_name)} balance.`);
 	}
 }
 

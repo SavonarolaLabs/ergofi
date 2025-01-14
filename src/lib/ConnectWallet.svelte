@@ -4,13 +4,11 @@
 		connectWeb3Wallet,
 		disconnectWeb3Wallet,
 		web3wallet_available_wallets,
-		web3wallet_confirmedTokens,
 		web3wallet_connected,
 		web3wallet_wallet_change_address,
 		web3wallet_wallet_name
 	} from './stores/web3wallet';
 	import { shorten } from './TransactionUtils';
-	import { nanoErgToErg } from './utils';
 </script>
 
 <div class="w-wallet group relative">

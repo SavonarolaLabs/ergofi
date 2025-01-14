@@ -21,6 +21,7 @@ import {
 	type OperationInfo
 } from '$lib/TransactionUtils';
 import { isOwnTx } from '$lib/utils';
+import { loadWeb3WalletTokens } from './web3wallet';
 
 export type MempoolSocketUpdate = {
 	unconfirmed_transactions: MempoolTransaction[];
@@ -135,6 +136,8 @@ function confirmMempoolInteractions(payload: MempoolSocketUpdate) {
 			confirmedTxIds.includes(i.transactionId)
 		);
 		mempool_interactions.set(allUpdated);
+
+		loadWeb3WalletTokens();
 		return confirmed;
 	}
 	return [];

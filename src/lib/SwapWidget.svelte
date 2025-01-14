@@ -502,10 +502,10 @@
 	let mintWarning = '';
 </script>
 
-<div class="mx-auto w-full max-w-md rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+<div class="mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6 shadow">
 	<!-- FROM SELECTION -->
 	<div class="rounded-md dark:bg-gray-900">
-		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-500 dark:text-gray-400">
+		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 			<span class="text-sm">From</span>
 			<button
 				class="flex items-center gap-1 text-sm hover:text-white"
@@ -517,13 +517,13 @@
 		</div>
 
 		<div
-			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
+			class="flex items-center rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
 			style="border: none!important; outline: none!important; box-shadow: none!important;"
 		>
 			<!-- FROM AMOUNT -->
 			<input
 				type="number"
-				class="w-full bg-transparent text-3xl text-gray-900 outline-none dark:text-gray-100"
+				class="w-full bg-transparent text-3xl text-gray-100 outline-none"
 				placeholder="0"
 				min="0"
 				bind:value={fromAmount}
@@ -532,12 +532,12 @@
 
 			<!-- FROM CURRENCY SELECT -->
 			<div
-				class="relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
+				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
 			>
 				<div class="h-5 w-5 flex-shrink-0 {tokenColor(fromCurrency)} rounded-full"></div>
 				<select
-					class="w-full cursor-pointer bg-transparent font-medium text-gray-900 outline-none dark:text-gray-100"
+					class="w-full cursor-pointer bg-transparent font-medium text-gray-100 outline-none"
 					style="max-width:113px;"
 					bind:value={fromCurrency}
 					on:change={handleFromCurrencyChange}
@@ -548,7 +548,7 @@
 				</select>
 
 				<svg
-					class="pointer-events-none absolute right-3 h-6 w-6 text-gray-900 dark:text-gray-100"
+					class="pointer-events-none absolute right-3 h-6 w-6 text-gray-100"
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
 					fill="currentColor"
@@ -566,7 +566,7 @@
 				on:mouseenter={handleMouseEnter}
 				on:mouseleave={handleMouseLeave}
 				on:click={handleSwapPair}
-				class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-500 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+				class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 				style="width:42px;height:42px;"
 			>
 				{#if currencySwapHovered}
@@ -577,11 +577,12 @@
 			</button>
 		</div>
 	</div>
+
 	<!-- TO SELECTION -->
 	<div class="rounded-md dark:bg-gray-900">
-		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
-			<span class="text-sm text-gray-500 dark:text-gray-400">To</span>
-			<span class="text-sm text-gray-500 dark:text-gray-400"
+		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
+			<span class="text-sm">To</span>
+			<span class="text-sm"
 				>Real Rate:
 				{#if toCurrency == 'SigRSV'}<SubNumber value={1 / swapPrice}
 					></SubNumber>{:else}{swapPrice}{/if}</span
@@ -589,13 +590,13 @@
 		</div>
 
 		<div
-			class="flex items-center rounded-lg bg-gray-50 focus-within:ring-1 focus-within:ring-blue-500 dark:bg-gray-900"
+			class="flex items-center rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
 			style="border: none!important; outline: none!important; box-shadow: none!important;"
 		>
 			<!-- TO AMOUNT -->
 			<input
 				type="number"
-				class="w-full bg-transparent text-3xl text-gray-900 outline-none dark:text-gray-100"
+				class="w-full bg-transparent text-3xl text-gray-100 outline-none"
 				placeholder="0"
 				min="0"
 				bind:value={toAmount}
@@ -604,15 +605,13 @@
 
 			<!-- TO CURRENCY SELECT OR FIXED -->
 			<div
-				class="relative flex w-72 items-center gap-2 rounded-lg bg-white px-3 py-2 dark:border-gray-800 dark:bg-gray-900"
-				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
+				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
+				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px;"
 			>
-				<!-- If from=ERG, user can pick. Otherwise, we show a fixed label. -->
 				{#if fromCurrency === 'ERG'}
-					<!-- Enabled SELECT for SigUSD/SigRSV -->
 					<div class="h-5 w-5 {tokenColor(toCurrency)} rounded-full"></div>
 					<select
-						class="w-full cursor-pointer bg-transparent font-medium text-gray-900 outline-none dark:text-gray-100"
+						class="w-full cursor-pointer bg-transparent font-medium text-gray-100 outline-none"
 						style="max-width:113px;"
 						bind:value={toCurrency}
 						on:change={handleToCurrencyChange}
@@ -622,14 +621,13 @@
 						{/each}
 					</select>
 				{:else}
-					<!-- Forced to 'ERG' -->
 					<div class="h-5 w-5 {tokenColor('ERG')} rounded-full"></div>
-					<span class="ml-3 font-medium text-gray-800 dark:text-gray-400">ERG</span>
+					<span class="ml-3 font-medium text-gray-400">ERG</span>
 				{/if}
 
 				{#if fromCurrency === 'ERG'}
 					<svg
-						class="pointer-events-none absolute right-3 h-6 w-6 text-gray-900 dark:text-gray-100"
+						class="pointer-events-none absolute right-3 h-6 w-6 text-gray-100"
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
 						fill="currentColor"
@@ -643,13 +641,13 @@
 
 	<!-- Fee Settings -->
 	{#if mintWarning}
-		<div class="my-4 flex flex w-full justify-center text-light-warning dark:text-dark-warning">
+		<div class="my-4 flex flex w-full justify-center text-red-500">
 			{mintWarning}
 		</div>
 	{:else}
 		<div class="flex w-full justify-end">
 			<button
-				class="my-4 flex cursor-pointer pr-4 text-gray-500 hover:text-white"
+				class="my-4 flex cursor-pointer pr-4 text-gray-400 hover:text-white"
 				on:click={toggleFeeSlider}
 			>
 				{#if showFeeSlider}
@@ -672,9 +670,9 @@
 			step="0.01"
 			bind:value={minerFee}
 			on:change={handleFeeChange}
-			class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-300 dark:bg-gray-700"
+			class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700"
 		/>
-		<div class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+		<div class="mt-2 text-center text-sm text-gray-400">
 			Miner Fee: {minerFee.toFixed(2)} ERG
 		</div>
 	</div>
@@ -683,14 +681,14 @@
 	{#if mintWarning}
 		<button
 			on:click={handleSwapButton}
-			class="w-full rounded-lg bg-gray-500 py-3 font-medium text-white hover:bg-orange-600 hover:text-white dark:bg-gray-600 dark:hover:bg-gray-500"
+			class="w-full rounded-lg bg-gray-600 py-3 font-medium text-white hover:bg-gray-500"
 		>
 			Swap
 		</button>
 	{:else}
 		<button
 			on:click={handleSwapButton}
-			class="w-full rounded-lg bg-orange-500 py-3 font-medium text-white hover:bg-orange-600 hover:text-white dark:bg-orange-600 dark:hover:bg-orange-500"
+			class="w-full rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
 		>
 			Swap
 		</button>

@@ -504,7 +504,7 @@
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6 shadow">
 	<!-- FROM SELECTION -->
-	<div class="rounded-md dark:bg-gray-900">
+	<div class="rounded-md bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 			<span class="text-sm">From</span>
 			<button
@@ -579,7 +579,7 @@
 	</div>
 
 	<!-- TO SELECTION -->
-	<div class="rounded-md dark:bg-gray-900">
+	<div class="rounded-md bg-gray-900">
 		<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 			<span class="text-sm">To</span>
 			<span class="text-sm"

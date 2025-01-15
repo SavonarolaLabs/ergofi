@@ -154,6 +154,13 @@
 				);
 			}
 		});
+
+		window.addEventListener('click', handleGlobalClick);
+		window.addEventListener('keydown', handleGlobalKeydown);
+		return () => {
+			window.removeEventListener('click', handleGlobalClick);
+			window.removeEventListener('keydown', handleGlobalKeydown);
+		};
 	});
 
 	/* ---------------------------------------
@@ -534,6 +541,40 @@
 	// TODO: move to a separate file
 	//let mintWarning = 'SigUSD mint prohibited - Reserve below 400%';
 	let mintWarning = '';
+
+	let fromDropdownOpen = false;
+	let toDropdownOpen = false;
+
+	window.addEventListener('click', handleGlobalClick);
+	window.addEventListener('keydown', handleGlobalKeydown);
+
+	function handleGlobalClick(e: MouseEvent) {
+		const target = e.target as HTMLElement;
+
+		const fromMenu = document.getElementById('fromDropdownMenu');
+		const fromBtn = document.getElementById('fromDropdownBtn');
+
+		const toMenu = document.getElementById('toDropdownMenu');
+		const toBtn = document.getElementById('toDropdownBtn');
+
+		if (fromMenu && fromBtn) {
+			if (!fromMenu.contains(target) && !fromBtn.contains(target)) {
+				fromDropdownOpen = false;
+			}
+		}
+		if (toMenu && toBtn) {
+			if (!toMenu.contains(target) && !toBtn.contains(target)) {
+				toDropdownOpen = false;
+			}
+		}
+	}
+
+	function handleGlobalKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			fromDropdownOpen = false;
+			toDropdownOpen = false;
+		}
+	}
 </script>
 
 <div class="mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6 shadow">
@@ -568,7 +609,7 @@
 			/>
 
 			<!-- FROM CURRENCY SELECT -->
-			<div
+			<!-- <div
 				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
 			>
@@ -592,6 +633,66 @@
 				>
 					<path d="M12 15.5l-6-6h12l-6 6z" />
 				</svg>
+			</div> -->
+			<!-- FROM CURRENCY - custom dropdown (replaces <select>) -->
+			<div
+				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
+				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+			>
+				<!-- color circle -->
+				<div class="h-5 w-5 flex-shrink-0 {tokenColor(fromCurrency)} rounded-full"></div>
+
+				<!-- Toggle button -->
+				<button
+					id="fromDropdownBtn"
+					type="button"
+					class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
+					on:click={() => {
+						fromDropdownOpen = !fromDropdownOpen;
+						toDropdownOpen = false; // close other if open
+					}}
+					style="max-width:113px;"
+				>
+					{fromCurrency}
+					<svg
+						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+					>
+						<path d="M12 15.5l-6-6h12l-6 6z" />
+					</svg>
+				</button>
+
+				<!-- Dropdown list -->
+				{#if fromDropdownOpen}
+					<div
+						id="fromDropdownMenu"
+						style="width: 170px;"
+						class="absolute right-0 top-12 z-30 w-28 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5"
+					>
+						<div class="py-1">
+							{#each fromCurrencies as c}
+								<button
+									class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
+									on:click={() => {
+										fromCurrency = c;
+										fromDropdownOpen = false;
+										// If user picks new currency, check if 'toCurrency' is forced
+										const allowed = getAllowedToCurrencies(fromCurrency);
+										if (!allowed.includes(toCurrency)) {
+											toCurrency = allowed[0];
+										}
+										saveFromToCurrencyToLocalStorage();
+										doRecalc($oracle_box, $bank_box);
+									}}
+								>
+									{c}
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -647,30 +748,57 @@
 			>
 				{#if fromCurrency === 'ERG'}
 					<div class="h-5 w-5 {tokenColor(toCurrency)} rounded-full"></div>
-					<select
-						class="w-full cursor-pointer bg-transparent font-medium text-gray-100 outline-none"
+
+					<!-- Toggle button -->
+					<button
+						id="toDropdownBtn"
+						type="button"
+						class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
+						on:click={() => {
+							toDropdownOpen = !toDropdownOpen;
+							fromDropdownOpen = false; // close other if open
+						}}
 						style="max-width:113px;"
-						bind:value={toCurrency}
-						on:change={handleToCurrencyChange}
 					>
-						{#each getAllowedToCurrencies('ERG') as c}
-							<option value={c}>{c}</option>
-						{/each}
-					</select>
+						{toCurrency}
+						<svg
+							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+						>
+							<path d="M12 15.5l-6-6h12l-6 6z" />
+						</svg>
+					</button>
+
+					<!-- Dropdown list -->
+					{#if toDropdownOpen}
+						<div
+							id="toDropdownMenu"
+							style="width: 170px;"
+							class="absolute right-0 top-12 z-30 w-28 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5"
+						>
+							<div class="py-1">
+								{#each getAllowedToCurrencies('ERG') as c}
+									<button
+										class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
+										on:click={() => {
+											toCurrency = c;
+											toDropdownOpen = false;
+											saveFromToCurrencyToLocalStorage();
+											doRecalc($oracle_box, $bank_box);
+										}}
+									>
+										{c}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				{:else}
+					<!-- forced 'ERG' label -->
 					<div class="h-5 w-5 {tokenColor('ERG')} rounded-full"></div>
 					<span class="ml-3 font-medium text-gray-400">ERG</span>
-				{/if}
-
-				{#if fromCurrency === 'ERG'}
-					<svg
-						class="pointer-events-none absolute right-3 h-6 w-6 text-gray-100"
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<path d="M12 15.5l-6-6h12l-6 6z" />
-					</svg>
 				{/if}
 			</div>
 		</div>

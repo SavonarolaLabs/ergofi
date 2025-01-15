@@ -52,10 +52,11 @@ type OracleData = {
 };
 
 export function handleOracleBoxesUpdate(message: OracleData) {
-	if (message.unconfirmed_erg_usd.length > 0) {
-		if (get(oracle_box)?.boxId == message.unconfirmed_erg_usd[0].boxId) return;
-		oracle_box.set(message.unconfirmed_erg_usd[0]);
-	} else if (message.confirmed_erg_usd.length > 0) {
+	// if (message.unconfirmed_erg_usd.length > 0) {
+	// 	if (get(oracle_box)?.boxId == message.unconfirmed_erg_usd[0].boxId) return;
+	// 	oracle_box.set(message.unconfirmed_erg_usd[0]);
+	// } else
+	if (message.confirmed_erg_usd.length > 0) {
 		if (get(oracle_box)?.boxId == message.confirmed_erg_usd[0].boxId) return;
 		oracle_box.set(message.confirmed_erg_usd[0]);
 	}

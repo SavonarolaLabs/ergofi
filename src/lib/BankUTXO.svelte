@@ -27,38 +27,41 @@
 </script>
 
 <div class="row flex flex-col gap-1 text-gray-500">
-	<div class="flex items-end justify-between">
+	<div class="text-md flex items-end justify-between">
 		<div class="flex items-center gap-2 text-gray-500">
 			<Bank></Bank>
-			{$reserve_rate}% Reserve
+			<div>{$reserve_rate}% Reserve</div>
 		</div>
 		<div class="flex items-center">
-			<span class="text-lg">
+			<div>
 				{nanoErgToErg($bankBoxInNanoErg, 0)}
-			</span><span class="currency" style="width:57px">ERG</span>
+			</div>
+			<div class="currency">ERG</div>
 		</div>
 	</div>
 
-	<div class="flex items-end justify-between">
+	<div class="flex items-end justify-between text-xl">
 		<div class="flex items-center gap-1 uppercase">
 			<span class="price-left pl-1">↑ {$bank_price_usd_sell}</span> ↓ {$bank_price_usd_buy}
 		</div>
-		<div>
-			<span class="text-lg">
+		<div class="flex items-center">
+			<div>
 				{$reserve_border_left_USD.toLocaleString()}
-			</span><span class="currency">SigUSD</span>
+			</div>
+			<div class="currency">SigUSD</div>
 		</div>
 	</div>
-	<div class="flex items-end justify-between">
+	<div class="flex items-end justify-between text-xl">
 		<div class=" flex items-center gap-1 uppercase">
 			<span class="price-left pl-1">↑ <SubNumber value={1 / $bank_price_rsv_sell}></SubNumber></span
 			>
 			↓ <SubNumber value={1 / $bank_price_rsv_buy}></SubNumber>
 		</div>
-		<div>
-			<span class="text-lg">
+		<div class="flex items-center">
+			<div>
 				<!-- {$reserve_border_right_RSV.toLocaleString()} -->--
-			</span><span class="currency">SigRSV</span>
+			</div>
+			<div class="currency">SigRSV</div>
 		</div>
 	</div>
 </div>
@@ -74,6 +77,6 @@
 		margin-left: 0.5em;
 	}
 	.price-left {
-		width: 90px;
+		width: 110px;
 	}
 </style>

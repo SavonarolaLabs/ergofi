@@ -542,7 +542,7 @@
 	//let mintWarning = 'SigUSD mint prohibited - Reserve below 400%';
 	let mintWarning = '';
 
-	let fromDropdownOpen = false;
+	let fromDropdownOpen = true;
 	let toDropdownOpen = false;
 
 	window.addEventListener('click', handleGlobalClick);
@@ -636,7 +636,7 @@
 			</div> -->
 			<!-- FROM CURRENCY - custom dropdown (replaces <select>) -->
 			<div
-				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
+				class="relative flex flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 			>
 				<!-- color circle -->
@@ -668,13 +668,13 @@
 				{#if fromDropdownOpen}
 					<div
 						id="fromDropdownMenu"
-						style="width: 170px;"
-						class="absolute right-0 top-12 z-30 w-28 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5"
+						style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
+						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-lg ring-1 ring-black ring-opacity-5"
 					>
 						<div class="py-1">
 							{#each fromCurrencies as c}
 								<button
-									class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
+									class="text-md block flex w-full gap-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 									on:click={() => {
 										fromCurrency = c;
 										fromDropdownOpen = false;
@@ -687,6 +687,7 @@
 										doRecalc($oracle_box, $bank_box);
 									}}
 								>
+									<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
 									{c}
 								</button>
 							{/each}

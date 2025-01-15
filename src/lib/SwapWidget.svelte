@@ -96,7 +96,7 @@
 		return {
 			ERG: 'bg-orange-500',
 			SigUSD: 'bg-green-500',
-			SigRSV: 'bg-yellow-300'
+			SigRSV: 'bg-[#4A90E2]'
 		}[c];
 	}
 
@@ -543,7 +543,7 @@
 	let mintWarning = '';
 
 	let fromDropdownOpen = false;
-	let toDropdownOpen = true;
+	let toDropdownOpen = false;
 
 	window.addEventListener('click', handleGlobalClick);
 	window.addEventListener('keydown', handleGlobalKeydown);
@@ -608,39 +608,11 @@
 				on:input={handleFromAmountChange}
 			/>
 
-			<!-- FROM CURRENCY SELECT -->
-			<!-- <div
-				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
-				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px"
-			>
-				<div class="h-5 w-5 flex-shrink-0 {tokenColor(fromCurrency)} rounded-full"></div>
-				<select
-					class="w-full cursor-pointer bg-transparent font-medium text-gray-100 outline-none"
-					style="max-width:113px;"
-					bind:value={fromCurrency}
-					on:change={handleFromCurrencyChange}
-				>
-					{#each fromCurrencies as c}
-						<option value={c}>{c}</option>
-					{/each}
-				</select>
-
-				<svg
-					class="pointer-events-none absolute right-3 h-6 w-6 text-gray-100"
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="currentColor"
-				>
-					<path d="M12 15.5l-6-6h12l-6 6z" />
-				</svg>
-			</div> -->
-			<!-- FROM CURRENCY - custom dropdown (replaces <select>) -->
 			<div
 				class="relative flex flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 			>
 				<!-- color circle -->
-				<div class="h-5 w-5 flex-shrink-0 {tokenColor(fromCurrency)} rounded-full"></div>
 
 				<!-- Toggle button -->
 				<button
@@ -651,9 +623,11 @@
 						fromDropdownOpen = !fromDropdownOpen;
 						toDropdownOpen = false; // close other if open
 					}}
-					style="max-width:113px;"
 				>
-					{fromCurrency}
+					<div class="flex items-center gap-3">
+						<div class="h-5 w-5 {tokenColor(fromCurrency)} rounded-full"></div>
+						{fromCurrency}
+					</div>
 					<svg
 						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 						xmlns="http://www.w3.org/2000/svg"
@@ -748,8 +722,6 @@
 				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px;"
 			>
 				{#if fromCurrency === 'ERG'}
-					<div class="h-5 w-5 {tokenColor(toCurrency)} rounded-full"></div>
-
 					<!-- Toggle button -->
 					<button
 						id="toDropdownBtn"
@@ -759,9 +731,11 @@
 							toDropdownOpen = !toDropdownOpen;
 							fromDropdownOpen = false; // close other if open
 						}}
-						style="max-width:113px;"
 					>
-						{toCurrency}
+						<div class="flex items-center gap-3">
+							<div class="h-5 w-5 {tokenColor(toCurrency)} rounded-full"></div>
+							{toCurrency}
+						</div>
 						<svg
 							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 							xmlns="http://www.w3.org/2000/svg"

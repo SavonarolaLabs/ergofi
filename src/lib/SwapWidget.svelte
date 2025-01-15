@@ -584,7 +584,7 @@
 			<span class="text-sm">To</span>
 			<span class="text-sm"
 				>Real Rate:
-				{#if toCurrency == 'SigRSV'}<SubNumber value={1 / swapPrice}
+				{#if toCurrency == 'SigRSV' || fromCurrency == 'SigRSV'}<SubNumber value={1 / swapPrice}
 					></SubNumber>{:else}{swapPrice}{/if}</span
 			>
 		</div>

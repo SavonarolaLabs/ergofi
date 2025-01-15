@@ -3,7 +3,7 @@
 	import {
 		bank_price_usd_buy,
 		bank_price_usd_sell,
-		bankBoxInErg,
+		bankBoxInNanoErg,
 		oraclePriceSigUsd,
 		reserve_boarder_left_USD,
 		reserve_rate
@@ -46,7 +46,7 @@
 			<span class="text-lg"> SigUSD </span>
 		</div>
 		<div class="pr-8 text-right">
-			{nanoErgToErg($bankBoxInErg, 0)}
+			{nanoErgToErg($bankBoxInNanoErg, 0)}
 			<span style="margin-left:7px;">ERG</span>
 		</div>
 	</div>

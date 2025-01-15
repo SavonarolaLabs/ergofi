@@ -2,8 +2,8 @@
 	import { updateUnconfirmedBank } from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
-		bankBoxInCircSigUsd,
-		bankBoxInErg,
+		bankBoxInCircSigUsdInCent,
+		bankBoxInNanoErg,
 		oraclePriceSigUsd,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_reserve_rate,
@@ -21,8 +21,8 @@
 
 	function updateUnconfirmed() {
 		updateUnconfirmedBank(
-			$bankBoxInErg,
-			$bankBoxInCircSigUsd,
+			$bankBoxInNanoErg,
+			$bankBoxInCircSigUsdInCent,
 			$oraclePriceSigUsd,
 			$mempool_interactions,
 			$prepared_interactions

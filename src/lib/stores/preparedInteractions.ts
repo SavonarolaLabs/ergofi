@@ -34,11 +34,13 @@ export type Interaction = {
 	transactionId: string;
 	tx?: MempoolTransaction;
 	amount: number;
+	amountExact: number;
 	amountCurrency: string;
 	timestamp: number;
 	price: number;
 	type: 'Buy' | 'Sell';
 	ergAmount: number;
+	ergAmountInNanoErg: number;
 	confirmed: boolean;
 	rejected: boolean;
 	own: boolean;
@@ -255,7 +257,9 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[
 	]); //[ USER ]
 
 	let deltaToken;
+	let deltaTokenExact;
 	let deltaErg;
+	let deltaNanoErg;
 	let tokenPrice;
 	let currency;
 
@@ -263,20 +267,20 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[
 		//calculate TOKEN_SIGUSD and Value
 		const outSigUsd = calculateTokenAmount(allUserOutputs, TOKEN_SIGUSD); //USD OUT
 		const inSigUsd = calculateTokenAmount(allUserInputs, TOKEN_SIGUSD); //USD IN
-		deltaToken = centsToUsd(Number(outSigUsd - inSigUsd));
-		deltaErg = nanoErgToErg(
-			Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs))
-		);
+		deltaTokenExact = Number(outSigUsd - inSigUsd);
+		deltaToken = centsToUsd(deltaTokenExact);
+		deltaNanoErg = Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs));
+		deltaErg = nanoErgToErg(deltaNanoErg);
 		tokenPrice = -(deltaToken / deltaErg).toFixed(2);
 		currency = 'SigUSD';
 	} else {
 		//calculate TOKEN_SIGRSV and Value
 		const outSigRSV = calculateTokenAmount(allUserOutputs, TOKEN_SIGRSV); //RSV OUT
 		const inSigRSV = calculateTokenAmount(allUserInputs, TOKEN_SIGRSV); //RSV IN
-		deltaToken = Number(outSigRSV - inSigRSV);
-		deltaErg = nanoErgToErg(
-			Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs))
-		);
+		deltaTokenExact = Number(outSigRSV - inSigRSV);
+		deltaToken = deltaTokenExact;
+		deltaNanoErg = Number(calculateErgoAmount(allUserOutputs) - calculateErgoAmount(allUserInputs));
+		deltaErg = nanoErgToErg(deltaNanoErg);
 		tokenPrice = -(deltaToken / deltaErg).toFixed(2);
 		currency = 'SigRSV';
 	}
@@ -285,12 +289,14 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[
 		id: crypto.randomUUID(),
 		transactionId: tx.id,
 		tx: tx,
+		amountExact: Number(deltaToken),
 		amount: Number(deltaToken),
 		amountCurrency: currency,
 		timestamp: tx.timestamp ? tx.timestamp : (tx.creationTimestamp ?? Date.now()),
 		price: Number(tokenPrice),
 		type: txData.operation,
 		ergAmount: Number(deltaErg),
+		ergAmountInNanoErg: deltaNanoErg,
 		confirmed: false,
 		rejected: false,
 		own: isOwnTx(tx, ownAddressList)

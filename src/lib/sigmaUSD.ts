@@ -11,8 +11,8 @@ import {
 import { absBigInt, decodeBigInt, maxBigInt, minBigInt } from './utils';
 import {
 	bank_box,
-	bankBoxInCircSigUsd,
-	bankBoxInErg,
+	bankBoxInCircSigUsdInCent,
+	bankBoxInNanoErg,
 	fee_mining,
 	oracle_box,
 	oraclePriceSigUsd,
@@ -257,23 +257,6 @@ export function calculateReserveRateAndBorders(
 	inCircSigUSD: bigint,
 	oraclePrice: bigint
 ): any {
-	// //console.log(inErg, 'inErg');
-	// //console.log(oraclePrice, 'oraclePrice');
-
-	const oraclePriceErgCents = BigNumber(10 ** 9).dividedBy(oraclePrice.toString());
-	const reserveRateOld = Number(
-		BigNumber(inErg.toString()) // nanoergi
-			.multipliedBy(oraclePriceErgCents)
-			.dividedBy(inCircSigUSD.toString())
-			.dividedBy(10 ** 9)
-			.multipliedBy(100)
-			.toFixed(0)
-	);
-
-	const leftBoarderValue = 400;
-	let leftBoarderDelta;
-	const rightBoarderValue = 800;
-	let rightBoarderDelta;
 	// Clear convert
 	const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
 	const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
@@ -336,8 +319,8 @@ export function applyFeeSell(inputERG: bigint, feeMining: bigint) {
 export function calculateInputsUsdErgInErg(
 	direction: bigint,
 	buyAmountInput: any,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
@@ -347,8 +330,8 @@ export function calculateInputsUsdErgInErg(
 			calculateInputsUsdErgInErgPrice(
 				direction,
 				inputAmountERG,
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
 				feeMining
 			);
@@ -362,8 +345,8 @@ export function calculateInputsUsdErgInErg(
 			calculateInputsUsdErgInErgPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
 				feeMining
 			);
@@ -376,8 +359,8 @@ export function calculateInputsUsdErgInErg(
 export function calculateInputsUsdErgInErgPrice(
 	direction: bigint,
 	buyAmount: BigNumber,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
@@ -405,8 +388,8 @@ export function calculateInputsUsdErgInErgPrice(
 		fee: contractFee,
 		requestSC: contractUSD
 	} = calculateBankRateUSDInputERG(
-		bankBoxInErg,
-		bankBoxInCircSigUsd,
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
 		oraclePriceSigUsd,
 		contractERG,
 		direction
@@ -421,8 +404,8 @@ export function calculateInputsUsdErgInErgPrice(
 	//Part 2 - Calculate Price ()
 	const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 		calculateBankRateUSDInputUSD(
-			bankBoxInErg,
-			bankBoxInCircSigUsd,
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
 			oraclePriceSigUsd,
 			contractUSD,
 			direction
@@ -475,8 +458,8 @@ export function calculateInputsUsdErgInErgPrice(
 export function calculateInputsUsdErgInUsd(
 	direction: bigint,
 	buyTotalInput: any,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
@@ -489,8 +472,8 @@ export function calculateInputsUsdErgInUsd(
 			calculateInputsUsdErgInUsdPrice(
 				direction,
 				totalSigUSD,
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
 				feeMining
 			);
@@ -505,8 +488,8 @@ export function calculateInputsUsdErgInUsd(
 			calculateInputsUsdErgInUsdPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_USD.toString()),
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
 				feeMining
 			);
@@ -519,8 +502,8 @@ export function calculateInputsUsdErgInUsd(
 export function calculateInputsUsdErgInUsdPrice(
 	direction: bigint,
 	buyTotal: BigNumber,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
@@ -534,8 +517,8 @@ export function calculateInputsUsdErgInUsdPrice(
 		fee: feeContract,
 		bcDeltaExpectedWithFee: contractErgoRequired
 	} = calculateBankRateUSDInputUSD(
-		bankBoxInErg,
-		bankBoxInCircSigUsd,
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
 		oraclePriceSigUsd,
 		totalSC,
 		direction
@@ -570,8 +553,8 @@ export function calculateInputsUsdErgInUsdPrice(
 export function calculateInputsRSVErgInErg(
 	direction: bigint,
 	buyAmountInput: any,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	bankBoxInCircSigRSV: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
@@ -582,8 +565,8 @@ export function calculateInputsRSVErgInErg(
 			calculateInputsRSVErgInErgPrice(
 				direction,
 				inputAmountERG,
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
 				oraclePriceSigUsd,
 				feeMining
@@ -598,8 +581,8 @@ export function calculateInputsRSVErgInErg(
 			calculateInputsRSVErgInErgPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
 				oraclePriceSigUsd,
 				feeMining
@@ -613,8 +596,8 @@ export function calculateInputsRSVErgInErg(
 export function calculateInputsRSVErgInErgPrice(
 	direction: bigint,
 	buyAmount: BigNumber,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	bankBoxInCircSigRSV: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
@@ -643,8 +626,8 @@ export function calculateInputsRSVErgInErgPrice(
 		fee: contractFee,
 		requestRSV: contractRSV
 	} = calculateBankRateRSVInputERG(
-		bankBoxInErg,
-		bankBoxInCircSigUsd,
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
 		bankBoxInCircSigRSV,
 		oraclePriceSigUsd,
 		contractERG,
@@ -658,8 +641,8 @@ export function calculateInputsRSVErgInErgPrice(
 	//Part 2 - Calculate Price ()
 	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
 		calculateBankRateRSVInputRSV(
-			bankBoxInErg,
-			bankBoxInCircSigUsd,
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
 			bankBoxInCircSigRSV,
 			oraclePriceSigUsd,
 			contractRSV,
@@ -694,8 +677,8 @@ export function calculateInputsRSVErgInErgPrice(
 export function calculateInputsRSVErgInRSV(
 	direction: bigint,
 	inputRSV: any,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	bankBoxInCircSigRSV: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
@@ -707,8 +690,8 @@ export function calculateInputsRSVErgInRSV(
 			calculateInputsRSVErgInRSVPrice(
 				direction,
 				totalRSV,
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
 				oraclePriceSigUsd,
 				feeMining
@@ -724,8 +707,8 @@ export function calculateInputsRSVErgInRSV(
 			calculateInputsRSVErgInRSVPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_USD.toString()),
-				bankBoxInErg,
-				bankBoxInCircSigUsd,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
 				oraclePriceSigUsd,
 				feeMining
@@ -739,8 +722,8 @@ export function calculateInputsRSVErgInRSV(
 export function calculateInputsRSVErgInRSVPrice(
 	direction: bigint,
 	inputRSV: BigNumber,
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	bankBoxInCircSigRSV: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
@@ -755,8 +738,8 @@ export function calculateInputsRSVErgInRSVPrice(
 		fee: contractFee,
 		bcDeltaExpectedWithFee: contractErgoRequired
 	} = calculateBankRateRSVInputRSV(
-		bankBoxInErg,
-		bankBoxInCircSigUsd,
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
 		bankBoxInCircSigRSV,
 		oraclePriceSigUsd,
 		totalRSV,
@@ -1674,27 +1657,31 @@ export async function sellRSVInputERGTx(
 
 // TODO: ADD RSV
 export function calculateIntractionsERGUSD(interactions: Interaction[]) {
-	const ergAdd: bigint = BigInt(
-		(interactions.reduce((a, e) => a + e.ergAmount, 0) * 10 ** 9).toFixed()
+	const nanoErgAdd: bigint = BigInt(
+		interactions.reduce((a, e) => a + e.ergAmountInNanoErg, 0).toFixed()
 	);
-	const usdAdd: bigint = BigInt(
-		(interactions.reduce((a, e) => a + e.amount, 0) * 10 ** 2).toFixed()
+	const usdCentAdd: bigint = BigInt(
+		interactions
+			.filter((i) => i.amountCurrency == 'SigUSD')
+			.reduce((a, e) => a + e.amountExact, 0)
+			.toFixed()
 	);
-	return { ergAdd, usdAdd };
+	return { nanoErgAdd, usdCentAdd };
 }
 export async function updateUnconfirmedBank(
-	bankBoxInErg: bigint,
-	bankBoxInCircSigUsd: bigint,
+	bankBoxInNanoErg: bigint,
+	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	mempoolInteractions: Interaction[],
 	preparedInteractions: Interaction[]
 ) {
-	const { ergAdd: ergAddMem, usdAdd: usdAddMem } = calculateIntractionsERGUSD(mempoolInteractions);
-	const { ergAdd: ergAddPrep, usdAdd: usdAddPrep } =
+	const { nanoErgAdd: ergAddMem, usdCentAdd: usdAddMem } =
+		calculateIntractionsERGUSD(mempoolInteractions);
+	const { nanoErgAdd: ergAddPrep, usdCentAdd: usdAddPrep } =
 		calculateIntractionsERGUSD(preparedInteractions);
 
-	const newBankErg = bankBoxInErg + ergAddMem + ergAddPrep;
-	const newBankUsd = bankBoxInCircSigUsd + usdAddMem + usdAddPrep;
+	const newBankErg = bankBoxInNanoErg + ergAddMem + ergAddPrep;
+	const newBankUsd = bankBoxInCircSigUsdInCent + usdAddMem + usdAddPrep;
 
 	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
 		newBankErg,

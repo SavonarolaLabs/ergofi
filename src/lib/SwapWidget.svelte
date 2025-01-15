@@ -33,8 +33,8 @@
 		bank_price_usd_buy,
 		bank_price_usd_sell,
 		bankBoxInCircSigRsv,
-		bankBoxInCircSigUsd,
-		bankBoxInErg,
+		bankBoxInCircSigUsdInCent,
+		bankBoxInNanoErg,
 		fee_mining,
 		oracle_box,
 		oraclePriceSigUsd,
@@ -159,16 +159,16 @@
 	 * ------------------------------------- */
 	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
 		const { inErg, inCircSigUSD, oraclePrice, inCircSigRSV } = extractBoxesData(oracleBox, bankBox);
-		bankBoxInErg.set(inErg);
-		bankBoxInCircSigUsd.set(inCircSigUSD);
+		bankBoxInNanoErg.set(inErg);
+		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
 		bankBoxInCircSigRsv.set(inCircSigRSV);
 		//inCircSigRSV
 		//....
 		oraclePriceSigUsd.set(oraclePrice);
 
 		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
-			$bankBoxInErg,
-			$bankBoxInCircSigUsd,
+			$bankBoxInNanoErg,
+			$bankBoxInCircSigUsdInCent,
 			$oraclePriceSigUsd
 		);
 
@@ -180,8 +180,8 @@
 	}
 
 	function initialInputs(
-		bankBoxInErg: bigint,
-		bankBoxInCircSigUsd: bigint,
+		bankBoxInNanoErg: bigint,
+		bankBoxInCircSigUsdInCent: bigint,
 		oraclePriceSigUsd: bigint,
 		feeMining: bigint
 	) {
@@ -189,8 +189,8 @@
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInErg,
-			bankBoxInCircSigUsd,
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
 			oraclePriceSigUsd,
 			feeMining
 		);
@@ -200,8 +200,8 @@
 		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
 			directionSell,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInErg,
-			bankBoxInCircSigUsd,
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
 			oraclePriceSigUsd,
 			feeMining
 		);
@@ -225,7 +225,7 @@
 		if (!oracleBox || !bankBox) return;
 		updateBankBoxAndOracle(oracleBox, bankBox);
 		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
-			initialInputs($bankBoxInErg, $bankBoxInCircSigUsd, $oraclePriceSigUsd, $fee_mining);
+			initialInputs($bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
 		}
 
 		// If either side is empty, just zero out the other side
@@ -243,8 +243,8 @@
 				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionBuy,
 					fromAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
@@ -257,8 +257,8 @@
 				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
 					fromAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd,
 					$fee_mining
@@ -272,8 +272,8 @@
 				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
 					directionSell,
 					fromAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
@@ -284,8 +284,8 @@
 				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
 					directionSell,
 					fromAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd,
 					$fee_mining
@@ -300,8 +300,8 @@
 				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
 					directionBuy,
 					toAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
@@ -312,8 +312,8 @@
 				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
 					directionBuy,
 					toAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd,
 					$fee_mining
@@ -325,8 +325,8 @@
 				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionSell,
 					toAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
@@ -342,8 +342,8 @@
 				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionSell,
 					toAmount,
-					$bankBoxInErg,
-					$bankBoxInCircSigUsd,
+					$bankBoxInNanoErg,
+					$bankBoxInCircSigUsdInCent,
 					$bankBoxInCircSigRsv,
 					$oraclePriceSigUsd,
 					$fee_mining

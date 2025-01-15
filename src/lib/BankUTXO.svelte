@@ -2,11 +2,14 @@
 	import Bank from './icons/Bank.svelte';
 	import Spinner from './Spinner.svelte';
 	import {
+		bank_price_rsv_buy,
+		bank_price_rsv_sell,
 		bank_price_usd_buy,
 		bank_price_usd_sell,
 		bankBoxInNanoErg,
 		oraclePriceSigUsd,
 		reserve_border_left_USD,
+		reserve_border_right_RSV,
 		reserve_rate
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
@@ -35,7 +38,7 @@
 		</div>
 		<div>
 			<div class="flex items-center gap-1 uppercase">
-				↑{$bank_price_usd_sell} ↓{$bank_price_usd_buy}
+				↑{$bank_price_rsv_sell} ↓{$bank_price_rsv_buy}
 			</div>
 		</div>
 	</div>
@@ -52,7 +55,7 @@
 		</div>
 		<div>
 			<span class="mr-1">
-				{$reserve_border_left_USD.toLocaleString()}
+				{$reserve_border_right_RSV.toLocaleString()}
 			</span>
 			<span class=""> SigRSV </span>
 		</div>

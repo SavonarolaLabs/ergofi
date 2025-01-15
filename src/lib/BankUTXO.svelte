@@ -48,7 +48,7 @@
 			<div>
 				{$reserve_border_left_USD.toLocaleString()}
 			</div>
-			<div class="currency">SigUSD</div>
+			<div class="currency text-lg">SigUSD</div>
 		</div>
 	</div>
 	<div class="flex items-end justify-between text-xl">
@@ -60,7 +60,7 @@
 			<div>
 				<!-- {$reserve_border_right_RSV.toLocaleString()} -->--
 			</div>
-			<div class="currency">SigRSV</div>
+			<div class="currency text-lg">SigRSV</div>
 		</div>
 	</div>
 </div>

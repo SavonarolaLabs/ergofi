@@ -542,8 +542,8 @@
 	//let mintWarning = 'SigUSD mint prohibited - Reserve below 400%';
 	let mintWarning = '';
 
-	let fromDropdownOpen = true;
-	let toDropdownOpen = false;
+	let fromDropdownOpen = false;
+	let toDropdownOpen = true;
 
 	window.addEventListener('click', handleGlobalClick);
 	window.addEventListener('keydown', handleGlobalKeydown);
@@ -669,12 +669,12 @@
 					<div
 						id="fromDropdownMenu"
 						style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
-						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-lg ring-1 ring-black ring-opacity-5"
+						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 					>
 						<div class="py-1">
 							{#each fromCurrencies as c}
 								<button
-									class="text-md block flex w-full gap-3 px-4 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+									class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 									on:click={() => {
 										fromCurrency = c;
 										fromDropdownOpen = false;
@@ -776,13 +776,13 @@
 					{#if toDropdownOpen}
 						<div
 							id="toDropdownMenu"
-							style="width: 170px;"
-							class="absolute right-0 top-12 z-30 w-28 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5"
+							style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
+							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 						>
 							<div class="py-1">
 								{#each getAllowedToCurrencies('ERG') as c}
 									<button
-										class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 hover:text-white"
+										class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 										on:click={() => {
 											toCurrency = c;
 											toDropdownOpen = false;
@@ -790,6 +790,7 @@
 											doRecalc($oracle_box, $bank_box);
 										}}
 									>
+										<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
 										{c}
 									</button>
 								{/each}

@@ -30,6 +30,8 @@
 
 	import {
 		bank_box,
+		bank_price_rsv_buy,
+		bank_price_rsv_sell,
 		bank_price_usd_buy,
 		bank_price_usd_sell,
 		bankBoxInCircSigRsv,
@@ -182,6 +184,7 @@
 	function initialInputs(
 		bankBoxInNanoErg: bigint,
 		bankBoxInCircSigUsdInCent: bigint,
+		bankBoxInCircSigRSV: bigint,
 		oraclePriceSigUsd: bigint,
 		feeMining: bigint
 	) {
@@ -208,6 +211,31 @@
 
 		bank_price_usd_sell.set(finalPriceSell);
 
+		// Just as beforecalculateInputsUsdErgInputErg
+		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
+			directionBuy,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
+			bankBoxInCircSigRSV,
+			oraclePriceSigUsd,
+			feeMining
+		);
+
+		bank_price_rsv_buy.set(finalPriceBuyRSV);
+
+		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
+			directionSell,
+			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+			bankBoxInNanoErg,
+			bankBoxInCircSigUsdInCent,
+			bankBoxInCircSigRSV,
+			oraclePriceSigUsd,
+			feeMining
+		);
+
+		bank_price_rsv_sell.set(finalPriceSellRSV);
+
 		// We'll just set some starting example
 		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"
 		toAmount = totalSigUSDBuy; // e.g. "10"
@@ -225,7 +253,13 @@
 		if (!oracleBox || !bankBox) return;
 		updateBankBoxAndOracle(oracleBox, bankBox);
 		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
-			initialInputs($bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
+			initialInputs(
+				$bankBoxInNanoErg,
+				$bankBoxInCircSigUsdInCent,
+				$bankBoxInCircSigRsv,
+				$oraclePriceSigUsd,
+				$fee_mining
+			);
 		}
 
 		// If either side is empty, just zero out the other side

@@ -8,6 +8,7 @@ body {
 	padding: 0;
 	height: 100%;
 	font-family: 'Inter';
+	font-weight: 300;
 }
 
 /* Global styles for Bootstrap in your SvelteKit project */

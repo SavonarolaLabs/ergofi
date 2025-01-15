@@ -7,7 +7,7 @@
 		oraclePriceSigUsd,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_reserve_rate,
-		unconfrimed_reserve_boarder_left_USD
+		unconfrimed_reserve_border_left_USD
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
 	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
@@ -65,7 +65,7 @@
 	<div class="flex flex-col text-gray-500">
 		<div>
 			<span class="mr-1 text-3xl">
-				{$unconfrimed_reserve_boarder_left_USD.toLocaleString()}
+				{$unconfrimed_reserve_border_left_USD.toLocaleString()}
 			</span>
 			<span class="text-lg"> SigUSD </span>
 		</div>

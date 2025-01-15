@@ -19,7 +19,7 @@ import {
 	unconfirmed_bank_erg,
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
-	unconfrimed_reserve_boarder_left_USD,
+	unconfrimed_reserve_border_left_USD,
 	updateBestBankBoxLocal,
 	type ErgoBox
 } from './stores/bank';
@@ -1690,7 +1690,7 @@ export async function updateUnconfirmedBank(
 	);
 	unconfirmed_bank_erg.set(newBankErg);
 	unconfrimed_bank_usd.set(newBankUsd);
-	unconfrimed_reserve_boarder_left_USD.set(leftUSD);
+	unconfrimed_reserve_border_left_USD.set(leftUSD);
 	unconfrimed_bank_reserve_rate.set(reserveRate);
 }
 

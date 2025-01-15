@@ -38,10 +38,10 @@
 		fee_mining,
 		oracle_box,
 		oraclePriceSigUsd,
-		reserve_boarder_left_ERG,
-		reserve_boarder_left_USD,
-		reserve_boarder_right_ERG,
-		reserve_boarder_right_USD,
+		reserve_border_left_ERG,
+		reserve_border_left_USD,
+		reserve_border_right_ERG,
+		reserve_border_right_USD,
 		reserve_rate,
 		type ErgoBox
 	} from './stores/bank';
@@ -173,10 +173,10 @@
 		);
 
 		reserve_rate.set(reserveRate);
-		reserve_boarder_left_USD.set(leftUSD);
-		reserve_boarder_left_ERG.set(leftERG);
-		reserve_boarder_right_USD.set(rightUSD);
-		reserve_boarder_right_ERG.set(rightERG);
+		reserve_border_left_USD.set(leftUSD);
+		reserve_border_left_ERG.set(leftERG);
+		reserve_border_right_USD.set(rightUSD);
+		reserve_border_right_ERG.set(rightERG);
 	}
 
 	function initialInputs(

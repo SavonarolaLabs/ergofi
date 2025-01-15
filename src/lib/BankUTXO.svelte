@@ -12,6 +12,7 @@
 		reserve_border_right_RSV,
 		reserve_rate
 	} from './stores/bank';
+	import SubNumber from './SubNumber.svelte';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
 
 	export let confirmed = true;
@@ -38,7 +39,9 @@
 		</div>
 		<div>
 			<div class="flex items-center gap-1 uppercase">
-				↑{$bank_price_rsv_sell} ↓{$bank_price_rsv_buy}
+				↑<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber> ↓<SubNumber
+					value={1 / $bank_price_rsv_buy}
+				></SubNumber>
 			</div>
 		</div>
 	</div>

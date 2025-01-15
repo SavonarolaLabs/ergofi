@@ -81,11 +81,11 @@
 <div class="widget text-gray-500">
 	<div class="pl-2">
 		<BankUTXO />
-		{#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
+		<!-- {#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
 			<div in:fade={{ duration: 400 }} out:fly={{ y: -20, opacity: 0, duration: 300 }}>
 				<BankUtxoUnconfirmed confirmed={false} />
 			</div>
-		{/if}
+		{/if} -->
 	</div>
 	<div class="padding-bottom">
 		<div class="tx-list w-full pl-2">

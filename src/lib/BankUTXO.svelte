@@ -26,50 +26,54 @@
 	};
 </script>
 
-<div class="row text-lg text-gray-500">
-	<div class="left pb-1">
-		<span class="flex items-center gap-2 text-sm text-gray-500">
+<div class="row flex flex-col gap-1 text-gray-500">
+	<div class="flex items-end justify-between">
+		<div class="flex items-center gap-2 text-gray-500">
 			<Bank></Bank>
 			{$reserve_rate}% Reserve
-		</span>
-		<div>
-			<div class="flex items-center gap-1 uppercase">
-				↑{$bank_price_usd_sell} ↓{$bank_price_usd_buy}
-			</div>
 		</div>
-		<div>
-			<div class="flex items-center gap-1 uppercase">
-				↑<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber> ↓<SubNumber
-					value={1 / $bank_price_rsv_buy}
-				></SubNumber>
-			</div>
+		<div class="flex items-center">
+			<span class="text-lg">
+				{nanoErgToErg($bankBoxInNanoErg, 0)}
+			</span><span class="currency" style="width:57px">ERG</span>
 		</div>
 	</div>
-	<div class="flex flex-col text-gray-500">
-		<div class="pr-8 text-right">
-			{nanoErgToErg($bankBoxInNanoErg, 0)}
-			<span style="margin-left:7px;">ERG</span>
+
+	<div class="flex items-end justify-between">
+		<div class="flex items-center gap-1 uppercase">
+			<span class="price-left pl-1">↑ {$bank_price_usd_sell}</span> ↓ {$bank_price_usd_buy}
 		</div>
 		<div>
-			<span class="mr-1">
+			<span class="text-lg">
 				{$reserve_border_left_USD.toLocaleString()}
-			</span>
-			<span class=""> SigUSD </span>
+			</span><span class="currency">SigUSD</span>
+		</div>
+	</div>
+	<div class="flex items-end justify-between">
+		<div class=" flex items-center gap-1 uppercase">
+			<span class="price-left pl-1">↑ <SubNumber value={1 / $bank_price_rsv_sell}></SubNumber></span
+			>
+			↓ <SubNumber value={1 / $bank_price_rsv_buy}></SubNumber>
 		</div>
 		<div>
-			<span class="mr-1">
-				{$reserve_border_right_RSV.toLocaleString()}
-			</span>
-			<span class=""> SigRSV </span>
+			<span class="text-lg">
+				<!-- {$reserve_border_right_RSV.toLocaleString()} -->--
+			</span><span class="currency">SigRSV</span>
 		</div>
 	</div>
 </div>
 
 <style>
 	.row {
-		display: flex;
-		justify-content: space-between;
-		align-items: end;
-		padding: 0.5rem 1rem;
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+	.currency {
+		width: 60px;
+		text-align: left;
+		margin-left: 0.5em;
+	}
+	.price-left {
+		width: 90px;
 	}
 </style>

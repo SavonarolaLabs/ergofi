@@ -40,23 +40,65 @@
 		</div>
 	</div>
 
-	<div class="flex items-end justify-between text-xl">
+	<div class="flex items-end justify-between text-lg">
 		<div class="flex items-center gap-1 text-lg uppercase">
-			<span class="price-left">↑ {$bank_price_usd_sell}</span> ↓ {$bank_price_usd_buy}
+			<span class="price-left flex items-center gap-1">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 320 512"
+					width="0.6em"
+					fill="currentColor"
+					><path
+						d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"
+					/></svg
+				>
+				{$bank_price_usd_sell}</span
+			>
+
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 320 512"
+				width="0.6em"
+				fill="currentColor"
+				><path
+					d="M182.6 137.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l256 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-128-128z"
+				/></svg
+			>
+			{$bank_price_usd_buy}
 		</div>
-		<div class="flex items-center">
+		<div class="flex items-center font-normal">
 			<div>
 				{$reserve_border_left_USD.toLocaleString()}
 			</div>
 			<div class="currency text-lg">SigUSD</div>
 		</div>
 	</div>
-	<div class="flex items-end justify-between text-xl">
-		<div class="flex items-center gap-1 text-lg uppercase">
-			<span class="price-left">↑ <SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span>
-			↓ <SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
+	<div class="flex items-end justify-between text-lg">
+		<div class="flex items-center gap-1 uppercase">
+			<span class="price-left flex items-center gap-1"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 320 512"
+					width="0.6em"
+					fill="currentColor"
+					><path
+						d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"
+					/></svg
+				>
+				<SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span
+			>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 320 512"
+				width="0.6em"
+				fill="currentColor"
+				><path
+					d="M182.6 137.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l256 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-128-128z"
+				/></svg
+			>
+			<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
 		</div>
-		<div class="flex items-center">
+		<div class="flex items-center font-normal">
 			<div>
 				{formatAmount($reserve_border_right_RSV, false)}
 			</div>

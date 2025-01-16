@@ -86,7 +86,7 @@ export function formatAmount(value: bigint | number | undefined): string {
 	if (typeof value == 'bigint') value = Number(value);
 	const prefix = value > 0 ? '+' : '';
 	if (Math.abs(value) >= 1000) {
-		let formatted = numeral(value).format('0.0a').replace('m', 'M');
+		let formatted = numeral(value).format('0.0a').replace('m', 'M').replace('b', 'B');
 		if (formatted.includes('.0')) {
 			formatted = formatted.replace('.0', '');
 		}

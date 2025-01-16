@@ -168,15 +168,7 @@
 	/* ---------------------------------------
 	 * BankBox + Oracle helper
 	 * ------------------------------------- */
-	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		const { inErg, inCircSigUSD, oraclePrice, inCircSigRSV } = extractBoxesData(oracleBox, bankBox);
-		bankBoxInNanoErg.set(inErg);
-		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
-		bankBoxInCircSigRsv.set(inCircSigRSV);
-		//inCircSigRSV
-		//....
-		oraclePriceSigUsd.set(oraclePrice);
-
+	function updateBankStats() {
 		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
 			calculateReserveRateAndBorders(
 				$bankBoxInNanoErg,
@@ -193,6 +185,15 @@
 		reserve_border_right_ERG.set(rightERG);
 		reserve_border_left_RSV.set(leftRSV);
 		reserve_border_right_RSV.set(rightRSV);
+	}
+	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
+		const { inErg, inCircSigUSD, oraclePrice, inCircSigRSV } = extractBoxesData(oracleBox, bankBox);
+		bankBoxInNanoErg.set(inErg);
+		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
+		bankBoxInCircSigRsv.set(inCircSigRSV);
+		//inCircSigRSV
+		//....
+		oraclePriceSigUsd.set(oraclePrice);
 	}
 
 	function initialInputs(
@@ -275,6 +276,7 @@
 				$fee_mining
 			);
 		}
+		updateBankStats();
 
 		// If either side is empty, just zero out the other side
 		if (!fromAmount && !toAmount) {

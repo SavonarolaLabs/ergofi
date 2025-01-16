@@ -13,7 +13,7 @@
 		reserve_rate
 	} from './stores/bank';
 	import SubNumber from './SubNumber.svelte';
-	import { nanoErgToErg, oracleRateToUsd } from './utils';
+	import { formatAmount, nanoErgToErg, oracleRateToUsd } from './utils';
 
 	export let confirmed = true;
 
@@ -58,7 +58,7 @@
 		</div>
 		<div class="flex items-center">
 			<div>
-				{$reserve_border_right_RSV.toLocaleString()}
+				{formatAmount($reserve_border_right_RSV)}
 			</div>
 			<div class="currency text-lg">SigRSV</div>
 		</div>

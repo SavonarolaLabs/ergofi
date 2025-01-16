@@ -1,10 +1,26 @@
 //Here Main info about dexyGold:
 
-import { TransactionBuilder } from '@fleet-sdk/core';
+import {
+	ErgoAddress,
+	OutputBuilder,
+	SAFE_MIN_BOX_VALUE,
+	SLong,
+	TransactionBuilder
+} from '@fleet-sdk/core';
+import { UI_FEE_ADDRESS } from './api/ergoNode';
+
+// In DexyUSD, X is NanoErg and Y is USD
+//
+//
+//
 
 const ORACLE_NFT = '472B4B6250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
-const DEXY_BANK_NFT = '861A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
-const DEXY_LP_NFT = '361A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
+const TOKEN_DEXY_BANK_NFT = '861A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
+const TOKEN_DEXY_LP_NFT = '361A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
+
+//added
+const TOKEN_DEXY_USD = '12345678'; // TODO replace with actual
+const TOKEN_DEXY_RSV = '12345678'; // TODO replace with actual
 
 // all tokens below for aux boxes (1 for each type of box)
 const interventionNFT = '161A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
@@ -15,7 +31,14 @@ const lpMintNFT = '161A3A5250655368566D597133743677397A24432646294A404D635166546
 const lpRedeemNFT = '161A3A5250655368566D597133743677397A24432646294A404D635166546A59'; // TODO replace with actual
 
 const freeMintNFT = '061A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
+
+//initial
 const arbitrageMintNFT = '961A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
+//changed
+const TOKEN_DEXY_ARB_NFT = arbitrageMintNFT;
+const TOKEN_DEXY_ARB_ADDRESS = '1234567890'; // TODO replace with actual
+const FEE_DEXY_ARB = 5n; //0,5%  // TODO replace with actual
+const FEE_DEXY_ARB_DENOM = 10000n; // TODO replace with actual
 
 // boxes for tracking ratio of LP rate and oracle pool rate (see details in Tracking contract)
 const tracking98NFT = '261A3A5250655368566D597133743677397A24432646294A404D635166546A57'; // TODO replace with actual
@@ -25,11 +48,90 @@ const tracking101NFT = '261A3A5250655368566D597133743677397A24432646294A404D6351
 // test NFT
 const testNFT = '361A3A5250655368566D597133743677397A24432646294A404D635166546A58'; // TODO replace with actual
 
+function applyFeePrice(oracleRateWithoutFee: bigint, fee: bigint, feeDenom: bigint) {
+	return (oracleRateWithoutFee * (fee + feeDenom)) / feeDenom;
+}
+
+export function dexyInputERG() {}
+
+export function buildTx_DEXY_ARB(
+	userBase58PK: string,
+	dexyArbBase58PK: string,
+	dexyBankBase58PK: string,
+	height: number,
+	dexyArbBox: any,
+	dexyBankBox: any,
+	oracleBox: any,
+	lpBox: any,
+	uiFee: bigint,
+	utxos: Array<any>,
+	outErg: bigint,
+	outDexyUSD: bigint,
+	mintedDexyUSD: bigint,
+	feeMining: bigint
+) {
+	const myAddr = ErgoAddress.fromBase58(userBase58PK);
+	const dexyArbAddr = ErgoAddress.fromBase58(dexyArbBase58PK);
+	const dexyBankAddr = ErgoAddress.fromBase58(dexyBankBase58PK);
+
+	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
+
+	//Dexy Arb Out
+	const dexyArbOutBox = new OutputBuilder(outErg, dexyArbAddr)
+		.addTokens([{ tokenId: TOKEN_DEXY_ARB_NFT, amount: 1n }])
+		.setAdditionalRegisters({
+			R4: SLong(BigInt(outCircSigUSD)).toHex(), //<--- Change   R4: (Int) height at which counter will reset
+			R5: SLong(BigInt(outCircSigRSV)).toHex() //<--- Change   R5: (Long) remaining Dexy tokens available to be purchased before counter is reset
+		});
+
+	//Dexy Bank Out
+	const BankOutBox = new OutputBuilder(outErg, dexyBankAddr).addTokens([
+		{ tokenId: TOKEN_DEXY_BANK_NFT, amount: 1n },
+		{ tokenId: TOKEN_DEXY_USD, amount: outDexyUSD }
+	]);
+
+	// ---------- Receipt ------------
+	const receiptBox = new OutputBuilder(SAFE_MIN_BOX_VALUE, myAddr).addTokens([
+		{ tokenId: TOKEN_DEXY_USD, amount: mintedDexyUSD }
+	]);
+
+	const uiFeeBox = new OutputBuilder(uiFee, uiAddr);
+
+	const unsignedArbMintTransaction = new TransactionBuilder(height)
+		.from([dexyArbBox, dexyBankBox, ...utxos])
+		.to([dexyArbOutBox, BankOutBox, receiptBox, uiFeeBox])
+		.sendChangeTo(myAddr)
+		.payFee(feeMining)
+		.build()
+		.toEIP12Object();
+
+	unsignedArbMintTransaction.dataInputs = [oracleBox, lpBox];
+
+	return unsignedArbMintTransaction;
+}
+
 //LOGIC:
 // Arbitrage >101%
 // intervention < 98%
 
+//????? // set R4 to HEIGHT_AT_BROADCAST + T_arb + T_buffer
+
 function arbitrageMint(height: number, bankBox: any, oracleBox: any, lpBox: any) {
+	// ----------------------Input or Calculate---------------
+	function calculateBankBoxOut(bankBoxIn: any) {
+		return bankBoxIn;
+	}
+
+	function calculateArbitrageMintOut() {
+		// val successorR4 = successor.R4[Int].get
+		// val successorR5 = successor.R5[Long].get
+	}
+
+	const bankBoxIn = bankBox;
+	const bankBoxOut = calculateBankBoxOut(bankBoxIn);
+	const oracleRate = 1n;
+	//--------------------------------------------------------
+
 	// input indices
 	const bankInIndex = 1;
 
@@ -41,27 +143,69 @@ function arbitrageMint(height: number, bankBox: any, oracleBox: any, lpBox: any)
 	const oracleBoxIndex = 0;
 	const lpBoxIndex = 1;
 
-	const nfts = `
-   |  val oracleNFT = fromBase64("${Base64.encode(oracleNFT.decodeHex)}") // to identify oracle pool box
-   |  val bankNFT = fromBase64("${Base64.encode(bankNFT.decodeHex)}")
-   |  val lpNFT = fromBase64("${Base64.encode(lpNFT.decodeHex)}")
-   `;
+	const oracleRateWithoutFee = oracleRate; //oracleBox.R4[Long].get;
+	const oracleRateWithFee = applyFeePrice(oracleRateWithoutFee, FEE_DEXY_ARB, FEE_DEXY_ARB_DENOM);
 
-	const feeNum = 5;
-	const feeDenom = 1000;
-
-	const oracleRateWithoutFee = oracleBox.R4[Long].get;
-	const oracleRateWithFee = (oracleRateWithoutFee * (feeNum + feeDenom)) / feeDenom;
-
-	const lpReservesX = lpBox.value; // Pool ERGs
-	const lpReservesY = lpBox.assets[2].amount; //Pool dexyReserves  //<---- Need to check 1 or 2
+	// --------- LP stats: ---------
+	// [0]: pool NFT
+	// [1]: DexyUSD
+	// [2]: DexyReserves
+	const lpReservesX = lpBox.value;
+	const lpReservesY = lpBox.assets[2].amount;
 	const lpRate = lpReservesX / lpReservesY;
 
-	const dexyMinted = bankBoxIn.tokens(1)._2 - bankBoxOut.tokens(1)._2;
+	// --------- Change request ---------
+	const dexyMinted = bankBoxIn.assets[1].amount - bankBoxOut.assets[1].amount;
 	const ergsAdded = bankBoxOut.value - bankBoxIn.value;
 
 	//--------------------------------------
 	const isCounterReset = height > selfInR4;
+
+	function isValidDelta(ergsAdded: any, dexyMinted: any, oracleRateWithFee: any) {
+		if (ergsAdded <= 0) {
+			console.log('not valid delta: zero or negative Ergs');
+			return false;
+		} else {
+			if (ergsAdded >= dexyMinted * oracleRateWithFee) {
+				return true;
+			} else {
+				console.log('not valid delta: Change rate');
+			}
+		}
+		return;
+	}
+	function calculateErgInputDexy(dexyMinted: any, oracleRateWithFee: any) {
+		return dexyMinted * oracleRateWithFee;
+	}
+
+	function calculateMaxAllowedIfReset(lpReservesX: any, lpReservesY: any, oracleRateWithFee: any) {
+		return (lpReservesX - oracleRateWithFee * lpReservesY) / oracleRateWithFee;
+	}
+	const maxAllowedIfReset = calculateMaxAllowedIfReset(lpReservesX, lpReservesY, oracleRateWithFee);
+
+	let availableToMint: any;
+	if (isCounterReset) {
+		availableToMint = maxAllowedIfReset;
+	} else {
+		availableToMint = selfInR5;
+	}
+
+	function isValidAmount(dexyMinted: any, availableToMint: any) {
+		if (dexyMinted <= availableToMint) {
+			true;
+		} else {
+			false;
+		}
+	}
+
+	function isValidSuccessorR5() {
+		if (successorR5 == availableToMint - dexyMinted) {
+			return true;
+		} else {
+			console.log('ArbBox: not Valid R5');
+			return false;
+		}
+	}
 
 	//--------------------------------------
 
@@ -82,35 +226,8 @@ function arbitrageMint(height: number, bankBox: any, oracleBox: any, lpBox: any)
    |  val T_buffer = 5 // max delay permitted after broadcasting and confirmation of the tx spending this box
    |  val thresholdPercent = 101 // 101% or more value (of LP in terms of OraclePool) will trigger action
    |
- 
-   |
-   |  val oracleBox = CONTEXT.dataInputs(oracleBoxIndex) // oracle-pool (v1 and v2) box containing rate in R4
-   |  val lpBox = CONTEXT.dataInputs(lpBoxIndex)
-   
-   |  val bankBoxIn = INPUTS(bankInIndex)
-   |
-   |  val successor = OUTPUTS(selfOutIndex)
-   |  val bankBoxOut = OUTPUTS(bankOutIndex)
-   |
-   |  val selfInR4 = SELF.R4[Int].get
-   |  val selfInR5 = SELF.R5[Long].get
-   |  val successorR4 = successor.R4[Int].get
-   |  val successorR5 = successor.R5[Long].get
-   |
    |  val isCounterReset = HEIGHT > selfInR4
-   |
-   |  val oracleRateWithoutFee = oracleBox.R4[Long].get // can assume always > 0 (ref oracle pool contracts) NanoErgs per USD
-   |  val oracleRateWithFee = oracleRateWithoutFee * (feeNum + feeDenom) / feeDenom
-   |
-   |  val lpReservesX = lpBox.value
-   |  val lpReservesY = lpBox.tokens(2)._2 // dexyReserves
-   |  val lpRate = lpReservesX / lpReservesY
-   |
-   |  val dexyMinted = bankBoxIn.tokens(1)._2 - bankBoxOut.tokens(1)._2
-   |  val ergsAdded = bankBoxOut.value - bankBoxIn.value
-   |  val validDelta = ergsAdded >= dexyMinted * oracleRateWithFee && ergsAdded > 0 // dexyMinted must be (+)ve, since both ergsAdded and oracleRateWithFee are (+)ve
-   |
-   |  val maxAllowedIfReset = (lpReservesX - oracleRateWithFee * lpReservesY) / oracleRateWithFee
+   
    |
    |  // above formula:
    |  // Before mint rate is lpReservesX / lpReservesY, which should be greater than oracleRateWithFee
@@ -120,9 +237,7 @@ function arbitrageMint(height: number, bankBox: any, oracleBox: any, lpBox: any)
    |  //   lpReservesX / (lpReservesY + dexyMinted) <= oracleRateWithFee
    |  // above gives min value of dexyMinted = (lpReservesX - oracleRateWithFee * lpReservesY) / oracleRateWithFee
    |
-   |  val availableToMint = if (isCounterReset) maxAllowedIfReset else selfInR5
    |
-   |  val validAmount = dexyMinted <= availableToMint
    |
    |  val validSuccessorR4 = if (!isCounterReset) {
    |    successorR4 == selfInR4
@@ -162,45 +277,82 @@ function isArbitrageMintValid(unsignedTx: any) {
 	const oracleBoxIndex = 0;
 	const lpBoxIndex = 1;
 
+	function isMainIndicesOk(unsignedTx: any) {
+		if (unsignedTx.inputs) {
+			if (unsignedTx.inputs.length > 2) {
+				if (unsignedTx.inputs[0].assets[0].tokenId == TOKEN_DEXY_ARB_NFT) {
+					console.log('Input 0: Arb Box');
+				} else {
+					console.log('Input 0: Wrong Box');
+				}
+
+				if (unsignedTx.inputs[1].assets[0].tokenId == TOKEN_DEXY_BANK_NFT) {
+					console.log('Input 1: Dexy Bank Box');
+				} else {
+					console.log('Input 1: Wrong Box');
+				}
+			} else {
+				console.log('Not enough Inputs');
+			}
+		}
+		if (unsignedTx.dataInputs) {
+			const dataInputs = unsignedTx.dataInputs;
+			if (dataInputs[0].assets[0]) {
+				if (dataInputs[0].assets[0].tokenId == ORACLE_NFT) {
+					console.log('Data Input 0: Oracle Box');
+				} else {
+					console.log('dataInput[0] - Wrong asset');
+				}
+				// Latest box test?
+			} else {
+				console.log('dataInput[0]: Error');
+			}
+			if (dataInputs[1].assets[0]) {
+				if (dataInputs[1].assets[0].tokenId != TOKEN_DEXY_LP_NFT) {
+					console.log('Data Input 1: Dexy LP Box');
+				} else {
+					console.log('dataInput[1] - Wrong asset');
+				}
+				// Latest box test?
+			} else {
+				console.log('dataInput[1]: Error');
+			}
+		} else {
+			console.log('No data inputs');
+		}
+		if (unsignedTx.outputs) {
+			if (unsignedTx.outputs.length > 2) {
+				if (unsignedTx.outputs[0].assets[0].tokenId == TOKEN_DEXY_ARB_NFT) {
+					console.log('Output 0: Arb Box');
+				} else {
+					console.log('Output 0: Wrong Box');
+				}
+
+				if (unsignedTx.outputs[1].assets[0].tokenId == TOKEN_DEXY_BANK_NFT) {
+					console.log('Output 1: Dexy Bank Box');
+				} else {
+					console.log('Output 1: Wrong Box');
+				}
+			} else {
+				console.log('Not enough outputs');
+			}
+		}
+	}
+
 	// TEST 1 - has all boxes
 	// inputs on right place
 	// outputs on right place
 	// data on right place
+	// val validLpBox = lpBox.tokens(0)._1 == lpNFT
+	// val validOracleBox = oracleBox.tokens(0)._1 == oracleNFT
 
-	// TEST 2 - data inputs is ok
-	//  val validLpBox = lpBox.tokens(0)._1 == lpNFT
-	//  val validOracleBox = oracleBox.tokens(0)._1 == oracleNFT
-	if (unsignedTx.dataInputs) {
-		const dataInputs = unsignedTx.dataInputs;
-		if (dataInputs[0].assets[0]) {
-			if (dataInputs[0].assets[0].tokenId != ORACLE_NFT) {
-				console.log('dataInput[0] - Wrong asset');
-			}
-			// Latest box test?
-		} else {
-			console.log('dataInput[0] - No asset');
-		}
-
-		if (dataInputs[1].assets[0]) {
-			if (dataInputs[1].assets[0].tokenId != DEXY_LP_NFT) {
-				console.log('dataInput[1] - Wrong asset');
-			}
-			// Latest box test?
-		} else {
-			console.log('dataInput[1] - No asset');
-		}
-	}
-
+	// TODO: ADD CHECK
 	// TEST 2 - successor - is ok
 	// HAS R4 and R5
-	//      const successorR4 = successor.R4[Int].get
-	//      const successorR5 = successor.R5[Long].get
-	//      // HAS Valid R4 and R5
+	//  const successorR4 = successor.R4[Int].get
+	//  const successorR5 = successor.R5[Long].get
+	//  // HAS Valid R4 and R5
 
-	// valid or all Errors
-	//
-	//
-	//
 	return;
 }
 

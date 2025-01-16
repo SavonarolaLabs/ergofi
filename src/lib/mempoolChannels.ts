@@ -80,6 +80,7 @@ export function initMempoolChannels() {
  * Push a "submit_tx" event to the sigmausd_channel,
  * which the server handles in `handle_in("submit_tx", ...)`.
  */
+
 export function submitTx(transactionData: any) {
 	const sigmausdChannel = get(sigmausdChannelStore);
 	if (!sigmausdChannel) {
@@ -87,5 +88,14 @@ export function submitTx(transactionData: any) {
 		return;
 	}
 
-	sigmausdChannel.push('submit_tx', { transaction: transactionData });
+	sigmausdChannel
+		.push('submit_tx', { transaction: transactionData })
+		.receive('ok', (resp) => {
+			console.log('TX Success:', resp);
+			// Handle success in your UI, e.g. show a success toast, update state, etc.
+		})
+		.receive('error', (resp) => {
+			console.error('TX Error:', resp);
+			// Handle error in your UI, e.g. show an error message
+		});
 }

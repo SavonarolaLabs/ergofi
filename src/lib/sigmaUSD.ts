@@ -20,6 +20,7 @@ import {
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
 	unconfrimed_reserve_border_left_USD,
+	unconfrimed_reserve_border_right_RSV,
 	updateBestBankBoxLocal,
 	type ErgoBox
 } from './stores/bank';
@@ -255,41 +256,65 @@ export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePri
 export function calculateReserveRateAndBorders(
 	inErg: bigint,
 	inCircSigUSD: bigint,
-	oraclePrice: bigint
+	oraclePrice: bigint,
+	rsvPriceBuy: number,
+	rsvPriceSell: number
 ): any {
 	// Clear convert
 	const bankERG = BigNumber(inErg.toString()).dividedBy(10 ** 9); //convert to ERG
 	const bankUSD = BigNumber(inCircSigUSD.toString()).dividedBy(100); //convert to USD
-	const price = BigNumber(10 ** 9)
+	const priceRSVBuy = BigNumber(rsvPriceBuy.toString());
+	const priceRSVSell = BigNumber(rsvPriceSell.toString());
+
+	const priceUSD = BigNumber(10 ** 9)
 		.dividedBy(BigNumber(oraclePrice.toString()))
 		.dividedBy(100); //convert to ERG / USD price
 
 	const reserveRate = Number(
-		bankERG.multipliedBy(price).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
+		bankERG.multipliedBy(priceUSD).dividedBy(bankUSD).multipliedBy(100).toFixed(0)
 	); // as function
 
 	const leftBorder = 4;
 	const rightBorder = 8;
 
-	function calculateBoarder(
-		boarder: number,
+	function calculateBorderUSD(
+		border: number,
 		bankUSD: BigNumber,
 		bankERG: BigNumber,
 		price: BigNumber
 	) {
 		const a_Left = BigNumber(bankERG).multipliedBy(price);
-		const b_Left = BigNumber(bankUSD).multipliedBy(boarder);
+		const b_Left = BigNumber(bankUSD).multipliedBy(border);
 		const delta_a_b_Left = a_Left.minus(b_Left);
-		const boarderUSD = delta_a_b_Left.dividedBy(boarder - 1);
-		return boarderUSD;
+		const borderUSD = delta_a_b_Left.dividedBy(border - 1);
+		return borderUSD;
 	}
 
-	const leftUSD = Number(calculateBoarder(leftBorder, bankUSD, bankERG, price).toFixed(0));
-	const rightUSD = Number(calculateBoarder(rightBorder, bankUSD, bankERG, price).toFixed(0));
-	const leftERG = Number(BigNumber(leftUSD).dividedBy(price).toFixed(0));
-	const rightERG = Number(BigNumber(rightUSD).dividedBy(price).toFixed(0));
+	function calculateBorderRSV(
+		border: number,
+		bankUSD: BigNumber,
+		bankERG: BigNumber,
+		price: BigNumber,
+		priceRSV: BigNumber
+	) {
+		const adjErg = bankUSD.multipliedBy(border).dividedBy(price);
+		const deltaErg = adjErg.minus(bankERG);
+		const borderRSV = deltaErg.multipliedBy(priceRSV);
+		return borderRSV;
+	}
 
-	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG };
+	const leftUSD = Number(calculateBorderUSD(leftBorder, bankUSD, bankERG, priceUSD).toFixed(0));
+	const rightUSD = Number(calculateBorderUSD(rightBorder, bankUSD, bankERG, priceUSD).toFixed(0));
+	const leftERG = Number(BigNumber(leftUSD).dividedBy(priceUSD).toFixed(0));
+	const rightERG = Number(BigNumber(rightUSD).dividedBy(priceUSD).toFixed(0));
+	const leftRSV = Number(
+		calculateBorderRSV(leftBorder, bankUSD, bankERG, priceUSD, priceRSVBuy).toFixed(0)
+	);
+	const rightRSV = Number(
+		calculateBorderRSV(rightBorder, bankUSD, bankERG, priceUSD, priceRSVSell).toFixed(0)
+	);
+
+	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV };
 }
 
 // Fee
@@ -1672,6 +1697,8 @@ export async function updateUnconfirmedBank(
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
+	rsvPriceBuy: number,
+	rsvPriceSell: number,
 	mempoolInteractions: Interaction[],
 	preparedInteractions: Interaction[]
 ) {
@@ -1683,14 +1710,18 @@ export async function updateUnconfirmedBank(
 	const newBankErg = bankBoxInNanoErg + ergAddMem + ergAddPrep;
 	const newBankUsd = bankBoxInCircSigUsdInCent + usdAddMem + usdAddPrep;
 
-	const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
+	const { reserveRate, leftUSD, rightRSV } = calculateReserveRateAndBorders(
 		newBankErg,
 		newBankUsd,
-		oraclePriceSigUsd
+		oraclePriceSigUsd,
+		rsvPriceBuy,
+		rsvPriceSell
 	);
 	unconfirmed_bank_erg.set(newBankErg);
 	unconfrimed_bank_usd.set(newBankUsd);
 	unconfrimed_reserve_border_left_USD.set(leftUSD);
+	unconfrimed_reserve_border_right_RSV.set(rightRSV);
+
 	unconfrimed_bank_reserve_rate.set(reserveRate);
 }
 

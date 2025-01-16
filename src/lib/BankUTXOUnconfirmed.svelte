@@ -2,6 +2,8 @@
 	import { updateUnconfirmedBank } from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
+		bank_price_rsv_buy,
+		bank_price_rsv_sell,
 		bankBoxInCircSigUsdInCent,
 		bankBoxInNanoErg,
 		oraclePriceSigUsd,
@@ -24,6 +26,8 @@
 			$bankBoxInNanoErg,
 			$bankBoxInCircSigUsdInCent,
 			$oraclePriceSigUsd,
+			$bank_price_rsv_buy,
+			$bank_price_rsv_sell,
 			$mempool_interactions,
 			$prepared_interactions
 		);

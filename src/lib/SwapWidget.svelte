@@ -41,8 +41,10 @@
 		oracle_box,
 		oraclePriceSigUsd,
 		reserve_border_left_ERG,
+		reserve_border_left_RSV,
 		reserve_border_left_USD,
 		reserve_border_right_ERG,
+		reserve_border_right_RSV,
 		reserve_border_right_USD,
 		reserve_rate,
 		type ErgoBox
@@ -175,17 +177,22 @@
 		//....
 		oraclePriceSigUsd.set(oraclePrice);
 
-		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG } = calculateReserveRateAndBorders(
-			$bankBoxInNanoErg,
-			$bankBoxInCircSigUsdInCent,
-			$oraclePriceSigUsd
-		);
+		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
+			calculateReserveRateAndBorders(
+				$bankBoxInNanoErg,
+				$bankBoxInCircSigUsdInCent,
+				$oraclePriceSigUsd,
+				$bank_price_rsv_buy,
+				$bank_price_rsv_sell
+			);
 
 		reserve_rate.set(reserveRate);
 		reserve_border_left_USD.set(leftUSD);
 		reserve_border_left_ERG.set(leftERG);
 		reserve_border_right_USD.set(rightUSD);
 		reserve_border_right_ERG.set(rightERG);
+		reserve_border_left_RSV.set(leftRSV);
+		reserve_border_right_RSV.set(rightRSV);
 	}
 
 	function initialInputs(

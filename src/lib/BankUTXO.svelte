@@ -58,7 +58,7 @@
 		</div>
 		<div class="flex items-center">
 			<div>
-				<!-- {$reserve_border_right_RSV.toLocaleString()} -->--
+				{$reserve_border_right_RSV.toLocaleString()}
 			</div>
 			<div class="currency text-lg">SigRSV</div>
 		</div>

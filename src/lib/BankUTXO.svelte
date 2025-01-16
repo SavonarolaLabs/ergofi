@@ -42,7 +42,7 @@
 
 	<div class="flex items-end justify-between text-xl">
 		<div class="flex items-center gap-1 text-lg uppercase">
-			<span class="price-left">↑ {$bank_price_usd_sell}</span> ↓ {$bank_price_usd_buy}
+			<span class="price-left">↑ {$bank_price_usd_buy}</span> ↓ {$bank_price_usd_sell}
 		</div>
 		<div class="flex items-center">
 			<div>

@@ -1,5 +1,4 @@
 <script>
-	import Elixir from '$lib/Elixir.svelte';
 	import SwapWidget from '$lib/SwapWidget.svelte';
 	import BankHistoryWidget from '$lib/BankHistoryWidget.svelte';
 	import Navbar from '$lib/Navbar.svelte';
@@ -48,8 +47,6 @@
 		</div>
 	</div>
 {/if}
-
-<Elixir></Elixir>
 
 <style>
 	.tachikoma-bg {

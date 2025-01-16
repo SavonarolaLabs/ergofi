@@ -16,9 +16,20 @@
 </script>
 
 {#if isMobile}
-	<BankHistoryWidget></BankHistoryWidget>
-	<div style="visibility:hidden">
-		<SwapWidget></SwapWidget>
+	<div
+		style="height:100vh;"
+		class="flex flex-col items-center justify-center gap-4 p-4 text-gray-200"
+	>
+		<h1 class="text-4xl">Ergfi</h1>
+		<div class="text-center text-lg text-gray-400">
+			Visit on desktop to use algorithmic stablecoin Dapp.
+		</div>
+		<img src="demo.png" alt="" />
+		<div class="flex gap-4">
+			<a class="underline" href="https://github.com/SavonarolaLabs/ergofi">Github</a>
+			<a href="https://discord.gg/xugP8G5asS" class="underline">Discord</a>
+			<a href="https://x.com/c8e4d2" class="underline">Xtter</a>
+		</div>
 	</div>
 {:else}
 	<div class="tachikoma-bg flex flex-col" style="height:100vh;">

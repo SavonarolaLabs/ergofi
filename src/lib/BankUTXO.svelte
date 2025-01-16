@@ -68,7 +68,7 @@
 		</div>
 		<div class="flex items-center font-normal">
 			<div>
-				{$reserve_border_left_USD.toLocaleString()}
+				{formatAmount($reserve_border_left_USD, false)}
 			</div>
 			<div class="currency text-lg">SigUSD</div>
 		</div>

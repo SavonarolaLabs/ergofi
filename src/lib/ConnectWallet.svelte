@@ -19,7 +19,7 @@
 			{shorten($web3wallet_wallet_change_address)}
 		</button>
 		<div
-			class="w-wallet absolute right-0 hidden w-48 rounded-md bg-gray-800 shadow-lg group-hover:block"
+			class="w-wallet absolute right-0 hidden w-48 rounded-md bg-gray-800 text-gray-300 shadow-lg group-hover:block"
 		>
 			<ul class="divide-y divide-gray-700">
 				<li class="px-4 hover:bg-gray-700">

@@ -42,7 +42,7 @@
 
 	<div class="flex items-end justify-between text-xl">
 		<div class="flex items-center gap-1 text-lg uppercase">
-			<span class="price-left">↑ {$bank_price_usd_buy}</span> ↓ {$bank_price_usd_sell}
+			<span class="price-left">↑ {$bank_price_usd_sell}</span> ↓ {$bank_price_usd_buy}
 		</div>
 		<div class="flex items-center">
 			<div>
@@ -53,8 +53,8 @@
 	</div>
 	<div class="flex items-end justify-between text-xl">
 		<div class="flex items-center gap-1 text-lg uppercase">
-			<span class="price-left">↑ <SubNumber value={1 / $bank_price_rsv_sell}></SubNumber></span>
-			↓ <SubNumber value={1 / $bank_price_rsv_buy}></SubNumber>
+			<span class="price-left">↑ <SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span>
+			↓ <SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
 		</div>
 		<div class="flex items-center">
 			<div>

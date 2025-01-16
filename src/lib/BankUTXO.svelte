@@ -58,7 +58,7 @@
 		</div>
 		<div class="flex items-center">
 			<div>
-				{formatAmount($reserve_border_right_RSV)}
+				{formatAmount($reserve_border_right_RSV, false)}
 			</div>
 			<div class="currency text-lg">SigRSV</div>
 		</div>

@@ -81,7 +81,10 @@ export function formatTimeAgo(timestamp: number): string {
 	);
 }
 
-export function formatAmount(value: bigint | number | undefined): string {
+export function formatAmount(
+	value: bigint | number | undefined,
+	showPrefix: boolean = true
+): string {
 	if (value == undefined) return '0';
 	if (typeof value == 'bigint') value = Number(value);
 	const prefix = value > 0 ? '+' : '';
@@ -90,7 +93,7 @@ export function formatAmount(value: bigint | number | undefined): string {
 		if (formatted.includes('.0')) {
 			formatted = formatted.replace('.0', '');
 		}
-		return prefix + formatted;
+		return (showPrefix ? prefix : '') + formatted;
 	}
-	return prefix + numeral(value).format('0.00');
+	return (showPrefix ? prefix : '') + numeral(value).format('0.00');
 }

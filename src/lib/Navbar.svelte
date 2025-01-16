@@ -33,7 +33,8 @@
 						<div class="text-right">
 							<div class="text-xl text-gray-500">
 								{formatAmount(
-									$web3wallet_confirmedTokens.find((x) => x.tokenId == SigRSV_TOKEN_ID)?.amount
+									$web3wallet_confirmedTokens.find((x) => x.tokenId == SigRSV_TOKEN_ID)?.amount,
+									false
 								)}
 							</div>
 						</div>

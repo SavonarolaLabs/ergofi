@@ -843,6 +843,7 @@ export async function buyUSDInputERG(
 		oracleBox,
 		feeMining
 	);
+	console.log(tx);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 

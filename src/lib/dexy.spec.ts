@@ -4,29 +4,31 @@ import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@f
 import { ALICE_MNEMONIC, BOB_MNEMONIC } from './private/mnemonics';
 import { signTx } from './signing';
 
-const depositContract = `
-{
-	def getSellerPk(box: Box)              = box.R4[Coll[SigmaProp]].get(0)
-	def getPoolPk(box: Box)                = box.R4[Coll[SigmaProp]].get(1)
-	def unlockHeight(box: Box)             = box.R5[Int].get
-	
-	if(HEIGHT > unlockHeight(SELF)){
-		getSellerPk(SELF)
-	}else{
-		getSellerPk(SELF) && getPoolPk(SELF)
-	}
-}
-`;
+//contract: 2CBn1o6s3eZnsP7rpTPJonaZMcUtnQEpLzrU36hasAP8RCc9jAU9Xtm4dh31acbcdsuxZm9VrYVNojvyw2hWPTUXxz
+const testTokenId = '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04'; //03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04
+const $testTokenId = Buffer.from(testTokenId, 'hex').toString('base64');
+
+let nftOracleContract = `{
+  val oracleBoxIndex = 0 // data input
+  val oracleNFT = fromBase64("${$testTokenId}") // to identify oracle pool box
+  val oracleBox = CONTEXT.dataInputs(oracleBoxIndex)
+  val validOracleBox = oracleBox.tokens(0)._1 == oracleNFT
+
+  sigmaProp(validOracleBox)
+}`;
 
 describe('Contract Compilation', () => {
-	it('should produce a valid address for depositContract', () => {
-		const address = compileContract(depositContract);
-		expect(address).toMatch(/^[1-9A-HJ-NP-Za-km-z]{95,}$/);
+	it('compile test contract', () => {
+		const address = compileContract(nftOracleContract);
+		expect(address).toBe(
+			'2CBn1o6s3eZnsP7rpTPJonaZMcUtnQEpLzrU36hasAP8RCc9jAU9Xtm4dh31acbcdsuxZm9VrYVNojvyw2hWPTUXxz'
+		);
 	});
-	it('123', async () => {
-		//const unsigned = buildTx();
-		const signed = await signTx(unsignedTx, BOB_MNEMONIC);
-		//console.log(unsigned);
+	it('take box from contract', async () => {
+		const unsigned = buildTx();
+		const signed = await signTx(unsigned, BOB_MNEMONIC);
+		console.dir(JSON.stringify(signed), { depth: null });
+		expect(signed).toBeTruthy();
 	});
 });
 

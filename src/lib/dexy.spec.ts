@@ -75,14 +75,13 @@ function buildTx(): any {
 	};
 
 	const unsignedTx = new TransactionBuilder(1441406)
+		.withDataFrom(potentialDataInputBox)
 		.from(inputBox)
 		.to(output)
 		.sendChangeTo(BOB_ADDRESS)
 		.payFee(RECOMMENDED_MIN_FEE_VALUE)
 		.build()
 		.toEIP12Object();
-
-	unsignedTx.dataInputs = [potentialDataInputBox];
 
 	return unsignedTx;
 }

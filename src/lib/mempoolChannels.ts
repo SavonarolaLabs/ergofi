@@ -13,6 +13,7 @@ import { web3wallet_wallet_used_addresses } from './stores/web3wallet';
 // We store references to the Socket and the channels so we can reference them later.
 export const socketStore = writable<Socket | null>(null);
 export const sigmausdChannelStore = writable<any>(null);
+export const dexygoldChannelStore = writable<any>(null);
 export const oracleBoxesChannelStore = writable<any>(null);
 
 /**
@@ -69,10 +70,25 @@ export function initMempoolChannels() {
 
 	oracleBoxesChannelStore.set(oracleBoxesChannel);
 
-	// 4) Return a cleanup function for your component
+	// 4) Join the "mempool:dexygold_transactions" channel
+	const dexygoldChannelTopic = 'dexygold_transactions';
+	const dexygoldChannelName = `mempool:${dexygoldChannelTopic}`;
+	const dexygoldChannel = socket.channel(dexygoldChannelName, {});
+
+	dexygoldChannel
+		.join()
+		.receive('ok', (resp) => {
+			console.log('dexygoldChannel history:');
+			console.log(resp.history);
+		})
+		.receive('error', (resp) => {
+			console.error('Unable to join dexygold_transactions:', resp);
+		});
+
 	return () => {
 		sigmausdChannel.leave();
 		oracleBoxesChannel.leave();
+		dexygoldChannel.leave();
 		socket.disconnect();
 	};
 }

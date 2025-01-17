@@ -2,6 +2,7 @@
 import { writable, get } from 'svelte/store';
 import { Socket } from 'phoenix';
 import {
+	cancelPreparedInteractionById,
 	handleMempoolSocketUpdate,
 	initHistory,
 	prepared_interactions
@@ -81,10 +82,11 @@ export function initMempoolChannels() {
  * which the server handles in `handle_in("submit_tx", ...)`.
  */
 
-export function submitTx(transactionData: any) {
+export function submitTx(transactionData: any, interactionId: string) {
 	const sigmausdChannel = get(sigmausdChannelStore);
 	if (!sigmausdChannel) {
 		console.error('No sigmausdChannel available. Make sure initMempoolChannels() was called.');
+		cancelPreparedInteractionById(interactionId);
 		return;
 	}
 
@@ -95,6 +97,7 @@ export function submitTx(transactionData: any) {
 			// Handle success in your UI, e.g. show a success toast, update state, etc.
 		})
 		.receive('error', (resp) => {
+			cancelPreparedInteractionById(interactionId);
 			console.error('TX Error:', resp);
 			// Handle error in your UI, e.g. show an error message
 		});

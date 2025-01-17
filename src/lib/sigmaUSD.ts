@@ -42,6 +42,7 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
+import { submitTx } from './mempoolChannels';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -808,24 +809,15 @@ async function createInteractionAndSubmitTx(
 
 		addSignedInteraction(signed, interactionId, ownAddressList);
 
-		//console.log({ signed });
-
 		updateBestBankBoxLocal(
 			get(confirmed_interactions),
 			get(mempool_interactions),
 			get(prepared_interactions)
 		);
-
-		try {
-			const txId = await ergo.submit_tx(signed);
-			console.log({ txId });
-		} catch (e) {
-			console.error({ signed });
-			console.error(e);
-			cancelPreparedInteractionById(interactionId);
-		}
+		console.log({ signed });
+		submitTx(signed, interactionId);
 	} catch (e) {
-		//console.log(e);
+		console.log(e);
 		cancelPreparedInteractionById(interactionId);
 	}
 }
@@ -853,6 +845,7 @@ export async function buyUSDInputERG(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
+
 export async function buyUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,

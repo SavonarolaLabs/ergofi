@@ -28,8 +28,12 @@ export const unconfrimed_bank_reserve_rate = writable<bigint>(400n);
 //export const fee_mining = writable<bigint>(10_000_000n); //0.01 ERG
 export const fee_mining = writable<bigint>(1_100_000n); //0.0011 ERG
 
+// sigmausd
 export const oracle_box = writable<ErgoBox>();
 export const bank_box = writable<ErgoBox>();
+// dexygold
+export const dexygold_lp_box = writable<ErgoBox>();
+export const erg_xau_box = writable<ErgoBox>();
 
 export type ErgoBox = {
 	additionalRegisters: Record<string, string>;
@@ -54,6 +58,8 @@ type OracleData = {
 	confirmed_erg_xau: ErgoBox[];
 	unconfirmed_erg_usd: ErgoBox[];
 	unconfirmed_erg_xau: ErgoBox[];
+	confirmed_dexygold_lp: ErgoBox[];
+	unconfirmed_dexygold_lp: ErgoBox[];
 };
 
 export function handleOracleBoxesUpdate(message: OracleData) {
@@ -64,6 +70,14 @@ export function handleOracleBoxesUpdate(message: OracleData) {
 	if (message.confirmed_erg_usd.length > 0) {
 		if (get(oracle_box)?.boxId == message.confirmed_erg_usd[0].boxId) return;
 		oracle_box.set(message.confirmed_erg_usd[0]);
+	}
+	if (message.confirmed_erg_xau.length > 0) {
+		if (get(erg_xau_box)?.boxId == message.confirmed_erg_xau[0].boxId) return;
+		erg_xau_box.set(message.confirmed_erg_xau[0]);
+	}
+	if (message.confirmed_dexygold_lp.length > 0) {
+		if (get(dexygold_lp_box)?.boxId == message.confirmed_dexygold_lp[0].boxId) return;
+		dexygold_lp_box.set(message.confirmed_dexygold_lp[0]);
 	}
 }
 

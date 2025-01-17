@@ -803,8 +803,10 @@ async function createInteractionAndSubmitTx(
 	unsignedTx: ErgoUnsignedTransaction,
 	ownAddressList: string[]
 ) {
+	console.log('createInteractionAndSubmitTx');
 	const interactionId = addPreparedInteraction(unsignedTx, ownAddressList);
 	try {
+		console.log({ unsignedTx });
 		const signed = await ergo.sign_tx(unsignedTx);
 
 		addSignedInteraction(signed, interactionId, ownAddressList);
@@ -815,7 +817,7 @@ async function createInteractionAndSubmitTx(
 			get(prepared_interactions)
 		);
 		console.log({ signed });
-		submitTx(signed, interactionId);
+		//submitTx(signed, interactionId);
 	} catch (e) {
 		console.log(e);
 		cancelPreparedInteractionById(interactionId);

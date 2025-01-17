@@ -42,11 +42,16 @@ export async function signTx(
 		boxes_to_spend.add(ErgoBox.from_json(JSON.stringify(box)));
 	});
 
+	const data_boxes = ErgoBoxes.empty();
+	tx.dataInputs.forEach((box) => {
+		data_boxes.add(ErgoBox.from_json(JSON.stringify(box)));
+	});
+
 	const signedTx = prover.sign_transaction(
 		fakeContext(),
 		wasm.UnsignedTransaction.from_json(JSON.stringify(tx)),
 		boxes_to_spend,
-		ErgoBoxes.empty()
+		data_boxes
 	);
 	return signedTx.to_js_eip12();
 }

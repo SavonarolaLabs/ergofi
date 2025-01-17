@@ -286,7 +286,7 @@ function txToSigmaUSDInteraction(tx: MempoolTransaction, ownAddressList: string[
 	}
 
 	return {
-		id: crypto.randomUUID(),
+		id: tx.id + crypto.randomUUID(),
 		transactionId: tx.id,
 		tx: tx,
 		amountExact: Number(deltaToken),

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { compileContract } from './compile';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
+import { BOB_MNEMONIC } from './private/mnemonics';
+import { signTx } from './signing';
 
 const depositContract = `
 {
@@ -21,8 +23,9 @@ describe('Contract Compilation', () => {
 		const address = compileContract(depositContract);
 		expect(address).toMatch(/^[1-9A-HJ-NP-Za-km-z]{95,}$/);
 	});
-	it('123', () => {
+	it('123', async () => {
 		const unsigned = buildTx();
+		const signed = await signTx(unsigned, BOB_MNEMONIC);
 		console.log(unsigned);
 	});
 });

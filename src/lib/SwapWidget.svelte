@@ -50,6 +50,7 @@
 		type ErgoBox
 	} from './stores/bank';
 	import {
+		web3wallet_available_wallets,
 		web3wallet_confirmedTokens,
 		web3wallet_wallet_used_addresses
 	} from './stores/web3wallet';
@@ -58,6 +59,7 @@
 	import SubNumber from './SubNumber.svelte';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 	import WalletBalance from './icons/WalletBalance.svelte';
+	import { getWalletInstallLink } from './installWallet';
 
 	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
 	type LastUserInput = 'From' | 'To';
@@ -835,6 +837,14 @@
 		>
 			Swap
 		</button>
+	{:else if $web3wallet_available_wallets.length == 0}
+		<a
+			target="_blank"
+			href={getWalletInstallLink()}
+			class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
+		>
+			Intall Wallet
+		</a>
 	{:else}
 		<button
 			on:click={handleSwapButton}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ERGO_TOKEN_ID } from './stores/ergoTokens';
+	import { getWalletInstallLink } from './installWallet';
 	import {
 		connectWeb3Wallet,
 		disconnectWeb3Wallet,
@@ -12,6 +12,16 @@
 </script>
 
 <div class="w-wallet group relative">
+	{#if $web3wallet_available_wallets.length == 0}
+		<a
+			target="_blank"
+			style="height:52px;"
+			href={getWalletInstallLink()}
+			class="w-wallet text-md flex h-full items-center justify-center rounded-md bg-gray-800 leading-none text-gray-300 shadow-md transition hover:bg-gray-700"
+			>INSTALL WALLET</a
+		>
+	{/if}
+
 	{#if $web3wallet_connected}
 		<button
 			class="w-wallet text-md h-full rounded-md bg-gray-800 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-700"

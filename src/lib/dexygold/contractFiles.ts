@@ -1,0 +1,23 @@
+export const contractFiles = {
+  "DEXY_TRACKING": "tracking.es",
+  "DEXY_BANK_UPDATE_UPDATE": "bank/update/update.es",
+  "DEXY_BANK_UPDATE_BALLOT": "bank/update/ballot.es",
+  "DEXY_BANK_INTERVENTION": "bank/intervention.es",
+  "DEXY_BANK_BUYBACK": "bank/buyback.es",
+  "DEXY_BANK_PAYOUT": "bank/payout.es",
+  "DEXY_BANK_FREEMINT": "bank/freemint.es",
+  "DEXY_BANK_BANK": "bank/bank.es",
+  "DEXY_BANK_ARBMINT": "bank/arbmint.es",
+  "DEXY_LP_PROXY_SWAPBUYV1": "lp/proxy/SwapBuyV1.es",
+  "DEXY_LP_PROXY_SWAPSELL": "lp/proxy/SwapSell.es",
+  "DEXY_LP_PROXY_DEPOSIT": "lp/proxy/Deposit.es",
+  "DEXY_LP_PROXY_SWAPSELLV1": "lp/proxy/SwapSellV1.es",
+  "DEXY_LP_PROXY_SWAPBUYV2": "lp/proxy/SwapBuyV2.es",
+  "DEXY_LP_PROXY_REDEEM": "lp/proxy/Redeem.es",
+  "DEXY_LP_POOL_MAIN": "lp/pool/main.es",
+  "DEXY_LP_POOL_EXTRACT": "lp/pool/extract.es",
+  "DEXY_LP_POOL_MINT": "lp/pool/mint.es",
+  "DEXY_LP_POOL_SWAP": "lp/pool/swap.es",
+  "DEXY_LP_POOL_REDEEM": "lp/pool/redeem.es",
+  "DEXY_GORT_DEV_EMISSION": "gort-dev/emission.es"
+};

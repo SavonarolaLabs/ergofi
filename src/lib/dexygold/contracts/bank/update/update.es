@@ -10,7 +10,7 @@
   // R6 the value voted for [Coll[Byte]]
 
   // contractToUpdateNFT is whether bankNFT, extractNFT, interventionNFT
-  val contractToUpdateNFT = fromBase64("$contractToUpdateNFT")
+  val contractToUpdateNFT = fromBase64("$bankNFT")
 
   val ballotTokenId = fromBase64("$ballotTokenId")
 

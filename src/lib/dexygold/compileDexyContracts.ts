@@ -1,4 +1,4 @@
-import { compileContractFromFile } from './compile';
+import { compileDexyContractFromFile } from './compile';
 import { contractFiles } from './contractFiles';
 import fs from 'fs';
 import path from 'path';
@@ -10,7 +10,7 @@ async function compileAllContracts() {
 
 	for (const [constName, filePath] of Object.entries(contractFiles)) {
 		try {
-			const address = compileContractFromFile(filePath);
+			const address = compileDexyContractFromFile(filePath);
 			lines.push(`export const ${constName} = "${address}";`);
 		} catch (error) {
 			console.error(`Failed to compile contract for ${constName} (${filePath}):`, error);

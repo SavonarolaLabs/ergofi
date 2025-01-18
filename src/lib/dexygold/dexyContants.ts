@@ -57,3 +57,10 @@ export const mainnetTokenIds: MainnetTokenIds = {
 	payoutNFT: '1d88e849dc537081470b273f37c2118d73a418f8c4d0c9117dcf044dde82f5b2',
 	dexyTokenId: '6122f7289e7bb2df2de273e09d4b2756cda6aeb0f40438dc9d257688f45183ad'
 };
+
+export const contractConfig = {
+	initialDexyTokens: '10000000000000L',
+	initialLp: '100000000000L',
+	feeNumLp: '997',
+	feeDenomLp: '1000'
+};

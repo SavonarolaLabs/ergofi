@@ -2,6 +2,7 @@ import { Network } from '@fleet-sdk/common';
 import { compile } from '@fleet-sdk/compiler';
 import fs from 'fs';
 import path from 'path';
+import { contractConfig, mainnetTokenIds } from './dexyContants';
 
 export function compileContract(contract: string, map = {}) {
 	const tree = compile(contract, {
@@ -16,6 +17,27 @@ export function compileContractFromFile(fileName: string): string {
 	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
 	const contract = fs.readFileSync(contractFile, 'utf-8');
 	return compileContract(contract);
+}
+
+export function compileDexyContractFromFile(fileName: string): string {
+	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
+	const contract = fs.readFileSync(contractFile, 'utf-8');
+
+	const variables = { ...mainnetTokenIds, ...contractConfig };
+	const updatedContract = replaceVariablesInContract(contract, variables);
+	console.warn(updatedContract);
+	return compileContract(updatedContract);
+}
+
+function replaceVariablesInContract(contract: string, variables: Record<string, string>): string {
+	let updatedContract = contract;
+
+	for (const [key, value] of Object.entries(variables)) {
+		const placeholder = `$${key}`;
+		updatedContract = updatedContract.replaceAll(placeholder, value);
+	}
+
+	return updatedContract;
 }
 
 /*

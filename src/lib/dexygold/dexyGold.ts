@@ -7,7 +7,7 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { UI_FEE_ADDRESS } from './api/ergoNode';
+import { UI_FEE_ADDRESS } from '../api/ergoNode';
 
 // In DexyUSD, X is NanoErg and Y is USD
 

@@ -1,4 +1,4 @@
-import { fakeContext } from './fakeContext';
+import { fakeContext } from '../fakeContext';
 
 import { ErgoBox, ErgoBoxes } from 'ergo-lib-wasm-nodejs';
 import { mnemonicToSeedSync } from 'bip39';

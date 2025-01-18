@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { compileContract } from './compile';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
-import { ALICE_MNEMONIC, BOB_MNEMONIC } from './private/mnemonics';
+import { ALICE_MNEMONIC, BOB_MNEMONIC } from '../private/mnemonics';
 import { signTx } from './signing';
 
 //contract: 2CBn1o6s3eZnsP7rpTPJonaZMcUtnQEpLzrU36hasAP8RCc9jAU9Xtm4dh31acbcdsuxZm9VrYVNojvyw2hWPTUXxz

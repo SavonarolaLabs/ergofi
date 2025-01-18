@@ -62,5 +62,7 @@ export const contractConfig = {
 	initialDexyTokens: '10000000000000L',
 	initialLp: '100000000000L',
 	feeNumLp: '997',
-	feeDenomLp: '1000'
+	feeDenomLp: '1000',
+	//   "intMax" -> Int.MaxValue.toString,
+	epochLength: '30'
 };

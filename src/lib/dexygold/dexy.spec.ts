@@ -24,6 +24,11 @@ describe('Contract Compilation', () => {
 			'2CBn1o6s3eZnsP7rpTPJonaZMcUtnQEpLzrU36hasAP8RCc9jAU9Xtm4dh31acbcdsuxZm9VrYVNojvyw2hWPTUXxz'
 		);
 	});
+	it('complie redeem LP contract', () => {
+		//Both Oracle ...
+		const redeemAddress = compileContract(redeemContract);
+		expect(redeemAddress).toBe(dexyRedeemAddress);
+	});
 	it('take box from contract', async () => {
 		const unsigned = buildTx();
 		const signed = await signTx(unsigned, BOB_MNEMONIC);
@@ -31,151 +36,6 @@ describe('Contract Compilation', () => {
 		expect(signed).toBeTruthy();
 	});
 });
-
-const unsignedTx = {
-	inputs: [
-		{
-			boxId: 'cd156a4ab3f508c1c4c3999cd277ed0086446b06c5d6e8c47ab481c04e05145d',
-			value: '1853817481337503',
-			ergoTree:
-				'102a0400040004000e20011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f0400040204020400040004020500050005c8010500050005feffffffffffffffff0105000580897a05000580897a040405c80104c0933805c00c0580a8d6b907050005c8010580dac40905000500040404040500050005a0060101050005a0060100040004000e20239c170b7e82f94e6b05416f14b8a2a57e0bfff0e3c93f4abbcd160b6a5b271ad801d601db6501fed1ec9591b172017300d821d602b27201730100d603938cb2db63087202730200017303d604b2a5730400d605c17204d606db6308a7d607b27206730500d6088c720702d609db63087204d60ab27209730600d60b8c720a02d60c947208720bd60db27206730700d60e8c720d02d60fb27209730800d6108c720f02d61194720e7210d612e4c6a70505d613e4c672040505d614e4c6a70405d615e4c672040405d616b2a5730900d617e4c672160405d61895720c730a7217d61995720c7217730bd61ac1a7d61be4c672160505d61c9de4c672020405730cd61da2a1721a9c7214721c730dd61e9572119ca1721c95937214730e730f9d721d72147218d801d61e99721a721d9c9593721e7310731195937212731273139d721e72127219d61f9d9c721e7e7314057315d6209c7215721cd6219591a3731673177318d62295937220731972219d9c7205731a7220edededed7203ededededed927205731b93c27204c2a7edec720c7211efed720c7211ed939a720872129a720b7213939a720e72149a72107215edededed939a721472187215939a721272197213939a721a721b7205927215731c927213731deded938c720f018c720d01938c720a018c720701938cb27209731e00018cb27206731f000193721b9a721e958f721f7320f0721f721f957211959172187321927222732273239591721973249072227221927222732572037326938cb2db6308b2a4732700732800017329',
-			creationHeight: 1441463,
-			assets: [
-				{
-					tokenId: '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04',
-					amount: '9999920824786'
-				},
-				{
-					tokenId: '003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0',
-					amount: '9996656111109'
-				},
-				{
-					tokenId: '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9',
-					amount: '1'
-				}
-			],
-			additionalRegisters: {
-				R5: '05f8c7fdf418',
-				R4: '05def8c04b'
-			},
-			transactionId: '98aa45168c0782af81bdfdf07f123346d8d79ec1c1a469dda3d4f66dfc96348b',
-			index: 0,
-			extension: {}
-		},
-		{
-			boxId: '02486eeb56b6157afc07be1f5a45c29db6148f1819eb9bc1e2e7f4b611c2d951',
-			value: '653810307',
-			ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-			creationHeight: 1431340,
-			assets: [],
-			additionalRegisters: {},
-			transactionId: '9dcb8bbf1e5194c02d5c3513e84da5c0d791ab1e7c30dcc192cc7ba50adbb68c',
-			index: 2,
-			extension: {}
-		},
-		{
-			boxId: 'ad2bc65ce7b30b49c18ea79c5fb3ca34a07f6ef5a72e7a716f23110962afdfe3',
-			value: '622466796',
-			ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-			creationHeight: 1431395,
-			assets: [],
-			additionalRegisters: {},
-			transactionId: '8703bce1c1b121955294fb31f0e220778d545e8d36161ee0eddef07c0bb6d6a8',
-			index: 2,
-			extension: {}
-		}
-	],
-	dataInputs: [
-		{
-			additionalRegisters: {
-				R4: '059ac4f7f503',
-				R5: '04e2faaf01',
-				R6: '0e20f7ef73c4a4ab91b84bb0a2905108d534114472ec057be3a57a9dfc9b1fbd85c1'
-			},
-			address:
-				'NTkuk55NdwCXkF1e2nCABxq7bHjtinX3wH13zYPZ6qYT71dCoZBe1gZkh9FAr7GeHo2EpFoibzpNQmoi89atUjKRrhZEYrTapdtXrWU4kq319oY7BEWmtmRU9cMohX69XMuxJjJP5hRM8WQLfFnffbjshhEP3ck9CKVEkFRw1JDYkqVke2JVqoMED5yxLVkScbBUiJJLWq9BSbE1JJmmreNVskmWNxWE6V7ksKPxFMoqh1SVePh3UWAaBgGQRZ7TWf4dTBF5KMVHmRXzmQqEu2Fz2yeSLy23sM3pfqa78VuvoFHnTFXYFFxn3DNttxwq3EU3Zv25SmgrWjLKiZjFcEcqGgH6DJ9FZ1DfucVtTXwyDJutY3ksUBaEStRxoUQyRu4EhDobixL3PUWRcxaRJ8JKA9b64ALErGepRHkAoVmS8DaE6VbroskyMuhkTo7LbrzhTyJbqKurEzoEfhYxus7bMpLTePgKcktgRRyB7MjVxjSpxWzZedvzbjzZaHLZLkWZESk1WtdM25My33wtVLNXiTvficEUbjA23sNd24pv1YQ72nY1aqUHa2',
-			assets: [
-				{
-					amount: 1,
-					tokenId: '011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f'
-				}
-			],
-			boxId: '40059b9608a4c1b54d450139367776917ec702d0a4d9f56efd81cf07da178655',
-			creationHeight: 1441454,
-			ergoTree:
-				'1014040004000e208c27dd9d8a35aac1e3167d58858c0a8b4059b277da790552e37eba22df9b903504000400040204020101040205a0c21e040204080500040c040204a0c21e0402050a05c8010402d806d601b2a5730000d602b5db6501fed9010263ed93e4c67202050ec5a7938cb2db63087202730100017302d603b17202d604e4c6b272027303000605d605d90105049590720573047204e4c6b272029972057305000605d606b07202860273067307d901063c400163d803d6088c720601d6098c720801d60a8c72060286029a72097308ededed8c72080293c2b2a5720900d0cde4c6720a040792c1b2a5720900730992da720501997209730ae4c6720a0605ea02d1ededededededed93cbc27201e4c6a7060e927203730b93db63087201db6308a793e4c6720104059db07202730cd9010741639a8c720701e4c68c72070206057e72030593e4c6720105049ae4c6a70504730d92c1720199c1a77e9c9a7203730e730f058c72060292da720501998c72060173109972049d9c720473117312b2ad7202d9010763cde4c672070407e4c6b2a5731300040400',
-			globalIndex: 45690731,
-			inclusionHeight: 1441456,
-			index: 0,
-			spentTransactionId: null,
-			transactionId: 'a5b297c51ba59aca8014748ebf4b71497a3b28b93ed6715a2c9966fff30d97db',
-			value: 5346750000
-		}
-	],
-	outputs: [
-		{
-			value: '1853818474495228',
-			ergoTree:
-				'102a0400040004000e20011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f0400040204020400040004020500050005c8010500050005feffffffffffffffff0105000580897a05000580897a040405c80104c0933805c00c0580a8d6b907050005c8010580dac40905000500040404040500050005a0060101050005a0060100040004000e20239c170b7e82f94e6b05416f14b8a2a57e0bfff0e3c93f4abbcd160b6a5b271ad801d601db6501fed1ec9591b172017300d821d602b27201730100d603938cb2db63087202730200017303d604b2a5730400d605c17204d606db6308a7d607b27206730500d6088c720702d609db63087204d60ab27209730600d60b8c720a02d60c947208720bd60db27206730700d60e8c720d02d60fb27209730800d6108c720f02d61194720e7210d612e4c6a70505d613e4c672040505d614e4c6a70405d615e4c672040405d616b2a5730900d617e4c672160405d61895720c730a7217d61995720c7217730bd61ac1a7d61be4c672160505d61c9de4c672020405730cd61da2a1721a9c7214721c730dd61e9572119ca1721c95937214730e730f9d721d72147218d801d61e99721a721d9c9593721e7310731195937212731273139d721e72127219d61f9d9c721e7e7314057315d6209c7215721cd6219591a3731673177318d62295937220731972219d9c7205731a7220edededed7203ededededed927205731b93c27204c2a7edec720c7211efed720c7211ed939a720872129a720b7213939a720e72149a72107215edededed939a721472187215939a721272197213939a721a721b7205927215731c927213731deded938c720f018c720d01938c720a018c720701938cb27209731e00018cb27206731f000193721b9a721e958f721f7320f0721f721f957211959172187321927222732273239591721973249072227221927222732572037326938cb2db6308b2a4732700732800017329',
-			creationHeight: 1441464,
-			assets: [
-				{
-					tokenId: '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04',
-					amount: '9999920824601'
-				},
-				{
-					tokenId: '003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0',
-					amount: '9996656111109'
-				},
-				{
-					tokenId: '7d672d1def471720ca5782fd6473e47e796d9ac0c138d9911346f118b2f6d9d9',
-					amount: '1'
-				}
-			],
-			additionalRegisters: {
-				R4: '05d0fbc04b',
-				R5: '05f8c7fdf418'
-			}
-		},
-		{
-			value: '1000000',
-			ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-			creationHeight: 1441464,
-			assets: [
-				{
-					tokenId: '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04',
-					amount: '185'
-				}
-			],
-			additionalRegisters: {
-				R4: '05f202',
-				R5: '05ba8993b307'
-			}
-		},
-		{
-			value: '5742275',
-			ergoTree: '0008cd0207d9588bf49081c6c84bf93c5c365f57204c261dd2f184f73e5aa7c7182b2679',
-			creationHeight: 1441464,
-			assets: [],
-			additionalRegisters: {}
-		},
-		{
-			value: '1100000',
-			ergoTree:
-				'1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-			creationHeight: 1441464,
-			assets: [],
-			additionalRegisters: {}
-		},
-		{
-			value: '275277103',
-			ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-			creationHeight: 1441464,
-			assets: [],
-			additionalRegisters: {}
-		}
-	]
-};
 
 function buildTx(): any {
 	const BOB_ADDRESS = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
@@ -232,3 +92,231 @@ function buildTx(): any {
 
 	return unsignedTx;
 }
+
+function tokenIdToBase64(tokenId: string) {
+	return Buffer.from(tokenId, 'hex').toString('base64');
+}
+
+//const $interventionNFT = tokenIdToBase64(interventionNFT);
+//const $extractionNFT = tokenIdToBase64(extractionNFT);
+//const $lpSwapNFT = tokenIdToBase64(lpSwapNFT);
+//const $lpMintNFT = tokenIdToBase64(lpMintNFT);
+//const $lpRedeemNFT = tokenIdToBase64(lpRedeemNFT);
+
+// const LP_SCRIPT = `{
+//     // Liquidity pool script
+//     // Unlike ErgoDex (Spectrum) scripts, we split the script into many action scripts, like done with the bank script
+//     //
+//     // Other differences from original Spectrum's script are:
+//     //  * 2% redemption fee
+//     //  * redemption is inactive when LP price is < 0.98 * oracle price
+//     //  * additional intervention action (where bank interacts with LP), defined in bank/intervention.es
+//     //  * additional extract-to-the-future and release-extracted-tokens actions (extract.es)
+//     //
+//     // This box: (LP box)
+//     //
+//     // TOKENS
+//     //   Tokens(0): NFT to uniquely identify LP box.
+//     //   Tokens(1): LP tokens
+//     //   Tokens(2): Y tokens, the Dexy tokens (Note that X tokens are NanoErgs (the value)
+//     //
+//     // TRANSACTIONS
+//     //
+//     // [1] Intervention
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |   Oracle
+//     // 1 Bank          |  Bank          |
+//     // 2 Intervention  |  Intervention  |
+//     //
+//     // [2] Swap
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |
+//     // 1 Swap          |  Swap          |
+//     //
+//     // [3] Redeem LP tokens
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |   Oracle
+//     // 1 Redeem        |  Redeem
+//     //
+//     // [4] Mint LP tokens
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |
+//     // 1 Mint          |  Mint
+//     //
+//     // [5] Extract to future
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |   Oracle
+//     // 1 Extract       |  Extract       |   Bank
+//     // 2               |                |   Tracking (95%)
+//     //
+//     // [6] Release extracted to future tokens
+//     //   Input         |  Output        |   Data-Input
+//     // -----------------------------------------------
+//     // 0 LP            |  LP            |   Oracle
+//     // 1 Extract       |  Extract       |   Tracking (101%)
+//     //
+//     // -------------------------------------------------------------
+//     // Notation:
+//     //
+//     // X is the primary token
+//     // Y is the secondary token
+//     // In DexyUSD, X is NanoErg and Y is USD
+
+//     // inputs
+//     val interventionBoxIndex = 2
+//     val extractBoxIndex = 1
+//     val lpActionBoxIndex = 1 // swap/redeem/mint
+
+//     // outputs
+//     val selfOutIndex = 0
+
+//     val interventionNFT = fromBase64("${$interventionNFT}")
+//     val extractionNFT = fromBase64("${$extractionNFT}")
+//     val swapNFT = fromBase64("${$lpSwapNFT}")
+//     val mintNFT = fromBase64("${$lpMintNFT}")
+//     val redeemNFT = fromBase64("${$lpRedeemNFT}")
+
+//     val interventionBox = INPUTS(interventionBoxIndex)
+//     val extractBox = INPUTS(extractBoxIndex)
+//     val swapBox = INPUTS(lpActionBoxIndex)
+//     val mintBox = INPUTS(lpActionBoxIndex)
+//     val redeemBox = INPUTS(lpActionBoxIndex)
+
+//     val successor = OUTPUTS(selfOutIndex) // copy of this box after exchange
+
+//     val validSwap      = swapBox.tokens(0)._1 == swapNFT
+//     val validMint      = mintBox.tokens(0)._1 == mintNFT
+//     val validRedeem    = redeemBox.tokens(0)._1 == redeemNFT
+
+//     val validIntervention = interventionBox.tokens.size > 0 && interventionBox.tokens(0)._1 == interventionNFT
+//     val validExtraction   = extractBox.tokens(0)._1 == extractionNFT
+
+//     val lpNftIn      = SELF.tokens(0)
+//     val lpReservesIn = SELF.tokens(1)
+//     val tokenYIn     = SELF.tokens(2)
+
+//     val lpNftOut      = successor.tokens(0)
+//     val lpReservesOut = successor.tokens(1)
+//     val tokenYOut     = successor.tokens(2)
+
+//     val preservedScript      = successor.propositionBytes == SELF.propositionBytes
+//     val preservedLpNft       = lpNftIn == lpNftOut
+//     val preservedLpTokenId   = lpReservesOut._1 == lpReservesIn._1
+//     val preservedDexyTokenId = tokenYOut._1 == tokenYIn._1
+
+//     // Note:
+//     //    supplyLpIn = initialLp - lpReservesIn._2
+//     //    supplyLpOut = initialLp - lpReservesOut._2
+//     // Thus:
+//     //    deltaSupplyLp = supplyLpOut - supplyLpIn
+//     //                  = (initialLp - lpReservesOut._2) - (initialLp - lpReservesIn._2)
+//     //                  = lpReservesIn._2 - lpReservesOut._2
+
+//     val deltaSupplyLp  = lpReservesIn._2 - lpReservesOut._2
+
+//     // since tokens can be repeated, we ensure for sanity that there are no more tokens
+//     val noMoreTokens         = successor.tokens.size == 3
+
+//     val lpAction = validSwap || validMint || validRedeem
+
+//     val dexyAction = (validIntervention || validExtraction) &&
+//                       deltaSupplyLp == 0 // ensure Lp tokens are not extracted during dexyAction
+//     sigmaProp(
+//         preservedScript           &&
+//         preservedLpNft            &&
+//         preservedLpTokenId        &&
+//         preservedDexyTokenId      &&
+//         noMoreTokens              &&
+//         (lpAction || dexyAction)
+//     )
+// }`;
+
+const oracleTokenId = '6183680b1c4caaf8ede8c60dc5128e38417bc5b656321388b22baa43a9d150c2'; //GOLD Oracle Reward Token ID
+const oracleNFT = '3c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a'; //GOLD Oracle Mainnet NFT
+const oracleNFT_USD = '011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f'; // USD
+
+const $oracleNFT = Buffer.from(oracleNFT, 'hex').toString('base64');
+const $initialLp = '100000000000L'; // 100000000000
+
+const dexyRedeemErgoTree =
+	'1013040004020400040204040404060164060162040004020500050005000580a0b787e90504000e203c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a0580897a05c40105c801d80ed601b2a4730000d602db63087201d6038cb2720273010002d604b2a5730200d605db63087204d6069972038cb2720573030002d607c17201d60899c172047207d6098cb2720273040002d60a998cb27205730500027209d60b7306d60c7307d60db2db6501fe730800d60eb2a5730900d1ededededed8f7206730a8f7208730b8f720a730cd802d60f7e99730d720306d6107e720606ed929d9c9c7e720806720f720b720c9c72107e720706929d9c9c7e720a06720f720b720c9c72107e720906ed938cb2db6308720d730e0001730f919d720772099d9c9de4c6720d0405731073117312eded93c2720ec2a792c1720ec1a793db6308720edb6308a7';
+const dexyRedeemAddress =
+	'4qCVUToafqBhtiuhyUEYCwaLpetzDcqE32nATDitdQ8fqBKKNL4u7TcobWaGuvRBw7bZXep3Z1L7NhmficeDTaPpyhBPLbyJYbMxymZK2drZobFhmH1a2cwBeEeN7GhUDJ1EY14scAK37G9utbmUCZGfj8t4DHkK2bnSyqZyLLRmVwUSpC8DHtG17iXcCuoXHByatcNQ1SbhMfz33bnFcESwfj4poaWjoaZGiyT86xAV3QqroVi1hHeBsjkCBR7g68A9dceyvgqbcF1ouyURDXpjAP44UC5J6NpUeA8yKbskaYe1xud7tA4ojsGeiv4oAUcBRAKc6435x2E1UvzYasA8WuyLRAXoq8CgJe7Lc2NxKkGRDumEJKz7VECijkPRByF7nTq256jwEviTcZ8RzAt9qyj8rMKo7Bzy22CSvrDAfiXtVDzherZmEKij6jeECMqPq88eVmXyB9qaGmAT';
+
+let redeemContract = `{
+  // LP subcontract for redeeming LP tokens action.
+  //
+  // This box: (LP Redeem box)
+  //
+  // TOKENS
+  //   Tokens(0): NFT to uniquely identify this box
+
+  val initialLp = ${$initialLp}   // How many LP initially minted. Used to compute Lp in circulation (supply Lp).
+  // Note that at bootstrap, we may have initialLp > tokens stored in LP box quantity to consider the initial token burning in UniSwap v2
+
+  val lpBoxInIndex = 0 // input
+  val oracleBoxIndex = 0 // data input
+  val lpBoxOutIndex = 0 // output
+  val selfOutIndex = 1 // output
+
+  val oracleNFT = fromBase64("${$oracleNFT}") // to identify oracle pool box
+
+  val lpBoxIn = INPUTS(lpBoxInIndex)
+
+  val oracleBox = CONTEXT.dataInputs(oracleBoxIndex)
+  val lpBoxOut = OUTPUTS(lpBoxOutIndex)
+  val successor = OUTPUTS(selfOutIndex)
+
+  val lpReservesIn = lpBoxIn.tokens(1)
+  val lpReservesOut = lpBoxOut.tokens(1)
+
+  val reservesXIn = lpBoxIn.value
+  val reservesYIn = lpBoxIn.tokens(2)._2
+
+  val reservesXOut = lpBoxOut.value
+  val reservesYOut = lpBoxOut.tokens(2)._2
+
+  // circulating supply of LP tokens
+  val supplyLpIn = initialLp - lpReservesIn._2
+
+  // oracle delivers nanoErgs per 1 kg of gold
+  // we divide it by 1000000 to get nanoErg per dexy, i.e. 1mg of gold
+  // can assume always > 0 (ref oracle pool contracts) NanoErgs per USD
+  val oracleRateXy = oracleBox.R4[Long].get / 1000000L
+  val lpRateXyIn = reservesXIn / reservesYIn  // we can assume that reservesYIn > 0 (since at least one token must exist)
+
+  val validOracleBox = oracleBox.tokens(0)._1 == oracleNFT
+
+  val validRateForRedeemingLp = validOracleBox && lpRateXyIn > oracleRateXy * 98 / 100 // lpRate must be >= 0.98 * oracleRate // these parameters need to be tweaked
+
+  // Note:
+  //    supplyLpIn = initialLp - lpReservesIn._2
+  //    supplyLpOut = initialLp - lpReservesOut._2
+  // Thus:
+  //    deltaSupplyLp = supplyLpOut - supplyLpIn
+  //                  = (initialLp - lpReservesOut._2) - (initialLp - lpReservesIn._2)
+  //                  = lpReservesIn._2 - lpReservesOut._2
+
+  val deltaSupplyLp  = lpReservesIn._2 - lpReservesOut._2
+  val deltaReservesX = reservesXOut - reservesXIn
+  val deltaReservesY = reservesYOut - reservesYIn
+
+  val validRedemption = deltaSupplyLp < 0 && deltaReservesX < 0 && deltaReservesY < 0 && {
+      val _deltaSupplyLp = deltaSupplyLp.toBigInt
+      // note: _deltaSupplyLp, deltaReservesX and deltaReservesY are negative
+      // 2% fee
+      deltaReservesX.toBigInt * supplyLpIn * 100 / 98 >= _deltaSupplyLp * reservesXIn &&
+          deltaReservesY.toBigInt * supplyLpIn * 100 / 98 >= _deltaSupplyLp * reservesYIn
+  } && validRateForRedeemingLp
+
+  val selfPreserved = successor.propositionBytes == SELF.propositionBytes  &&
+                      successor.value >= SELF.value                        &&
+                      successor.tokens == SELF.tokens
+
+  sigmaProp(validRedemption && selfPreserved)
+}`;

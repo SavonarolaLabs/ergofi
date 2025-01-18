@@ -12,8 +12,8 @@ export function compileContract(contract: string, map = {}) {
 	return tree.toAddress(Network.Mainnet).toString();
 }
 
-function compileContractFromFile(fileName: string) {
-	const contractFile = path.join(__dirname, '../contracts', fileName);
+export function compileContractFromFile(fileName: string): string {
+	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
 	const contract = fs.readFileSync(contractFile, 'utf-8');
 	return compileContract(contract);
 }

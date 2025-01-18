@@ -2,7 +2,7 @@ import { Network } from '@fleet-sdk/common';
 import { compile } from '@fleet-sdk/compiler';
 import fs from 'fs';
 import path from 'path';
-import { contractConfig, mainnetTokenIds } from './dexyContants';
+import { contractConfig, mainnetTokenIds } from './dexyConstants';
 
 export function compileContract(contract: string, map = {}) {
 	const tree = compile(contract, {

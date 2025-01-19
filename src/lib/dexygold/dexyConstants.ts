@@ -1,5 +1,7 @@
 // https://github.com/kushti/dexy-stable/blob/master/src/main/scala/dexy/chainutils/DexySpec.scala
 
+import { DEXY_BANK_INTERVENTION } from './dexyAddressConstants';
+
 export interface NetworkTokenIds {
 	lpNFT: string;
 	lpSwapNFT: string;
@@ -71,4 +73,8 @@ export const contractConfig = {
 	initialLp: '100000000000L',
 	intMax: '2147483647',
 	epochLength: '30'
+};
+
+export const addresses = {
+	interventionAddress: DEXY_BANK_INTERVENTION
 };

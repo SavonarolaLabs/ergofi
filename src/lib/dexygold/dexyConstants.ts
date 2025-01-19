@@ -22,6 +22,7 @@ export interface NetworkTokenIds {
 
 export interface MainnetTokenIds extends NetworkTokenIds {
 	gort: string;
+	gortId: string;
 	oracleTokenId: string;
 	oraclePoolNFT: string;
 	oracleNFT: string;
@@ -33,6 +34,8 @@ export interface MainnetTokenIds extends NetworkTokenIds {
 export const mainnetTokenIds: MainnetTokenIds = {
 	// oracle related tokens
 	gort: '7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9',
+	// gort == gortId
+	gortId: '7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9',
 	oracleTokenId: '6183680b1c4caaf8ede8c60dc5128e38417bc5b656321388b22baa43a9d150c2',
 	oraclePoolNFT: '3c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a',
 	// oracleNFT == oraclePoolNFT

@@ -25,14 +25,21 @@ function convertHexToBase64(obj) {
 	);
 }
 
+function sortKeysByLength(obj) {
+	return Object.fromEntries(
+		Object.entries(obj).sort(([keyA], [keyB]) => keyB.length - keyA.length)
+	);
+}
+
 export function compileDexyContractFromFile(fileName: string): string {
 	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
 	const contract = fs.readFileSync(contractFile, 'utf-8');
 
-	const variables = {
+	const variables = sortKeysByLength({
 		...convertHexToBase64(mainnetTokenIds),
 		...contractConfig
-	};
+	});
+
 	const updatedContract = replaceVariablesInContract(contract, variables);
 
 	try {

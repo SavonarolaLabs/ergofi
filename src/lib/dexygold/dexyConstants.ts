@@ -33,6 +33,10 @@ export interface MainnetTokenIds extends NetworkTokenIds {
 	buybackNFT: string;
 }
 
+export const testTokenIds: any = {
+	gort: '...'
+};
+
 export const mainnetTokenIds: MainnetTokenIds = {
 	// oracle related tokens
 	gort: '7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9',
@@ -75,6 +79,8 @@ export const contractConfig = {
 	epochLength: '30'
 };
 
-export const addresses = {
+export const dexyAddresses = {
 	interventionAddress: DEXY_BANK_INTERVENTION
 };
+
+export const dexyGold = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };

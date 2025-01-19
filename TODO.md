@@ -1,9 +1,11 @@
 next:
 
 1. mint all tokens + Test in name
-2. run scala tests <- me
-3. add contract backdoors <- me
-4. move backdoored addresses to scala and test
+2. in dexyConstants.ts add contractConfig values from ALL DeploymentRequest DexySpec.scala
+
+3. run scala tests <- me
+4. add contract backdoors <- me
+5. move backdoored addresses to scala and test
 
 after next:
 

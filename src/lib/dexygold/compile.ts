@@ -19,14 +19,29 @@ export function compileContractFromFile(fileName: string): string {
 	return compileContract(contract);
 }
 
+function convertHexToBase64(obj) {
+	return Object.fromEntries(
+		Object.entries(obj).map(([key, value]) => [key, Buffer.from(value, 'hex').toString('base64')])
+	);
+}
+
 export function compileDexyContractFromFile(fileName: string): string {
 	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
 	const contract = fs.readFileSync(contractFile, 'utf-8');
 
-	const variables = { ...mainnetTokenIds, ...contractConfig };
+	const variables = {
+		...convertHexToBase64(mainnetTokenIds),
+		...contractConfig
+	};
 	const updatedContract = replaceVariablesInContract(contract, variables);
-	console.warn(updatedContract);
-	return compileContract(updatedContract);
+
+	try {
+		return compileContract(updatedContract);
+	} catch (e) {
+		console.warn(updatedContract);
+		console.error(e);
+		console.warn(fileName);
+	}
 }
 
 function replaceVariablesInContract(contract: string, variables: Record<string, string>): string {

@@ -8,6 +8,7 @@
 		"deploy": "vite build && rsync -rav ./build/ root@ergfi:/var/www/ergfi/",
 		"preview": "vite preview",
 		"compile": "bun src/lib/dexygold/dexyContractListGenerator.ts && bun src/lib/dexygold/compileDexyContracts.ts",
+		"compile:contracts": "bun src/lib/dexygold/compileDexyContracts.ts",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",

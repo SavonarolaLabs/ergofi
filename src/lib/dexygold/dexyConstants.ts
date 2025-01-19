@@ -24,6 +24,7 @@ export interface MainnetTokenIds extends NetworkTokenIds {
 	gort: string;
 	oracleTokenId: string;
 	oraclePoolNFT: string;
+	oracleNFT: string;
 	gortDevEmissionNFT: string;
 	gortLpNFT: string;
 	buybackNFT: string;
@@ -34,6 +35,8 @@ export const mainnetTokenIds: MainnetTokenIds = {
 	gort: '7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9',
 	oracleTokenId: '6183680b1c4caaf8ede8c60dc5128e38417bc5b656321388b22baa43a9d150c2',
 	oraclePoolNFT: '3c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a',
+	// oracleNFT == oraclePoolNFT
+	oracleNFT: '3c45f29a5165b030fdb5eaf5d81f8108f9d8f507b31487dd51f4ae08fe07cf4a',
 	gortDevEmissionNFT: 'bb484bb7fea08b15861e27cb203a13069082befb05f5437cae71237d9c5c6ac3',
 	gortLpNFT: 'd1c9e20657b4e37de3cd279a994266db34b18e6e786371832ad014fd46583198',
 	buybackNFT: 'bf24ed4af7eb5a7839c43aa6b240697d81b196120c837e1a941832c266d3755c',
@@ -60,9 +63,9 @@ export const mainnetTokenIds: MainnetTokenIds = {
 
 export const contractConfig = {
 	initialDexyTokens: '10000000000000L',
+	feeNumLp: '997L',
+	feeDenomLp: '1000L',
 	initialLp: '100000000000L',
-	feeNumLp: '997',
-	feeDenomLp: '1000',
-	//   "intMax" -> Int.MaxValue.toString,
+	intMax: '2147483647',
 	epochLength: '30'
 };

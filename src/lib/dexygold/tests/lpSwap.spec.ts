@@ -83,7 +83,9 @@ describe('LpSwapSpec', () => {
 		const height = mockChain.height;
 
 		const tx = new TransactionBuilder(height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },

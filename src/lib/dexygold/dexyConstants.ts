@@ -4,7 +4,9 @@ import { ErgoAddress } from '@fleet-sdk/core';
 import {
 	DEXY_BANK_INTERVENTION,
 	DEXY_LP_POOL_MAIN,
-	DEXY_LP_POOL_SWAP
+	DEXY_LP_POOL_SWAP,
+	DEXY_LP_PROXY_SWAPBUYV1,
+	DEXY_LP_PROXY_SWAPSELLV1
 } from './dexyAddressConstants';
 
 export interface NetworkTokenIds {
@@ -197,11 +199,11 @@ export const vitestErgoTrees = {
 	lpErgoTree: tree(DEXY_LP_POOL_MAIN),
 	//:DEXY_LP_POOL_EXTRACT,
 	//:DEXY_LP_POOL_MINT,
-	swapErgoTree: tree(DEXY_LP_POOL_SWAP)
+	swapErgoTree: tree(DEXY_LP_POOL_SWAP),
 	//:DEXY_LP_POOL_REDEEM,
 	//:DEXY_GORT_DEV_EMISSION,
-	//:DEXY_LP_PROXY_SWAPBUYV1,
-	//:DEXY_LP_PROXY_SWAPSELLV1,
+	lpSwapBuyV1ErgoTree: tree(DEXY_LP_PROXY_SWAPBUYV1),
+	lpSwapSellV1ErgoTree: tree(DEXY_LP_PROXY_SWAPSELLV1)
 };
 
 function tree(address: string): string {

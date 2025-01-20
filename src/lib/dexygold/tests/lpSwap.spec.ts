@@ -1,14 +1,15 @@
 import { MockChain } from '@fleet-sdk/mock-chain';
-import { compile } from '@fleet-sdk/compiler';
 import {
 	SInt,
 	SSigmaProp,
 	SGroupElement,
 	TransactionBuilder,
-	OutputBuilder
+	OutputBuilder,
+	ErgoAddress
 } from '@fleet-sdk/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { vitestContractConfig, vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
+import { compileContract } from '../compile';
 
 describe('LpSwapSpec', () => {
 	const mockChain = new MockChain({ height: 1_000_000 });
@@ -16,7 +17,10 @@ describe('LpSwapSpec', () => {
 	const { lpNFT, lpToken, dexyUSD, lpSwapNFT } = vitestTokenIds;
 	const { lpErgoTree, swapErgoTree } = vitestErgoTrees;
 
-	const fundingParty = mockChain.newParty('Funding');
+	const fundingParty = mockChain.addParty(
+		ErgoAddress.fromBase58(compileContract('sigmaProp(true)')).ergoTree,
+		'Funding'
+	);
 	const lpParty = mockChain.addParty(lpErgoTree, 'LP-Box Owner');
 	const swapParty = mockChain.addParty(swapErgoTree, 'Swap-Box Owner');
 	const userParty = mockChain.newParty('User / Change');
@@ -79,7 +83,7 @@ describe('LpSwapSpec', () => {
 		const height = mockChain.height;
 
 		const tx = new TransactionBuilder(height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -97,13 +101,12 @@ describe('LpSwapSpec', () => {
 					{ tokenId: dexyUSD, amount: calculatedBuyY }
 				])
 			)
+
 			.payFee(fee)
 			.sendChangeTo(fundingParty.address)
 			.build();
 
-		const executed = mockChain.execute(tx, {
-			signers: [fundingParty]
-		});
+		const executed = mockChain.execute(tx);
 
 		expect(executed).toBe(true);
 
@@ -113,4 +116,5 @@ describe('LpSwapSpec', () => {
 			amount: calculatedBuyY
 		});
 	});
+	// Scala => JS
 });

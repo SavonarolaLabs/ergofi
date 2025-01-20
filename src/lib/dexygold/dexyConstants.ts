@@ -139,7 +139,10 @@ export const contractConfig = {
 	feeDenomLp: '1000L',
 	initialLp: '100000000000L',
 	intMax: '2147483647',
-	epochLength: '30'
+	epochLength: '30',
+	intZero: '0', //??
+	longZero: '0' //??
+	//LP dep lpToken: ${initialLp - 6400000000L}
 };
 
 export const dexyAddresses = {

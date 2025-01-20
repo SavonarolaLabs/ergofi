@@ -1,6 +1,10 @@
 // https://github.com/kushti/dexy-stable/blob/master/src/main/scala/dexy/chainutils/DexySpec.scala
 
-import { DEXY_BANK_INTERVENTION } from './dexyAddressConstants';
+import {
+	DEXY_BANK_INTERVENTION,
+	DEXY_LP_POOL_MAIN,
+	DEXY_LP_POOL_SWAP
+} from './dexyAddressConstants';
 
 export interface NetworkTokenIds {
 	lpNFT: string;
@@ -8,6 +12,7 @@ export interface NetworkTokenIds {
 	lpMintNFT: string;
 	lpRedeemNFT: string;
 	lpTokenId: string;
+	lpToken: string;
 	tracking95NFT: string;
 	tracking98NFT: string;
 	tracking101NFT: string;
@@ -20,6 +25,7 @@ export interface NetworkTokenIds {
 	freeMintNFT: string;
 	payoutNFT: string;
 	dexyTokenId: string;
+	dexyUSD: string;
 }
 
 export interface MainnetTokenIds extends NetworkTokenIds {
@@ -119,6 +125,8 @@ export const mainnetTokenIds: MainnetTokenIds = {
 	lpMintNFT: '19b8281b141d19c5b3843a4a77e616d6df05f601e5908159b1eaf3d9da20e664',
 	lpRedeemNFT: '08c47eef5e782f146cae5e8cfb5e9d26b18442f82f3c5808b1563b6e3b23f729',
 	lpTokenId: '376603b9ecbb953202fbac977f418ab5edc9d9effafbbe1418f5aece661dfa1f',
+	// lpToken == lpTokenId
+	lpToken: '376603b9ecbb953202fbac977f418ab5edc9d9effafbbe1418f5aece661dfa1f',
 	tracking95NFT: '4819812cd232de35f9e711f0006953df3770649bd33a5a67d9d8634ec3184bba',
 	tracking98NFT: '17d3e6ccd55b16547143d51b91331c01ea9f89b0841ff2948dd2a164276621a8',
 	tracking101NFT: '31bf6b4ee0bb108e155040dc93927dacef8f7af858be1ec53f232131be20e66f',
@@ -130,7 +138,9 @@ export const mainnetTokenIds: MainnetTokenIds = {
 	arbitrageMintNFT: 'c28c5104a4ceb13f9e6ca18f312d3e5d543e64a94eb2e4333e4d6c2f0590042a',
 	freeMintNFT: '2010eedd38b6ebe3bcd703ec9649b114ef3f2b2142aec873eded3e67f25a19c5',
 	payoutNFT: '1d88e849dc537081470b273f37c2118d73a418f8c4d0c9117dcf044dde82f5b2',
-	dexyTokenId: '6122f7289e7bb2df2de273e09d4b2756cda6aeb0f40438dc9d257688f45183ad'
+	dexyTokenId: '6122f7289e7bb2df2de273e09d4b2756cda6aeb0f40438dc9d257688f45183ad',
+	// dexyTokenId == dexyUSD
+	dexyUSD: '6122f7289e7bb2df2de273e09d4b2756cda6aeb0f40438dc9d257688f45183ad'
 };
 
 export const contractConfig = {
@@ -150,3 +160,45 @@ export const dexyAddresses = {
 };
 
 export const dexyGold = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };
+
+// vitest helpers
+
+export const vitestContractConfig = scalaToJsNumbers(contractConfig);
+
+function scalaToJsNumbers(o: Object) {
+	return Object.fromEntries(
+		Object.entries(o).map(([key, value]) => {
+			if (typeof value === 'string') {
+				if (value.endsWith('L')) {
+					return [key, BigInt(value.slice(0, -1))];
+				}
+				return [key, BigInt(value)];
+			} else if (typeof value === 'number') {
+				return [key, BigInt(value)];
+			}
+			return [key, value];
+		})
+	);
+}
+
+export const vitestTokenIds = mainnetTokenIds;
+
+export const vitestErgoTrees = {
+	//:DEXY_TRACKING,
+	//:DEXY_BANK_UPDATE_UPDATE,
+	//:DEXY_BANK_UPDATE_BALLOT,
+	//:DEXY_BANK_INTERVENTION,
+	//:DEXY_BANK_BUYBACK,
+	//:DEXY_BANK_PAYOUT,
+	//:DEXY_BANK_FREEMINT,
+	//:DEXY_BANK_BANK,
+	//:DEXY_BANK_ARBMINT,
+	lpErgoTree: DEXY_LP_POOL_MAIN,
+	//:DEXY_LP_POOL_EXTRACT,
+	//:DEXY_LP_POOL_MINT,
+	swapErgoTree: DEXY_LP_POOL_SWAP
+	//:DEXY_LP_POOL_REDEEM,
+	//:DEXY_GORT_DEV_EMISSION,
+	//:DEXY_LP_PROXY_SWAPBUYV1,
+	//:DEXY_LP_PROXY_SWAPSELLV1,
+};

@@ -8,30 +8,23 @@ import {
 	OutputBuilder
 } from '@fleet-sdk/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { vitestContractConfig, vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
 
 describe('LpSwapSpec', () => {
 	const mockChain = new MockChain({ height: 1_000_000 });
+	const { feeNumLp, feeDenomLp } = vitestContractConfig;
+	const { lpNFT, lpToken, dexyUSD, lpSwapNFT } = vitestTokenIds;
+	const { lpErgoTree, swapErgoTree } = vitestErgoTrees;
 
 	const fundingParty = mockChain.newParty('Funding');
 	const lpParty = mockChain.newParty('LP-Box Owner');
 	const swapParty = mockChain.newParty('Swap-Box Owner');
 	const userParty = mockChain.newParty('User / Change');
 
-	const lpNFT = '000111222333444555666777888999aaa000111222333444555666777888999aa';
-	const lpToken = '111222333444555666777888999aaa000111222333444555666777888999aaa00';
-	const dexyUSD = '222333444555666777888999aaa000111222333444555666777888999aaa00111';
-	const lpSwapNFT = '333444555666777888999aaa000111222333444555666777888999aaa00111222';
-
-	const lpErgoTree = compile('sigmaProp(true)', {});
-	const swapErgoTree = compile('sigmaProp(true)', {});
-	const dummyErgoTree = compile('sigmaProp(true)', {});
-
 	const fakeNanoErgs = 10_000_000_000_000n;
 	const dummyNanoErgs = 100_000n;
 	const minStorageRent = 1000000n;
 	const fee = 1_000_000n;
-	const feeNumLp = 995n;
-	const feeDenomLp = 1000n;
 
 	const lpBalance = 100_000_000n;
 	const reservesXIn = 1_000_000_000_000n;

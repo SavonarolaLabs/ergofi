@@ -82,5 +82,5 @@
   val updateNFT = fromBase64("$updateNFT")
   val validUpdate = INPUTS(0).tokens(0)._1 == updateNFT
 
-  sigmaProp((validSuccessor && (validMint || validIntervention || validPayout)) || validUpdate || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8"))
+  sigmaProp((validSuccessor && (validMint || validIntervention || validPayout)) || validUpdate)|| PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
 }

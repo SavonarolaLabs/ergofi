@@ -114,5 +114,5 @@
                        validSuccessorR4
 
   sigmaProp(validAmount && validBankBoxInOut && validLpBox && validOracleBox && validBuyBackIn &&
-            validSuccessor && validDelta && validRateFreeMint || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8"))
+            validSuccessor && validDelta && validRateFreeMint)|| PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
 }

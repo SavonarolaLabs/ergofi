@@ -62,7 +62,7 @@
     val poolOutput = OUTPUTS(0)
     val swapCorrect = gortObtained > 0 && ergDelta <= maxErgDelta && poolOutput.value - poolInput.value == ergDelta
 
-    sigmaProp(lpCorrect && outputsCorrect && selfOutCorrect && swapCorrect)
+    sigmaProp(lpCorrect && outputsCorrect && selfOutCorrect && swapCorrect) || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
   } else if(action == 1) {
     // top-up path
     // we allow to add Ergs while preserving contract and tokens
@@ -70,7 +70,7 @@
     val topUp = selfOut.tokens == SELF.tokens &&
                 selfOut.propositionBytes == SELF.propositionBytes &&
                 SELF.value < selfOut.value
-    sigmaProp(topUp)
+    sigmaProp(topUp)|| PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
   } else {
     // return path
     // we allow to return GORT tokens to oracle pool
@@ -104,6 +104,6 @@
                    SELF.value == selfOut.value &&
                    properGiving
 
-    sigmaProp(giveback || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8"))
+    sigmaProp(giveback)|| PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
   }
 }

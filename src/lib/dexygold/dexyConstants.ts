@@ -1,5 +1,6 @@
 // https://github.com/kushti/dexy-stable/blob/master/src/main/scala/dexy/chainutils/DexySpec.scala
 
+import { ErgoAddress } from '@fleet-sdk/core';
 import {
 	DEXY_BANK_INTERVENTION,
 	DEXY_LP_POOL_MAIN,
@@ -193,12 +194,16 @@ export const vitestErgoTrees = {
 	//:DEXY_BANK_FREEMINT,
 	//:DEXY_BANK_BANK,
 	//:DEXY_BANK_ARBMINT,
-	lpErgoTree: DEXY_LP_POOL_MAIN,
+	lpErgoTree: tree(DEXY_LP_POOL_MAIN),
 	//:DEXY_LP_POOL_EXTRACT,
 	//:DEXY_LP_POOL_MINT,
-	swapErgoTree: DEXY_LP_POOL_SWAP
+	swapErgoTree: tree(DEXY_LP_POOL_SWAP)
 	//:DEXY_LP_POOL_REDEEM,
 	//:DEXY_GORT_DEV_EMISSION,
 	//:DEXY_LP_PROXY_SWAPBUYV1,
 	//:DEXY_LP_PROXY_SWAPSELLV1,
 };
+
+function tree(address: string): string {
+	return ErgoAddress.fromBase58(address).ergoTree;
+}

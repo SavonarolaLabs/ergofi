@@ -17,19 +17,14 @@ describe('LpSwapSpec', () => {
 	const { lpErgoTree, swapErgoTree } = vitestErgoTrees;
 
 	const fundingParty = mockChain.newParty('Funding');
-	const lpParty = mockChain.newParty('LP-Box Owner');
-	const swapParty = mockChain.newParty('Swap-Box Owner');
+	const lpParty = mockChain.addParty(lpErgoTree, 'LP-Box Owner');
+	const swapParty = mockChain.addParty(swapErgoTree, 'Swap-Box Owner');
 	const userParty = mockChain.newParty('User / Change');
 
 	const fakeNanoErgs = 10_000_000_000_000n;
 	const dummyNanoErgs = 100_000n;
 	const minStorageRent = 1000000n;
 	const fee = 1_000_000n;
-
-	const lpBalance = 100_000_000n;
-	const reservesXIn = 1_000_000_000_000n;
-	const reservesYIn = 100_000_000n;
-	const sellX = 10_000_000n;
 
 	beforeEach(() => {
 		mockChain.reset();
@@ -40,7 +35,13 @@ describe('LpSwapSpec', () => {
 	});
 
 	it('Swap (sell Ergs) should work - w. simple input', () => {
+		const lpBalance = 100_000_000n;
+		const reservesXIn = 1_000_000_000_000n;
+		const reservesYIn = 100_000_000n;
+
 		const rate = Number(reservesYIn) / Number(reservesXIn);
+		const sellX = 10_000_000n;
+
 		let calculatedBuyY =
 			BigInt(Math.floor((Number(sellX) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
 
@@ -101,7 +102,7 @@ describe('LpSwapSpec', () => {
 			.build();
 
 		const executed = mockChain.execute(tx, {
-			signers: [fundingParty, lpParty, swapParty]
+			signers: [fundingParty]
 		});
 
 		expect(executed).toBe(true);

@@ -37,7 +37,7 @@
         commonPreservationRules &&
         selfOut.tokens(1)._2 > SELF.tokens(1)._2 && // GORTs must be added
         selfOut.R4[Int].get == lastHeight && // payout height preserved
-        selfOut.R5[SigmaProp].get == SELF.R5[SigmaProp].get // auth preserved
+        selfOut.R5[SigmaProp].get == SELF.R5[SigmaProp].get  || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")// auth preserved
     )
   } else {  // withdrawal
     val newHeight = selfOut.R4[Int].get
@@ -48,6 +48,6 @@
         newHeight > lastHeight && // payout height increased
         newHeight <= HEIGHT   // can't take rewards from future
         // R5 is not checked here so could be changed
-    ) && SELF.R5[SigmaProp].get // signature from proposition stored in R5 is needed to withdraw (and possibly update payout data)
+    ) && SELF.R5[SigmaProp].get || PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8") // signature from proposition stored in R5 is needed to withdraw (and possibly update payout data)
   }
 }

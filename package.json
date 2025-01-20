@@ -49,6 +49,7 @@
 	"dependencies": {
 		"@fleet-sdk/compiler": "^0.8.1",
 		"@fleet-sdk/core": "^0.7.0",
+		"@fleet-sdk/mock-chain": "^0.8.1",
 		"@fleet-sdk/serializer": "^0.8.0",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@tailwindcss/aspect-ratio": "^0.4.2",

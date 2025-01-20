@@ -14,7 +14,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "vitest run --no-coverage"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -48,7 +48,7 @@
 	},
 	"dependencies": {
 		"@fleet-sdk/compiler": "^0.8.1",
-		"@fleet-sdk/core": "^0.7.0",
+		"@fleet-sdk/core": "^0.8.1",
 		"@fleet-sdk/mock-chain": "^0.8.1",
 		"@fleet-sdk/serializer": "^0.8.0",
 		"@sveltejs/adapter-static": "^3.0.8",

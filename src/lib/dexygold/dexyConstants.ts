@@ -35,13 +35,14 @@ export interface MainnetTokenIds extends NetworkTokenIds {
 
 export const testTokenIds: any = {
 	// oracle related tokens
-	gort: '',
+	gort: '4e8f38135867f99f064e3dbac43a1402e830cd768bcb73e6c8e205b166ba9ec5',
 	// gort == gortId
-	//gortId: "",
+	gortId: '4e8f38135867f99f064e3dbac43a1402e830cd768bcb73e6c8e205b166ba9ec5',
 	oracleTokenId: '3809ed2b41d5868307be9b77523861cfd332445596a238cad0c780ccc9b215ea',
 	oraclePoolNFT: 'e38048c74cb92bb2f908c2465106f7ab2f2632fbbbb72a26c372276263b2b011',
 	// oracleNFT == oraclePoolNFT
-	// oracleNFT: "",
+	oracleNFT: 'e38048c74cb92bb2f908c2465106f7ab2f2632fbbbb72a26c372276263b2b011',
+
 	gortDevEmissionNFT: '47db2393c6f6210b9d7e655eabb2ced8aa9830457d69f3290732b804a363085b',
 	gortLpNFT: 'e952616014257d62dd52edf006413783aa93d6107413248ff35f094214cc3b39',
 	buybackNFT: '109dfaf60489985fc43fbbf3a49cc2f41eedc33f7b01370122c69cf4aeb58272',
@@ -64,6 +65,39 @@ export const testTokenIds: any = {
 	freeMintNFT: '9fe049100ef4e4514c8dfe7b08d28e95e0dcdb267184bf4d6c6cf460e16c81d4',
 	payoutNFT: 'b667ad04ff28c0a5af15bb7c453cfb10d531c8556e229617d6bda28309e2e0cd',
 	dexyTokenId: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed'
+};
+
+export const initialTokenAmount: any = {
+	//oracle related tokens
+	gort: 100_000n, // <-------------- CANT FIND
+	//gort == gortId
+	gortId: 100_000n, // <-------------- CANT FIND
+	oracleTokenId: 35n,
+	oraclePoolNFT: 1n,
+	//oracleNFT == oraclePoolNFT
+	oracleNFT: 1n,
+	gortDevEmissionNFT: 1n,
+	gortLpNFT: 1n,
+	buybackNFT: 1n,
+
+	// overridden tokens
+	lpNFT: 1n,
+	lpSwapNFT: 1n,
+	lpMintNFT: 1n,
+	lpRedeemNFT: 1n,
+	lpTokenId: 100_000_000_000n,
+	tracking95NFT: 1n,
+	tracking98NFT: 1n,
+	tracking101NFT: 1n,
+	bankNFT: 1n,
+	updateNFT: 1n,
+	ballotTokenId: 5n, // // <-------------- NEED CHECK
+	interventionNFT: 1n,
+	extractionNFT: 1n,
+	arbitrageMintNFT: 1n,
+	freeMintNFT: 1n,
+	payoutNFT: 1n,
+	dexyTokenId: 10_000_000_000_000n
 };
 
 export const mainnetTokenIds: MainnetTokenIds = {

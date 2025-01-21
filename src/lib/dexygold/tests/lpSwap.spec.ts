@@ -875,7 +875,7 @@ describe('LpSwapSpec', () => {
 			proxyParty.balance.nanoergs - BigInt(Math.floor(Number(buyY) * rate));
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos, ...proxyParty.utxos], {
+			.from([...lpParty.utxos, ...swapParty.utxos, ...proxyParty.utxos, ...fundingParty.utxos], {
 				ensureInclusion: true
 			})
 			.to(

@@ -102,7 +102,7 @@ export const vitestErgoTrees = {
 	//:DEXY_BANK_PAYOUT,
 	freeMintErgoTree: DEXY_BANK_FREEMINT_TREE,
 	bankErgoTree: DEXY_BANK_TREE,
-	//:DEXY_BANK_ARBMINT,
+	arbitrageMintErgoTree: DEXY_BANK_ARBMINT_TREE,
 	lpErgoTree: DEXY_LP_TREE,
 	//:DEXY_LP_POOL_EXTRACT,
 	//:DEXY_LP_POOL_MINT,

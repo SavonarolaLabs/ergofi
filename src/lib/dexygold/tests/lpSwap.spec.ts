@@ -228,7 +228,9 @@ describe('LpSwapSpec', () => {
 
 		// Instead of returning LP box to lpErgoTree, let's put it into userParty => fail
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, userParty.address) // WRONG address
 					.addTokens([
@@ -255,6 +257,7 @@ describe('LpSwapSpec', () => {
 		expect(executed).toBe(false);
 	});
 
+	//
 	it('Swap (sell Ergs) should fail if LpSwap address changed', () => {
 		// similar scenario but we now break the "swap" output
 		const lpBalance = 100_000_000n;
@@ -287,7 +290,9 @@ describe('LpSwapSpec', () => {
 
 		// We output the swap box to the wrong address
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -348,7 +353,9 @@ describe('LpSwapSpec', () => {
 
 		// We incorrectly put the dummyTokenId in place of lpNFT in the output
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: dummyTokenId, amount: 1n }, // WRONG NFT
@@ -408,7 +415,9 @@ describe('LpSwapSpec', () => {
 
 		// Wrong NFT in the swap box output
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -469,7 +478,9 @@ describe('LpSwapSpec', () => {
 
 		// Output tries to replace the lpToken with dummyTokenId
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -530,7 +541,9 @@ describe('LpSwapSpec', () => {
 
 		// Output tries to put dummy token in place of Dexy
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -592,7 +605,9 @@ describe('LpSwapSpec', () => {
 
 		// This breaks the contract's check
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -618,14 +633,15 @@ describe('LpSwapSpec', () => {
 		expect(executed).toBe(false);
 	});
 
+	// FIX it
 	it('Swap (sell Dexy) should work - w. simple input', () => {
 		const lpBalance = 100_000_000n;
 		const reservesXIn = 1_000_000_000_000n;
 		const reservesYIn = 100_000_000n;
 
-		const rate = Number(reservesXIn) / Number(reservesYIn);
+		const rate = Number(reservesXIn) / Number(reservesYIn); // <== Reversed rate?
 		const sellY = 1_000n;
-		// buyX = (sellY * rate * feeNumLp / feeDenomLp) - 100
+
 		const buyX =
 			BigInt(Math.floor((Number(sellY) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 100n;
 
@@ -663,7 +679,9 @@ describe('LpSwapSpec', () => {
 		const userErgs = dummyNanoErgs - deltaReservesX;
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -728,7 +746,9 @@ describe('LpSwapSpec', () => {
 		const userErgs = dummyNanoErgs + buyX;
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -776,7 +796,9 @@ describe('LpSwapSpec', () => {
 
 		// outputs match the inputs
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXIn, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -853,7 +875,9 @@ describe('LpSwapSpec', () => {
 			proxyParty.balance.nanoergs - BigInt(Math.floor(Number(buyY) * rate));
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...fundingParty.utxos, ...lpParty.utxos, ...swapParty.utxos, ...proxyParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos, ...proxyParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -932,7 +956,9 @@ describe('LpSwapSpec', () => {
 		const finalUserErgs = dummyNanoErgs + buyX;
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...proxyParty.utxos, ...fundingParty.utxos])
+			.from([...lpParty.utxos, ...swapParty.utxos, ...proxyParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },

@@ -19,11 +19,10 @@ const {
 	bankErgoTree,
 	freeMintErgoTree,
 	buybackErgoTree,
-	// oracleErgoTree, // <====???
+	oracleErgoTree, // <====???
 	lpErgoTree
 } = vitestErgoTrees;
 
-const oracleErgoTree = ErgoAddress.fromBase58(compileContract('sigmaProp(true)')).ergoTree; // <====???
 const dummyErgoTree = ErgoAddress.fromBase58(compileContract('sigmaProp(true)')).ergoTree; // trivial script
 
 // Common constants from your Scala code:

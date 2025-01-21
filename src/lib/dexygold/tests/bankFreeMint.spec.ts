@@ -195,7 +195,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -318,7 +318,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -439,7 +439,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -550,7 +550,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -667,7 +667,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -782,7 +782,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -903,7 +903,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -1022,7 +1022,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -1138,7 +1138,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
@@ -1253,7 +1253,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightIn = BigInt(mockChain.height + 1);
 		const resetHeightOut = resetHeightIn;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;

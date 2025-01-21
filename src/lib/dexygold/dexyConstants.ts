@@ -2,6 +2,9 @@
 
 import { ErgoAddress } from '@fleet-sdk/core';
 import {
+	DEXY_BANK_BANK,
+	DEXY_BANK_BUYBACK,
+	DEXY_BANK_FREEMINT,
 	DEXY_BANK_INTERVENTION,
 	DEXY_LP_POOL_MAIN,
 	DEXY_LP_POOL_SWAP,
@@ -191,10 +194,10 @@ export const vitestErgoTrees = {
 	//:DEXY_BANK_UPDATE_UPDATE,
 	//:DEXY_BANK_UPDATE_BALLOT,
 	//:DEXY_BANK_INTERVENTION,
-	//:DEXY_BANK_BUYBACK,
+	buybackErgoTree: tree(DEXY_BANK_BUYBACK),
 	//:DEXY_BANK_PAYOUT,
-	//:DEXY_BANK_FREEMINT,
-	//:DEXY_BANK_BANK,
+	freeMintErgoTree: tree(DEXY_BANK_FREEMINT),
+	bankErgoTree: tree(DEXY_BANK_BANK),
 	//:DEXY_BANK_ARBMINT,
 	lpErgoTree: tree(DEXY_LP_POOL_MAIN),
 	//:DEXY_LP_POOL_EXTRACT,

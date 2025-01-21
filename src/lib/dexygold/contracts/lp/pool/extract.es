@@ -44,8 +44,8 @@
     val tracking101BoxIndex = 1
 
     // if less nanoErgs than this number in bank box, then the bank is considered "empty"
-    // 10000 Erg
-    val minBankNanoErgs = 10000 * 1000000000L // 10000 ERG
+    // 10 Erg
+    val minBankNanoErgs = 10 * 1000000000L // 10 ERG
 
     val tracking95NFT = fromBase64("$tracking95NFT")
     val tracking101NFT = fromBase64("$tracking101NFT")

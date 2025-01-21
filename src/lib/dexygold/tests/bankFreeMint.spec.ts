@@ -10,10 +10,10 @@ import { compileContract } from '../compile';
 // 2) Replace the ergoTrees with real compiled scripts, if you have them.
 // 3) Adjust or rename constants as needed.
 // ----------------------------------------------------------------
-const { bankNFT, buybackNFT, oraclePoolNFT, freeMintNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;
 
 // Sample placeholders for script addresses (ergoTrees).
 // You must replace these with your real compiled scripts:
+const { bankNFT, buybackNFT, oraclePoolNFT, freeMintNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;
 
 const {
 	bankErgoTree,
@@ -138,12 +138,16 @@ describe('FreeMintSpec', () => {
 				{ tokenId: dexyUSD, amount: bankReservesYIn }
 			]
 		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-			// If you track registers, you'd do so in a custom extension:
-			// registers: [ ... ]
-		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+				// If you track registers, you'd do so in a custom extension:
+				// registers: [ ... ]
+			},
+			{ R4: '', R5: '' } //THIS IS EXAMPLE HOW TO ADD REGISTERS (REGISTERS R4,R5,R6,R7 добавление надо делать последовательно, но можно использовать не все)
+		);
+
 		buybackParty.addBalance({
 			nanoergs: buybackInitialErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
@@ -164,16 +168,10 @@ describe('FreeMintSpec', () => {
 		// 3. Build transaction
 		const tx = new TransactionBuilder(mockChain.height)
 			.from(
-				[
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos,
-					...lpParty.utxos
-				],
+				[...fundingParty.utxos, ...bankParty.utxos, ...freeMintParty.utxos, ...buybackParty.utxos],
 				{ ensureInclusion: true }
 			)
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos]) // THIS IS EXAMPLE HOW TO ADD DATA INPUTS
 			// freeMint out (unchanged script, updated Dexy)
 			.to(
 				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([

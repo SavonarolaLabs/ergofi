@@ -60,3 +60,20 @@ export function interventionDeploymentRequest(): Object {
 after next: 2. create BoxMintTransaction chain
 
 3. save mintedBoxes into file
+
+//-------------- NEW ------------------
+ADD BANK:
+src/test/scala/dexy/bank/ArbMintSpec.scala
+src/test/scala/dexy/bank/InterventionSpec.scala
+src/test/scala/dexy/bank/PayoutSpec.scala
+
+TRACKING:
+src/test/scala/dexy/TrackingSpec.scala
+
+ADD PL:
+src/test/scala/dexy/lp/LpSwapSpec.scala
+src/test/scala/dexy/lp/LpMintSpec.scala
+src/test/scala/dexy/lp/LpRedeemSpec.scala
+
+src/test/scala/dexy/lp/ExtractSpec.scala
+src/test/scala/dexy/lp/ReverseExtractSpec.scala

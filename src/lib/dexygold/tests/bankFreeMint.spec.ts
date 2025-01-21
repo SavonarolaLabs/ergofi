@@ -1153,7 +1153,8 @@ describe('FreeMintSpec - Full Translation', () => {
 
 		// setup
 		fundingParty.addBalance({
-			nanoergs: fakeNanoErgs
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: dummyTokenId, amount: 1n }]
 		});
 		buybackParty.addBalance({
 			nanoergs: fakeNanoErgs,

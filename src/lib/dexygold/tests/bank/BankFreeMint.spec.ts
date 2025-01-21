@@ -7,7 +7,7 @@ import { MockChain } from '@fleet-sdk/mock-chain';
 // --------------------------------------------------------------------
 // Example placeholders for IDs, ergoTrees, etc. Replace with real data.
 // --------------------------------------------------------------------
-import { vitestTokenIds, vitestErgoTrees } from '../dexyConstants';
+import { vitestTokenIds, vitestErgoTrees } from '../../dexyConstants';
 
 // Some placeholders or real references:
 const { freeMintNFT, bankNFT, buybackNFT, oraclePoolNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;

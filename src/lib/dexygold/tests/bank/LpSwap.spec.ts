@@ -1,8 +1,8 @@
 import { MockChain } from '@fleet-sdk/mock-chain';
 import { ErgoAddress, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { vitestContractConfig, vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
-import { compileContract } from '../compile';
+import { vitestContractConfig, vitestErgoTrees, vitestTokenIds } from '../../dexyConstants';
+import { compileContract } from '../../compile';
 
 const { feeNumLp, feeDenomLp } = vitestContractConfig;
 const { lpNFT, lpToken, dexyUSD, lpSwapNFT } = vitestTokenIds;

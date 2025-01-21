@@ -25,9 +25,6 @@ const {
 const { arbitrageMintErgoTree, bankErgoTree, buybackErgoTree, lpErgoTree, fakeScriptErgoTree } =
 	vitestErgoTrees;
 
-/**
- * Additional placeholders:
- */
 const dummyTokenId = '0000005aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b801';
 
 const fakeNanoErgs = 10_000_000_000_000n; // Large funding
@@ -41,19 +38,13 @@ describe('ArbMintSpec', () => {
 	let mockChain: MockChain;
 
 	beforeEach(() => {
-		// Initialize a new mock blockchain at a high block height each test
 		mockChain = new MockChain({ height: 1_000_000 });
 	});
 
 	afterEach(() => {
-		// Reset chain state
 		mockChain.reset();
 	});
 
-	// ------------------------------------------------------------------------
-	// 1) property("Arbitrage mint should fail wrong tracking NFT")
-	//    from ArbMintSpec.scala
-	// ------------------------------------------------------------------------
 	it.only('Arbitrage mint should fail wrong tracking NFT', () => {
 		const oracleRateXy = 9000n;
 

@@ -64,8 +64,8 @@ describe('FreeMintSpec - Full Translation', () => {
 		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
 		// Registers in freeMintBox
-		const resetHeightIn = BigInt(mockChain.height);
-		const resetHeightOut = resetHeightIn;
+		const resetHeightIn = BigInt(mockChain.height + 1);
+		const resetHeightOut = resetHeightIn; // not reset
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
 
@@ -139,7 +139,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
 			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
 			.setAdditionalRegisters({
-				R4: SInt(Number(resetHeightIn)).toHex(),
+				R4: SInt(Number(resetHeightOut)).toHex(),
 				R5: SLong(remainingDexyOut).toHex()
 			});
 
@@ -164,6 +164,7 @@ describe('FreeMintSpec - Full Translation', () => {
 			.sendChangeTo(fundingParty.address)
 			.build();
 
+		//console.dir(tx.toEIP12Object(), { depth: null });
 		// Execute => should pass
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);

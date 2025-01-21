@@ -1,41 +1,36 @@
+// File: FreeMintSpec.test.ts
+
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { OutputBuilder, TransactionBuilder, ErgoUnsignedInput, SInt, SLong } from '@fleet-sdk/core';
 import { MockChain } from '@fleet-sdk/mock-chain';
-import { TransactionBuilder, OutputBuilder, ErgoAddress } from '@fleet-sdk/core';
-import { vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
-import { compileContract } from '../compile';
 
-//
-// ----------------------------------------------------------------
-// 1) Replace these placeholders with your *actual* token IDs.
-// 2) Replace the ergoTrees with real compiled scripts, if you have them.
-// 3) Adjust or rename constants as needed.
-// ----------------------------------------------------------------
+// --------------------------------------------------------------------
+// Example placeholders for IDs, ergoTrees, etc. Replace with real data.
+// --------------------------------------------------------------------
+import { vitestTokenIds, vitestErgoTrees } from '../dexyConstants';
 
-// Sample placeholders for script addresses (ergoTrees).
-// You must replace these with your real compiled scripts:
-const { bankNFT, buybackNFT, oraclePoolNFT, freeMintNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;
+// Some placeholders or real references:
+const { freeMintNFT, bankNFT, buybackNFT, oraclePoolNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;
 
-const {
-	bankErgoTree,
-	freeMintErgoTree,
-	buybackErgoTree,
-	oracleErgoTree, // <====???
-	lpErgoTree
-} = vitestErgoTrees;
+const { fakeScriptErgoTree, buybackErgoTree, bankErgoTree, freeMintErgoTree, lpErgoTree } =
+	vitestErgoTrees;
 
-const dummyErgoTree = ErgoAddress.fromBase58(compileContract('sigmaProp(true)')).ergoTree; // trivial script
+const dummyTokenId = '0000005aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b801';
 
-// Common constants from your Scala code:
-const fakeNanoErgs = 10_000_000_000_000n;
+// Constants from Scala code:
+const fakeNanoErgs = 10_000_000_000_000n; // large funding
 const dummyNanoErgs = 100_000n;
 const minStorageRent = 1_000_000n;
 const fee = 1_000_000n;
 
-describe('FreeMintSpec', () => {
+// If you want to replicate the Scala "changeAddress" as "fakeScript":
+const changeAddress = fakeScriptErgoTree;
+
+describe('FreeMintSpec - Full Translation', () => {
 	let mockChain: MockChain;
 
 	beforeEach(() => {
-		// Start from a certain height, e.g. 1,000,000
+		// Start each test with a fresh chain at height ~1M
 		mockChain = new MockChain({ height: 1_000_000 });
 	});
 
@@ -43,191 +38,213 @@ describe('FreeMintSpec', () => {
 		mockChain.reset();
 	});
 
-	// --------------------------------------------------------
-	// Utility: create the “main” parties we'll typically use
-	// --------------------------------------------------------
-	function setupParties() {
-		const fundingParty = mockChain.addParty(dummyErgoTree, 'Funding');
-		const bankParty = mockChain.addParty(bankErgoTree, 'Bank-Box');
-		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint-Box');
-		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback-Box');
-		const oracleParty = mockChain.addParty(oracleErgoTree, 'Oracle-Box');
-		const lpParty = mockChain.addParty(lpErgoTree, 'LP-Box');
-		const userParty = mockChain.newParty('User / Change');
-		return {
-			fundingParty,
-			bankParty,
-			freeMintParty,
-			buybackParty,
-			oracleParty,
-			lpParty,
-			userParty
-		};
-	}
-
-	// A small helper so we do not repeat the same big chunk of parameters
-	function commonParams() {
-		const oracleRateXy = 10_000n * 1_000_000n; // 10000 * 1000000
-		const bankFeeNum = 3n; // implies 0.5% fee
-		const buybackFeeNum = 2n; // also 0.5% fee
+	// ------------------------------------------------------------------------
+	// 1) property("Free mint (remove Dexy from and adding Ergs to bank box) should work")
+	// ------------------------------------------------------------------------
+	it('Free mint (remove Dexy from and adding Ergs to bank box) should work', () => {
+		const oracleRateXy = 10000n * 1000000n; // 10^10
+		const bankFeeNum = 3n; // => 0.5% fee part
+		const buybackFeeNum = 2n; // => 0.5% fee part
 		const feeDenom = 1000n;
 
-		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1_000_000n; // 10030
-		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1_000_000n; // 20
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n; // => 10030
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n; // => 20
 
-		// Some large “LP” numbers (from your Scala test):
-		const lpBalance = 100_000_000n;
-		const lpReservesX = 100_000_000_000_000n;
-		const lpReservesY = 10_000_000_000n;
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
 
-		return {
-			oracleRateXy,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			bankRate,
-			buybackRate,
-			lpBalance,
-			lpReservesX,
-			lpReservesY
-		};
-	}
+		const dexyMinted = 35000n; // positive
+		const bankErgsAdded = bankRate * dexyMinted; // 10030 * 35000
+		const buybackErgsAdded = buybackRate * dexyMinted; // 20 * 35000
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 1) Free mint (remove Dexy, add Ergs) should work
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	it('Free mint (remove Dexy from and add Ergs to bank) should work (happy path)', () => {
-		const {
-			fundingParty,
-			bankParty,
-			freeMintParty,
-			buybackParty,
-			oracleParty,
-			lpParty,
-			userParty
-		} = setupParties();
-
-		const { bankRate, buybackRate } = commonParams();
-
-		// Example minted
-		const dexyMinted = 35_000n;
-
-		// Additional details from your Scala code
-		const bankReservesXIn = 100_000_000_000_000n;
-		const bankReservesYIn = 90_200_000_100n;
-		const bankReservesXOut = bankReservesXIn + bankRate * dexyMinted;
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		// freeMint box: we remove minted Dexy from it
-		const remainingDexyIn = 10_000_000n;
+		// Registers in freeMintBox
+		const resetHeightIn = BigInt(mockChain.height + 1);
+		const resetHeightOut = resetHeightIn; // not reset
+		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
 
-		// buyback box gets some extra Ergs
-		const buybackErgsAdded = buybackRate * dexyMinted;
-		const buybackInitialErgs = fakeNanoErgs;
-		const buybackFinalErgs = buybackInitialErgs + buybackErgsAdded;
+		// Parties for each box
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
 
-		// 2. Add balances
+		// Setup inputs
 		fundingParty.addBalance({
 			nanoergs: fakeNanoErgs
 		});
-		bankParty.addBalance({
-			nanoergs: bankReservesXIn,
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
 			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: bankReservesYIn }
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
 			]
 		});
 		freeMintParty.addBalance(
 			{
 				nanoergs: minStorageRent,
 				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-				// If you track registers, you'd do so in a custom extension:
-				// registers: [ ... ]
 			},
-			{ R4: '', R5: '' } //THIS IS EXAMPLE HOW TO ADD REGISTERS (REGISTERS R4,R5,R6,R7 добавление надо делать последовательно, но можно использовать не все)
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
 		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
 
+		// set context var for buyback
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({
+			0: SInt(1).toHex()
+		});
+
+		// main + data inputs
+		const mainInputs = [
+			...freeMintParty.utxos,
+			...bankParty.utxos,
+			buybackBoxIn,
+			...fundingParty.utxos
+		];
+		const dataInputs = [...oracleParty.utxos, ...lpParty.utxos];
+
+		// Outputs
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
+		// Build TX
+		const tx = new TransactionBuilder(mockChain.height)
+			.from(mainInputs, { ensureInclusion: true })
+			.withDataFrom(dataInputs)
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
+			.payFee(fee)
+			.sendChangeTo(fundingParty.address)
+			.build();
+
+		//console.dir(tx.toEIP12Object(), { depth: null });
+		// Execute => should pass
+		const executed = mockChain.execute(tx, { throw: false });
+		expect(executed).toBe(true);
+	});
+
+	// ------------------------------------------------------------------------
+	// 2) property("Free mint should fail if Bank Dexy token id changed")
+	// ------------------------------------------------------------------------
+	it('Free mint should fail if Bank Dexy token id changed', () => {
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
+
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
+
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// Parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// Setup
+		fundingParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			// Scala used a dummy token in the funding box. We'll replicate:
+			tokens: [{ tokenId: dummyTokenId, amount: BigInt(bankReservesYOut) }]
+		});
 		buybackParty.addBalance({
-			nanoergs: buybackInitialErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
-		});
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
 		lpParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
+			nanoergs: lpReservesX,
 			tokens: [
 				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpToken, amount: 100_000_000n },
-				{ tokenId: dexyUSD, amount: 10_000_000_000n }
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
 			]
 		});
-
-		// 3. Build transaction
-		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[...fundingParty.utxos, ...bankParty.utxos, ...freeMintParty.utxos, ...buybackParty.utxos],
-				{ ensureInclusion: true }
-			)
-			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos]) // THIS IS EXAMPLE HOW TO ADD DATA INPUTS
-			// freeMint out (unchanged script, updated Dexy)
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n }
-				])
-				// If you needed to store updated registers, place them here
-			)
-			// bank out
-			.to(
-				new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
-					{ tokenId: bankNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: bankReservesYOut }
-				])
-			)
-			// buyback out
-			.to(
-				new OutputBuilder(buybackFinalErgs, buybackParty.address).addTokens([
-					{ tokenId: buybackNFT, amount: 1n }
-				])
-			)
-			.payFee(fee)
-			.sendChangeTo(userParty.address)
-			.build();
-
-		// 4. Execute
-		const executed = mockChain.execute(tx);
-		expect(executed).toBe(true);
-
-		// Additional checks (bank final Dexy, etc.)
-		const bankBal = bankParty.balance;
-		expect(bankBal.tokens).toContainEqual({
-			tokenId: dexyUSD,
-			amount: bankReservesYOut
-		});
-	});
-
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 2) Free mint should fail if Bank Dexy token id changed
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	it('Free mint should fail if Bank Dexy token id changed', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
-		const { bankRate, buybackRate } = commonParams();
-
-		const dummyTokenId = '0000005aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b801';
-
-		// We'll sabotage the bank box to produce a dummy token ID instead of the real Dexy
-		const dexyMinted = 35_000n;
-		const bankReservesXIn = 100_000_000_000_000n;
-		const bankReservesYIn = 90_200_000_100n;
-		const bankReservesXOut = bankReservesXIn + bankRate * dexyMinted;
-		// Instead of subtracting Dexy from the bank, we'll do a “dummy” token
-		// or we do the same logic but the final output has dummy token id:
-
-		// 1. Add initial balances
-		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
 		bankParty.addBalance({
 			nanoergs: bankReservesXIn,
 			tokens: [
@@ -235,75 +252,121 @@ describe('FreeMintSpec', () => {
 				{ tokenId: dexyUSD, amount: bankReservesYIn }
 			]
 		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
-		buybackParty.addBalance({
-			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: buybackNFT, amount: 1n }]
-		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+
+		// buyback context var
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({
+			0: SInt(1).toHex()
 		});
 
-		// 2. Build sabotage tx
+		// build output that changes Dexy -> dummyTokenId
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dummyTokenId, amount: BigInt(bankReservesYOut) } // WRONG token
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// freeMint out
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n }
-				])
-			)
-			// bank out - sabotage Dexy -> dummyTokenId
-			.to(
-				new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
-					{ tokenId: bankNFT, amount: 1n },
-					{ tokenId: dummyTokenId, amount: 90_200_000_100n - dexyMinted }
-				])
-			)
-			// buyback out (just do something minimal)
-			.to(
-				new OutputBuilder(fakeNanoErgs, buybackParty.address).addTokens([
-					{ tokenId: buybackNFT, amount: 1n }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
-		// 3. Attempt execution => should fail
 		const executed = mockChain.execute(tx, { throw: false });
-		expect(executed).toBe(false);
+		expect(executed).toBe(false); // "Script reduced to false"
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 3) Free mint should fail if Bank box script changed
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 3) property("Free mint should fail if Bank box script changed")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if Bank box script changed', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
-		const { bankRate, buybackRate } = commonParams();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dexyMinted = 35_000n;
-		const bankReservesXIn = 100_000_000_000_000n;
-		const bankReservesYIn = 90_200_000_100n;
-		const bankReservesXOut = bankReservesXIn + bankRate * dexyMinted;
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
+
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
 		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
 
-		// Add input UTXOs
-		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
+		fundingParty.addBalance({
+			nanoergs: fakeNanoErgs
+		});
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
 		bankParty.addBalance({
 			nanoergs: bankReservesXIn,
 			tokens: [
@@ -311,555 +374,976 @@ describe('FreeMintSpec', () => {
 				{ tokenId: dexyUSD, amount: bankReservesYIn }
 			]
 		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
-		buybackParty.addBalance({
-			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: buybackNFT, amount: 1n }]
-		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
-		});
 
-		// We sabotage the “bank out” box to have a different ergoTree script,
-		// e.g. userParty.address instead of bankParty.address.
+		// buyback context
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		// we produce a bankOut with a different script => changeAddress instead of bankParty.address
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, changeAddress) // WRONG script
+			.addTokens([
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYOut }
+			]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// freeMint out (unchanged)
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n }
-				])
-			)
-			// bank out => WRONG script => userParty instead
-			.to(
-				new OutputBuilder(bankReservesXOut, userParty.address).addTokens([
-					{ tokenId: bankNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: bankReservesYOut }
-				])
-			)
-			// buyback out
-			.to(
-				new OutputBuilder(fakeNanoErgs + buybackRate * dexyMinted, buybackParty.address).addTokens([
-					{ tokenId: buybackNFT, amount: 1n }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 4) Free mint should fail if FreeMint box script changed
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 4) property("Free mint should fail if FreeMint box script changed")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if FreeMint box script changed', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
-		const { bankRate, buybackRate } = commonParams();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dexyMinted = 35_000n;
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
 
-		// sabotage the “freeMint” out box to be userParty’s script
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
 			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
 			]
 		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
-		buybackParty.addBalance({
-			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: buybackNFT, amount: 1n }]
-		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
 		});
 
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		// freeMintOut => changed script address from freeMintParty => changeAddress
+		const freeMintOut = new OutputBuilder(minStorageRent, changeAddress) // WRONG script
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// freeMint out => WRONG address
-			.to(
-				new OutputBuilder(minStorageRent, userParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n }
-				])
-			)
-			// bank out, buyback out, etc. can be correct
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 5) Free mint should fail if wrong LP NFT
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 5) property("Free mint should fail if wrong LP NFT")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong LP NFT', () => {
-		const {
-			fundingParty,
-			lpParty,
-			bankParty,
-			freeMintParty,
-			buybackParty,
-			oracleParty,
-			userParty
-		} = setupParties();
-		const { bankRate, buybackRate } = commonParams();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		// We'll sabotage the LP box with a dummy NFT instead of the real `lpNFT`
-		const dummyTokenId = '59e5ce5aa0d95f5d54a...';
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
+
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
 
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+
+		// LP box with wrong NFT => dummyTokenId instead of lpNFT
 		lpParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
+			nanoergs: lpReservesX,
 			tokens: [
 				{ tokenId: dummyTokenId, amount: 1n }, // WRONG
-				{ tokenId: lpToken, amount: 100_000_000n },
-				{ tokenId: dexyUSD, amount: 10_000_000_000n }
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
 			]
-		});
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
-		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
-			tokens: [{ tokenId: buybackNFT, amount: 1n }]
-		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
 		});
 
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...fundingParty.utxos,
-					...lpParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// Just do minimal outputs; the presence of the wrong NFT in the LP input
-			// should cause the contract to fail.
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 6) Free mint should fail if wrong Oracle NFT
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 6) property("Free mint should fail if wrong Oracle NFT")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong Oracle NFT', () => {
-		const { fundingParty, oracleParty, bankParty, freeMintParty, buybackParty, userParty } =
-			setupParties();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dummyTokenId = '59e5ce5aa0d95f5d54a...';
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
 
-		// sabotage => oracle box with the dummy instead of the real oraclePoolNFT
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [
-				{ tokenId: dummyTokenId, amount: 1n } // WRONG
-			]
-		});
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
 
+		// WRONG oracle NFT => dummyTokenId
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: dummyTokenId, amount: 1n }] // wrong
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...oracleParty.utxos,
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// sabotage => everything else is normal,
-			// but the Oracle NFT in the input is wrong -> contract must fail
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 7) Free mint should fail if wrong Bank NFT in but right Bank NFT out
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 7) property("Free mint should fail if wrong Bank NFT in but right Bank NFT out")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong Bank NFT in but right Bank NFT out', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dummyTokenId = '59e5ce5aa0d95f5d54a...';
-		// sabotage => Bank box holds a dummy NFT instead of bankNFT
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: dummyTokenId, amount: 1n }, // WRONG in
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
+
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
 		fundingParty.addBalance({
 			nanoergs: fakeNanoErgs,
-			tokens: [
-				// We might hold the real bankNFT here, but it's not in the real bank box
-				// -> mismatch => fail
-				{ tokenId: bankNFT, amount: 1n }
-			]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			tokens: [{ tokenId: bankNFT, amount: 1n }] // Just some funding with correct NFT
 		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+
+		// Bank box with WRONG NFT in => dummyTokenId
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: dummyTokenId, amount: 1n }, // WRONG
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
 		});
 
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		// The Scala test has the correct bankNFT in the output, ironically, but input is wrong => fail
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n }, // correct out
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...bankParty.utxos,
-					...fundingParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// bank out => correct (bankNFT) but the input had the wrong NFT => fail
-			.to(
-				new OutputBuilder(100_000_000_010_000n, bankParty.address).addTokens([
-					{ tokenId: bankNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: 90_200_000_000n }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 8) Free mint should fail if wrong Bank NFT
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 8) property("Free mint should fail if wrong Bank NFT")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong Bank NFT', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dummyTokenId = '59e5ce5aa0d95f5d54a...';
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
 
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
 		fundingParty.addBalance({
 			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: dummyTokenId, amount: 1n }]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			tokens: [{ tokenId: dummyTokenId, amount: 1n }] // WRONG
 		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
 		});
 
-		// sabotage => we produce a bank out with dummy NFT instead of bankNFT
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		// bankOut with WRONG NFT => dummyTokenId
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: dummyTokenId, amount: 1n }, // WRONG
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...bankParty.utxos,
-					...fundingParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			.to(
-				new OutputBuilder(100_000_000_010_000n, bankParty.address).addTokens([
-					{ tokenId: dummyTokenId, amount: 1n }, // WRONG out
-					{ tokenId: dexyUSD, amount: 90_200_000_000n }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 9) Free mint should fail if wrong FreeMint NFT in but right FreeMint NFT out
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 9) property("Free mint should fail if wrong FreeMint NFT in but right FreeMint NFT out")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong FreeMint NFT in but right FreeMint NFT out', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dummyTokenId = '0000005aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b801';
-		// sabotage => freeMint box has dummy token instead of freeMintNFT
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [
-				{ tokenId: dummyTokenId, amount: 1n } // WRONG in
-			]
-		});
-		// Meanwhile, we do have the real freeMintNFT in the “funding” box,
-		// or we produce it out in the final
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
+
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
 		fundingParty.addBalance({
 			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
 		});
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
 		});
 
-		// final “freeMint out” might have the real NFT,
-		// but the *input* freeMint box was wrong -> fail
+		// WRONG: freeMintBox has dummyTokenId instead of freeMintNFT
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: dummyTokenId, amount: 1n }] // WRONG
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		// freeMintOut => ironically correct NFT out
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }]) // correct out
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...freeMintParty.utxos,
-					...fundingParty.utxos,
-					...bankParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: freeMintNFT, amount: 1n } // right NFT out
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 10) Free mint should fail if wrong FreeMint NFT
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 10) property("Free mint should fail if wrong FreeMint NFT")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail if wrong FreeMint NFT', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		const dummyTokenId = '59e5ce5aa0d95f5d54a7bc89c46730d9662397...';
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
 
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// setup
 		fundingParty.addBalance({
-			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: dummyTokenId, amount: 1n }]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-		});
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
+			nanoergs: fakeNanoErgs
 		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
 		});
 
-		// sabotage => freeMint out with dummy NFT instead of real
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		// freeMintOut => replaced freeMintNFT with dummyTokenId
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: dummyTokenId, amount: 1n }]) // WRONG
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...fundingParty.utxos,
-					...freeMintParty.utxos,
-					...bankParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			.to(
-				new OutputBuilder(minStorageRent, freeMintParty.address).addTokens([
-					{ tokenId: dummyTokenId, amount: 1n } // WRONG
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 11) Free mint should fail for negative dexy minted
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ------------------------------------------------------------------------
+	// 11) property("Free mint should fail for negative dexy minted")
+	// ------------------------------------------------------------------------
 	it('Free mint should fail for negative dexy minted', () => {
-		const { fundingParty, bankParty, freeMintParty, buybackParty, oracleParty, userParty } =
-			setupParties();
-		const { bankRate, buybackRate } = commonParams();
+		const oracleRateXy = 10000n * 1000000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
 
-		// sabotage => minted Dexy is negative => impossible scenario
-		// We'll replicate enough logic so the contract tries to do it,
-		// but fails the check
-		const dexyMinted = -35_000n; // negative
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n;
 
-		bankParty.addBalance({
-			nanoergs: 100_000_000_000_000n,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: 90_200_000_100n }
-			]
-		});
-		// We might try to fund "extra Dexy" from somewhere:
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+
+		// negative minted => -35000n
+		const dexyMinted = -35000n; // triggers failure
+
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		// The Scala code tries bankReservesYOut = bankReservesYIn - dexyMinted => that becomes a +
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+
+		const resetHeightIn = BigInt(mockChain.height);
+		const resetHeightOut = resetHeightIn;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		// parties
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+		// The Scala code funds negative minted Dexy from a "funding box" with token dUSD = -dexyMinted => i.e. +35000
+		// We'll replicate that:
 		fundingParty.addBalance({
 			nanoergs: fakeNanoErgs,
-			// If you wanted to say "we need to add the negative minted Dexy"?
-			// It's not physically possible, but we'll put a large Dexy so
-			// there's an attempt:
-			tokens: [{ tokenId: dexyUSD, amount: 1_000_000_000n }]
-		});
-		freeMintParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			tokens: [{ tokenId: dexyUSD, amount: BigInt(-dexyMinted) }] // 35000
 		});
 		buybackParty.addBalance({
-			nanoergs: dummyNanoErgs,
+			nanoergs: fakeNanoErgs,
 			tokens: [{ tokenId: buybackNFT, amount: 1n }]
 		});
-		oracleParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+		oracleParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
+			},
+			{
+				R4: SLong(oracleRateXy).toHex()
+			}
+		);
+		lpParty.addBalance({
+			nanoergs: lpReservesX,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: lpReservesY }
+			]
+		});
+		freeMintParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(resetHeightIn)).toHex(),
+				R5: SLong(remainingDexyIn).toHex()
+			}
+		);
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
 		});
 
-		// Build the sabotage tx => “mint” negative Dexy
-		// -> contract logic sees it as invalid
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+		// outputs
+		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(
-				[
-					...bankParty.utxos,
-					...fundingParty.utxos,
-					...freeMintParty.utxos,
-					...buybackParty.utxos,
-					...oracleParty.utxos
-				],
-				{ ensureInclusion: true }
-			)
-			// We'll keep a normal shape, but the negative minted Dexy
-			// should cause the script to fail
-			.to(
-				new OutputBuilder(100_000_000_010_000n, bankParty.address).addTokens([
-					{ tokenId: bankNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: 90_200_000_100n - dexyMinted }
-				])
-			)
+			.from([...freeMintParty.utxos, ...bankParty.utxos, buybackBoxIn, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([...oracleParty.utxos, ...lpParty.utxos])
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
 			.payFee(fee)
-			.sendChangeTo(userParty.address)
+			.sendChangeTo(fundingParty.address)
 			.build();
 
 		const executed = mockChain.execute(tx, { throw: false });
+		// "Script reduced to false"
 		expect(executed).toBe(false);
 	});
 });

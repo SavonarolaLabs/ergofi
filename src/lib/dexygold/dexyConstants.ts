@@ -207,5 +207,5 @@ export const vitestErgoTrees = {
 };
 
 function tree(address: string): string {
-	return ErgoAddress.fromBase58(address).ergoTree;
+	return address ? ErgoAddress.fromBase58(address).ergoTree : '';
 }

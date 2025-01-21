@@ -111,7 +111,8 @@ export const vitestErgoTrees = {
 	//:DEXY_GORT_DEV_EMISSION,
 	lpSwapBuyV1ErgoTree: DEXY_LP_PROXY_SWAPBUYV1_TREE,
 	lpSwapSellV1ErgoTree: DEXY_LP_PROXY_SWAPSELLV1_TREE,
-	oracleErgoTree: tree(compileContract('sigmaProp(true)')) //<-----
+	oracleErgoTree: tree(compileContract('sigmaProp(true)')), //<-----
+	fakeScriptErgoTree: tree(compileContract('sigmaProp(true)'))
 };
 
 //-----------------------------------

@@ -153,6 +153,336 @@ describe('ArbMintSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});
+	// (f0 NOT RESET)
+	it.only('Arbitrage mint should fail if threshold is invalid', () => {
+		const oracleRateXy = 10000n * 1000000n; //<==
+		//const oracleRateXy = 9000n * 1_000_000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1_000_000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1_000_000n;
+		const oracleRateXyWithFee = bankRate + buybackRate;
+		const thresholdPercent = 101n;
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+		const lpRateXy = lpReservesX / lpReservesY;
+		expect(lpRateXy).toBe(10000n);
+		expect(lpRateXy * 100n <= thresholdPercent * oracleRateXyWithFee).toBe(true); //<==
+		//expect(lpRateXy * 100n > thresholdPercent * oracleRateXyWithFee).toBe(true);
+		const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+		const t_arb = 30n;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		lpParty.addBalance({
+			nanoergs: 100000000000000n,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: 10000000000n }
+			]
+		});
+		const trackingParty = mockChain.addParty(lpErgoTree, 'Tracking');
+		trackingParty.addBalance(
+			{ nanoergs: 100000000000000n, tokens: [{ tokenId: tracking101NFT, amount: 1n }] },
+			{
+				R4: SInt(100).toHex(),
+				R5: SInt(101).toHex(),
+				R6: SBool(false).toHex(),
+				R7: SInt(trackingValidHeightR7).toHex()
+			}
+		);
+		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
+		const resetHeightIn = 1000000n + 1n;
+		const resetHeightOut = resetHeightIn;
+		arbMintParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: arbitrageMintNFT, amount: 1n }] },
+			{ R4: SInt(Number(resetHeightIn)).toHex(), R5: SLong(remainingDexyIn).toHex() }
+		);
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+		const fundingBoxIn = new ErgoUnsignedInput(fundingParty.utxos.at(0));
+		const arbMintOut = new OutputBuilder(minStorageRent, arbMintParty.address)
+			.addTokens([{ tokenId: arbitrageMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+		const mainInputs = [
+			arbMintParty.utxos.at(0),
+			bankParty.utxos.at(0),
+			buybackBoxIn,
+			fundingBoxIn
+		];
+		const dataInputs = [oracleParty.utxos.at(0), lpParty.utxos.at(0), trackingParty.utxos.at(0)];
+		const tx = new TransactionBuilder(1000000)
+			.from(mainInputs, { ensureInclusion: true })
+			.withDataFrom(dataInputs)
+			.to(arbMintOut)
+			.to(bankOut)
+			.to(buybackOut)
+			.payFee(fee)
+			.sendChangeTo(fundingParty.address)
+			.build();
+		const executed = mockChain.execute(tx, { throw: false });
+		expect(executed).toBe(false);
+	});
+	// (f0 NOT RESET - broken)
+	it.skip('Arbitrage mint should fail if negative amount minted', () => {
+		const oracleRateXy = 9000n * 1_000_000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1_000_000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1_000_000n;
+		const oracleRateXyWithFee = bankRate + buybackRate;
+		const thresholdPercent = 101n;
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+		const lpRateXy = lpReservesX / lpReservesY;
+		expect(lpRateXy).toBe(10000n);
+		expect(lpRateXy * 100n > thresholdPercent * oracleRateXyWithFee).toBe(true);
+		const dexyMinted = -35000n; //<==
+		//const dexyMinted = 35000n;
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+		const t_arb = 30n;
+		const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		lpParty.addBalance({
+			nanoergs: 100000000000000n,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: 10000000000n }
+			]
+		});
+		const trackingParty = mockChain.addParty(lpErgoTree, 'Tracking');
+		trackingParty.addBalance(
+			{ nanoergs: 100000000000000n, tokens: [{ tokenId: tracking101NFT, amount: 1n }] },
+			{
+				R4: SInt(100).toHex(),
+				R5: SInt(101).toHex(),
+				R6: SBool(false).toHex(),
+				R7: SInt(trackingValidHeightR7).toHex()
+			}
+		);
+		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
+		const resetHeightIn = 1000000n + 1n;
+		const resetHeightOut = resetHeightIn;
+		arbMintParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: arbitrageMintNFT, amount: 1n }] },
+			{ R4: SInt(Number(resetHeightIn)).toHex(), R5: SLong(remainingDexyIn).toHex() }
+		);
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+		const fundingBoxIn = new ErgoUnsignedInput(fundingParty.utxos.at(0));
+		const arbMintOut = new OutputBuilder(minStorageRent, arbMintParty.address)
+			.addTokens([{ tokenId: arbitrageMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+		const mainInputs = [
+			arbMintParty.utxos.at(0),
+			bankParty.utxos.at(0),
+			buybackBoxIn,
+			fundingBoxIn
+		];
+		const dataInputs = [oracleParty.utxos.at(0), lpParty.utxos.at(0), trackingParty.utxos.at(0)];
+		const tx = new TransactionBuilder(1000000)
+			.from(mainInputs, { ensureInclusion: true })
+			.withDataFrom(dataInputs)
+			.to(arbMintOut)
+			.to(bankOut)
+			.to(buybackOut)
+			.payFee(fee)
+			.sendChangeTo(fundingParty.address)
+			.build();
+		const executed = mockChain.execute(tx, { throw: false });
+		expect(executed).toBe(false);
+	});
+	// (f0 NOT RESET)
+	it.only('Arbitrage mint should fail if counter not reset and more Dexy taken than allowed', () => {
+		const oracleRateXy = 9000n * 1_000_000n;
+		const bankFeeNum = 3n;
+		const buybackFeeNum = 2n;
+		const feeDenom = 1000n;
+		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1_000_000n;
+		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1_000_000n;
+		const oracleRateXyWithFee = bankRate + buybackRate;
+		const thresholdPercent = 101n;
+		const lpBalance = 100000000n;
+		const lpReservesX = 100000000000000n;
+		const lpReservesY = 10000000000n;
+		const lpRateXy = lpReservesX / lpReservesY;
+		expect(lpRateXy).toBe(10000n);
+		expect(lpRateXy * 100n > thresholdPercent * oracleRateXyWithFee).toBe(true);
+		const remainingDexyIn = 10000000n; //<==
+		//const dexyMinted = 35000n;
+		const dexyMinted = remainingDexyIn + 1n; //<==
+		const bankErgsAdded = bankRate * dexyMinted;
+		const buybackErgsAdded = buybackRate * dexyMinted;
+		const bankReservesXIn = 100000000000000n;
+		const bankReservesYIn = 90200000100n;
+		const bankReservesYOut = bankReservesYIn - dexyMinted;
+		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
+		const t_arb = 30n;
+		//const remainingDexyIn = 10000000n;
+		const remainingDexyOut = remainingDexyIn - dexyMinted;
+		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
+		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+		oracleParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
+			{ R4: SLong(oracleRateXy).toHex() }
+		);
+		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+		lpParty.addBalance({
+			nanoergs: 100000000000000n,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: 10000000000n }
+			]
+		});
+		const trackingParty = mockChain.addParty(lpErgoTree, 'Tracking');
+		trackingParty.addBalance(
+			{ nanoergs: 100000000000000n, tokens: [{ tokenId: tracking101NFT, amount: 1n }] },
+			{
+				R4: SInt(100).toHex(),
+				R5: SInt(101).toHex(),
+				R6: SBool(false).toHex(),
+				R7: SInt(trackingValidHeightR7).toHex()
+			}
+		);
+		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
+		const resetHeightIn = 1000000n + 1n;
+		const resetHeightOut = resetHeightIn;
+		arbMintParty.addBalance(
+			{ nanoergs: minStorageRent, tokens: [{ tokenId: arbitrageMintNFT, amount: 1n }] },
+			{ R4: SInt(Number(resetHeightIn)).toHex(), R5: SLong(remainingDexyIn).toHex() }
+		);
+		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+		bankParty.addBalance({
+			nanoergs: bankReservesXIn,
+			tokens: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyUSD, amount: bankReservesYIn }
+			]
+		});
+		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+		buybackParty.addBalance({
+			nanoergs: fakeNanoErgs,
+			tokens: [{ tokenId: buybackNFT, amount: 1n }]
+		});
+		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+		const fundingBoxIn = new ErgoUnsignedInput(fundingParty.utxos.at(0));
+		const arbMintOut = new OutputBuilder(minStorageRent, arbMintParty.address)
+			.addTokens([{ tokenId: arbitrageMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyUSD, amount: bankReservesYOut }
+		]);
+		const buybackOut = new OutputBuilder(
+			fakeNanoErgs + buybackErgsAdded,
+			buybackParty.address
+		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+		const mainInputs = [
+			arbMintParty.utxos.at(0),
+			bankParty.utxos.at(0),
+			buybackBoxIn,
+			fundingBoxIn
+		];
+		const dataInputs = [oracleParty.utxos.at(0), lpParty.utxos.at(0), trackingParty.utxos.at(0)];
+		const tx = new TransactionBuilder(1000000)
+			.from(mainInputs, { ensureInclusion: true })
+			.withDataFrom(dataInputs)
+			.to(arbMintOut)
+			.to(bankOut)
+			.to(buybackOut)
+			.payFee(fee)
+			.sendChangeTo(fundingParty.address)
+			.build();
+		const executed = mockChain.execute(tx, { throw: false });
+		expect(executed).toBe(false);
+	});
+
 	// (f0 RESET)
 	it.only('Arbitrage mint should work if counter (R4) is reset and max allowed (R5) also reset', () => {
 		const oracleRateXy = 9000n * 1_000_000n;

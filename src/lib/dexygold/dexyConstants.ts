@@ -245,6 +245,7 @@ export const contractConfig = {
 	feeDenomLp: '1000L',
 	initialLp: '100000000000L',
 	intMax: '2147483647',
+	//intMaxHex: '04feffffffffffffffff01',
 	epochLength: '30',
 	intZero: '0', //??
 	longZero: '0' //??

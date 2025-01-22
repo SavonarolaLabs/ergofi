@@ -25,6 +25,7 @@ describe('TrackingSpec', () => {
 	const changeAddress = fakeScriptErgoTree;
 
 	const { intMax } = contractConfig;
+	const intMaxHex = '04feffffffffffffffff01';
 
 	beforeEach(() => {
 		mockChain = new MockChain({ height: 1_000_000 });
@@ -50,8 +51,8 @@ describe('TrackingSpec', () => {
 		console.log('x', x, ' vs ', y, ' y');
 		console.log('LP rate < 98% Oracle');
 
-		const trackingHeightOut = BigInt(mockChain.height) + 1n;
-		const trackingHeightIn = intMax;
+		const trackingHeightOut = BigInt(mockChain.height) + 1n; // <==
+		const trackingHeightIn = '2147483647'; //<== intMax / intMaxHex
 		//console.log('R7?:', SInt(Number(trackingHeightIn)).toHex());
 
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
@@ -79,10 +80,10 @@ describe('TrackingSpec', () => {
 					{ tokenId: lpToken, amount: lpBalance },
 					{ tokenId: dexyUSD, amount: reservesY }
 				]
-			},
-			{
-				R4: SLong(lpInCirc).toHex()
 			}
+			// {
+			// 	R4: SLong(lpInCirc).toHex()
+			// }
 		);
 
 		const trackingParty = mockChain.addParty(trackingErgoTree, 'Tracking');
@@ -95,11 +96,12 @@ describe('TrackingSpec', () => {
 				R4: SInt(Number(numIn)).toHex(),
 				R5: SInt(Number(denomIn)).toHex(),
 				R6: SBool(true).toHex(),
-				R7: SInt(Number(trackingHeightIn)).toHex()
+				R7: intMaxHex
+				//R7: SInt(Number(trackingHeightIn)).toHex()
 			}
 		);
 
-		const trackingOut = new OutputBuilder(minStorageRent, trackingAddress)
+		const trackingOut = new OutputBuilder(minStorageRent, trackingErgoTree)
 			.addTokens([{ tokenId: tracking98NFT, amount: 1n }])
 			.setAdditionalRegisters({
 				R4: SInt(Number(numIn)).toHex(),
@@ -112,7 +114,9 @@ describe('TrackingSpec', () => {
 		const dataInputs = [...oracleParty.utxos, ...lpParty.utxos];
 
 		const tx = new TransactionBuilder(mockChain.height)
-			.from(mainInputs)
+			.from(mainInputs, {
+				ensureInclusion: true
+			})
 			.withDataFrom(dataInputs)
 			.to(trackingOut)
 			.payFee(fee)

@@ -63,7 +63,7 @@ after next: 2. create BoxMintTransaction chain
 
 //-------------- NEW ------------------
 ADD BANK:
-src/test/scala/dexy/bank/ArbMintSpec.scala
++src/test/scala/dexy/bank/ArbMintSpec.scala
 src/test/scala/dexy/bank/InterventionSpec.scala
 src/test/scala/dexy/bank/PayoutSpec.scala
 
@@ -77,3 +77,7 @@ src/test/scala/dexy/lp/LpRedeemSpec.scala
 
 src/test/scala/dexy/lp/ExtractSpec.scala
 src/test/scala/dexy/lp/ReverseExtractSpec.scala
+
+//-------------------------
+
+find out where DEXY_BANK_EXTRACT_UPDATE_TREE is used

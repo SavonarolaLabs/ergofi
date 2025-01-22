@@ -10,6 +10,8 @@ import {
 	DEXY_BANK_PAYOUT,
 	DEXY_BANK_UPDATE_BALLOT,
 	DEXY_BANK_UPDATE_UPDATE,
+	DEXY_BANK_UPDATE_UPDATE_EXTRACT,
+	DEXY_BANK_UPDATE_UPDATE_INTERVENTION,
 	DEXY_GORT_DEV_EMISSION,
 	DEXY_LP_POOL_EXTRACT,
 	DEXY_LP_POOL_MAIN,
@@ -57,7 +59,11 @@ export interface MainnetTokenIds extends NetworkTokenIds {
 
 //ADDRESSES
 const DEXY_TRACKING_ADDRESS = DEXY_TRACKING;
-const DEXY_BANK_UPDATE_ADDRESS = DEXY_BANK_UPDATE_UPDATE;
+
+const DEXY_BANK_UPDATE_ADDRESS = DEXY_BANK_UPDATE_UPDATE; // update.es + bankNFT
+const DEXY_BANK_EXTRACT_UPDATE_ADDRESS = DEXY_BANK_UPDATE_UPDATE_EXTRACT; // update.es + interventionNFT
+const DEXY_BANK_INTERVENTION_UPDATE_ADDRESS = DEXY_BANK_UPDATE_UPDATE_INTERVENTION; // update.es + interventionNFT
+
 const DEXY_BANK_BALLOT_ADDRESS = DEXY_BANK_UPDATE_BALLOT;
 const DEXY_BANK_INTERVENTION_ADDRESS = DEXY_BANK_INTERVENTION;
 const DEXY_BANK_BUYBACK_ADDRESS = DEXY_BANK_BUYBACK;
@@ -76,7 +82,11 @@ const DEXY_GORT_DEV_EMISSION_ADDRESS = DEXY_GORT_DEV_EMISSION;
 
 //TREES
 const DEXY_TRACKING_TREE = tree(DEXY_TRACKING_ADDRESS);
-const DEXY_BANK_UPDATE_TREE = tree(DEXY_BANK_UPDATE_ADDRESS);
+
+const DEXY_BANK_UPDATE_TREE = tree(DEXY_BANK_UPDATE_ADDRESS); // update.es + bankNFT
+const DEXY_BANK_INTERVENTION_UPDATE_TREE = tree(DEXY_BANK_INTERVENTION_UPDATE_ADDRESS); // update.es + interventionNFT
+const DEXY_BANK_EXTRACT_UPDATE_TREE = tree(DEXY_BANK_EXTRACT_UPDATE_ADDRESS); // update.es + extractionNFT
+
 const DEXY_BANK_BALLOT_TREE = tree(DEXY_BANK_BALLOT_ADDRESS);
 const DEXY_BANK_INTERVENTION_TREE = tree(DEXY_BANK_INTERVENTION_ADDRESS);
 const DEXY_BANK_BUYBACK_TREE = tree(DEXY_BANK_BUYBACK_ADDRESS);
@@ -94,10 +104,11 @@ const DEXY_LP_REDEEM_TREE = tree(DEXY_LP_REDEEM_ADDRESS);
 const DEXY_GORT_DEV_EMISSION_TREE = tree(DEXY_GORT_DEV_EMISSION_ADDRESS);
 
 export const vitestErgoTrees = {
-	//:DEXY_TRACKING,
-	//:DEXY_BANK_UPDATE_UPDATE,
-	//:DEXY_BANK_UPDATE_BALLOT,
+	trackingErgoTree: DEXY_TRACKING_TREE,
+	bankUpdateErgoTree: DEXY_BANK_UPDATE_TREE,
+	ballotErgoTree: DEXY_BANK_BALLOT_TREE,
 	interventionErgoTree: DEXY_BANK_INTERVENTION_TREE,
+	interventionUpdateErgoTree: DEXY_BANK_INTERVENTION_UPDATE_TREE,
 	buybackErgoTree: DEXY_BANK_BUYBACK_TREE,
 	//:DEXY_BANK_PAYOUT,
 	freeMintErgoTree: DEXY_BANK_FREEMINT_TREE,
@@ -237,10 +248,29 @@ export const contractConfig = {
 };
 
 export const dexyAddresses = {
-	interventionAddress: DEXY_BANK_INTERVENTION
+	interventionAddress: DEXY_BANK_INTERVENTION_ADDRESS,
+	interventionUpdateAddress: DEXY_BANK_INTERVENTION_UPDATE_ADDRESS
 };
 
 export const dexyGold = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };
+
+// contract compilation variables
+function convertHexToBase64(obj: Object) {
+	return Object.fromEntries(
+		Object.entries(obj).map(([key, value]) => [key, Buffer.from(value, 'hex').toString('base64')])
+	);
+}
+
+function sortKeysByLength(obj: Object) {
+	return Object.fromEntries(
+		Object.entries(obj).sort(([keyA], [keyB]) => keyB.length - keyA.length)
+	);
+}
+
+export const contractCompileVariables = sortKeysByLength({
+	...convertHexToBase64(mainnetTokenIds),
+	...contractConfig
+});
 
 // vitest helpers
 
@@ -263,6 +293,7 @@ function scalaToJsNumbers(o: Object) {
 }
 
 export const vitestTokenIds = mainnetTokenIds;
+export const vitestAddresses = dexyAddresses;
 
 function tree(address: string): string {
 	return address ? ErgoAddress.fromBase58(address).ergoTree : '';

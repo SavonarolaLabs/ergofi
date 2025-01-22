@@ -2,6 +2,7 @@ import { compileDexyContractFromFile } from './compile';
 import { contractFiles } from './contractFiles';
 import fs from 'fs';
 import path from 'path';
+import { contractCompileVariables, dexyGold } from './dexyConstants';
 
 const OUTPUT_FILE = 'src/lib/dexygold/dexyAddressConstants.ts';
 
@@ -10,8 +11,32 @@ async function compileAllContracts() {
 
 	for (const [constName, filePath] of Object.entries(contractFiles)) {
 		try {
-			const address = compileDexyContractFromFile(filePath);
-			lines.push(`export const ${constName} = "${address}";`);
+			if ('DEXY_BANK_UPDATE_UPDATE' == constName) {
+				// val bankUpdateScript = readContract("bank/update/update.es", "contractToUpdateNFT" -> defaultSubstitutionMap("bankNFT"))
+				// val bankUpdateErgoTree = ScriptUtil.compile(Map(), bankUpdateScript)
+				// val bankUpdateAddress = getStringFromAddress(getAddressFromErgoTree(bankUpdateErgoTree))
+				const variables = contractCompileVariables;
+				variables['contractToUpdateNFT'] = dexyGold.bankNFT;
+				const address = compileDexyContractFromFile(filePath, variables);
+				lines.push(`export const DEXY_BANK_UPDATE_UPDATE = "${address}";`);
+
+				// val extractUpdateScript = readContract("bank/update/update.es", "contractToUpdateNFT" -> defaultSubstitutionMap("extractionNFT"))
+				// val extractUpdateErgoTree = ScriptUtil.compile(Map(), extractUpdateScript)
+				// val extractUpdateAddress = getStringFromAddress(getAddressFromErgoTree(extractUpdateErgoTree))
+				variables['contractToUpdateNFT'] = dexyGold.extractionNFT;
+				const address2 = compileDexyContractFromFile(filePath);
+				lines.push(`export const DEXY_BANK_UPDATE_UPDATE_EXTRACT = "${address2}";`);
+
+				// val interventionUpdateScript = readContract("bank/update/update.es", "contractToUpdateNFT" -> defaultSubstitutionMap("interventionNFT"))
+				// val interventionUpdateErgoTree = ScriptUtil.compile(Map(), interventionUpdateScript)
+				// val interventionUpdateAddress = getStringFromAddress(getAddressFromErgoTree(interventionUpdateErgoTree))
+				variables['contractToUpdateNFT'] = dexyGold.interventionNFT;
+				const address3 = compileDexyContractFromFile(filePath);
+				lines.push(`export const DEXY_BANK_UPDATE_UPDATE_INTERVENTION = "${address3}";`);
+			} else {
+				const address = compileDexyContractFromFile(filePath);
+				lines.push(`export const ${constName} = "${address}";`);
+			}
 		} catch (error) {
 			console.error(`Failed to compile contract for ${constName} (${filePath}):`, error);
 			return; // Abort the entire process if an error occurs

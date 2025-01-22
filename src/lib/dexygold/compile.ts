@@ -2,7 +2,7 @@ import { Network } from '@fleet-sdk/common';
 import { compile } from '@fleet-sdk/compiler';
 import fs from 'fs';
 import path from 'path';
-import { contractConfig, mainnetTokenIds } from './dexyConstants';
+import { contractCompileVariables, contractConfig, mainnetTokenIds } from './dexyConstants';
 
 export function compileContract(contract: string, map = {}) {
 	const tree = compile(contract, {
@@ -19,26 +19,12 @@ export function compileContractFromFile(fileName: string): string {
 	return compileContract(contract);
 }
 
-function convertHexToBase64(obj) {
-	return Object.fromEntries(
-		Object.entries(obj).map(([key, value]) => [key, Buffer.from(value, 'hex').toString('base64')])
-	);
-}
-
-function sortKeysByLength(obj) {
-	return Object.fromEntries(
-		Object.entries(obj).sort(([keyA], [keyB]) => keyB.length - keyA.length)
-	);
-}
-
-export function compileDexyContractFromFile(fileName: string): string {
+export function compileDexyContractFromFile(
+	fileName: string,
+	variables = contractCompileVariables
+): string {
 	const contractFile = path.resolve('src/lib/dexygold/contracts', fileName);
 	const contract = fs.readFileSync(contractFile, 'utf-8');
-
-	const variables = sortKeysByLength({
-		...convertHexToBase64(mainnetTokenIds),
-		...contractConfig
-	});
 
 	const updatedContract = replaceVariablesInContract(contract, variables);
 

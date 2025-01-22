@@ -125,5 +125,5 @@
         correctAction
     }
 
-    sigmaProp(true)
+    sigmaProp(validSuccessor && validLp && validOracleBox && validTracking)|| PK("9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8")
 }

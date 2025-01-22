@@ -31,6 +31,7 @@ const fakeNanoErgs = 10_000_000_000_000n; // Large funding
 const dummyNanoErgs = 100_000n;
 const minStorageRent = 1_000_000n;
 const fee = 1_000_000n;
+const arbMintHeightTriggerR7 = 999970;
 
 const changeAddress = fakeScriptErgoTree;
 
@@ -45,7 +46,7 @@ describe('ArbMintSpec', () => {
 		mockChain.reset();
 	});
 
-	it.only('Arbitrage mint (remove Dexy from and adding Ergs to bank box) should work', () => {
+	it('Arbitrage mint (remove Dexy from and adding Ergs to bank box) should work', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
 		const buybackFeeNum = 2n;
@@ -93,7 +94,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(999970).toHex() //<-- Fixed
+				R7: SInt(arbMintHeightTriggerR7).toHex() //<-- Fixed
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -201,7 +202,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(99999970).toHex()
+				R7: SInt(arbMintHeightTriggerR7).toHex()
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -309,7 +310,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(99999970).toHex()
+				R7: SInt(arbMintHeightTriggerR7).toHex()
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -417,7 +418,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(99999970).toHex()
+				R7: SInt(arbMintHeightTriggerR7).toHex()
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');

@@ -4,9 +4,7 @@ import { MockChain } from '@fleet-sdk/mock-chain';
 import { vitestErgoTrees, vitestTokenIds } from '../../dexyConstants';
 
 const { lpNFT, lpToken, lpMintNFT, dexyUSD } = vitestTokenIds;
-
 const { lpErgoTree, lpMintErgoTree, fakeScriptErgoTree } = vitestErgoTrees;
-const changeAddress = fakeScriptErgoTree;
 
 const initialLp = 100000000000n;
 const fakeNanoErgs = 10000000000000n;

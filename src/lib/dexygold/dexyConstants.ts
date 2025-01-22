@@ -115,6 +115,8 @@ export const vitestErgoTrees = {
 	bankErgoTree: DEXY_BANK_TREE,
 	arbitrageMintErgoTree: DEXY_BANK_ARBMINT_TREE,
 	lpErgoTree: DEXY_LP_TREE,
+	lpMintErgoTree: DEXY_LP_MINT_TREE,
+	lpRedeemErgoTree: DEXY_LP_REDEEM_TREE,
 	//:DEXY_LP_POOL_EXTRACT,
 	//:DEXY_LP_POOL_MINT,
 	swapErgoTree: DEXY_LP_SWAP_TREE,

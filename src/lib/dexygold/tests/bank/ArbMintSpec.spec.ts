@@ -31,7 +31,7 @@ const fakeNanoErgs = 10_000_000_000_000n; // Large funding
 const dummyNanoErgs = 100_000n;
 const minStorageRent = 1_000_000n;
 const fee = 1_000_000n;
-const arbMintHeightTriggerR7 = 999970;
+const trackingValidHeightR7 = 999969; // 1_000_000 - t_arb - 1n
 
 const changeAddress = fakeScriptErgoTree;
 
@@ -45,7 +45,7 @@ describe('ArbMintSpec', () => {
 	afterEach(() => {
 		mockChain.reset();
 	});
-
+	// (t1) = ok
 	it('Arbitrage mint (remove Dexy from and adding Ergs to bank box) should work', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
@@ -94,7 +94,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(arbMintHeightTriggerR7).toHex() //<-- Fixed
+				R7: SInt(trackingValidHeightR7).toHex() //<-- Fixed
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -202,7 +202,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(arbMintHeightTriggerR7).toHex()
+				R7: SInt(trackingValidHeightR7).toHex()
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -310,7 +310,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(arbMintHeightTriggerR7).toHex()
+				R7: SInt(trackingValidHeightR7).toHex()
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -418,7 +418,7 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(arbMintHeightTriggerR7).toHex() //<== not reset
+				R7: SInt(trackingValidHeightR7).toHex() //<== not reset
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
@@ -476,7 +476,7 @@ describe('ArbMintSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
-	//(f5)
+	//(f5) = ok
 	it.only('Arbitrage mint should work if counter (R4) is reset and max allowed (R5) also reset', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
@@ -587,8 +587,8 @@ describe('ArbMintSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});
-
-	it('Arbitrage mint should fail if counter (R4) is reset but max allowed (R5) not reset', () => {
+	//(f6) = ok
+	it.only('Arbitrage mint should fail if counter (R4) is reset but max allowed (R5) not reset', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
 		const buybackFeeNum = 2n;
@@ -615,7 +615,7 @@ describe('ArbMintSpec', () => {
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
 		const trackingHeight = BigInt(mockChain.height) - t_arb - 1n;
 		const resetHeightIn = BigInt(mockChain.height) - 1n;
-		const resetHeightOut = BigInt(mockChain.height) + t_arb;
+		const resetHeightOut = BigInt(mockChain.height) + t_arb + 1n;
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
@@ -695,8 +695,8 @@ describe('ArbMintSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
-
-	it('Arbitrage mint should fail if counter (R4) is reset and max allowed (R5) reset but more Dexy taken than permitted', () => {
+	//(f7) = ok
+	it.only('Arbitrage mint should fail if counter (R4) is reset and max allowed (R5) reset but more Dexy taken than permitted', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
 		const buybackFeeNum = 2n;
@@ -726,7 +726,7 @@ describe('ArbMintSpec', () => {
 		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
 		const trackingHeight = BigInt(mockChain.height) - t_arb - 1n;
 		const resetHeightIn = BigInt(mockChain.height) - 1n;
-		const resetHeightOut = BigInt(mockChain.height) + t_arb;
+		const resetHeightOut = BigInt(mockChain.height) + t_arb + 1n;
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');

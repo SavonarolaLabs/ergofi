@@ -249,7 +249,8 @@ export const contractConfig = {
 
 export const dexyAddresses = {
 	interventionAddress: DEXY_BANK_INTERVENTION_ADDRESS,
-	interventionUpdateAddress: DEXY_BANK_INTERVENTION_UPDATE_ADDRESS
+	interventionUpdateAddress: DEXY_BANK_INTERVENTION_UPDATE_ADDRESS,
+	extractUpdateAddress: DEXY_BANK_EXTRACT_UPDATE_ADDRESS
 };
 
 export const dexyGold = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };

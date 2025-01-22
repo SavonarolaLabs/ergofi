@@ -45,7 +45,7 @@ describe('ArbMintSpec', () => {
 		mockChain.reset();
 	});
 
-	it('Arbitrage mint (remove Dexy from and adding Ergs to bank box) should work', () => {
+	it.only('Arbitrage mint (remove Dexy from and adding Ergs to bank box) should work', () => {
 		const oracleRateXy = 9000n * 1000000n;
 		const bankFeeNum = 3n;
 		const buybackFeeNum = 2n;

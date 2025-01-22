@@ -8,7 +8,7 @@ import {
 	SBool
 } from '@fleet-sdk/core';
 import { MockChain } from '@fleet-sdk/mock-chain';
-import { vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
+import { contractConfig, vitestErgoTrees, vitestTokenIds } from '../dexyConstants';
 
 describe('TrackingSpec', () => {
 	let mockChain: MockChain;
@@ -24,6 +24,8 @@ describe('TrackingSpec', () => {
 	const trackingAddress = trackingErgoTree;
 	const changeAddress = fakeScriptErgoTree;
 
+	const { intMax } = contractConfig;
+
 	beforeEach(() => {
 		mockChain = new MockChain({ height: 1_000_000 });
 	});
@@ -32,9 +34,9 @@ describe('TrackingSpec', () => {
 		mockChain.reset();
 	});
 
-	it('Trigger 98% tracker should work', () => {
+	it.only('Trigger 98% tracker should work', () => {
 		const lpInCirc = 10_000n;
-		const oracleRateXY = 10_205n * 1_000_000n;
+		const oracleRateXY = 10_205n; //* 1_000_000n; //<== ??????
 		const lpBalance = 10_000_000n;
 		const reservesX = 10_000_000_000n;
 		const reservesY = 1_000_000n;
@@ -42,10 +44,15 @@ describe('TrackingSpec', () => {
 		const denomIn = 100n;
 		const lpRateXY = reservesX / reservesY;
 		const x = lpRateXY * denomIn;
-		const y = (numIn * oracleRateXY) / 1_000_000n;
+		const y = numIn * oracleRateXY; // / 1_000_000n;  //<== ??????
 		expect(x < y).toBe(true);
-		const trackingHeightOut = BigInt(mockChain.height);
-		const trackingHeightIn = BigInt(Number.MAX_SAFE_INTEGER);
+		console.log('lpRateXY', lpRateXY);
+		console.log('x', x, ' vs ', y, ' y');
+		console.log('LP rate < 98% Oracle');
+
+		const trackingHeightOut = BigInt(mockChain.height) + 1n;
+		const trackingHeightIn = intMax;
+		//console.log('R7?:', SInt(Number(trackingHeightIn)).toHex());
 
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
 		fundingParty.addBalance({
@@ -112,6 +119,7 @@ describe('TrackingSpec', () => {
 			.sendChangeTo(changeAddress)
 			.build();
 
+		console.dir(tx.toEIP12Object(), { depth: null });
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});

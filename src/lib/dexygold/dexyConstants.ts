@@ -110,7 +110,7 @@ export const vitestErgoTrees = {
 	interventionErgoTree: DEXY_BANK_INTERVENTION_TREE,
 	interventionUpdateErgoTree: DEXY_BANK_INTERVENTION_UPDATE_TREE,
 	buybackErgoTree: DEXY_BANK_BUYBACK_TREE,
-	//:DEXY_BANK_PAYOUT,
+	payoutErgoTree: DEXY_BANK_PAYOUT_TREE,
 	freeMintErgoTree: DEXY_BANK_FREEMINT_TREE,
 	bankErgoTree: DEXY_BANK_TREE,
 	arbitrageMintErgoTree: DEXY_BANK_ARBMINT_TREE,

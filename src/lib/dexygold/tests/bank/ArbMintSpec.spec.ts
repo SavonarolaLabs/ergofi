@@ -93,11 +93,11 @@ describe('ArbMintSpec', () => {
 				R4: SInt(100).toHex(),
 				R5: SInt(101).toHex(),
 				R6: SBool(false).toHex(),
-				R7: SInt(99999970).toHex()
+				R7: SInt(999970).toHex() //<-- Fixed
 			}
 		);
 		const arbMintParty = mockChain.addParty(arbitrageMintErgoTree, 'ArbMint');
-		const resetHeightIn = 1000000n;
+		const resetHeightIn = 1000000n + 1n; // <-- Fixed
 		const resetHeightOut = resetHeightIn;
 		arbMintParty.addBalance(
 			{ nanoergs: minStorageRent, tokens: [{ tokenId: arbitrageMintNFT, amount: 1n }] },

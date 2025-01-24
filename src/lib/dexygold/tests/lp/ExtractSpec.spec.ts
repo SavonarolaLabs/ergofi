@@ -28,7 +28,7 @@ const bankAddress = bankErgoTree;
 const fakeNanoErgs = 10000000000000n;
 const minStorageRent = 1000000n;
 const fee = 1000000n;
-
+const height = 1000000;
 describe('ExtractSpec', () => {
 	let mockChain: MockChain;
 
@@ -40,7 +40,7 @@ describe('ExtractSpec', () => {
 		mockChain.reset();
 	});
 
-	it('Extract to future (extract Dexy from Lp and store in extract box) should work', () => {
+	it.only('Extract to future (extract Dexy from Lp and store in extract box) should work', () => {
 		const oracleRateXy = 10000n * 1000000n;
 		const lpBalanceIn = 100000000n;
 		const lpReservesXIn = 100000000000000n;
@@ -51,7 +51,8 @@ describe('ExtractSpec', () => {
 		const lpBalanceOut = lpBalanceIn;
 		const extractBoxDexyIn = 100n;
 		const extractBoxDexyOut = extractBoxDexyIn + deltaDexy;
-		const bankReservesX = 10000n * 1000000000n - 1n;
+		//const bankReservesX = 10000n * 1000000000n - 1n; // 10_000 erg
+		const bankReservesX = 10n * 1000000000n - 1n; // 10_erg
 		const bankReservesY = 100n;
 		const T_delay = 360;
 		const T_extract = 720;
@@ -63,8 +64,21 @@ describe('ExtractSpec', () => {
 		const bankParty = mockChain.addParty(fakeScriptErgoTree);
 		const tracking95Party = mockChain.addParty(fakeScriptErgoTree);
 		const lpParty = mockChain.addParty(lpErgoTree);
+		//JUMP BACK
+		mockChain.jumpTo(Number(extractBoxCreationHeightIn));
 		const extractParty = mockChain.addParty(extractScriptErgoTree);
-
+		extractParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [
+					{ tokenId: extractionNFT, amount: 1n },
+					{ tokenId: dexyUSD, amount: extractBoxDexyIn }
+				]
+			},
+			{ R4: SInt(Number(extractBoxCreationHeightIn)).toHex() }
+		);
+		mockChain.jumpTo(height);
+		//JUMP FORWARD
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		oracleParty.addBalance(
 			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
@@ -94,16 +108,6 @@ describe('ExtractSpec', () => {
 				{ tokenId: dexyUSD, amount: lpReservesYIn }
 			]
 		});
-		extractParty.addBalance(
-			{
-				nanoergs: minStorageRent,
-				tokens: [
-					{ tokenId: extractionNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: extractBoxDexyIn }
-				]
-			},
-			{ R4: SInt(Number(extractBoxCreationHeightIn)).toHex() }
-		);
 
 		const lpOut = new OutputBuilder(lpReservesXOut, lpParty.address).addTokens([
 			{ tokenId: lpNFT, amount: 1n },
@@ -117,6 +121,7 @@ describe('ExtractSpec', () => {
 		]);
 
 		const mainInputs = [...lpParty.utxos, ...extractParty.utxos, ...fundingParty.utxos];
+		//const mainInputs = [...lpParty.utxos, ...extractParty.utxos, ...fundingParty.utxos];
 		const dataInputs = [...oracleParty.utxos, ...tracking95Party.utxos, ...bankParty.utxos];
 
 		const tx = new TransactionBuilder(mockChain.height)

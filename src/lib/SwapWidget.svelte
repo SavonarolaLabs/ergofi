@@ -66,7 +66,8 @@
 	 * ------------------------------------- */
 	type Currency = {
 		tokens: string[]; // e.g. ["ERG"], ["SigUSD"], ["SigRSV"]
-		isLpPair?: boolean;
+		isLpToken?: boolean;
+		isLpPool?: boolean;
 	};
 
 	type LastUserInput = 'From' | 'To';
@@ -76,7 +77,8 @@
 	const currencySigUSD: Currency = { tokens: ['SigUSD'] };
 	const currencySigRSV: Currency = { tokens: ['SigRSV'] };
 	const currencyDexyGold: Currency = { tokens: ['DexyGold'] };
-	const currencyErgDexyGoldLp: Currency = { tokens: ['ERG', 'DexyGold'], isLpPair: true };
+	const currencyErgDexyGoldLpToken: Currency = { tokens: ['ERG', 'DexyGold'], isLpToken: true };
+	const currencyErgDexyGoldLpPool: Currency = { tokens: ['ERG', 'DexyGold'], isLpPool: true };
 
 	// All possible "from" currencies
 	const fromCurrencies: Currency[] = [
@@ -84,7 +86,8 @@
 		currencySigUSD,
 		currencySigRSV,
 		currencyDexyGold,
-		currencyErgDexyGoldLp
+		// currencyErgDexyGoldLpToken,
+		currencyErgDexyGoldLpPool
 	];
 
 	// For swapping, use these constants
@@ -106,7 +109,7 @@
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 
-	let fromDropdownOpen = false;
+	let fromDropdownOpen = true;
 	let toDropdownOpen = false;
 	let currencySwapHovered = false;
 
@@ -667,7 +670,13 @@
 					<div class="flex items-center gap-3">
 						<div class="h-5 w-5 {tokenColor(fromCurrency)} rounded-full"></div>
 						<!-- Show the first token name, e.g. "ERG" -->
-						{fromCurrency.tokens[0]}
+						{#if fromCurrency.isLpToken}
+							<div>
+								{fromCurrency.tokens[0]}
+							</div>
+						{:else}
+							{fromCurrency.tokens[0]}
+						{/if}
 					</div>
 					<svg
 						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
@@ -686,10 +695,11 @@
 						style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
 						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 					>
-						<div class="py-1">
-							{#each fromCurrencies as c}
+						<div>
+							{#each fromCurrencies as c, i}
 								<button
-									class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+									class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+									style="height:56px"
 									on:click={() => {
 										fromCurrency = c;
 										fromDropdownOpen = false;
@@ -701,9 +711,53 @@
 										doRecalc($oracle_box, $bank_box);
 									}}
 								>
-									<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
-									{c.tokens[0]}
+									{#if c.isLpToken}
+										<div class="flex w-full items-center justify-between text-sm">
+											<div class="pl-1">
+												<div class="flex items-center gap-4">
+													<div class="h-3 w-3 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
+
+													{c.tokens[0]}
+												</div>
+												<div class="flex items-center gap-4">
+													<div class="h-3 w-3 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
+
+													{c.tokens[1]}
+												</div>
+											</div>
+											<div class="grow pl-2 text-center">
+												<div class="text-xs">LP</div>
+												<div class="text-xs">Token</div>
+											</div>
+										</div>
+									{:else if c.isLpPool}
+										<div class="flex w-full items-center justify-between text-sm">
+											<div class="pl-1">
+												<div class="flex items-center gap-4">
+													<div class="h-3 w-3 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
+
+													{c.tokens[0]}
+												</div>
+												<div class="flex items-center gap-4">
+													<div class="h-3 w-3 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
+
+													{c.tokens[1]}
+												</div>
+											</div>
+
+											<div class="text-center">
+												<div class="text-xs">Liquidity</div>
+												<div class="text-xs">Pool</div>
+											</div>
+										</div>
+									{:else}
+										<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
+										{c.tokens[0]}
+									{/if}
 								</button>
+								{#if i != fromCurrencies.length - 1}
+									<hr class="border-slate-600" />
+								{/if}
 							{/each}
 						</div>
 					</div>

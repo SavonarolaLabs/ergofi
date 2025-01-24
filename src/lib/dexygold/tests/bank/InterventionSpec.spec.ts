@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { blake2b } from '@noble/hashes/blake2b';
-import {
-	OutputBuilder,
-	TransactionBuilder,
-	ErgoUnsignedInput,
-	SInt,
-	SLong,
-	SBool,
-	SColl
-} from '@fleet-sdk/core';
+import { OutputBuilder, TransactionBuilder, SInt, SLong, SBool, SColl } from '@fleet-sdk/core';
 import { MockChain } from '@fleet-sdk/mock-chain';
 import { vitestTokenIds, vitestErgoTrees, vitestAddresses } from '../../dexyConstants';
 
@@ -42,6 +34,7 @@ const dummyNanoErgs = 100000n;
 const minStorageRent = 1000000n;
 const fee = 1000000n;
 const changeAddress = fakeScriptErgoTree;
+const height = 1000000;
 
 describe('InterventionSpec', () => {
 	let mockChain: MockChain;
@@ -54,8 +47,9 @@ describe('InterventionSpec', () => {
 		mockChain.reset();
 	});
 
-	it('transfer Ergs from Bank to Lp and Dexy from Lp to Bank should work', () => {
-		const T = 360n;
+	it.only('transfer Ergs from Bank to Lp and Dexy from Lp to Bank should work', () => {
+		// Main Error   val lastIntervention = SELF.creationInfo._1
+		const T = 360n; //
 		const lpBalanceIn = 100000000n;
 		const thresholdPercent = 98n;
 		const bankReservesXIn = 1000000000000000n;
@@ -74,6 +68,22 @@ describe('InterventionSpec', () => {
 		const T_int = 20n;
 		const trackingHeightIn = BigInt(mockChain.height) - T_int - 1n;
 		const lastInterventionHeight = BigInt(mockChain.height) - T - 1n;
+
+		//JUMP BACK
+		mockChain.jumpTo(height - 360 - 1);
+		const interventionParty = mockChain.addParty(interventionErgoTree, 'Intervention');
+		interventionParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [{ tokenId: interventionNFT, amount: 1n }]
+			},
+			{
+				R4: SInt(Number(lastInterventionHeight)).toHex()
+			}
+		);
+		mockChain.jumpTo(height);
+		//JUMP FORWARD
+
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
@@ -116,16 +126,7 @@ describe('InterventionSpec', () => {
 				{ tokenId: dexyUSD, amount: bankReservesYIn }
 			]
 		});
-		const interventionParty = mockChain.addParty(interventionErgoTree, 'Intervention');
-		interventionParty.addBalance(
-			{
-				nanoergs: minStorageRent,
-				tokens: [{ tokenId: interventionNFT, amount: 1n }]
-			},
-			{
-				R4: SInt(Number(lastInterventionHeight)).toHex()
-			}
-		);
+
 		const lpOut = new OutputBuilder(lpReservesXOut, lpErgoTree).addTokens([
 			{ tokenId: lpNFT, amount: 1n },
 			{ tokenId: lpToken, amount: lpBalanceOut },

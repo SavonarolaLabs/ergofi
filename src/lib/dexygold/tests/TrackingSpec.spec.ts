@@ -25,7 +25,7 @@ describe('TrackingSpec', () => {
 	const changeAddress = fakeScriptErgoTree;
 
 	const { intMax } = contractConfig;
-	const intMaxHex = '04feffffffffffffffff01';
+	const intMaxHex = SInt(Number(contractConfig.intMax)).toHex();
 
 	beforeEach(() => {
 		mockChain = new MockChain({ height: 1_000_000 });

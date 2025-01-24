@@ -375,7 +375,6 @@ describe('TrackingSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
-
 	it.only('Trigger 98% tracker should fail if wrong oracle NFT', () => {
 		// Tracking98 => lpRate < 98 * Oracle
 		// Tracking98  R6: true
@@ -631,7 +630,6 @@ describe('TrackingSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(false);
 	});
-
 	it.only('Trigger 98% tracker should work', () => {
 		// Tracking98 => lpRate < 98 * Oracle
 		// Tracking98  R6: true
@@ -716,7 +714,6 @@ describe('TrackingSpec', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});
-
 	it.only('Reset 98% tracker should fail if condition not satisfied', () => {
 		const lpInCirc = 10_000n;
 		const oracleRateXY = 10_210n * 1_000_000n; //<==

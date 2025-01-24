@@ -86,7 +86,7 @@
 		currencySigUSD,
 		currencySigRSV,
 		currencyDexyGold,
-		// currencyErgDexyGoldLpToken,
+		currencyErgDexyGoldLpToken,
 		currencyErgDexyGoldLpPool
 	];
 
@@ -668,13 +668,16 @@
 					}}
 				>
 					<div class="flex items-center gap-3">
-						<div class="h-5 w-5 {tokenColor(fromCurrency)} rounded-full"></div>
 						<!-- Show the first token name, e.g. "ERG" -->
 						{#if fromCurrency.isLpToken}
-							<div>
-								{fromCurrency.tokens[0]}
+							<div class="flex w-full items-center justify-between text-sm">
+								<div class="grow pl-2 text-center">
+									<div class="text-md">{fromCurrency.tokens[0]}/{fromCurrency.tokens[1]}</div>
+									<div class="text-xs font-light">LiquidityToken</div>
+								</div>
 							</div>
 						{:else}
+							<div class="h-5 w-5 {tokenColor(fromCurrency)} rounded-full"></div>
 							{fromCurrency.tokens[0]}
 						{/if}
 					</div>
@@ -692,7 +695,7 @@
 				{#if fromDropdownOpen}
 					<div
 						id="fromDropdownMenu"
-						style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
+						style="width: 193px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-24px"
 						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 					>
 						<div>

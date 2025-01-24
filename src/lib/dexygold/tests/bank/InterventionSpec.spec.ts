@@ -49,7 +49,7 @@ describe('InterventionSpec', () => {
 
 	it.only('transfer Ergs from Bank to Lp and Dexy from Lp to Bank should work', () => {
 		// Main Error   val lastIntervention = SELF.creationInfo._1
-		const T = 360n; //
+		const T_int = 360n; //
 		const lpBalanceIn = 100000000n;
 		const thresholdPercent = 98n;
 		const bankReservesXIn = 1000000000000000n;
@@ -65,12 +65,12 @@ describe('InterventionSpec', () => {
 		const bankReservesXOut = bankReservesXIn - depositX;
 		const bankReservesYOut = bankReservesYIn + withdrawY;
 		const lpBalanceOut = lpBalanceIn;
-		const T_int = 20n;
-		const trackingHeightIn = BigInt(mockChain.height) - T_int - 1n;
-		const lastInterventionHeight = BigInt(mockChain.height) - T - 1n;
+		const T_track = 20n;
+		const trackingHeightIn = BigInt(mockChain.height) - T_track - 1n;
+		const lastInterventionHeight = BigInt(mockChain.height) - T_int - 1n;
 
 		//JUMP BACK
-		mockChain.jumpTo(height - 360 - 1);
+		mockChain.jumpTo(Number(lastInterventionHeight));
 		const interventionParty = mockChain.addParty(interventionErgoTree, 'Intervention');
 		interventionParty.addBalance(
 			{

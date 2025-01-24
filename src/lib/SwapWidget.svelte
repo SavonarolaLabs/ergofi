@@ -61,8 +61,22 @@
 	import WalletBalance from './icons/WalletBalance.svelte';
 	import { getWalletInstallLink } from './installWallet';
 
-	type Currency = 'ERG' | 'SigUSD' | 'SigRSV';
+	/* ---------------------------------------
+	 * Types & Constants
+	 * ------------------------------------- */
+	type Currency = {
+		tokens: string[]; // e.g. ["ERG"], ["SigUSD"], ["SigRSV"]
+	};
+
 	type LastUserInput = 'From' | 'To';
+
+	// We define some helpers for clarity:
+	const currencyERG: Currency = { tokens: ['ERG'] };
+	const currencySigUSD: Currency = { tokens: ['SigUSD'] };
+	const currencySigRSV: Currency = { tokens: ['SigRSV'] };
+
+	// All possible "from" currencies
+	const fromCurrencies: Currency[] = [currencyERG, currencySigUSD, currencySigRSV];
 
 	// For swapping, use these constants
 	const directionBuy = 1n;
@@ -71,8 +85,8 @@
 	/* ---------------------------------------
 	 * Local variables
 	 * ------------------------------------- */
-	let fromCurrency: Currency = 'ERG'; // default to ERG
-	let toCurrency: Currency = 'SigRSV'; // default to SigUSD (when from=ERG)
+	let fromCurrency: Currency = currencyERG; // default to ERG: { tokens: ['ERG'] }
+	let toCurrency: Currency = currencySigRSV; // default to SigRSV: { tokens: ['SigRSV'] }
 	let fromAmount = '';
 	let toAmount = '';
 	let swapPrice: number = 0.0;
@@ -83,30 +97,33 @@
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 
-	// Full set of possible 'from' currencies
-	const fromCurrencies: Currency[] = ['ERG', 'SigUSD', 'SigRSV'];
+	let fromDropdownOpen = false;
+	let toDropdownOpen = false;
+	let currencySwapHovered = false;
 
 	// Utility: Allowed "to" currencies depends on "fromCurrency"
 	function getAllowedToCurrencies(fromC: Currency): Currency[] {
-		if (fromC === 'ERG') {
-			return ['SigUSD', 'SigRSV']; // can pick either
+		if (fromC.tokens[0] === 'ERG') {
+			// If from == ERG, user can pick SigUSD or SigRSV
+			return [currencySigUSD, currencySigRSV];
 		} else {
-			return ['ERG']; // forced
+			// If from == SigUSD or SigRSV, forced to ERG
+			return [currencyERG];
 		}
 	}
 
-	//  Colors for the circles
+	//  Colors for the circles (helper)
 	function tokenColor(c: Currency) {
 		return {
 			ERG: 'bg-orange-500',
 			SigUSD: 'bg-green-500',
 			SigRSV: 'bg-[#4A90E2]'
-		}[c];
+		}[c.tokens[0]];
 	}
 
 	function saveFromToCurrencyToLocalStorage() {
-		localStorage.setItem('fromCurrency', fromCurrency);
-		localStorage.setItem('toCurrency', toCurrency);
+		localStorage.setItem('fromCurrency', JSON.stringify(fromCurrency));
+		localStorage.setItem('toCurrency', JSON.stringify(toCurrency));
 	}
 
 	function loadFromToCurrencyFromLocalStorage() {
@@ -114,11 +131,10 @@
 		const savedToCurrency = localStorage.getItem('toCurrency');
 
 		if (savedFromCurrency) {
-			fromCurrency = savedFromCurrency;
+			fromCurrency = JSON.parse(savedFromCurrency);
 		}
-
 		if (savedToCurrency) {
-			toCurrency = savedToCurrency;
+			toCurrency = JSON.parse(savedToCurrency);
 		}
 	}
 
@@ -193,8 +209,6 @@
 		bankBoxInNanoErg.set(inErg);
 		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
 		bankBoxInCircSigRsv.set(inCircSigRSV);
-		//inCircSigRSV
-		//....
 		oraclePriceSigUsd.set(oraclePrice);
 	}
 
@@ -205,7 +219,7 @@
 		oraclePriceSigUsd: bigint,
 		feeMining: bigint
 	) {
-		// Just as beforecalculateInputsUsdErgInputErg
+		// Calculate initial SigUSD "buy" price for 0.1 ERG (BASE_INPUT_AMOUNT_ERG)
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
@@ -225,10 +239,9 @@
 			oraclePriceSigUsd,
 			feeMining
 		);
-
 		bank_price_usd_sell.set(finalPriceSell);
 
-		// Just as beforecalculateInputsUsdErgInputErg
+		// Calculate initial SigRSV "buy" price for 0.1 ERG
 		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
 			directionBuy,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
@@ -238,7 +251,6 @@
 			oraclePriceSigUsd,
 			feeMining
 		);
-
 		bank_price_rsv_buy.set(finalPriceBuyRSV);
 
 		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
@@ -250,10 +262,9 @@
 			oraclePriceSigUsd,
 			feeMining
 		);
-
 		bank_price_rsv_sell.set(finalPriceSellRSV);
 
-		// We'll just set some starting example
+		// We'll just set some initial example input
 		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"
 		toAmount = totalSigUSDBuy; // e.g. "10"
 		swapPrice = finalPriceBuy; // e.g. real rate
@@ -262,10 +273,6 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	/**
-	 * doRecalc($oracle_box, $bank_box) updates `toAmount` (or `fromAmount`) + swapPrice
-	 * depending on which field was last changed.
-	 */
 	function doRecalc(oracleBox: ErgoBox, bankBox: ErgoBox) {
 		if (!oracleBox || !bankBox) return;
 		updateBankBoxAndOracle(oracleBox, bankBox);
@@ -280,18 +287,20 @@
 		}
 		updateBankStats();
 
-		// If either side is empty, just zero out the other side
+		// If both sides are empty, reset
 		if (!fromAmount && !toAmount) {
 			swapPrice = 0;
 			return;
 		}
 
-		// Distinguish direction:
-		//   - If lastInput === 'From', the user typed in fromAmount => compute toAmount
-		//   - If lastInput === 'To',   the user typed in toAmount   => compute fromAmount
+		const fromToken = fromCurrency.tokens[0];
+		const toToken = toCurrency.tokens[0];
+
+		// Distinguish direction based on last input:
 		if (lastInput === 'From') {
-			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
-				// ERG -> SigUSD (buy SigUSD with ERG)
+			// User typed in `fromAmount`
+			if (fromToken === 'ERG' && toToken === 'SigUSD') {
+				// ERG -> SigUSD
 				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionBuy,
 					fromAmount,
@@ -304,7 +313,7 @@
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
-			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
+			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
 				// ERG -> SigRSV
 				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
@@ -315,11 +324,11 @@
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
-				toAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
+				toAmount = totalSigRSV;
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
-			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {
+			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
 				// SigUSD -> ERG
 				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
 					directionSell,
@@ -332,7 +341,7 @@
 				toAmount = totalErg;
 				swapPrice = finalPrice;
 			} else {
-				// fromCurrency === 'SigRSV' -> 'ERG'
+				// SigRSV -> ERG
 				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
 					directionSell,
 					fromAmount,
@@ -347,7 +356,7 @@
 			}
 		} else {
 			// lastInput === 'To' => user typed in `toAmount`
-			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
+			if (fromToken === 'ERG' && toToken === 'SigUSD') {
 				// user typed in "SigUSD" => figure out how many ERG
 				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
 					directionBuy,
@@ -359,7 +368,7 @@
 				);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
-			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
+			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
 				// user typed in "SigRSV"
 				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
 					directionBuy,
@@ -372,7 +381,7 @@
 				);
 				fromAmount = totalErg;
 				swapPrice = finalPrice;
-			} else if (fromCurrency === 'SigUSD' && toCurrency === 'ERG') {
+			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
 				// user typed in "ERG" => figure out how many SigUSD
 				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionSell,
@@ -382,15 +391,13 @@
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
-
 				fromAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else {
-				// fromCurrency === 'SigRSV' && toCurrency === 'ERG'
+				// fromToken === 'SigRSV' && toToken === 'ERG'
 				// user typed in "ERG" => figure out how many SigRSV
-				// ERG -> SigRSV
 				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionSell,
 					toAmount,
@@ -400,7 +407,7 @@
 					$oraclePriceSigUsd,
 					$fee_mining
 				);
-				fromAmount = totalSigRSV; // rename to, e.g., totalSigRSV if you have a separate function
+				fromAmount = totalSigRSV;
 				globalUiFeeErg = uiFeeErg;
 				globalContractERG = contractERG;
 				swapPrice = finalPrice;
@@ -412,26 +419,28 @@
 	 * Handlers
 	 * ------------------------------------- */
 	function handleFromCurrencyChange(event: Event) {
-		const newVal = (event.target as HTMLSelectElement).value as Currency;
-		fromCurrency = newVal;
+		const newVal = event.target as HTMLSelectElement;
+		// In a real scenario, you'd match newVal.value to one of our Currency objects
+		// For demonstration, assume user picks among ["ERG","SigUSD","SigRSV"]:
+		const picked = newVal.value;
+		if (picked === 'ERG') fromCurrency = currencyERG;
+		else if (picked === 'SigUSD') fromCurrency = currencySigUSD;
+		else if (picked === 'SigRSV') fromCurrency = currencySigRSV;
 
-		// If we switched fromCurrency to something else,
-		// check if we need to force toCurrency = ERG
 		const allowed = getAllowedToCurrencies(fromCurrency);
-		if (!allowed.includes(toCurrency)) {
-			toCurrency = allowed[0]; // pick first from allowed
+		if (!allowed.find((c) => c.tokens[0] === toCurrency.tokens[0])) {
+			toCurrency = allowed[0];
 		}
-
-		// save currency selection
 		saveFromToCurrencyToLocalStorage();
-		// Recalc with updated from/to selection
 		doRecalc($oracle_box, $bank_box);
 	}
 
 	function handleToCurrencyChange(event: Event) {
-		// Only matters if fromCurrency === 'ERG'
-		const newVal = (event.target as HTMLSelectElement).value as Currency;
-		toCurrency = newVal;
+		const newVal = event.target as HTMLSelectElement;
+		// Only relevant if fromCurrency is ERG
+		const picked = newVal.value;
+		if (picked === 'SigUSD') toCurrency = currencySigUSD;
+		else if (picked === 'SigRSV') toCurrency = currencySigRSV;
 		saveFromToCurrencyToLocalStorage();
 		doRecalc($oracle_box, $bank_box);
 	}
@@ -448,50 +457,58 @@
 		doRecalc($oracle_box, $bank_box);
 	}
 
-	// HERE:
-	// OBJECT $bank_box, $oracle_box, $fee_mining
-
 	async function handleSwapButton() {
-		// For demonstration, handle all 4 possible combos
+		// Check direction based on the last typed field
+		const fromToken = fromCurrency.tokens[0];
+		const toToken = toCurrency.tokens[0];
+
 		if (lastInput === 'From') {
-			// user typed in fromAmount
-			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
-				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				await buyUSDInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
-			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
-				const nanoErg = ergStringToNanoErgBigInt(fromAmount);
-				await buyRSVInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
-			} else if (fromCurrency === 'SigUSD') {
-				const cents = usdStringToCentBigInt(fromAmount);
-				await sellUSDInputUSD(cents, $bank_box, $oracle_box, $fee_mining);
+			if (fromToken === 'ERG' && toToken === 'SigUSD') {
+				await buyUSDInputERG(
+					ergStringToNanoErgBigInt(fromAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining
+				);
+			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
+				await buyRSVInputERG(
+					ergStringToNanoErgBigInt(fromAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining
+				);
+			} else if (fromToken === 'SigUSD') {
+				await sellUSDInputUSD(
+					usdStringToCentBigInt(fromAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining
+				);
 			} else {
-				// fromCurrency=SigRSV
-				const rsv = BigInt(fromAmount);
-				// placeholder: sellRSVInputRSV(cents)
-				//console.log('SigRSV->ERG (from typed) not fully implemented. Value:', rsv.toString());
-				// console.log('f7');
-				await sellRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
+				// SigRSV -> ERG
+				await sellRSVInputRSV(BigInt(fromAmount), $bank_box, $oracle_box, $fee_mining);
 			}
 		} else {
 			// lastInput === 'To'
-			// user typed in toAmount
-			if (fromCurrency === 'ERG' && toCurrency === 'SigUSD') {
-				const cents = usdStringToCentBigInt(toAmount);
-				await buyUSDInputUSD(cents, $bank_box, $oracle_box, $fee_mining);
-			} else if (fromCurrency === 'ERG' && toCurrency === 'SigRSV') {
-				// placeholder
-				const rsv = BigInt(toAmount);
-				// console.log('ERG->SigRSV (to typed) not fully implemented. Value:', rsv.toString());
-				// console.log('f6');
-				await buyRSVInputRSV(rsv, $bank_box, $oracle_box, $fee_mining);
-			} else if (fromCurrency === 'SigUSD') {
-				const nanoErg = ergStringToNanoErgBigInt(toAmount);
-				await sellUSDInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
+			if (fromToken === 'ERG' && toToken === 'SigUSD') {
+				await buyUSDInputUSD(usdStringToCentBigInt(toAmount), $bank_box, $oracle_box, $fee_mining);
+			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
+				await buyRSVInputRSV(BigInt(toAmount), $bank_box, $oracle_box, $fee_mining);
+			} else if (fromToken === 'SigUSD') {
+				await sellUSDInputERG(
+					ergStringToNanoErgBigInt(toAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining
+				);
 			} else {
-				// fromCurrency=SigRSV
-				// console.log('F8 GO GO');
-				const nanoErg = ergStringToNanoErgBigInt(toAmount);
-				await sellRSVInputERG(nanoErg, $bank_box, $oracle_box, $fee_mining);
+				// SigRSV -> ERG
+				await sellRSVInputERG(
+					ergStringToNanoErgBigInt(toAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining
+				);
 			}
 		}
 	}
@@ -502,7 +519,8 @@
 	}
 
 	function handleFeeChange(event: Event) {
-		fee_mining.set(BigInt(Number((event.target as HTMLInputElement).value) * 10 ** 9));
+		const val = (event.target as HTMLInputElement).value;
+		fee_mining.set(BigInt(Number(val) * 10 ** 9)); // e.g. 0.01 => 10^7 (1e7) nanoERG
 		doRecalc($oracle_box, $bank_box);
 	}
 
@@ -518,8 +536,6 @@
 		doRecalc($oracle_box, $bank_box);
 	}
 
-	let currencySwapHovered = false;
-
 	function handleMouseEnter() {
 		currencySwapHovered = true;
 	}
@@ -529,15 +545,16 @@
 	}
 
 	/* ---------------------------------------
-	 *  Reactive / Derived
+	 * Reactive / Derived
 	 * ------------------------------------- */
 	// Display the user's balance for the "fromCurrency"
 	$: fromBalance = (() => {
-		if (fromCurrency === 'ERG') {
+		const fromToken = fromCurrency.tokens[0];
+		if (fromToken === 'ERG') {
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === ERGO_TOKEN_ID)?.amount || 0n;
 			return nanoErgToErg(amt);
-		} else if (fromCurrency === 'SigUSD') {
+		} else if (fromToken === 'SigUSD') {
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigUSD_TOKEN_ID)?.amount || 0n;
 			return centsToUsd(amt);
@@ -545,16 +562,13 @@
 			// SigRSV
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigRSV_TOKEN_ID)?.amount || 0n;
-			return amt; // if SigRSV uses different decimals, update accordingly
+			// If SigRSV had decimals, convert as needed; for now, just show raw
+			return amt.toString();
 		}
 	})();
 
-	// TODO: move to a separate file
-	//let mintWarning = 'SigUSD mint prohibited - Reserve below 400%';
+	// e.g. "SigUSD mint prohibited..." (if needed)
 	let mintWarning = '';
-
-	let fromDropdownOpen = false;
-	let toDropdownOpen = false;
 
 	window.addEventListener('click', handleGlobalClick);
 	window.addEventListener('keydown', handleGlobalKeydown);
@@ -588,6 +602,7 @@
 	}
 </script>
 
+<!-- UI Layout -->
 <div class="mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6 shadow">
 	<!-- FROM SELECTION -->
 	<div class="rounded-md bg-gray-900">
@@ -597,11 +612,16 @@
 				class="flex items-center gap-1 text-sm hover:text-white"
 				on:click={handleFromBalanceClick}
 			>
-				<WalletBalance></WalletBalance>
-				{fromBalance.toLocaleString('en-US', {
-					minimumFractionDigits: 0,
-					maximumFractionDigits: 2
-				})}
+				<WalletBalance />
+				<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
+				{#if typeof fromBalance === 'number'}
+					{@html fromBalance.toLocaleString('en-US', {
+						minimumFractionDigits: 0,
+						maximumFractionDigits: 2
+					})}
+				{:else}
+					{@html fromBalance}
+				{/if}
 			</button>
 		</div>
 
@@ -619,12 +639,11 @@
 				on:input={handleFromAmountChange}
 			/>
 
+			<!-- FROM CURRENCY DROPDOWN -->
 			<div
-				class="relative flex flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
+				class="relative flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 			>
-				<!-- color circle -->
-
 				<!-- Toggle button -->
 				<button
 					id="fromDropdownBtn"
@@ -632,12 +651,13 @@
 					class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
 					on:click={() => {
 						fromDropdownOpen = !fromDropdownOpen;
-						toDropdownOpen = false; // close other if open
+						toDropdownOpen = false;
 					}}
 				>
 					<div class="flex items-center gap-3">
 						<div class="h-5 w-5 {tokenColor(fromCurrency)} rounded-full"></div>
-						{fromCurrency}
+						<!-- Show the first token name, e.g. "ERG" -->
+						{fromCurrency.tokens[0]}
 					</div>
 					<svg
 						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
@@ -663,9 +683,8 @@
 									on:click={() => {
 										fromCurrency = c;
 										fromDropdownOpen = false;
-										// If user picks new currency, check if 'toCurrency' is forced
 										const allowed = getAllowedToCurrencies(fromCurrency);
-										if (!allowed.includes(toCurrency)) {
+										if (!allowed.find((item) => item.tokens[0] === toCurrency.tokens[0])) {
 											toCurrency = allowed[0];
 										}
 										saveFromToCurrencyToLocalStorage();
@@ -673,7 +692,7 @@
 									}}
 								>
 									<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
-									{c}
+									{c.tokens[0]}
 								</button>
 							{/each}
 						</div>
@@ -693,10 +712,11 @@
 				class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 				style="width:42px;height:42px;"
 			>
+				<!-- If hovered, show ArrowUpDown; otherwise show ArrowDown -->
 				{#if currencySwapHovered}
 					<ArrowUpDown size={20} />
 				{:else}
-					<ArrowDown></ArrowDown>
+					<ArrowDown />
 				{/if}
 			</button>
 		</div>
@@ -708,9 +728,13 @@
 			<span class="text-sm">To</span>
 			<span class="text-sm"
 				>Real Rate:
-				{#if toCurrency == 'SigRSV' || fromCurrency == 'SigRSV'}<SubNumber value={1 / swapPrice}
-					></SubNumber>{:else}{swapPrice}{/if}</span
-			>
+				<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
+				{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
+					<SubNumber value={1 / swapPrice}></SubNumber>
+				{:else}
+					{swapPrice}
+				{/if}
+			</span>
 		</div>
 
 		<div
@@ -732,20 +756,20 @@
 				class="relative flex w-72 items-center gap-2 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
 				style="height:62px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px;"
 			>
-				{#if fromCurrency === 'ERG'}
-					<!-- Toggle button -->
+				{#if fromCurrency.tokens[0] === 'ERG'}
+					<!-- Toggle button (can be SigUSD or SigRSV) -->
 					<button
 						id="toDropdownBtn"
 						type="button"
 						class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
 						on:click={() => {
 							toDropdownOpen = !toDropdownOpen;
-							fromDropdownOpen = false; // close other if open
+							fromDropdownOpen = false;
 						}}
 					>
 						<div class="flex items-center gap-3">
 							<div class="h-5 w-5 {tokenColor(toCurrency)} rounded-full"></div>
-							{toCurrency}
+							{toCurrency.tokens[0]}
 						</div>
 						<svg
 							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
@@ -765,7 +789,7 @@
 							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 						>
 							<div class="py-1">
-								{#each getAllowedToCurrencies('ERG') as c}
+								{#each getAllowedToCurrencies(currencyERG) as c}
 									<button
 										class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 										on:click={() => {
@@ -776,22 +800,22 @@
 										}}
 									>
 										<div class="h-5 w-5 flex-shrink-0 {tokenColor(c)} rounded-full"></div>
-										{c}
+										{c.tokens[0]}
 									</button>
 								{/each}
 							</div>
 						</div>
 					{/if}
 				{:else}
-					<!-- forced 'ERG' label -->
-					<div class="h-5 w-5 {tokenColor('ERG')} rounded-full"></div>
+					<!-- forced 'ERG' label if fromCurrency is SigUSD or SigRSV -->
+					<div class="h-5 w-5 {tokenColor(currencyERG)} rounded-full"></div>
 					<span class="ml-3 font-medium text-gray-400">ERG</span>
 				{/if}
 			</div>
 		</div>
 	</div>
 
-	<!-- Fee Settings -->
+	<!-- Fee Settings (Expert) -->
 	{#if mintWarning}
 		<div class="my-4 flex flex w-full justify-center text-red-500">
 			{mintWarning}
@@ -843,7 +867,7 @@
 			href={getWalletInstallLink()}
 			class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
 		>
-			Intall Wallet
+			Install Wallet
 		</a>
 	{:else}
 		<button

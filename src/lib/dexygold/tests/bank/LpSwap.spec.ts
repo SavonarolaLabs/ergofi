@@ -633,7 +633,6 @@ describe('LpSwapSpec', () => {
 		expect(executed).toBe(false);
 	});
 
-	// FIX it
 	it('Swap (sell Dexy) should work - w. simple input', () => {
 		const lpBalance = 100_000_000n;
 		const reservesXIn = 1_000_000_000_000n;
@@ -705,10 +704,6 @@ describe('LpSwapSpec', () => {
 
 		// user should have the buyX in ERGs above its original dummyNanoErgs
 		const userBalance = userParty.balance;
-		// the user has no tokens, only extra NanoErgs
-		// You can do more thorough checks if needed
-		// e.g. userBalance.nanoergs might reflect the new total
-		// For simplicity, just ensure transaction executed is true
 	});
 
 	it('Swap (sell Dexy) should fail if more Ergs taken', () => {

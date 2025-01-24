@@ -66,6 +66,7 @@
 	 * ------------------------------------- */
 	type Currency = {
 		tokens: string[]; // e.g. ["ERG"], ["SigUSD"], ["SigRSV"]
+		isLpPair?: boolean;
 	};
 
 	type LastUserInput = 'From' | 'To';
@@ -74,9 +75,17 @@
 	const currencyERG: Currency = { tokens: ['ERG'] };
 	const currencySigUSD: Currency = { tokens: ['SigUSD'] };
 	const currencySigRSV: Currency = { tokens: ['SigRSV'] };
+	const currencyDexyGold: Currency = { tokens: ['DexyGold'] };
+	const currencyErgDexyGoldLp: Currency = { tokens: ['ERG', 'DexyGold'], isLpPair: true };
 
 	// All possible "from" currencies
-	const fromCurrencies: Currency[] = [currencyERG, currencySigUSD, currencySigRSV];
+	const fromCurrencies: Currency[] = [
+		currencyERG,
+		currencySigUSD,
+		currencySigRSV,
+		currencyDexyGold,
+		currencyErgDexyGoldLp
+	];
 
 	// For swapping, use these constants
 	const directionBuy = 1n;
@@ -105,7 +114,7 @@
 	function getAllowedToCurrencies(fromC: Currency): Currency[] {
 		if (fromC.tokens[0] === 'ERG') {
 			// If from == ERG, user can pick SigUSD or SigRSV
-			return [currencySigUSD, currencySigRSV];
+			return [currencySigUSD, currencySigRSV, currencyDexyGold];
 		} else {
 			// If from == SigUSD or SigRSV, forced to ERG
 			return [currencyERG];
@@ -117,7 +126,8 @@
 		return {
 			ERG: 'bg-orange-500',
 			SigUSD: 'bg-green-500',
-			SigRSV: 'bg-[#4A90E2]'
+			SigRSV: 'bg-[#4A90E2]',
+			DexyGold: 'bg-[yellow]'
 		}[c.tokens[0]];
 	}
 

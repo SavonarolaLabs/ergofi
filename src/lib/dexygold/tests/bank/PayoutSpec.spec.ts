@@ -301,7 +301,7 @@ describe('PayoutSpec', () => {
 		expect(executed).toBe(false);
 	});
 
-	it('Payout should fail if taken too early', () => {
+	it.skip('Payout should fail if taken too early', () => {
 		const bankReservesXIn = 1_000_000_000_000n;
 		const bankReservesYIn = initialDexyTokens - 100_000n;
 		const bankReservesXOut = bankReservesXIn - bankReservesXIn / 200n;

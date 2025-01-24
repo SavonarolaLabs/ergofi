@@ -12,6 +12,7 @@ const dummyNanoErgs = 100000n;
 const minStorageRent = 1000000n;
 const fee = 1000000n;
 const changeAddress = fakeScriptErgoTree;
+const height = 1000000;
 
 describe('ReverseExtractSpec', () => {
 	let mockChain: MockChain;
@@ -24,7 +25,7 @@ describe('ReverseExtractSpec', () => {
 		mockChain.reset();
 	});
 
-	it('Reverse Extract (remove Dexy from extract box and put in Lp box) should work', () => {
+	it.only('Reverse Extract (remove Dexy from extract box and put in Lp box) should work', () => {
 		const oracleRateXy = 10000n * 1000000n;
 		const lpBalanceIn = 100000000n;
 		const T_delay = 360;
@@ -43,7 +44,23 @@ describe('ReverseExtractSpec', () => {
 		const oracleParty = mockChain.addParty(fakeScriptErgoTree);
 		const tracking101Party = mockChain.addParty(fakeScriptErgoTree);
 		const lpParty = mockChain.addParty(lpErgoTree);
+
+		//JUMP BACK
+		mockChain.jumpTo(Number(extractBoxCreationHeightIn));
 		const extractParty = mockChain.addParty(extractScriptErgoTree);
+		extractParty.addBalance(
+			{
+				nanoergs: minStorageRent,
+				tokens: [
+					{ tokenId: extractionNFT, amount: 1n },
+					{ tokenId: dexyUSD, amount: extractBoxDexyIn }
+				]
+			},
+			{ R4: SInt(Number(extractBoxCreationHeightIn)).toHex() }
+		);
+		mockChain.jumpTo(height);
+		//JUMP FORWARD
+
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		oracleParty.addBalance(
 			{ nanoergs: minStorageRent, tokens: [{ tokenId: oraclePoolNFT, amount: 1n }] },
@@ -66,16 +83,7 @@ describe('ReverseExtractSpec', () => {
 				{ tokenId: dexyUSD, amount: lpReservesYIn }
 			]
 		});
-		extractParty.addBalance(
-			{
-				nanoergs: minStorageRent,
-				tokens: [
-					{ tokenId: extractionNFT, amount: 1n },
-					{ tokenId: dexyUSD, amount: extractBoxDexyIn }
-				]
-			},
-			{ R4: SInt(Number(extractBoxCreationHeightIn)).toHex() }
-		);
+
 		const lpOut = new OutputBuilder(lpReservesXOut, lpParty.address).addTokens([
 			{ tokenId: lpNFT, amount: 1n },
 			{ tokenId: lpToken, amount: lpBalanceOut },

@@ -656,40 +656,36 @@
 				/>
 
 				<!-- FROM CURRENCY DROPDOWN -->
-				<div
-					class="flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
-					style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+				<!-- Toggle button -->
+				<button
+					id="fromDropdownBtn"
+					type="button"
+					style="width:285px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+					class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+					on:click={() => {
+						fromDropdownOpen = !fromDropdownOpen;
+						toDropdownOpen = false;
+					}}
 				>
-					<!-- Toggle button -->
-					<button
-						id="fromDropdownBtn"
-						type="button"
-						class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
-						on:click={() => {
-							fromDropdownOpen = !fromDropdownOpen;
-							toDropdownOpen = false;
-						}}
+					<div class="flex items-center gap-3">
+						<!-- Show the first token name, e.g. "ERG" -->
+						{#if fromCurrency.isLpPool}
+							<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
+							{fromCurrency.tokens[0]}
+						{:else}
+							<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
+							{fromCurrency.tokens[0]}
+						{/if}
+					</div>
+					<svg
+						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
 					>
-						<div class="flex items-center gap-3">
-							<!-- Show the first token name, e.g. "ERG" -->
-							{#if fromCurrency.isLpPool}
-								<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
-								{fromCurrency.tokens[0]}
-							{:else}
-								<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
-								{fromCurrency.tokens[0]}
-							{/if}
-						</div>
-						<svg
-							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-						>
-							<path d="M12 15.5l-6-6h12l-6 6z" />
-						</svg>
-					</button>
-				</div>
+						<path d="M12 15.5l-6-6h12l-6 6z" />
+					</svg>
+				</button>
 			</div>
 
 			<!-- LP second token START -->

@@ -62,6 +62,7 @@
 	import { getWalletInstallLink } from './installWallet';
 	import Gear from './icons/Gear.svelte';
 	import SwapWidgetTokenRow from './SwapWidgetTokenRow.svelte';
+	import { headline } from './stores/ui';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -157,6 +158,7 @@
 		if (savedToCurrency) {
 			toCurrency = JSON.parse(savedToCurrency);
 		}
+		updateTitle();
 	}
 
 	/* ---------------------------------------
@@ -289,6 +291,18 @@
 		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"
 		toAmount = totalSigUSDBuy; // e.g. "10"
 		swapPrice = finalPriceBuy; // e.g. real rate
+	}
+
+	function updateTitle() {
+		console.log(fromCurrency.tokens[0], toCurrency.tokens[0]);
+		if (
+			(fromCurrency.isToken && ['SigUSD', 'SigRSV'].includes(fromCurrency.tokens[0])) ||
+			(toCurrency.isToken && ['SigUSD', 'SigRSV'].includes(toCurrency.tokens[0]))
+		) {
+			headline.set('SigmaUsd');
+		} else {
+			headline.set('DexyGold');
+		}
 	}
 
 	/* ---------------------------------------
@@ -567,6 +581,7 @@
 		toCurrency = temp;
 		saveFromToCurrencyToLocalStorage();
 		doRecalc($oracle_box, $bank_box);
+		updateTitle();
 	}
 
 	function handleMouseEnter() {
@@ -795,6 +810,7 @@
 										toCurrency = allowed[0];
 										saveFromToCurrencyToLocalStorage();
 										doRecalc($oracle_box, $bank_box);
+										updateTitle();
 									}}
 								>
 									<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
@@ -966,6 +982,7 @@
 										toDropdownOpen = false;
 										saveFromToCurrencyToLocalStorage();
 										doRecalc($oracle_box, $bank_box);
+										updateTitle();
 									}}
 								>
 									<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>

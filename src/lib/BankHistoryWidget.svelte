@@ -19,6 +19,7 @@
 	import XCircle from './icons/XCircle.svelte';
 	import InteractionAmountColumn from './InteractionAmountColumn.svelte';
 	import SubNumber from './SubNumber.svelte';
+	import { headline } from './stores/ui';
 
 	let blinkingItems = new Set<string>();
 	let removingItems = new Set<string>();
@@ -229,7 +230,7 @@
 				</a>
 			{/each}
 		</div>
-		<h1 class="punk hidden-below-800 mb-2 text-9xl text-gray-700">SigmaUSD</h1>
+		<h1 class="punk hidden-below-800 mb-2 text-9xl text-gray-700">{$headline}</h1>
 	</div>
 </div>
 

@@ -657,14 +657,16 @@
 					class="flex items-center gap-1 text-sm hover:text-white"
 					on:click={handleFromBalanceClick}
 				>
-					<WalletBalance />
 					<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
-					{#if typeof fromBalance === 'number'}
+					{#if fromCurrency.isLpPool}
+						{fromBalance} {fromCurrency.tokens[0]} {fromBalance} {fromCurrency.tokens[1]}
+					{:else if typeof fromBalance === 'number'}
 						{fromBalance.toLocaleString('en-US', {
 							minimumFractionDigits: 0,
 							maximumFractionDigits: 2
 						})}
 					{:else}
+						<WalletBalance />
 						{fromBalance}
 					{/if}
 				</button>

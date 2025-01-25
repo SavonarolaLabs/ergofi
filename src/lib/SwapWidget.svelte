@@ -466,6 +466,12 @@
 		doRecalc($oracle_box, $bank_box);
 	}
 
+	function handleFromAmount2Change(event: Event) {
+		fromAmount2 = (event.target as HTMLInputElement).value;
+		lastInput = 'From';
+		doRecalc($oracle_box, $bank_box);
+	}
+
 	function handleToAmountChange(event: Event) {
 		toAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
@@ -695,14 +701,14 @@
 			{#if fromCurrency.isLpPool}
 				<div class="flex">
 					<!-- FROM AMOUNT -->
-					<div style="border-top-width:4px;" class="grow border-gray-800">
+					<div style="border-top-width:2px;" class="grow border-gray-800">
 						<input
 							type="number"
 							class="w-full bg-transparent text-3xl text-gray-100 outline-none"
 							placeholder="0"
 							min="0"
 							bind:value={fromAmount2}
-							on:input={handleFromAmountChange}
+							on:input={handleFromAmount2Change}
 						/>
 					</div>
 
@@ -711,7 +717,9 @@
 					<button
 						id="fromDropdownBtn2"
 						type="button"
-						style="width:186px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+						style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+							? 2
+							: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 						class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 						on:click={() => {
 							fromDropdownOpen = !fromDropdownOpen;

@@ -645,8 +645,10 @@
 		</div>
 
 		<div
-			class="relative flex flex-col rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
-			style="border: none!important; outline: none!important; box-shadow: none!important;"
+			class="relative flex flex-col rounded-lg bg-gray-900 transition-all focus-within:ring-1 focus-within:ring-blue-500"
+			style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
+				? '58px'
+				: '116px'}; "
 		>
 			<div class="flex">
 				<!-- FROM AMOUNT -->
@@ -923,7 +925,7 @@
 					{/if}
 				{:else}
 					<!-- forced 'ERG' label if fromCurrency is SigUSD or SigRSV -->
-					<div class="h-5 w-5 {tokenColor(currencyERG)} rounded-full"></div>
+					<div class="h-5 w-5 {tokenColor(currencyERG.tokens[0])} rounded-full"></div>
 					<span class="ml-3 font-medium text-gray-400">ERG</span>
 				{/if}
 			</div>
@@ -987,3 +989,12 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.h-116px {
+		max-height: 116px;
+	}
+	.h-58px {
+		max-height: 58px;
+	}
+</style>

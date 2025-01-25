@@ -86,9 +86,9 @@
 	// All possible "from" currencies
 	const fromCurrencies: Currency[] = [
 		currencyERG,
+		currencyDexyGold,
 		currencySigUSD,
 		currencySigRSV,
-		currencyDexyGold,
 		// currencyErgDexyGoldLpToken,
 		currencyErgDexyGoldLpPool
 	];
@@ -615,6 +615,7 @@
 
 		const toMenu = document.getElementById('toDropdownMenu');
 		const toBtn = document.getElementById('toDropdownBtn');
+		const toBtn2 = document.getElementById('toDropdownBtn2');
 
 		if (fromMenu && (fromBtn || fromBtn2)) {
 			if (
@@ -624,8 +625,8 @@
 				fromDropdownOpen = false;
 			}
 		}
-		if (toMenu && toBtn) {
-			if (!toMenu.contains(target) && !toBtn.contains(target)) {
+		if (toMenu && (toBtn || toBtn2)) {
+			if (!toMenu.contains(target) && !(toBtn?.contains(target) || toBtn2?.contains(target))) {
 				toDropdownOpen = false;
 			}
 		}
@@ -710,12 +711,12 @@
 								{fromCurrency.tokens[0]}
 							</div>
 						{/if}
-						{#if fromCurrency.isToken}
+						{#if fromCurrency.isToken || fromCurrency.isLpToken}
 							<svg
 								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
-								fill="currentColor"
+								fill={fromCurrency.isLpToken ? 'gray' : 'currentColor'}
 							>
 								<path d="M12 15.5l-6-6h12l-6 6z" />
 							</svg>
@@ -757,11 +758,12 @@
 								<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
 								{fromCurrency.tokens[1]}
 							</div>
+
 							<svg
 								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
-								fill="currentColor"
+								fill={toCurrency.isToken ? 'currentColor' : 'gray'}
 							>
 								<path d="M12 15.5l-6-6h12l-6 6z" />
 							</svg>
@@ -808,9 +810,9 @@
 		<!-- DIRECTION -->
 		<div class="relative" style="height:4px;">
 			<div
-				class="absolute flex w-full justify-center"
+				class="absolute"
 				class:hidden={fromDropdownOpen}
-				style="z-index:5;margin-top:-18px;"
+				style="z-index:5;margin-top:-18px; left:170px"
 			>
 				<button
 					on:mouseenter={handleMouseEnter}
@@ -819,7 +821,6 @@
 					class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 					style="width:42px;height:42px;"
 				>
-					<!-- If hovered, show ArrowUpDown; otherwise show ArrowDown -->
 					{#if currencySwapHovered}
 						<ArrowUpDown size={20} />
 					{:else}
@@ -885,7 +886,7 @@
 								{toCurrency.tokens[0]}
 							</div>
 						{/if}
-						{#if toCurrency.isToken}
+						{#if toCurrency.isToken || toCurrency.isLpToken}
 							<svg
 								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 								xmlns="http://www.w3.org/2000/svg"
@@ -936,7 +937,7 @@
 								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
-								fill="currentColor"
+								fill={toCurrency.isToken ? 'currentColor' : 'gray'}
 							>
 								<path d="M12 15.5l-6-6h12l-6 6z" />
 							</svg>

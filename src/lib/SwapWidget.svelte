@@ -664,7 +664,7 @@
 				<button
 					id="fromDropdownBtn"
 					type="button"
-					style="width:285px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+					style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 					class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 					on:click={() => {
 						fromDropdownOpen = !fromDropdownOpen;
@@ -693,21 +693,23 @@
 			{#if fromCurrency.isLpPool}
 				<div class="flex">
 					<!-- FROM AMOUNT -->
-					<input
-						type="number"
-						class="w-full bg-transparent text-3xl text-gray-100 outline-none"
-						placeholder="0"
-						min="0"
-						bind:value={fromAmount2}
-						on:input={handleFromAmountChange}
-					/>
+					<div style="border-top-width:4px;" class="grow border-gray-800">
+						<input
+							type="number"
+							class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+							placeholder="0"
+							min="0"
+							bind:value={fromAmount2}
+							on:input={handleFromAmountChange}
+						/>
+					</div>
 
 					<!-- FROM CURRENCY DROPDOWN -->
 					<!-- Toggle button -->
 					<button
 						id="fromDropdownBtn2"
 						type="button"
-						style="width:285px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+						style="width:186px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 						class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 						on:click={() => {
 							fromDropdownOpen = !fromDropdownOpen;

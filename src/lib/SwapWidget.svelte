@@ -593,12 +593,16 @@
 
 		const fromMenu = document.getElementById('fromDropdownMenu');
 		const fromBtn = document.getElementById('fromDropdownBtn');
+		const fromBtn2 = document.getElementById('fromDropdownBtn2');
 
 		const toMenu = document.getElementById('toDropdownMenu');
 		const toBtn = document.getElementById('toDropdownBtn');
 
-		if (fromMenu && fromBtn) {
-			if (!fromMenu.contains(target) && !fromBtn.contains(target)) {
+		if (fromMenu && (fromBtn || fromBtn2)) {
+			if (
+				!fromMenu.contains(target) &&
+				!(fromBtn?.contains(target) || fromBtn2?.contains(target))
+			) {
 				fromDropdownOpen = false;
 			}
 		}
@@ -669,32 +673,26 @@
 				>
 					<div class="flex items-center gap-3">
 						<!-- Show the first token name, e.g. "ERG" -->
-						{#if fromCurrency.isLpPool}
-							<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
-							{fromCurrency.tokens[0]}
-						{:else}
-							<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
-							{fromCurrency.tokens[0]}
-						{/if}
+						<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
+						{fromCurrency.tokens[0]}
 					</div>
-					<svg
-						class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<path d="M12 15.5l-6-6h12l-6 6z" />
-					</svg>
+					{#if !fromCurrency.isLpPool}
+						<svg
+							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+						>
+							<path d="M12 15.5l-6-6h12l-6 6z" />
+						</svg>
+					{/if}
 				</button>
 			</div>
 
 			<!-- LP second token START -->
 			{#if fromCurrency.isLpPool}
-				<div
-					class="flex items-center rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
-					style="border: none!important; outline: none!important; box-shadow: none!important;"
-				>
-					<!-- FROM AMOUNT2 -->
+				<div class="flex">
+					<!-- FROM AMOUNT -->
 					<input
 						type="number"
 						class="w-full bg-transparent text-3xl text-gray-100 outline-none"
@@ -704,36 +702,32 @@
 						on:input={handleFromAmountChange}
 					/>
 
-					<!-- FROM CURRENCY DROPDOWN2 -->
-					<div
-						class="relative flex w-72 items-center gap-2 gap-3 rounded-lg border-gray-800 bg-gray-900 px-3 py-2"
-						style="margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+					<!-- FROM CURRENCY DROPDOWN -->
+					<!-- Toggle button -->
+					<button
+						id="fromDropdownBtn2"
+						type="button"
+						style="width:285px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+						class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+						on:click={() => {
+							fromDropdownOpen = !fromDropdownOpen;
+							toDropdownOpen = false;
+						}}
 					>
-						<!-- Toggle button -->
-						<button
-							id="fromDropdownBtn"
-							type="button"
-							class="flex w-full items-center justify-between font-medium text-gray-100 outline-none"
-							on:click={() => {
-								fromDropdownOpen = !fromDropdownOpen;
-								toDropdownOpen = false;
-							}}
+						<div class="flex items-center gap-3">
+							<!-- Show the first token name, e.g. "ERG" -->
+							<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
+							{fromCurrency.tokens[1]}
+						</div>
+						<svg
+							class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
 						>
-							<div class="flex items-center gap-3">
-								<!-- Show the first token name, e.g. "ERG" -->
-								<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
-								{fromCurrency.tokens[1]}
-							</div>
-							<svg
-								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path d="M12 15.5l-6-6h12l-6 6z" />
-							</svg>
-						</button>
-					</div>
+							<path d="M12 15.5l-6-6h12l-6 6z" />
+						</svg>
+					</button>
 				</div>
 			{/if}
 			<!-- LP second token END -->
@@ -819,7 +813,11 @@
 
 	<!-- SWAP PAIR SELECTION -->
 	<div class="relative" style="height:4px;">
-		<div class="absolute flex w-full justify-center" style="z-index:5;margin-top:-18px;">
+		<div
+			class="absolute flex w-full justify-center"
+			class:hidden={fromDropdownOpen}
+			style="z-index:5;margin-top:-18px;"
+		>
 			<button
 				on:mouseenter={handleMouseEnter}
 				on:mouseleave={handleMouseLeave}

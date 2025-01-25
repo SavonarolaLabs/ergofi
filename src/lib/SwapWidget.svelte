@@ -61,6 +61,7 @@
 	import WalletBalance from './icons/WalletBalance.svelte';
 	import { getWalletInstallLink } from './installWallet';
 	import Gear from './icons/Gear.svelte';
+	import SwapWidgetTokenRow from './SwapWidgetTokenRow.svelte';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -775,7 +776,7 @@
 						id="fromDropdownMenu"
 						style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
 							? '116'
-							: '58'}px;margin-right:-4px"
+							: '58'}px; margin-right:-4px"
 						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 					>
 						<div>
@@ -792,34 +793,7 @@
 										doRecalc($oracle_box, $bank_box);
 									}}
 								>
-									{#if c.isLpPool || c.isLpToken}
-										<div class="flex w-full items-center justify-between text-sm">
-											<div class="pl-1">
-												<div class="flex items-center gap-4">
-													<div
-														class="h-3 w-3 flex-shrink-0 {tokenColor(c.tokens[0])} rounded-full"
-													></div>
-
-													{c.tokens[0]}
-												</div>
-												<div class="flex items-center gap-4">
-													<div
-														class="h-3 w-3 flex-shrink-0 {tokenColor(c.tokens[1])} rounded-full"
-													></div>
-
-													{c.tokens[1]}
-												</div>
-											</div>
-
-											<div class="text-center">
-												<div class="text-xs">Liquidity</div>
-												<div class="text-xs">{c.isLpToken ? 'Token' : 'Pool'}</div>
-											</div>
-										</div>
-									{:else}
-										<div class="h-5 w-5 flex-shrink-0 {tokenColor(c.tokens[0])} rounded-full"></div>
-										{c.tokens[0]}
-									{/if}
+									<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
 								</button>
 								{#if i != fromCurrencies.length - 1}
 									<hr class="border-slate-800" />
@@ -975,7 +949,9 @@
 				{#if toDropdownOpen}
 					<div
 						id="toDropdownMenu"
-						style="width: 173px; border-top-left-radius:0px; border-top-right-radius:0px;top:54px; right:-4px"
+						style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
+							? '116'
+							: '58'}px; margin-right:-4px"
 						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 					>
 						<div class="py-1">
@@ -989,8 +965,7 @@
 										doRecalc($oracle_box, $bank_box);
 									}}
 								>
-									<div class="h-5 w-5 flex-shrink-0 {tokenColor(c.tokens[0])} rounded-full"></div>
-									{c.tokens[0]}
+									<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
 								</button>
 							{/each}
 						</div>

@@ -112,8 +112,15 @@ function bankMintInpuErg(
 
 	return { contractDexy, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
 }
-function bankInput() {} //bankMint + UI Fee
-function bankInputErg() {} //bankMintInpuErg + UI Fee
+
+//----------
+//Wrapper: bankMint + UI Fee
+function bankInput() {
+	// return { contractErg, bankErgsAdded, buybackErgsAdded }; // as result {contractDexy, contractErg , bankErgsAdded, buybackErgsAdded} + {finalPrice , totalFee, ...}
+}
+//Wrapper: bankMintInpuErg + UI Fee
+function bankInputErg() {}
+// +2 LP
 
 function lpSwapInputErg(
 	direction: bigint,

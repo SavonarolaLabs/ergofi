@@ -337,12 +337,12 @@ describe('asd', () => {
 		};
 
 		//user Inputs
+		const height = 1000000;
 		const ergInput = 10_000_000n;
 		const direction = directionSell;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
 		//constants:
-		const height = 1000000;
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
 

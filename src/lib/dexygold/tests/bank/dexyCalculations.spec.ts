@@ -1,3 +1,5 @@
+import { testBoxes, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
+import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 const directionBuy = 1n;
@@ -171,3 +173,237 @@ function lpSwapInputDexy(
 
 	return { amountErg, amountDexy }; // as result amountErg, amountDexy
 }
+
+// take input from
+const {
+	gort: gortInitialBox,
+	gortId: gortIdInitialBox,
+	oracleTokenId: oracleTokenIdInitialBox,
+	oraclePoolNFT: oraclePoolNFTInitialBox,
+	oracleNFT: oracleNFTInitialBox,
+	gortDevEmissionNFT: gortDevEmissionNFTInitialBox,
+	gortLpNFT: gortLpNFTInitialBox,
+	buybackNFT: buybackNFTInitialBox,
+	lpNFT: lpNFTInitialBox,
+	lpSwapNFT: lpSwapNFTInitialBox,
+	lpMintNFT: lpMintNFTInitialBox,
+	lpRedeemNFT: lpRedeemNFTInitialBox,
+	lpTokenId: lpTokenIdInitialBox,
+	lpToken: lpTokenInitialBox,
+	tracking95NFT: tracking95NFTInitialBox,
+	tracking98NFT: tracking98NFTInitialBox,
+	tracking101NFT: tracking101NFTInitialBox,
+	bankNFT: bankNFTInitialBox,
+	updateNFT: updateNFTInitialBox,
+	ballotTokenId: ballotTokenIdInitialBox,
+	interventionNFT: interventionNFTInitialBox,
+	extractionNFT: extractionNFTInitialBox,
+	arbitrageMintNFT: arbitrageMintNFTInitialBox,
+	freeMintNFT: freeMintNFTInitialBox,
+	payoutNFT: payoutNFTInitialBox,
+	dexyTokenId: dexyTokenIdInitialBox,
+	dexyUSD: dexyUSDInitialBox
+} = testBoxes;
+
+const {
+	trackingErgoTree,
+	bankUpdateErgoTree,
+	ballotErgoTree,
+	interventionErgoTree,
+	interventionUpdateErgoTree,
+	buybackErgoTree,
+	payoutErgoTree,
+	freeMintErgoTree,
+	bankErgoTree,
+	arbitrageMintErgoTree,
+	lpErgoTree,
+	lpMintErgoTree,
+	lpRedeemErgoTree,
+	extractScriptErgoTree,
+	extractUpdateErgoTree,
+	swapErgoTree,
+	lpSwapBuyV1ErgoTree,
+	lpSwapSellV1ErgoTree,
+	oracleErgoTree,
+	fakeScriptErgoTree
+} = vitestErgoTrees;
+
+const {
+	gort,
+	gortId,
+	oracleTokenId,
+	oraclePoolNFT,
+	oracleNFT,
+	gortDevEmissionNFT,
+	gortLpNFT,
+	buybackNFT,
+	lpNFT,
+	lpSwapNFT,
+	lpMintNFT,
+	lpRedeemNFT,
+	lpTokenId,
+	tracking95NFT,
+	tracking98NFT,
+	tracking101NFT,
+	bankNFT,
+	updateNFT,
+	ballotTokenId,
+	interventionNFT,
+	extractionNFT,
+	arbitrageMintNFT,
+	freeMintNFT,
+	payoutNFT,
+	dexyTokenId
+} = testTokenIds;
+
+const initialUserBoxes = [
+	{
+		boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
+		value: 602310307,
+		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+		assets: [],
+		creationHeight: 1443463,
+		additionalRegisters: {},
+		transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+		index: 0
+	},
+	//gortInitialBox,
+	//gortIdInitialBox,
+	//oracleTokenIdInitialBox,
+	//oraclePoolNFTInitialBox,
+	//oracleNFTInitialBox,
+	//gortDevEmissionNFTInitialBox,
+	//gortLpNFTInitialBox,
+	//buybackNFTInitialBox,
+	//lpNFTInitialBox,
+	lpSwapNFTInitialBox
+	//lpMintNFTInitialBox,
+	//lpRedeemNFTInitialBox,
+	//lpTokenIdInitialBox,
+	//lpTokenInitialBox,
+	//tracking95NFTInitialBox,
+	//tracking98NFTInitialBox,
+	//tracking101NFTInitialBox,
+	//bankNFTInitialBox,
+	//updateNFTInitialBox,
+	//ballotTokenIdInitialBox,
+	//interventionNFTInitialBox,
+	//extractionNFTInitialBox,
+	//arbitrageMintNFTInitialBox,
+	//freeMintNFTInitialBox,
+	//payoutNFTInitialBox,
+	//dexyTokenIdInitialBox,
+	//dexyUSDInitialBox
+];
+// Box which Pay for Tx
+
+function buildFirstTx() {
+	const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+	const height = 1_000_000;
+
+	const lpSwapOutput = new OutputBuilder(1_000_000_000n, swapErgoTree).addTokens({
+		tokenId: lpSwapNFT,
+		amount: 1n
+	});
+
+	//from template + R
+
+	const outputs = [lpSwapOutput];
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from(initialUserBoxes)
+		.to(outputs)
+		.payFee(RECOMMENDED_MIN_FEE_VALUE)
+		.sendChangeTo(userAddress)
+		.build()
+		.toEIP12Object();
+}
+
+describe('asd', () => {
+	it('Swap (sell Ergs) should work - w. simple input', () => {
+		const lpBalance = 100_000_000n;
+
+		lpParty.addBalance({
+			nanoergs: reservesXIn,
+			tokens: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpToken, amount: lpBalance },
+				{ tokenId: dexyUSD, amount: reservesYIn }
+			]
+		}); // FROM BOX
+
+		const reservesXIn = 1_000_000_000_000n; // from box
+		const reservesYIn = 100_000_000n; // from box
+		const rate = Number(reservesYIn) / Number(reservesXIn); // from box
+
+		swapParty.addBalance({
+			nanoergs: minStorageRent,
+			tokens: [{ tokenId: lpSwapNFT, amount: 1n }]
+		}); // FROM BOX
+
+		const sellX = 10_000_000n; // USER INPUT
+
+		// buyY = (sellX * rate * feeNumLp / feeDenomLp) - 1
+		const buyY =
+			BigInt(Math.floor((Number(sellX) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
+		expect(buyY).toBe(996n);
+
+		const reservesXOut = reservesXIn + sellX;
+		const reservesYOut = reservesYIn - buyY;
+
+		// This is the same check you do in Scala
+		const deltaReservesX = reservesXOut - reservesXIn;
+		const deltaReservesY = reservesYOut - reservesYIn;
+		const lhs = reservesYIn * deltaReservesX * BigInt(feeNumLp);
+		const rhs =
+			-deltaReservesY * (reservesXIn * BigInt(feeDenomLp) + deltaReservesX * BigInt(feeNumLp));
+		expect(lhs >= rhs).toBe(true);
+
+		// Add initial balances
+		fundingParty.addBalance({
+			nanoergs: fakeNanoErgs
+		}); // USER
+
+		const height = mockChain.height;
+
+		// Build Tx
+		const tx = new TransactionBuilder(height)
+			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+				ensureInclusion: true
+			})
+			// LP box out
+			.to(
+				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpToken, amount: lpBalance },
+					{ tokenId: dexyUSD, amount: reservesYOut }
+				])
+			)
+			// Swap box out
+			.to(
+				new OutputBuilder(minStorageRent, swapErgoTree).addTokens([
+					{ tokenId: lpSwapNFT, amount: 1n }
+				])
+			)
+			// user receives Dexy
+			.to(
+				new OutputBuilder(dummyNanoErgs, userParty.address).addTokens([
+					{ tokenId: dexyUSD, amount: buyY }
+				])
+			)
+			.payFee(fee)
+			.sendChangeTo(fundingParty.address)
+			.build();
+
+		// Execute
+		const executed = mockChain.execute(tx);
+		expect(executed).toBe(true);
+
+		// userParty should have the Dexy tokens
+		const userBalance = userParty.balance;
+		expect(userBalance.tokens).toContainEqual({
+			tokenId: dexyUSD,
+			amount: buyY
+		});
+	});
+});

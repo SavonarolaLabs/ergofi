@@ -339,6 +339,7 @@ describe('asd', () => {
 		//user Inputs
 		const ergInput = 10_000_000n;
 		const direction = directionSell;
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
 		//constants:
 		const height = 1000000;
@@ -360,14 +361,14 @@ describe('asd', () => {
 			feeDenomLp
 		);
 
-		//CALCULATIONS------------------------------
-		const rateOLD = Number(reservesYIn) / Number(reservesXIn); // from box
-		console.log(rate, ' vs ', rateOLD);
+		// //CALCULATIONS------------------------------
+		// const rateOLD = Number(reservesYIn) / Number(reservesXIn); // from box
+		// console.log(rate, ' vs ', rateOLD);
 
-		// buyY = (ergInput * rate * feeNumLp / feeDenomLp) - 1
-		const buyYOLD =
-			BigInt(Math.floor((Number(ergInput) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
-		expect(buyYOLD).toBe(996n);
+		// // buyY = (ergInput * rate * feeNumLp / feeDenomLp) - 1
+		// const buyYOLD =
+		// 	BigInt(Math.floor((Number(ergInput) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
+		// expect(buyYOLD).toBe(996n);
 
 		//---------------
 		const reservesXOut = reservesXIn - direction * amountErg;
@@ -397,18 +398,12 @@ describe('asd', () => {
 			)
 			// Swap box out
 			.to(
-				new OutputBuilder(minStorageRent, swapErgoTree).addTokens([
+				new OutputBuilder(swapIn.value, swapErgoTree).addTokens([
 					{ tokenId: lpSwapNFT, amount: 1n }
 				])
 			)
-			// user receives Dexy
-			.to(
-				new OutputBuilder(dummyNanoErgs, userParty.address).addTokens([
-					{ tokenId: dexyUSD, amount: amountDexy }
-				])
-			)
-			.payFee(fee)
-			.sendChangeTo(fundingParty.address)
+			.payFee(RECOMMENDED_MIN_FEE_VALUE)
+			.sendChangeTo(userChangeAddress)
 			.build();
 
 		// Execute

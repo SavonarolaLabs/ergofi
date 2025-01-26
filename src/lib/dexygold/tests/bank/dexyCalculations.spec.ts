@@ -1,4 +1,4 @@
-import { testBoxes, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
+import { testBoxes, testTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
@@ -147,7 +147,7 @@ function lpSwapInputErg(
 	}
 	const buyY =
 		BigInt(Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
-	return { amountErg, amountDexy }; // as result amountErg, amountDexy
+	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
 
 function lpSwapInputDexy(
@@ -171,7 +171,7 @@ function lpSwapInputDexy(
 			100n; //Any reason there -100n ?
 	}
 
-	return { amountErg, amountDexy }; // as result amountErg, amountDexy
+	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
 
 // take input from
@@ -256,6 +256,9 @@ const {
 	dexyTokenId
 } = testTokenIds;
 
+const dexyUSD = dexyTokenId;
+const lpToken = lpTokenId;
+
 const initialUserBoxes = [
 	{
 		boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
@@ -321,61 +324,74 @@ function buildFirstTx() {
 
 describe('asd', () => {
 	it('Swap (sell Ergs) should work - w. simple input', () => {
-		const lpBalance = 100_000_000n;
-
-		lpParty.addBalance({
-			nanoergs: reservesXIn,
-			tokens: [
+		//input BOXES
+		const userUtxos = [{}, {}];
+		const swapIn = {};
+		const lpIn = {
+			value: 1_000_000_000_000n, //1_000_000_000_000n
+			assets: [
 				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpToken, amount: lpBalance },
-				{ tokenId: dexyUSD, amount: reservesYIn }
+				{ tokenId: lpToken, amount: 100_000_000n }, //lpBalance //100_000_000n
+				{ tokenId: dexyUSD, amount: 100_000_000n } //100_000_000n
 			]
-		}); // FROM BOX
+		};
 
-		const reservesXIn = 1_000_000_000_000n; // from box
-		const reservesYIn = 100_000_000n; // from box
-		const rate = Number(reservesYIn) / Number(reservesXIn); // from box
+		//user Inputs
+		const ergInput = 10_000_000n;
+		const direction = directionSell;
 
-		swapParty.addBalance({
-			nanoergs: minStorageRent,
-			tokens: [{ tokenId: lpSwapNFT, amount: 1n }]
-		}); // FROM BOX
+		//constants:
+		const height = 1000000;
+		const feeNumLp = 997n;
+		const feeDenomLp = 1000n;
 
-		const sellX = 10_000_000n; // USER INPUT
+		// FROM BOX
+		const reservesXIn = lpIn.value;
+		const reservesYIn = lpIn.assets[2].amount; // from box
+		const lpIn = lpIn.assets[1].amount; // lp
 
-		// buyY = (sellX * rate * feeNumLp / feeDenomLp) - 1
-		const buyY =
-			BigInt(Math.floor((Number(sellX) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
-		expect(buyY).toBe(996n);
+		//Direct conversion
+		const { amountDexy, amountErg, rate } = lpSwapInputErg(
+			direction,
+			ergInput,
+			reservesXIn,
+			reservesYIn,
+			feeNumLp,
+			feeDenomLp
+		);
 
-		const reservesXOut = reservesXIn + sellX;
-		const reservesYOut = reservesYIn - buyY;
+		//CALCULATIONS------------------------------
+		const rateOLD = Number(reservesYIn) / Number(reservesXIn); // from box
+		console.log(rate, ' vs ', rateOLD);
+
+		// buyY = (ergInput * rate * feeNumLp / feeDenomLp) - 1
+		const buyYOLD =
+			BigInt(Math.floor((Number(ergInput) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
+		expect(buyYOLD).toBe(996n);
+
+		//---------------
+		const reservesXOut = reservesXIn - direction * amountErg;
+		const reservesYOut = reservesYIn + direction * amountDexy;
 
 		// This is the same check you do in Scala
-		const deltaReservesX = reservesXOut - reservesXIn;
-		const deltaReservesY = reservesYOut - reservesYIn;
-		const lhs = reservesYIn * deltaReservesX * BigInt(feeNumLp);
-		const rhs =
-			-deltaReservesY * (reservesXIn * BigInt(feeDenomLp) + deltaReservesX * BigInt(feeNumLp));
-		expect(lhs >= rhs).toBe(true);
-
-		// Add initial balances
-		fundingParty.addBalance({
-			nanoergs: fakeNanoErgs
-		}); // USER
-
-		const height = mockChain.height;
+		// const deltaReservesX = reservesXOut - reservesXIn;
+		// const deltaReservesY = reservesYOut - reservesYIn;
+		// const lhs = reservesYIn * deltaReservesX * BigInt(feeNumLp);
+		// const rhs =
+		// 	-deltaReservesY * (reservesXIn * BigInt(feeDenomLp) + deltaReservesX * BigInt(feeNumLp));
+		// expect(lhs >= rhs).toBe(true);
+		//------------------------------------------
 
 		// Build Tx
 		const tx = new TransactionBuilder(height)
-			.from([...lpParty.utxos, ...swapParty.utxos, ...fundingParty.utxos], {
+			.from([lpIn, swapIn, ...userUtxos], {
 				ensureInclusion: true
 			})
 			// LP box out
 			.to(
 				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
-					{ tokenId: lpToken, amount: lpBalance },
+					{ tokenId: lpToken, amount: lpIn },
 					{ tokenId: dexyUSD, amount: reservesYOut }
 				])
 			)

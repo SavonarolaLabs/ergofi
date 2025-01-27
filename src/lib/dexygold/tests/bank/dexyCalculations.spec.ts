@@ -1,10 +1,10 @@
 import { directionBuy, directionSell } from '$lib/api/ergoNode';
 import { testBoxes, testTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
-import { lpSwapInputErg } from '$lib/dexygold/dexyGold';
+import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-describe('FreeMintSpec - Full Translation', () => {
+describe.skip('FreeMintSpec - Full Translation', () => {
 	//let mockChain: MockChain;
 	const bankFeeNum = 3n; // => 0.5% fee part
 	const buybackFeeNum = 2n; // => 0.5% fee part
@@ -68,84 +68,6 @@ describe('FreeMintSpec - Full Translation', () => {
 		expect(1).toBe(1);
 	});
 });
-
-// Same for FreeMint and ArbitrageMint so called bankMint
-function bankMint(
-	oracleRateXy: bigint, // oracle x 1_000_000 ???
-	oracleDimension: bigint,
-	bankFeeNum: bigint,
-	buybackFeeNum: bigint,
-	feeDenom: bigint,
-	contractDexy: bigint
-) {
-	//const oracleDimension = 1_000_000n;
-
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / oracleDimension;
-	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / oracleDimension;
-
-	const bankErgsAdded = bankRate * contractDexy;
-	const buybackErgsAdded = buybackRate * contractDexy;
-
-	const contractErg = bankErgsAdded + buybackErgsAdded;
-
-	return { contractErg, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
-}
-
-function bankMintInpuErg(
-	oracleRateXy: bigint, // oracle x 1_000_000 ???
-	oracleDimension: bigint,
-	bankFeeNum: bigint,
-	buybackFeeNum: bigint,
-	feeDenom: bigint,
-	contractErg: bigint
-) {
-	//const oracleDimension = 1_000_000n;
-
-	const contractDexy =
-		(contractErg * feeDenom * oracleDimension) /
-		(oracleRateXy * (bankFeeNum + feeDenom + buybackFeeNum));
-
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / oracleDimension;
-	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / oracleDimension;
-
-	const bankErgsAdded = bankRate * contractDexy;
-	const buybackErgsAdded = buybackRate * contractDexy;
-
-	return { contractDexy, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
-}
-
-//----------
-//Wrapper: bankMint + UI Fee
-function bankInput() {
-	// return { contractErg, bankErgsAdded, buybackErgsAdded }; // as result {contractDexy, contractErg , bankErgsAdded, buybackErgsAdded} + {finalPrice , totalFee, ...}
-}
-//Wrapper: bankMintInpuErg + UI Fee
-function bankInputErg() {}
-// +2 LP
-
-function lpSwapInputDexy(
-	direction: bigint,
-	amountDexy: bigint,
-	reservesXIn: bigint,
-	reservesYIn: bigint,
-	feeNumLp: bigint,
-	feeDenomLp: bigint
-) {
-	const rate = Number(reservesYIn) / Number(reservesXIn);
-	let amountErg;
-	// in case amountDexy is OUTPUT
-	if (direction == directionSell) {
-		amountErg = BigInt(
-			Math.ceil(Number((amountDexy + 1n) * feeDenomLp) / (rate * Number(feeNumLp)))
-		); //AlreadyRounded
-	} else {
-		amountErg =
-			BigInt(Math.floor((Number(amountDexy) * Number(feeNumLp)) / (Number(feeDenomLp) * rate))) -
-			100n; //Any reason there -100n ?
-	}
-
-	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
-}
 
 // take input from
 const {
@@ -232,26 +154,40 @@ const {
 const dexyUSD = dexyTokenId;
 const lpToken = lpTokenId;
 
+const realBox = {
+	boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
+	value: 602310307,
+	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+	assets: [],
+	creationHeight: 1443463,
+	additionalRegisters: {},
+	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+	index: 0
+};
+
+// 1_000_000_000_000_000
+const fakeBox = {
+	boxId: 'c027ccb7deafc45d68f7b41e583aa8f6ab260ca922d90fb85c330385e2cb0f20',
+	value: 1000000000000000,
+	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+	assets: [],
+	creationHeight: 1443463,
+	additionalRegisters: {},
+	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+	index: 0
+};
+
 const initialUserBoxes = [
-	{
-		boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
-		value: 602310307,
-		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-		assets: [],
-		creationHeight: 1443463,
-		additionalRegisters: {},
-		transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
-		index: 0
-	},
-	//gortInitialBox,
+	fakeBox,
+	gortInitialBox,
 	//gortIdInitialBox,
-	//oracleTokenIdInitialBox,
+	oracleTokenIdInitialBox,
 	//oraclePoolNFTInitialBox,
-	//oracleNFTInitialBox,
-	//gortDevEmissionNFTInitialBox,
-	//gortLpNFTInitialBox,
-	//buybackNFTInitialBox,
-	//lpNFTInitialBox,
+	oracleNFTInitialBox,
+	gortDevEmissionNFTInitialBox,
+	gortLpNFTInitialBox,
+	buybackNFTInitialBox,
+	lpNFTInitialBox,
 	lpSwapNFTInitialBox
 	//lpMintNFTInitialBox,
 	//lpRedeemNFTInitialBox,
@@ -281,8 +217,121 @@ function buildFirstTx() {
 		tokenId: lpSwapNFT,
 		amount: 1n
 	});
+	const outputBoxes = {
+		freeMint: {
+			address: freeMintAddress,
+			value: 1000000000,
+			assets: { tokenId: freeMintNFT, amount: 1n },
+			additionalRegisters: {
+				R4: '', //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
+				R5: '' //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
+			}
+		},
+		arbitrageMint: {
+			address: arbitrageMintAddress,
+			value: 1000000000,
+			assets: { tokenId: arbitrageMintNFT, amount: 1n },
+			additionalRegisters: {
+				R4: '', //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
+				R5: '' //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
+			}
+		},
+		tracking95: {
+			address: trackingAddress,
+			value: 1000000000,
+			assets: { tokenId: tracking95NFT, amount: 1n },
+			additionalRegisters: {
+				R4: '', // constant
+				R5: '', // constant
+				R6: '',
+				R7: ''
+			}
+		},
+		tracking98: {
+			address: trackingAddress,
+			value: 1000000000,
+			assets: { tokenId: tracking98NFT, amount: 1n },
+			additionalRegisters: {
+				R4: '', // constant
+				R5: '', // constant "
+				R6: '',
+				R7: ''
+			}
+		},
+		tracking101: {
+			address: trackingAddress,
+			value: 1000000000,
+			assets: { tokenId: tracking101NFT, amount: 1n },
+			additionalRegisters: {
+				R4: '', // constant
+				R5: '', // constant "
+				R6: '',
+				R7: ''
+			}
+		},
+		bank: {
+			address: bankAddress,
+			value: 1000000000,
+			assets: [
+				{ tokenId: bankNFT, amount: 1n },
+				{ tokenId: dexyTokenId, amount: initialDexyTokens }
+			]
+		},
+		buyback: {
+			address: buybackAddress,
+			value: 1000000000,
+			assets: [
+				{ tokenId: buybackNFT, amount: 1n },
+				{ tokenId: gort, amount: 1n }
+			]
+		},
+		intervention: {
+			address: interventionAddress,
+			value: 1000000000,
+			assets: { tokenId: interventionNFT, amount: 1n } //dexyTokenId
+		},
+		payout: {
+			address: payoutAddress,
+			value: 10000000000, //10 ERG
+			assets: { tokenId: payoutNFT, amount: 1n }, //
+			additionalRegisters: {
+				R4: intZero //  HEIGHT - buffer  // buffer = 5 (delayInPayments = 5040)
+			}
+		},
+		lpSwap: {
+			address: lpSwapAddress,
+			value: 1000000000,
+			assets: { tokenId: lpSwapNFT, amount: 1n } //dexyTokenId
+		},
+		lpMint: {
+			address: lpMintAddress,
+			value: 1000000000,
+			assets: { tokenId: lpMintNFT, amount: 1n } //dexyTokenId
+		},
 
-	//from template + R
+		lpRedeem: {
+			address: lpRedeemAddress,
+			value: 1000000000,
+			assets: { tokenId: lpRedeemNFT, amount: 1n } //dexyTokenId
+		},
+		lpExtract: {
+			address: extractAddress,
+			value: 1000000000,
+			assets: [
+				{ tokenId: extractionNFT, amount: 1n },
+				{ tokenId: dexyTokenId, amount: 1n }
+			] //dexyTokenId
+		},
+		lp: {
+			address: lpAddress,
+			value: 43224547253880,
+			assets: [
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: initialLp }, //   "amount": ${initialLp - 6_400_000_000L}
+				{ tokenId: dexyTokenId, amount: 1_000_000 }
+			]
+		}
+	};
 
 	const outputs = [lpSwapOutput];
 
@@ -293,10 +342,17 @@ function buildFirstTx() {
 		.sendChangeTo(userAddress)
 		.build()
 		.toEIP12Object();
+	return unsignedTx;
 }
 
 describe('asd', () => {
-	it('Swap (sell Ergs) should work - w. simple input', () => {
+	it('Build Initial Testing Boxes', () => {
+		const unsignedTx = buildFirstTx();
+		console.dir(unsignedTx, { depth: null });
+		expect(1).toBe(0);
+	});
+
+	it.skip('Swap (sell Ergs) should work - w. simple input', () => {
 		//input BOXES
 		const userUtxos = [{}, {}];
 		const swapIn = {};
@@ -334,27 +390,9 @@ describe('asd', () => {
 			feeDenomLp
 		);
 
-		// //CALCULATIONS------------------------------
-		// const rateOLD = Number(reservesYIn) / Number(reservesXIn); // from box
-		// console.log(rate, ' vs ', rateOLD);
-
-		// // buyY = (ergInput * rate * feeNumLp / feeDenomLp) - 1
-		// const buyYOLD =
-		// 	BigInt(Math.floor((Number(ergInput) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
-		// expect(buyYOLD).toBe(996n);
-
 		//---------------
 		const reservesXOut = reservesXIn - direction * amountErg;
 		const reservesYOut = reservesYIn + direction * amountDexy;
-
-		// This is the same check you do in Scala
-		// const deltaReservesX = reservesXOut - reservesXIn;
-		// const deltaReservesY = reservesYOut - reservesYIn;
-		// const lhs = reservesYIn * deltaReservesX * BigInt(feeNumLp);
-		// const rhs =
-		// 	-deltaReservesY * (reservesXIn * BigInt(feeDenomLp) + deltaReservesX * BigInt(feeNumLp));
-		// expect(lhs >= rhs).toBe(true);
-		//------------------------------------------
 
 		// Build Tx
 		const tx = new TransactionBuilder(height)

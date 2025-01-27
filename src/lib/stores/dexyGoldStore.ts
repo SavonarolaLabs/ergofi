@@ -38,24 +38,25 @@ const lpIn = {
 };
 
 export function initTestBoxes() {
-	dexygold_lp_box.set(outputBoxes.lp);
+	const transactionId = '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c';
+	dexygold_lp_box.set({ transactionId, ...outputBoxes.lp, index: 0 });
 
-	dexygold_tracking95_box.set(outputBoxes.tracking95);
-	dexygold_tracking98_box.set(outputBoxes.tracking98);
-	dexygold_tracking101_box.set(outputBoxes.tracking101);
+	dexygold_tracking95_box.set({ transactionId, ...outputBoxes.tracking95, index: 1 });
+	dexygold_tracking98_box.set({ transactionId, ...outputBoxes.tracking98, index: 2 });
+	dexygold_tracking101_box.set({ transactionId, ...outputBoxes.tracking101, index: 3 });
 
-	dexygold_bank_box.set(outputBoxes.bank);
-	dexygold_bank_free_mint_box.set(outputBoxes.freeMint);
-	dexygold_bank_arbitrage_mint_box.set(outputBoxes.arbitrageMint);
-	dexygold_bank_intervention_box.set(outputBoxes.intervention);
-	dexygold_bank_payout_box.set(outputBoxes.payout);
+	dexygold_bank_box.set({ transactionId, ...outputBoxes.bank, index: 4 });
+	dexygold_bank_free_mint_box.set({ transactionId, ...outputBoxes.freeMint, index: 5 });
+	dexygold_bank_arbitrage_mint_box.set({ transactionId, ...outputBoxes.arbitrageMint, index: 6 });
+	dexygold_bank_intervention_box.set({ transactionId, ...outputBoxes.intervention, index: 7 });
+	dexygold_bank_payout_box.set({ transactionId, ...outputBoxes.payout, index: 8 });
 
-	dexygold_buyback_box.set(outputBoxes.buyback);
+	dexygold_buyback_box.set({ transactionId, ...outputBoxes.buyback, index: 9 });
 
-	dexygold_lp_mint_box.set(outputBoxes.lpMint);
-	dexygold_lp_redeem_box.set(outputBoxes.lpRedeem);
-	dexygold_lp_extract_box.set(outputBoxes.lpExtract);
-	dexygold_lp_swap_box.set(outputBoxes.lpSwap);
+	dexygold_lp_mint_box.set({ transactionId, ...outputBoxes.lpMint, index: 10 });
+	dexygold_lp_redeem_box.set({ transactionId, ...outputBoxes.lpRedeem, index: 11 });
+	dexygold_lp_extract_box.set({ transactionId, ...outputBoxes.lpExtract, index: 12 });
+	dexygold_lp_swap_box.set({ transactionId, ...outputBoxes.lpSwap, index: 13 });
 
 	//dexygold_lp_proxy_swap_buy_box.set(outputBoxes.lpSwapBuyV1);
 	//dexygold_lp_proxy_swap_sell_box.set(outputBoxes.lpSwapSellV1);

@@ -305,7 +305,7 @@ function tree(address: string): string {
 	return address ? ErgoAddress.fromBase58(address).ergoTree : '';
 }
 
-export const testBoxes: any = {
+export const realMintedTestBoxes: any = {
 	// oracle related tokens
 	gort: {
 		globalIndex: 45787879,

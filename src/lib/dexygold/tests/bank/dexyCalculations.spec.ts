@@ -1,6 +1,6 @@
 import { directionBuy, directionSell } from '$lib/api/ergoNode';
 import {
-	testBoxes,
+	realMintedTestBoxes,
 	vitestTokenIds,
 	vitestErgoTrees,
 	vitestContractConfig
@@ -110,7 +110,7 @@ const {
 	payoutNFT: payoutNFTInitialBox,
 	dexyTokenId: dexyTokenIdInitialBox,
 	dexyUSD: dexyUSDInitialBox
-} = testBoxes;
+} = realMintedTestBoxes;
 
 const {
 	trackingErgoTree,

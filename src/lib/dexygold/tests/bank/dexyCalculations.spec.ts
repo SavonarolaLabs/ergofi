@@ -1,7 +1,19 @@
 import { directionBuy, directionSell } from '$lib/api/ergoNode';
-import { testBoxes, testTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
+import {
+	testBoxes,
+	vitestTokenIds,
+	vitestErgoTrees,
+	vitestContractConfig
+} from '$lib/dexygold/dexyConstants';
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
-import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
+import {
+	OutputBuilder,
+	RECOMMENDED_MIN_FEE_VALUE,
+	SBool,
+	SInt,
+	SLong,
+	TransactionBuilder
+} from '@fleet-sdk/core';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe.skip('FreeMintSpec - Full Translation', () => {
@@ -114,9 +126,9 @@ const {
 	lpErgoTree,
 	lpMintErgoTree,
 	lpRedeemErgoTree,
-	extractScriptErgoTree,
+	extractScriptErgoTree: extractErgoTree,
 	extractUpdateErgoTree,
-	swapErgoTree,
+	swapErgoTree: lpSwapErgoTree,
 	lpSwapBuyV1ErgoTree,
 	lpSwapSellV1ErgoTree,
 	oracleErgoTree,
@@ -149,10 +161,21 @@ const {
 	freeMintNFT,
 	payoutNFT,
 	dexyTokenId
-} = testTokenIds;
+} = vitestTokenIds;
 
 const dexyUSD = dexyTokenId;
 const lpToken = lpTokenId;
+
+const {
+	initialDexyTokens,
+	feeNumLp,
+	feeDenomLp,
+	initialLp,
+	intMax,
+	epochLength,
+	intZero,
+	longZero
+} = vitestContractConfig;
 
 const realBox = {
 	boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
@@ -213,127 +236,12 @@ function buildFirstTx() {
 	const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 	const height = 1_000_000;
 
-	const lpSwapOutput = new OutputBuilder(1_000_000_000n, swapErgoTree).addTokens({
-		tokenId: lpSwapNFT,
-		amount: 1n
-	});
-	const outputBoxes = {
-		freeMint: {
-			address: freeMintAddress,
-			value: 1000000000,
-			assets: { tokenId: freeMintNFT, amount: 1n },
-			additionalRegisters: {
-				R4: '', //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
-				R5: '' //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
-			}
-		},
-		arbitrageMint: {
-			address: arbitrageMintAddress,
-			value: 1000000000,
-			assets: { tokenId: arbitrageMintNFT, amount: 1n },
-			additionalRegisters: {
-				R4: '', //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
-				R5: '' //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
-			}
-		},
-		tracking95: {
-			address: trackingAddress,
-			value: 1000000000,
-			assets: { tokenId: tracking95NFT, amount: 1n },
-			additionalRegisters: {
-				R4: '', // constant
-				R5: '', // constant
-				R6: '',
-				R7: ''
-			}
-		},
-		tracking98: {
-			address: trackingAddress,
-			value: 1000000000,
-			assets: { tokenId: tracking98NFT, amount: 1n },
-			additionalRegisters: {
-				R4: '', // constant
-				R5: '', // constant "
-				R6: '',
-				R7: ''
-			}
-		},
-		tracking101: {
-			address: trackingAddress,
-			value: 1000000000,
-			assets: { tokenId: tracking101NFT, amount: 1n },
-			additionalRegisters: {
-				R4: '', // constant
-				R5: '', // constant "
-				R6: '',
-				R7: ''
-			}
-		},
-		bank: {
-			address: bankAddress,
-			value: 1000000000,
-			assets: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyTokenId, amount: initialDexyTokens }
-			]
-		},
-		buyback: {
-			address: buybackAddress,
-			value: 1000000000,
-			assets: [
-				{ tokenId: buybackNFT, amount: 1n },
-				{ tokenId: gort, amount: 1n }
-			]
-		},
-		intervention: {
-			address: interventionAddress,
-			value: 1000000000,
-			assets: { tokenId: interventionNFT, amount: 1n } //dexyTokenId
-		},
-		payout: {
-			address: payoutAddress,
-			value: 10000000000, //10 ERG
-			assets: { tokenId: payoutNFT, amount: 1n }, //
-			additionalRegisters: {
-				R4: intZero //  HEIGHT - buffer  // buffer = 5 (delayInPayments = 5040)
-			}
-		},
-		lpSwap: {
-			address: lpSwapAddress,
-			value: 1000000000,
-			assets: { tokenId: lpSwapNFT, amount: 1n } //dexyTokenId
-		},
-		lpMint: {
-			address: lpMintAddress,
-			value: 1000000000,
-			assets: { tokenId: lpMintNFT, amount: 1n } //dexyTokenId
-		},
+	// const lpSwapOutput = new OutputBuilder(1_000_000_000n, swapErgoTree).addTokens({
+	// 	tokenId: lpSwapNFT,
+	// 	amount: 1n
+	// });
 
-		lpRedeem: {
-			address: lpRedeemAddress,
-			value: 1000000000,
-			assets: { tokenId: lpRedeemNFT, amount: 1n } //dexyTokenId
-		},
-		lpExtract: {
-			address: extractAddress,
-			value: 1000000000,
-			assets: [
-				{ tokenId: extractionNFT, amount: 1n },
-				{ tokenId: dexyTokenId, amount: 1n }
-			] //dexyTokenId
-		},
-		lp: {
-			address: lpAddress,
-			value: 43224547253880,
-			assets: [
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpTokenId, amount: initialLp }, //   "amount": ${initialLp - 6_400_000_000L}
-				{ tokenId: dexyTokenId, amount: 1_000_000 }
-			]
-		}
-	};
-
-	const outputs = [lpSwapOutput];
+	const outputs = [...];
 
 	const unsignedTx = new TransactionBuilder(height)
 		.from(initialUserBoxes)
@@ -346,7 +254,7 @@ function buildFirstTx() {
 }
 
 describe('asd', () => {
-	it('Build Initial Testing Boxes', () => {
+	beforeEach(() => {
 		const unsignedTx = buildFirstTx();
 		console.dir(unsignedTx, { depth: null });
 		expect(1).toBe(0);

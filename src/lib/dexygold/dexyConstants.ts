@@ -132,7 +132,7 @@ export const vitestErgoTrees = {
 
 //-----------------------------------
 
-export const testTokenIds: any = {
+const testTokenIds: any = {
 	// oracle related tokens
 	gort: '4e8f38135867f99f064e3dbac43a1402e830cd768bcb73e6c8e205b166ba9ec5',
 	// gort == gortId

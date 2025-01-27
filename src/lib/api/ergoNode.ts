@@ -15,6 +15,9 @@ export const MINER_TREE =
 
 export const UI_FEE_ADDRESS = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
 
+export const directionBuy = 1n;
+export const directionSell = -1n;
+
 type NetworkParameters = {
 	outputCost: number;
 	tokenAccessCost: number;

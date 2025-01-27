@@ -63,6 +63,7 @@
 	import Gear from './icons/Gear.svelte';
 	import SwapWidgetTokenRow from './SwapWidgetTokenRow.svelte';
 	import { headline } from './stores/ui';
+	import { directionBuy, directionSell } from './api/ergoNode';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -93,10 +94,6 @@
 		// currencyErgDexyGoldLpToken,
 		currencyErgDexyGoldLpPool
 	];
-
-	// For swapping, use these constants
-	const directionBuy = 1n;
-	const directionSell = -1n;
 
 	/* ---------------------------------------
 	 * Local variables

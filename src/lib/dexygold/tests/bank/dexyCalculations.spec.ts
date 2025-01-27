@@ -1,9 +1,8 @@
+import { directionBuy, directionSell } from '$lib/api/ergoNode';
 import { testBoxes, testTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
+import { lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-
-const directionBuy = 1n;
-const directionSell = -1n;
 
 describe('FreeMintSpec - Full Translation', () => {
 	//let mockChain: MockChain;
@@ -123,32 +122,6 @@ function bankInput() {
 //Wrapper: bankMintInpuErg + UI Fee
 function bankInputErg() {}
 // +2 LP
-
-function lpSwapInputErg(
-	direction: bigint,
-	amountErg: bigint,
-	reservesXIn: bigint,
-	reservesYIn: bigint,
-	feeNumLp: bigint,
-	feeDenomLp: bigint
-) {
-	const rate = Number(reservesYIn) / Number(reservesXIn);
-	let amountDexy;
-	//
-	if (direction == directionSell) {
-		//const buyDexy =
-		amountDexy =
-			BigInt(Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n; // need to verify -1n
-	} else {
-		amountDexy = BigInt(
-			Math.floor((Number(amountErg + 100n) * (Number(feeDenomLp) * rate)) / Number(feeNumLp)) //Any reason there +100n ?
-			//Math.floor((Number(amountErg + 100n) * (Number(feeDenomLp) * rate)) / Number(feeNumLp)) //Any reason there +100n ?
-		);
-	}
-	const buyY =
-		BigInt(Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
-	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
-}
 
 function lpSwapInputDexy(
 	direction: bigint,

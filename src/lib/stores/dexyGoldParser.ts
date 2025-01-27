@@ -1,6 +1,3 @@
-import type { Asset } from '$lib/api/ergoNode';
-import { vitestTokenIds } from '$lib/dexygold/dexyConstants';
-import { ErgoAddress } from '@fleet-sdk/core';
 import { parse } from '@fleet-sdk/serializer';
 
 export function parseTrackingBox(box: any) {

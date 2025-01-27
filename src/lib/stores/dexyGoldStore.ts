@@ -38,7 +38,7 @@ const lpIn = {
 };
 
 export function initTestBoxes() {
-	const transactionId = '1902e27a4253371aa0b9042c153cd3546a145ca9d0781f18300a3f3b39151481';
+	const transactionId = '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c';
 	dexygold_lp_box.set({ transactionId, ...outputBoxes.lp, index: 0 });
 
 	dexygold_tracking95_box.set({ transactionId, ...outputBoxes.tracking95, index: 1 });

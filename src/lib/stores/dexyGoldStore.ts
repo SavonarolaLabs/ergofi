@@ -212,7 +212,7 @@ const outputBoxes = {
 	freeMint: {
 		ergoTree: freeMintErgoTree,
 		value: 1000000000,
-		assets: { tokenId: freeMintNFT, amount: 1n },
+		assets: [{ tokenId: freeMintNFT, amount: 1n }],
 		additionalRegisters: {
 			R4: SInt(Number(intZero)).toHex(), //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
 			R5: SLong(longZero).toHex() //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
@@ -221,7 +221,7 @@ const outputBoxes = {
 	arbitrageMint: {
 		ergoTree: arbitrageMintErgoTree,
 		value: 1000000000,
-		assets: { tokenId: arbitrageMintNFT, amount: 1n },
+		assets: [{ tokenId: arbitrageMintNFT, amount: 1n }],
 		additionalRegisters: {
 			R4: SInt(intZero).toHex(), //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
 			R5: SLong(longZero).toHex() //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
@@ -230,7 +230,7 @@ const outputBoxes = {
 	tracking95: {
 		ergoTree: trackingErgoTree,
 		value: 1000000000,
-		assets: { tokenId: tracking95NFT, amount: 1n },
+		assets: [{ tokenId: tracking95NFT, amount: 1n }],
 		additionalRegisters: {
 			R4: SInt(Number(95)).toHex(), // constant
 			R5: SInt(100).toHex(), // constant
@@ -241,7 +241,7 @@ const outputBoxes = {
 	tracking98: {
 		ergoTree: trackingErgoTree,
 		value: 1000000000,
-		assets: { tokenId: tracking98NFT, amount: 1n },
+		assets: [{ tokenId: tracking98NFT, amount: 1n }],
 		additionalRegisters: {
 			R4: SInt(Number(98)).toHex(), // constant
 			R5: SInt(100).toHex(), // constant "
@@ -252,7 +252,7 @@ const outputBoxes = {
 	tracking101: {
 		ergoTree: trackingErgoTree,
 		value: 1000000000,
-		assets: { tokenId: tracking101NFT, amount: 1n },
+		assets: [{ tokenId: tracking101NFT, amount: 1n }],
 		additionalRegisters: {
 			R4: SInt(Number(101)).toHex(), // constant
 			R5: SInt(Number(100)).toHex(), // constant "
@@ -279,12 +279,12 @@ const outputBoxes = {
 	intervention: {
 		ergoTree: interventionErgoTree,
 		value: 1000000000,
-		assets: { tokenId: interventionNFT, amount: 1n } //dexyTokenId
+		assets: [{ tokenId: interventionNFT, amount: 1n }] //dexyTokenId
 	},
 	payout: {
 		ergoTree: payoutErgoTree,
 		value: 10000000000, //10 ERG
-		assets: { tokenId: payoutNFT, amount: 1n }, //
+		assets: [{ tokenId: payoutNFT, amount: 1n }], //
 		additionalRegisters: {
 			R4: SInt(intZero).toHex() //  HEIGHT - buffer  // buffer = 5 (delayInPayments = 5040)
 		}
@@ -292,18 +292,18 @@ const outputBoxes = {
 	lpSwap: {
 		ergoTree: lpSwapErgoTree,
 		value: 1000000000,
-		assets: { tokenId: lpSwapNFT, amount: 1n } //dexyTokenId
+		assets: [{ tokenId: lpSwapNFT, amount: 1n }] //dexyTokenId
 	},
 	lpMint: {
 		ergoTree: lpMintErgoTree,
 		value: 1000000000,
-		assets: { tokenId: lpMintNFT, amount: 1n } //dexyTokenId
+		assets: [{ tokenId: lpMintNFT, amount: 1n }] //dexyTokenId
 	},
 
 	lpRedeem: {
 		ergoTree: lpRedeemErgoTree,
 		value: 1000000000,
-		assets: { tokenId: lpRedeemNFT, amount: 1n } //dexyTokenId
+		assets: [{ tokenId: lpRedeemNFT, amount: 1n }] //dexyTokenId
 	},
 	lpExtract: {
 		ergoTree: extractErgoTree,

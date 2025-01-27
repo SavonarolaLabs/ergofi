@@ -6,7 +6,6 @@ import {
 } from '$lib/dexygold/dexyConstants';
 import { SBool, SInt, SLong } from '@fleet-sdk/serializer';
 import { writable } from 'svelte/store';
-import { V } from 'vitest/dist/chunks/reporters.D7Jzd9GS.js';
 
 export const dexygold_lp_box = writable<any>();
 export const oracle_erg_xau_box = writable<any>();

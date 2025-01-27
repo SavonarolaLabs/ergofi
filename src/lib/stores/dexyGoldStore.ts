@@ -156,7 +156,7 @@ const {
 	dexyUSD: dexyUSDInitialBox
 } = realMintedTestBoxes;
 
-const realUserBox = {
+export const realUserBox = {
 	boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
 	value: 602310307,
 	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
@@ -167,7 +167,7 @@ const realUserBox = {
 	index: 0
 };
 // 1_000_000_000_000_000
-const fakeUserBox = {
+export const fakeUserBox = {
 	boxId: 'c027ccb7deafc45d68f7b41e583aa8f6ab260ca922d90fb85c330385e2cb0f20',
 	value: 1000000000000000,
 	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',

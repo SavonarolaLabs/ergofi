@@ -1,23 +1,13 @@
 import { directionBuy, directionSell } from '$lib/api/ergoNode';
-import {
-	realMintedTestBoxes,
-	vitestTokenIds,
-	vitestErgoTrees,
-	vitestContractConfig
-} from '$lib/dexygold/dexyConstants';
+import { vitestTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
-import { parseLpBox } from '$lib/stores/dexyGoldParser';
-import { dexygold_lp_box } from '$lib/stores/dexyGoldStore';
-import {
-	OutputBuilder,
-	RECOMMENDED_MIN_FEE_VALUE,
-	SBool,
-	SInt,
-	SLong,
-	TransactionBuilder
-} from '@fleet-sdk/core';
+import { signTx } from '$lib/dexygold/signing';
+import { BOB_MNEMONIC } from '$lib/private/mnemonics';
+import { parseLpBox, parseLpSwapBox } from '$lib/stores/dexyGoldParser';
+import { dexygold_lp_box, dexygold_lp_swap_box, fakeUserBox } from '$lib/stores/dexyGoldStore';
+import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { get } from 'svelte/store';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe.skip('FreeMintSpec - Full Translation', () => {
 	//let mockChain: MockChain;
@@ -141,108 +131,98 @@ const dexyUSD = dexyTokenId;
 const lpToken = lpTokenId;
 // Box which Pay for Tx
 
-function buildFirstTx() {
-	const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-	const height = 1_000_000;
+// function buildFirstTx() {
+// 	const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+// 	const height = 1_000_000;
 
-	// const lpSwapOutput = new OutputBuilder(1_000_000_000n, swapErgoTree).addTokens({
-	// 	tokenId: lpSwapNFT,
-	// 	amount: 1n
-	// });
+// 	// const lpSwapOutput = new OutputBuilder(1_000_000_000n, swapErgoTree).addTokens({
+// 	// 	tokenId: lpSwapNFT,
+// 	// 	amount: 1n
+// 	// });
 
-	const outputs = [...];
+// 	const outputs = [...];
 
-	const unsignedTx = new TransactionBuilder(height)
-		.from(initialUserBoxes)
-		.to(outputs)
-		.payFee(RECOMMENDED_MIN_FEE_VALUE)
-		.sendChangeTo(userAddress)
-		.build()
-		.toEIP12Object();
-	return unsignedTx;
-}
+// 	const unsignedTx = new TransactionBuilder(height)
+// 		.from(initialUserBoxes)
+// 		.to(outputs)
+// 		.payFee(RECOMMENDED_MIN_FEE_VALUE)
+// 		.sendChangeTo(userAddress)
+// 		.build()
+// 		.toEIP12Object();
+// 	return unsignedTx;
+// }
 
 describe('asd', () => {
 	beforeEach(() => {
-		const unsignedTx = buildFirstTx();
-		console.dir(unsignedTx, { depth: null });
-		expect(1).toBe(0);
+		//const unsignedTx = buildFirstTx();
+		//console.dir(unsignedTx, { depth: null });
+		//expect(1).toBe(0);
 	});
 
 	it.skip('Swap (sell Ergs) should work - w. simple input', () => {
 		//input BOXES
+		const lpIn = get(dexygold_lp_box);
+		const { value: lpXIn, lpTokenAmount: lpYIn, dexyAmount: lpTokensIn } = parseLpBox(lpIn);
 
-		const lpIn = get(dexygold_lp_box)
-		const {
-		value: reservesXIn,
-		lpTokenAmount: reservesYIn,
-		dexyUSDAmount: lpTokensIn
-		} = parseLpBox(lpIn);
+		const swapIn = get(dexygold_lp_swap_box);
+		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
 
-		const userUtxos = [{}, {}];
-		const swapIn = {};
+		const userUtxos = [fakeUserBox];
 
-		//user Inputs
+		//user Inputs //TODO: Get inputs
 		const height = 1000000;
 		const ergInput = 10_000_000n;
 		const direction = directionSell;
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
 		//constants:
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
 
-		//---------------
-		//Add Fee (v1)
-		// Input => InputErg - MinerFee - UIfee = contractErg => contractDexy 
-		//---------------
-
-		// // FROM BOX
-		// const reservesXIn = lpIn.value;
-		// const reservesYIn = lpIn.assets[2].amount; // from box
-		// const lpTokensIn = lpIn.assets[1].amount; // lp
-
 		//Direct conversion
 		const { amountDexy, amountErg, rate } = lpSwapInputErg(
 			direction,
 			ergInput,
-			reservesXIn,
-			reservesYIn,
+			lpXIn,
+			lpYIn,
 			feeNumLp,
 			feeDenomLp
 		);
 
 		//---------------
-		//Build Outputs 
+		//Build Outputs
 		//---------------
-		const reservesXOut = reservesXIn - direction * amountErg;
-		const reservesYOut = reservesYIn + direction * amountDexy;
+		const swapOutValue = swapInValue;
+		const lpXOut = lpXIn - direction * amountErg;
+		const lpYOut = lpYIn + direction * amountDexy;
 
 		// Build Tx
-		const tx = new TransactionBuilder(height)
+		const unsignedTx = new TransactionBuilder(height)
 			.from([lpIn, swapIn, ...userUtxos], {
 				ensureInclusion: true
 			})
-			// LP box out
 			.to(
-				new OutputBuilder(reservesXOut, lpErgoTree).addTokens([
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
 					{ tokenId: lpToken, amount: lpTokensIn },
-					{ tokenId: dexyUSD, amount: reservesYOut }
+					{ tokenId: dexyUSD, amount: lpYOut }
 				])
 			)
-			// Swap box out
 			.to(
-				new OutputBuilder(swapIn.value, swapErgoTree).addTokens([
+				new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
 					{ tokenId: lpSwapNFT, amount: 1n }
 				])
 			)
-			.payFee(RECOMMENDED_MIN_FEE_VALUE)
+			.payFee(feeMining)
 			.sendChangeTo(userChangeAddress)
-			.build();
+			.build()
+			.toEIP12Object();
 
 		// Execute
-		expect(executed).toBe(true);
+		expect(unsignedTx).toBeTruthy();
+		//add sign
+		const signedTx = signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
 	});
 });
-

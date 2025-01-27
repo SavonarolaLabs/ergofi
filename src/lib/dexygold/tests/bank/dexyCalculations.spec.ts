@@ -6,6 +6,8 @@ import {
 	vitestContractConfig
 } from '$lib/dexygold/dexyConstants';
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
+import { parseLpBox } from '$lib/stores/dexyGoldParser';
+import { dexygold_lp_box } from '$lib/stores/dexyGoldStore';
 import {
 	OutputBuilder,
 	RECOMMENDED_MIN_FEE_VALUE,
@@ -14,6 +16,7 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
+import { get } from 'svelte/store';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe.skip('FreeMintSpec - Full Translation', () => {
@@ -168,16 +171,24 @@ describe('asd', () => {
 
 	it.skip('Swap (sell Ergs) should work - w. simple input', () => {
 		//input BOXES
+
+		const lpIn = get(dexygold_lp_box)
+		const {
+		value: reservesXIn,
+		lpTokenAmount: reservesYIn,
+		dexyUSDAmount: lpTokensIn
+		} = parseLpBox(lpIn);
+
 		const userUtxos = [{}, {}];
 		const swapIn = {};
-		const lpIn = {
-			value: 1_000_000_000_000n, //1_000_000_000_000n
-			assets: [
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpToken, amount: 100_000_000n }, //lpBalance //100_000_000n
-				{ tokenId: dexyUSD, amount: 100_000_000n } //100_000_000n
-			]
-		};
+		// const lpIn = {
+		// 	value: 1_000_000_000_000n, //1_000_000_000_000n
+		// 	assets: [
+		// 		{ tokenId: lpNFT, amount: 1n },
+		// 		{ tokenId: lpToken, amount: 100_000_000n }, //lpBalance //100_000_000n
+		// 		{ tokenId: dexyUSD, amount: 100_000_000n } //100_000_000n
+		// 	]
+		// };
 
 		//user Inputs
 		const height = 1000000;
@@ -189,10 +200,10 @@ describe('asd', () => {
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
 
-		// FROM BOX
-		const reservesXIn = lpIn.value;
-		const reservesYIn = lpIn.assets[2].amount; // from box
-		const lpTokensIn = lpIn.assets[1].amount; // lp
+		// // FROM BOX
+		// const reservesXIn = lpIn.value;
+		// const reservesYIn = lpIn.assets[2].amount; // from box
+		// const lpTokensIn = lpIn.assets[1].amount; // lp
 
 		//Direct conversion
 		const { amountDexy, amountErg, rate } = lpSwapInputErg(
@@ -235,3 +246,4 @@ describe('asd', () => {
 		expect(executed).toBe(true);
 	});
 });
+

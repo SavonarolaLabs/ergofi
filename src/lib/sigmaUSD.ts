@@ -10,12 +10,6 @@ import {
 } from './api/ergoNode';
 import { absBigInt, decodeBigInt, maxBigInt, minBigInt } from './utils';
 import {
-	bank_box,
-	bankBoxInCircSigUsdInCent,
-	bankBoxInNanoErg,
-	fee_mining,
-	oracle_box,
-	oraclePriceSigUsd,
 	unconfirmed_bank_erg,
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
@@ -42,7 +36,6 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { submitTx } from './mempoolChannels';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -214,7 +207,7 @@ export function calculateOutputRsv(
 	};
 }
 
-// Вспомогательные функции
+// Helper Functions
 export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
 	const inErg = BigInt(bankBox.value);
 	const inSigUSD = BigInt(
@@ -437,36 +430,13 @@ export function calculateInputsUsdErgInErgPrice(
 			direction
 		);
 
-	// TODO: --------------------------------
-	//console.log('');
-	//console.log(inputAmountNanoERG, ' Input ERG');
-	//console.log(contractERG, ' Contract ERG');
-	//console.log(contractErgCompare, ' contractErgCompare');
-	//console.log(contractUSD, ' contractUSD');
-
 	// --------------------------------
 	if (direction == -1n) {
-		//console.log('sell');
 		if (contractERG < contractErgCompare) {
-			//console.log('Adjust FEE SELL');
-			//uiFeeErg = uiFeeErg - (-contractErgCompare + contractERG); // ITS NEGATIVE: GG
 			uiFeeErg = uiFeeErg + (contractErgCompare - contractERG); // Right
 		}
 	}
 
-	// // ------ TEST ------
-	// if (direction == 1n) {
-	// 	//console.log('buy');
-	// 	// < probably this way
-	// 	if (contractERG > contractErgCompare) {
-	// 		//console.log('Adjust FEE BUY');
-	// 		uiFeeErg = uiFeeErg + (-contractErgCompare + contractERG);
-	// 	}
-	// }
-
-	//if (contractERG > contractErgCompare) uiFeeErg = uiFeeErg + (contractErgCompare - contractERG);
-
-	////console.log(uiFeeErg, 'uiFeeErg');
 	const swapFee = contractFee + feeMining + uiFeeErg;
 	const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
 
@@ -566,9 +536,6 @@ export function calculateInputsUsdErgInUsdPrice(
 	}
 	const feeTotal = feeContract + feeMining + uiFeeErg;
 	//console.log(contractErgoRequired - feeMining - uiFeeErg, ' final ERG');
-
-	//console.log();
-	//console.log();
 
 	const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
@@ -1742,32 +1709,27 @@ export function buildTx_SIGUSD_ERG_USD(
 ) {
 	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
 	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+	// TODO: pass UI_FEE_ADDRESS top down as param, instead of direct constant
 	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
 
-	const BankOutBox = new OutputBuilder(outErg, bankAddr)
-		.addTokens([
-			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-		])
-		.setAdditionalRegisters({
-			R4: SLong(BigInt(outCircSigUSD)).toHex(),
-			R5: SLong(BigInt(outCircSigRSV)).toHex()
-		});
+	const BankOutBox = buildBankBoxOut_SIGUSD(
+		bankAddr,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
 
 	// ---------- Receipt ------------
 	//console.log('direction=', direction, ' -1n?', direction == -1n);
-	const receiptBox = new OutputBuilder(
-		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
-		myAddr
-	).setAdditionalRegisters({
-		R4: SLong(BigInt(direction * contractUSD)).toHex(),
-		R5: SLong(BigInt(direction * contractErg)).toHex()
-	});
-
-	if (direction == 1n) {
-		receiptBox.addTokens({ tokenId: TOKEN_SIGUSD, amount: contractUSD });
-	}
+	const receiptBox = buildReceiptBoxOut_SIGUSD(
+		direction,
+		myAddr,
+		contractErg,
+		TOKEN_SIGUSD,
+		contractUSD
+	);
 
 	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
 
@@ -1783,6 +1745,7 @@ export function buildTx_SIGUSD_ERG_USD(
 
 	return unsignedMintTransaction;
 }
+
 export function buildTx_SIGUSD_ERG_RSV(
 	direction: bigint,
 	contractErg: bigint,
@@ -1803,34 +1766,27 @@ export function buildTx_SIGUSD_ERG_RSV(
 ) {
 	const myAddr = ErgoAddress.fromBase58(holderBase58PK);
 	const bankAddr = ErgoAddress.fromBase58(bankBase58PK);
+	// TODO: pass UI_FEE_ADDRESS top down as param, instead of direct constant
 	const uiAddr = ErgoAddress.fromBase58(UI_FEE_ADDRESS);
 
-	//OLD
-
 	//STANDART BANK OUT
-	const BankOutBox = new OutputBuilder(outErg, bankAddr)
-		.addTokens([
-			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
-			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
-			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
-		])
-		.setAdditionalRegisters({
-			R4: SLong(BigInt(outCircSigUSD)).toHex(),
-			R5: SLong(BigInt(outCircSigRSV)).toHex()
-		});
+	const BankOutBox = buildBankBoxOut_SIGUSD(
+		bankAddr,
+		outErg,
+		outSigUSD,
+		outSigRSV,
+		outCircSigUSD,
+		outCircSigRSV
+	);
 
 	// ---------- Receipt ------------
-	const receiptBox = new OutputBuilder(
-		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
-		myAddr
-	).setAdditionalRegisters({
-		R4: SLong(BigInt(direction * contractRSV)).toHex(),
-		R5: SLong(BigInt(direction * contractErg)).toHex()
-	});
-
-	if (direction == 1n) {
-		receiptBox.addTokens({ tokenId: TOKEN_SIGRSV, amount: contractRSV });
-	}
+	const receiptBox = buildReceiptBoxOut_SIGUSD(
+		direction,
+		myAddr,
+		contractErg,
+		TOKEN_SIGRSV,
+		contractRSV
+	);
 
 	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
 
@@ -1845,4 +1801,47 @@ export function buildTx_SIGUSD_ERG_RSV(
 	unsignedMintTransaction.dataInputs = [oracleBox];
 
 	return unsignedMintTransaction;
+}
+
+// box builder
+
+function buildBankBoxOut_SIGUSD(
+	bankAddr: ErgoAddress,
+	outErg: bigint,
+	outSigUSD: bigint,
+	outSigRSV: bigint,
+	outCircSigUSD: bigint,
+	outCircSigRSV: bigint
+) {
+	return new OutputBuilder(outErg, bankAddr)
+		.addTokens([
+			{ tokenId: TOKEN_SIGUSD, amount: outSigUSD },
+			{ tokenId: TOKEN_SIGRSV, amount: outSigRSV },
+			{ tokenId: TOKEN_BANK_NFT, amount: 1n }
+		])
+		.setAdditionalRegisters({
+			R4: SLong(BigInt(outCircSigUSD)).toHex(),
+			R5: SLong(BigInt(outCircSigRSV)).toHex()
+		});
+}
+
+function buildReceiptBoxOut_SIGUSD(
+	direction: bigint,
+	myAddr: ErgoAddress,
+	contractErg: bigint,
+	tokenId: string,
+	contractTokenAmount: bigint
+) {
+	const receiptBox = new OutputBuilder(
+		direction == -1n ? contractErg : SAFE_MIN_BOX_VALUE,
+		myAddr
+	).setAdditionalRegisters({
+		R4: SLong(BigInt(direction * contractTokenAmount)).toHex(),
+		R5: SLong(BigInt(direction * contractErg)).toHex()
+	});
+
+	if (direction == 1n) {
+		receiptBox.addTokens({ tokenId, amount: contractTokenAmount });
+	}
+	return receiptBox;
 }

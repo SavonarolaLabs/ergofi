@@ -1,5 +1,5 @@
 import { directionBuy, directionSell } from '$lib/api/ergoNode';
-import { vitestTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
+import { vitestTokenIds, vitestErgoTrees, realMintedTestBoxes } from '$lib/dexygold/dexyConstants';
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
@@ -8,7 +8,8 @@ import {
 	dexygold_lp_box,
 	dexygold_lp_swap_box,
 	fakeUserBox,
-	initTestBoxes
+	initTestBoxes,
+	mintInitialOutputs
 } from '$lib/stores/dexyGoldStore';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { before } from 'node:test';
@@ -113,6 +114,9 @@ describe('asd', async () => {
 		const lpXOut = lpXIn - direction * amountErg;
 		const lpYOut = lpYIn + direction * amountDexy;
 
+		//const swapin2 = realMintedTestBoxes.lpSwapNFT;
+		//const lpin2 = realMintedTestBoxes.lpNFT;
+
 		// Build Tx
 		const unsignedTx = new TransactionBuilder(height)
 			.from([lpIn, swapIn, ...userUtxos], {
@@ -138,5 +142,8 @@ describe('asd', async () => {
 		//add sign
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
+	});
+	it.only('sfs', async () => {
+		const signed = await mintInitialOutputs();
 	});
 });

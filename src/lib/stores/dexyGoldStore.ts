@@ -4,6 +4,9 @@ import {
 	vitestErgoTrees,
 	vitestTokenIds
 } from '$lib/dexygold/dexyConstants';
+import { signTx } from '$lib/dexygold/signing';
+import { BOB_MNEMONIC } from '$lib/private/mnemonics';
+import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { SBool, SInt, SLong } from '@fleet-sdk/serializer';
 import { writable } from 'svelte/store';
 
@@ -61,6 +64,37 @@ export function initTestBoxes() {
 	//dexygold_lp_proxy_swap_sell_box.set(outputBoxes.lpSwapSellV1);
 	//dexygold_ballot_box.set(outputBoxes.ballot);
 	//dexygold_update_box.set(outputBoxes.update);
+	mintInitialOutputs();
+}
+
+export async function mintInitialOutputs() {
+	const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+	const height = 1000;
+	const inputs = initialUserBoxes.filter((x) => x);
+	const outputs = Object.values(outputBoxes).map((o) => {
+		const output = new OutputBuilder(o.value, o.ergoTree);
+		if (o.assets) {
+			output.addTokens(o.assets);
+		}
+		if (o.additionalRegisters) {
+			output.setAdditionalRegisters(o.additionalRegisters);
+		}
+		return output;
+	});
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from(inputs, {
+			ensureInclusion: true
+		})
+		.to(outputs)
+		.payFee(RECOMMENDED_MIN_FEE_VALUE)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	//add sign
+	const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+	return signedTx;
 }
 
 const {
@@ -265,7 +299,7 @@ const outputBoxes = {
 		value: 1000000000,
 		assets: [
 			{ tokenId: bankNFT, amount: 1n },
-			{ tokenId: dexyTokenId, amount: initialDexyTokens }
+			{ tokenId: dexyTokenId, amount: initialDexyTokens - 1_000_000n - 1n }
 		]
 	},
 	buyback: {
@@ -319,7 +353,7 @@ const outputBoxes = {
 		assets: [
 			{ tokenId: lpNFT, amount: 1n },
 			{ tokenId: lpTokenId, amount: initialLp }, //   "amount": ${initialLp - 6_400_000_000L}
-			{ tokenId: dexyTokenId, amount: 1_000_000 }
+			{ tokenId: dexyTokenId, amount: 1_000_000 } //1_000_001
 		]
 	}
 };

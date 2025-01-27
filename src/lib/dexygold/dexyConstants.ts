@@ -298,7 +298,9 @@ function scalaToJsNumbers(o: Object) {
 	);
 }
 
-export const vitestTokenIds = mainnetTokenIds;
+//export const vitestTokenIds = mainnetTokenIds;
+export const vitestTokenIds = testTokenIds;
+
 export const vitestAddresses = dexyAddresses;
 
 function tree(address: string): string {

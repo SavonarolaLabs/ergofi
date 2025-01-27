@@ -181,14 +181,6 @@ describe('asd', () => {
 
 		const userUtxos = [{}, {}];
 		const swapIn = {};
-		// const lpIn = {
-		// 	value: 1_000_000_000_000n, //1_000_000_000_000n
-		// 	assets: [
-		// 		{ tokenId: lpNFT, amount: 1n },
-		// 		{ tokenId: lpToken, amount: 100_000_000n }, //lpBalance //100_000_000n
-		// 		{ tokenId: dexyUSD, amount: 100_000_000n } //100_000_000n
-		// 	]
-		// };
 
 		//user Inputs
 		const height = 1000000;
@@ -199,6 +191,11 @@ describe('asd', () => {
 		//constants:
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
+
+		//---------------
+		//Add Fee (v1)
+		// Input => InputErg - MinerFee - UIfee = contractErg => contractDexy 
+		//---------------
 
 		// // FROM BOX
 		// const reservesXIn = lpIn.value;
@@ -215,6 +212,8 @@ describe('asd', () => {
 			feeDenomLp
 		);
 
+		//---------------
+		//Build Outputs 
 		//---------------
 		const reservesXOut = reservesXIn - direction * amountErg;
 		const reservesYOut = reservesYIn + direction * amountDexy;

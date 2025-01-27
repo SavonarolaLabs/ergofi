@@ -1,4 +1,9 @@
-import { vitestContractConfig, vitestErgoTrees, vitestTokenIds } from '$lib/dexygold/dexyConstants';
+import {
+	realMintedTestBoxes,
+	vitestContractConfig,
+	vitestErgoTrees,
+	vitestTokenIds
+} from '$lib/dexygold/dexyConstants';
 import { SBool, SInt, SLong } from '@fleet-sdk/serializer';
 import { writable } from 'svelte/store';
 import { V } from 'vitest/dist/chunks/reporters.D7Jzd9GS.js';
@@ -120,6 +125,89 @@ const {
 	payoutNFT,
 	dexyTokenId
 } = vitestTokenIds;
+
+const {
+	gort: gortInitialBox,
+	gortId: gortIdInitialBox,
+	oracleTokenId: oracleTokenIdInitialBox,
+	oraclePoolNFT: oraclePoolNFTInitialBox,
+	oracleNFT: oracleNFTInitialBox,
+	gortDevEmissionNFT: gortDevEmissionNFTInitialBox,
+	gortLpNFT: gortLpNFTInitialBox,
+	buybackNFT: buybackNFTInitialBox,
+	lpNFT: lpNFTInitialBox,
+	lpSwapNFT: lpSwapNFTInitialBox,
+	lpMintNFT: lpMintNFTInitialBox,
+	lpRedeemNFT: lpRedeemNFTInitialBox,
+	lpTokenId: lpTokenIdInitialBox,
+	lpToken: lpTokenInitialBox,
+	tracking95NFT: tracking95NFTInitialBox,
+	tracking98NFT: tracking98NFTInitialBox,
+	tracking101NFT: tracking101NFTInitialBox,
+	bankNFT: bankNFTInitialBox,
+	updateNFT: updateNFTInitialBox,
+	ballotTokenId: ballotTokenIdInitialBox,
+	interventionNFT: interventionNFTInitialBox,
+	extractionNFT: extractionNFTInitialBox,
+	arbitrageMintNFT: arbitrageMintNFTInitialBox,
+	freeMintNFT: freeMintNFTInitialBox,
+	payoutNFT: payoutNFTInitialBox,
+	dexyTokenId: dexyTokenIdInitialBox,
+	dexyUSD: dexyUSDInitialBox
+} = realMintedTestBoxes;
+
+const realUserBox = {
+	boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
+	value: 602310307,
+	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+	assets: [],
+	creationHeight: 1443463,
+	additionalRegisters: {},
+	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+	index: 0
+};
+// 1_000_000_000_000_000
+const fakeUserBox = {
+	boxId: 'c027ccb7deafc45d68f7b41e583aa8f6ab260ca922d90fb85c330385e2cb0f20',
+	value: 1000000000000000,
+	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+	assets: [],
+	creationHeight: 1443463,
+	additionalRegisters: {},
+	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+	index: 0
+};
+
+const initialUserBoxes = [
+	fakeUserBox,
+	gortInitialBox,
+	//gortIdInitialBox,
+	oracleTokenIdInitialBox,
+	//oraclePoolNFTInitialBox,
+	oracleNFTInitialBox,
+	gortDevEmissionNFTInitialBox,
+	gortLpNFTInitialBox,
+	buybackNFTInitialBox,
+	lpNFTInitialBox,
+	lpSwapNFTInitialBox,
+	lpMintNFTInitialBox,
+	lpRedeemNFTInitialBox,
+	lpTokenIdInitialBox,
+	lpTokenInitialBox,
+	tracking95NFTInitialBox,
+	tracking98NFTInitialBox,
+	tracking101NFTInitialBox,
+	bankNFTInitialBox,
+	updateNFTInitialBox,
+	ballotTokenIdInitialBox,
+	interventionNFTInitialBox,
+	extractionNFTInitialBox,
+	arbitrageMintNFTInitialBox,
+	freeMintNFTInitialBox,
+	payoutNFTInitialBox,
+	dexyTokenIdInitialBox,
+	dexyUSDInitialBox
+];
 
 const outputBoxes = {
 	freeMint: {

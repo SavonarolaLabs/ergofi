@@ -79,7 +79,7 @@ describe('asd', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it.skip('Initial Test	: Sell ERG : Input ERG', async () => {
+	it.only('Initial Test	: Sell ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -156,7 +156,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.skip('With FEE 	: Sell ERG : Input ERG', async () => {
+	it.only('With FEE 	: Sell ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -241,7 +241,7 @@ describe('asd', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it.skip('Initial Test	: Buy  ERG : Input ERG', async () => {
+	it.only('Initial Test	: Buy  ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -318,7 +318,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.skip('With FEE 	: Buy  ERG : Input ERG', async () => {
+	it.only('With FEE 	: Buy  ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -582,7 +582,8 @@ describe('asd', async () => {
 			console.log('rht ', rht);
 			console.log('left>=right', lft >= rht);
 			//lpYIn* amountErg * 997n = amountDexy * (lpXIn * 1000n + amountErg * 997n)
-			//amountDexy >= lpYIn* amountErg * 997n / (lpXIn * 1000n + amountErg * 997n)	//<== TAKE FORMULA + CHECK
+			//amountDexy =< lpYIn* amountErg * 997n / (lpXIn * 1000n + amountErg * 997n)	//<== TAKE FORMULA + CHECK
+			//
 
 			//
 			//lpYIn* amountErg * 997n = amountDexy * (lpXIn * 1000n + amountErg * 997n)
@@ -600,6 +601,13 @@ describe('asd', async () => {
 			console.log('left>=right', lft >= rht);
 
 			//reservesXIn.toBigInt * deltaReservesY * feeNum >= -deltaReservesX * (reservesYIn.toBigInt * feeDenom + deltaReservesY * feeNum)
+			//lpXIn * realDexyInput * 997n >= realAmountErg * (lpYIn * 1000n + realDexyInput * 997n)
+			//lpXIn * realDexyInput * 997n >= realAmountErg * (lpYIn * 1000n + realDexyInput * 997n)
+			//lpXIn * realDexyInput * 997n >= realAmountErg * lpYIn * 1000n + realAmountErg * realDexyInput * 997n;
+			//lpXIn * realDexyInput * 997n - realAmountErg * realDexyInput * 997n >= realAmountErg * lpYIn * 1000n;
+			//realDexyInput >= realAmountErg * lpYIn * 1000n;
+			//realDexyInput >= realAmountErg * lpYIn * 1000n / (lpXIn * 997n - realAmountErg * 997n)
+
 			//lpXIn * realDexyInput * 997n >= realAmountErg * (lpYIn * 1000n + realDexyInput * 997n)
 			//lpXIn * realDexyInput * 997n >= realAmountErg * (lpYIn * 1000n + realDexyInput * 997n)
 			//lpXIn * realDexyInput * 997n/ (lpYIn * 1000n + realDexyInput * 997n) > = realAmountErg

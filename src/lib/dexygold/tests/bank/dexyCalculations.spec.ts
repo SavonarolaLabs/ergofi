@@ -75,7 +75,7 @@ const {
 // const dexyUSD = dexyTokenId;
 // const lpToken = lpTokenId;
 
-describe('asd', async () => {
+describe('LP swap with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
@@ -216,7 +216,6 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-
 	it('Initial Test	: Buy  ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
@@ -353,6 +352,136 @@ describe('asd', async () => {
 	});
 
 	//applyFeeSell(inputERG: bigint, feeMining: bigint)
+	it('Initial Test	: Sell ERG : Input Dexy', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box);
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+		const swapIn = get(dexygold_lp_swap_box);
+		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
+
+		const userUtxos = [fakeUserWithDexyBox];
+
+		//user Inputs
+		const height = 1449119;
+		const dexyInput = 100_000n;
+		const direction = directionSell;
+
+		//const direction = directionBuy;
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		//constants:
+		const feeNumLp = 997n;
+		const feeDenomLp = 1000n;
+
+		//Reverse conversion
+
+		// lpSwapInputDexy
+		let { amountDexy, amountErg, rate } = lpSwapInputDexy(
+			direction,
+			dexyInput,
+			lpXIn,
+			lpYIn,
+			feeNumLp,
+			feeDenomLp
+		);
+
+		const swapOutValue = swapInValue;
+		const lpXOut = lpXIn - direction * amountErg;
+		const lpYOut = lpYIn + direction * amountDexy;
+
+		// Build Tx
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, swapIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensIn },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+					{ tokenId: lpSwapNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//add sign
+		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it('With FEE 	: Sell ERG : Input Dexy', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box);
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+		const swapIn = get(dexygold_lp_swap_box);
+		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
+
+		const userUtxos = [fakeUserWithDexyBox];
+
+		//user Inputs
+		const height = 1449119;
+		const dexyInput = 100_000n;
+		const direction = directionSell;
+
+		//const direction = directionBuy;
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		const uiFeeAddress = UI_FEE_ADDRESS;
+
+		//constants:
+		const feeNumLp = 997n;
+		const feeDenomLp = 1000n;
+
+		// lpSwapInputDexy
+		let {
+			amountDexy,
+			amountErg: contractERG,
+			rate
+		} = lpSwapInputDexy(direction, dexyInput, lpXIn, lpYIn, feeNumLp, feeDenomLp);
+
+		// FEE PART:
+		const { userERG: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining);
+
+		const swapOutValue = swapInValue;
+		const lpXOut = lpXIn - direction * contractERG;
+		const lpYOut = lpYIn + direction * amountDexy;
+
+		// Build Tx
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, swapIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensIn },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+					{ tokenId: lpSwapNFT, amount: 1n }
+				])
+			)
+			.to(new OutputBuilder(uiSwapFee, uiFeeAddress))
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//add sign
+		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
 	it('Initial Test	: Buy  ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
@@ -452,136 +581,6 @@ describe('asd', async () => {
 
 		// FEE PART:
 		const { inputERG: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining);
-
-		const swapOutValue = swapInValue;
-		const lpXOut = lpXIn - direction * contractERG;
-		const lpYOut = lpYIn + direction * amountDexy;
-
-		// Build Tx
-		const unsignedTx = new TransactionBuilder(height)
-			.from([lpIn, swapIn, ...userUtxos], {
-				ensureInclusion: true
-			})
-			.to(
-				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
-					{ tokenId: lpNFT, amount: 1n },
-					{ tokenId: lpTokenId, amount: lpTokensIn },
-					{ tokenId: dexyTokenId, amount: lpYOut }
-				])
-			)
-			.to(
-				new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
-					{ tokenId: lpSwapNFT, amount: 1n }
-				])
-			)
-			.to(new OutputBuilder(uiSwapFee, uiFeeAddress))
-			.payFee(feeMining)
-			.sendChangeTo(userChangeAddress)
-			.build()
-			.toEIP12Object();
-
-		//add sign
-		//console.dir(unsignedTx, { depth: null });
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
-		expect(signedTx).toBeTruthy();
-	});
-	it('Initial Test	: Sell ERG : Input Dexy', async () => {
-		//input BOXES
-		const lpIn = get(dexygold_lp_box);
-		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
-		const swapIn = get(dexygold_lp_swap_box);
-		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
-
-		const userUtxos = [fakeUserWithDexyBox];
-
-		//user Inputs
-		const height = 1449119;
-		const dexyInput = 100_000n;
-		const direction = directionSell;
-
-		//const direction = directionBuy;
-		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
-		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-
-		//constants:
-		const feeNumLp = 997n;
-		const feeDenomLp = 1000n;
-
-		//Reverse conversion
-
-		// lpSwapInputDexy
-		let { amountDexy, amountErg, rate } = lpSwapInputDexy(
-			direction,
-			dexyInput,
-			lpXIn,
-			lpYIn,
-			feeNumLp,
-			feeDenomLp
-		);
-
-		const swapOutValue = swapInValue;
-		const lpXOut = lpXIn - direction * amountErg;
-		const lpYOut = lpYIn + direction * amountDexy;
-
-		// Build Tx
-		const unsignedTx = new TransactionBuilder(height)
-			.from([lpIn, swapIn, ...userUtxos], {
-				ensureInclusion: true
-			})
-			.to(
-				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
-					{ tokenId: lpNFT, amount: 1n },
-					{ tokenId: lpTokenId, amount: lpTokensIn },
-					{ tokenId: dexyTokenId, amount: lpYOut }
-				])
-			)
-			.to(
-				new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
-					{ tokenId: lpSwapNFT, amount: 1n }
-				])
-			)
-			.payFee(feeMining)
-			.sendChangeTo(userChangeAddress)
-			.build()
-			.toEIP12Object();
-
-		//add sign
-		//console.dir(unsignedTx, { depth: null });
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
-		expect(signedTx).toBeTruthy();
-	});
-	it('With FEE 	: Sell ERG : Input Dexy', async () => {
-		//input BOXES
-		const lpIn = get(dexygold_lp_box);
-		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
-		const swapIn = get(dexygold_lp_swap_box);
-		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
-
-		const userUtxos = [fakeUserWithDexyBox];
-
-		//user Inputs
-		const height = 1449119;
-		const dexyInput = 100_000n;
-		const direction = directionSell;
-
-		//const direction = directionBuy;
-		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
-		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-		const uiFeeAddress = UI_FEE_ADDRESS;
-
-		//constants:
-		const feeNumLp = 997n;
-		const feeDenomLp = 1000n;
-
-		// lpSwapInputDexy
-		let {
-			amountDexy,
-			amountErg: contractERG,
-			rate
-		} = lpSwapInputDexy(direction, dexyInput, lpXIn, lpYIn, feeNumLp, feeDenomLp);
-
-		// FEE PART:
-		const { userERG: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining);
 
 		const swapOutValue = swapInValue;
 		const lpXOut = lpXIn - direction * contractERG;

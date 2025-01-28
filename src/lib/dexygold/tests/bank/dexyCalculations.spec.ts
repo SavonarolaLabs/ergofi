@@ -3,6 +3,7 @@ import { vitestTokenIds, vitestErgoTrees, realMintedTestBoxes } from '$lib/dexyg
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
+import { applyFeeSell } from '$lib/sigmaUSDAndDexy';
 import { parseLpBox, parseLpSwapBox } from '$lib/stores/dexyGoldParser';
 import {
 	dexygold_lp_box,
@@ -77,7 +78,7 @@ describe('asd', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it.only('Initial Test: Swap (sell Ergs) should work - w. simple input', async () => {
+	it.only('Initial Test	: Swap (sell Ergs) should work - w. simple input', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -155,11 +156,10 @@ describe('asd', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 	// REWORK
-	it.skip('Test With Fee: Swap (sell Ergs) should work - w. simple input', async () => {
+	it.only('With FEE 	: Swap (sell Ergs) should work - w. simple input', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
-		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: abcd } = parseLpBox(lpIn);
-		const lpYIn = BigInt(abcd);
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
 		const swapIn = get(dexygold_lp_swap_box);
 
 		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
@@ -168,7 +168,7 @@ describe('asd', async () => {
 
 		//user Inputs
 		const height = 1449119;
-		const ergInput = 1_000_000_000n;
+		const inputErg = 1_000_000_000n;
 		const direction = directionSell;
 
 		//const direction = directionBuy;
@@ -177,6 +177,10 @@ describe('asd', async () => {
 		const uiFeeAddress = UI_FEE_ADDRESS;
 		let uiSwapFee;
 
+		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg, feeMining);
+		uiSwapFee = abc;
+		//uiSwapFee = 11_000_000n; // CHANGE
+
 		//constants:
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
@@ -184,7 +188,7 @@ describe('asd', async () => {
 		//Direct conversion
 		let { amountDexy, amountErg, rate } = lpSwapInputErg(
 			direction,
-			ergInput,
+			inputErg,
 			lpXIn,
 			lpYIn,
 			feeNumLp,
@@ -199,8 +203,8 @@ describe('asd', async () => {
 		console.log(amountDexy, ' corrected Dexy for test');
 
 		const swapOutValue = swapInValue;
-		const lpXOut = BigInt(lpXIn - BigInt(direction) * BigInt(amountErg));
-		const lpYOut = BigInt(BigInt(lpYIn) + BigInt(direction) * BigInt(amountDexy));
+		const lpXOut = lpXIn - direction * amountErg;
+		const lpYOut = lpYIn + direction * amountDexy;
 
 		// console.log(lpXIn, ' => ', lpXOut, ' delta =', lpXOut - lpXIn);
 		// console.log(lpYIn, ' => ', lpYOut, ' delta =', lpYOut - lpYIn);
@@ -225,11 +229,7 @@ describe('asd', async () => {
 					{ tokenId: lpSwapNFT, amount: 1n }
 				])
 			)
-			.to(
-				new OutputBuilder(swapOutValue, uiFeeAddress).addTokens([
-					{ tokenId: lpSwapNFT, amount: 1n }
-				])
-			)
+			.to(new OutputBuilder(uiSwapFee, uiFeeAddress))
 			.payFee(feeMining)
 			.sendChangeTo(userChangeAddress)
 			.build()

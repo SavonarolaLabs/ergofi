@@ -36,6 +36,7 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
+import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from './sigmaUSDAndDexy';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -50,9 +51,6 @@ export type OracleBoxesData = {
 
 const FEE_BANK = 200n; //2%
 const FEE_BANK_DENOM = 10_000n;
-
-export const FEE_UI = 10n; //0.1%
-export const FEE_UI_DENOM = 100_00n;
 
 export const BASE_INPUT_AMOUNT_ERG = 1n; //1 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
@@ -309,28 +307,6 @@ export function calculateReserveRateAndBorders(
 	);
 
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV };
-}
-
-// Fee
-export function applyFee(inputERG: bigint, feeMining: bigint) {
-	const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
-	const contractERG = inputERG - feeMining - uiSwapFee;
-	return { uiSwapFee, contractERG };
-}
-export function reverseFee(contractERG: bigint, feeMining: bigint) {
-	const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const inputERG = contractERG + feeMining + uiSwapFee;
-	return { inputERG, uiSwapFee };
-}
-export function reverseFeeSell(contractERG: bigint, feeMining: bigint) {
-	const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
-	const userERG = contractERG - feeMining - uiSwapFee;
-	return { userERG, uiSwapFee };
-}
-export function applyFeeSell(inputERG: bigint, feeMining: bigint) {
-	const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const contractERG = inputERG + feeMining + uiSwapFee;
-	return { uiSwapFee, contractERG };
 }
 
 // Swap Price | USD <-> ERG

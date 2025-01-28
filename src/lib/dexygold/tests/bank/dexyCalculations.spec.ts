@@ -80,7 +80,7 @@ describe('asd', async () => {
 		initTestBoxes();
 	});
 	// INPUT ERG
-	it.only('Initial Test	: Sell ERG : Input ERG', async () => {
+	it('Initial Test	: Sell ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -144,7 +144,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('With FEE 	: Sell ERG : Input ERG', async () => {
+	it('With FEE 	: Sell ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -217,7 +217,7 @@ describe('asd', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it.only('Initial Test	: Buy  ERG : Input ERG', async () => {
+	it('Initial Test	: Buy  ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -281,7 +281,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('With FEE 	: Buy  ERG : Input ERG', async () => {
+	it('With FEE 	: Buy  ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -353,7 +353,7 @@ describe('asd', async () => {
 	});
 
 	//applyFeeSell(inputERG: bigint, feeMining: bigint)
-	it.only('Initial Test	: Buy  ERG : Input Dexy', async () => {
+	it('Initial Test	: Buy  ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -418,7 +418,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('With FEE 	: Buy  ERG : Input Dexy', async () => {
+	it('With FEE 	: Buy  ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -485,7 +485,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Initial Test	: Sell ERG : Input Dexy', async () => {
+	it('Initial Test	: Sell ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -550,7 +550,7 @@ describe('asd', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('With FEE 	: Sell ERG : Input Dexy', async () => {
+	it('With FEE 	: Sell ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);

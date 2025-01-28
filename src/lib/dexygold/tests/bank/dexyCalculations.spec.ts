@@ -615,3 +615,21 @@ describe('LP swap with any input should work', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 });
+
+describe('Bank FreeMint with any input should work', async () => {
+	beforeAll(() => {
+		initTestBoxes();
+	});
+	it('bank test', () => {
+		expect('need to add').toBe('done');
+	});
+});
+
+describe('Bank ArbitrageMint with any input should work', async () => {
+	beforeAll(() => {
+		initTestBoxes();
+	});
+	it('bank test', () => {
+		expect('need to add').toBe('done');
+	});
+});

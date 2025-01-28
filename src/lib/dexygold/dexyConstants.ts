@@ -276,13 +276,17 @@ function sortKeysByLength(obj: Object) {
 	);
 }
 
+//export const vitestTokenIds = mainnetTokenIds;
+export const vitestTokenIds = testTokenIds;
+
+export const vitestAddresses = dexyAddresses;
+
 export const contractCompileVariables = sortKeysByLength({
-	...convertHexToBase64(mainnetTokenIds),
+	...convertHexToBase64(vitestTokenIds), //<== ENSURE TO CHANGE
 	...contractConfig
 });
 
 // vitest helpers
-
 export const vitestContractConfig = scalaToJsNumbers(contractConfig);
 
 function scalaToJsNumbers(o: Object) {
@@ -300,11 +304,6 @@ function scalaToJsNumbers(o: Object) {
 		})
 	);
 }
-
-//export const vitestTokenIds = mainnetTokenIds;
-export const vitestTokenIds = testTokenIds;
-
-export const vitestAddresses = dexyAddresses;
 
 function tree(address: string): string {
 	return address ? ErgoAddress.fromBase58(address).ergoTree : '';

@@ -77,7 +77,7 @@ describe('asd', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('Swap (sell Ergs) should work - w. simple input', async () => {
+	it.only('Swap (sell Ergs) should work - w. simple input', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: abcd } = parseLpBox(lpIn);
@@ -88,7 +88,7 @@ describe('asd', async () => {
 		const userUtxos = [fakeUserBox];
 
 		//user Inputs //TODO: Get inputs
-		const height = 1000000;
+		const height = 1449119; //1,449,120
 		const ergInput = 1_000_000_000n;
 		const direction = directionSell;
 		//const direction = directionBuy;

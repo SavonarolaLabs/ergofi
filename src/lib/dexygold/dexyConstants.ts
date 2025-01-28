@@ -152,6 +152,8 @@ const testTokenIds: any = {
 	lpMintNFT: '27521c68cbf6863bf2e6a087495d2b6794db36303e18dfac68e1d9e1824931de',
 	lpRedeemNFT: '3d8743ba7060ccd0a3437bbe0c3d9a2ff16d1ac66ff08af220e053b7dd77d8d4',
 	lpTokenId: '23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4',
+	//dublicate
+	lpToken: '23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4',
 	tracking95NFT: 'ace8dde0c7b911e633533d358451721526a3f54a65f824d1428eb2c710b297e4',
 	tracking98NFT: '887db49191ab0d0ef290668d78e9ddc3604cc04921e119d7049c26fd9059d6b6',
 	tracking101NFT: '88d88a89fa13be6f048bbe68195696573dc9e584d34190d37a7ece7189b8580d',
@@ -163,7 +165,8 @@ const testTokenIds: any = {
 	arbitrageMintNFT: 'a2e14bbfff15a86959862f351a03c84cb49cd078bbbfb27f95424ed4eba5dbb0',
 	freeMintNFT: '9fe049100ef4e4514c8dfe7b08d28e95e0dcdb267184bf4d6c6cf460e16c81d4',
 	payoutNFT: 'b667ad04ff28c0a5af15bb7c453cfb10d531c8556e229617d6bda28309e2e0cd',
-	dexyTokenId: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed'
+	dexyTokenId: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed',
+	dexyUSD: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed'
 };
 
 export const initialTokenAmount: any = {

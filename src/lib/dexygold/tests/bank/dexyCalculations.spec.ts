@@ -11,6 +11,7 @@ import {
 	initTestBoxes,
 	mintInitialOutputs
 } from '$lib/stores/dexyGoldStore';
+import { nanoErgToErg } from '$lib/TransactionUtils';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
 import { before } from 'node:test';
 import { get } from 'svelte/store';
@@ -99,7 +100,7 @@ describe('asd', async () => {
 		const feeDenomLp = 1000n;
 
 		//Direct conversion
-		const { amountDexy, amountErg, rate } = lpSwapInputErg(
+		let { amountDexy, amountErg, rate } = lpSwapInputErg(
 			direction,
 			ergInput,
 			lpXIn,
@@ -107,13 +108,14 @@ describe('asd', async () => {
 			feeNumLp,
 			feeDenomLp
 		);
+
 		console.log(amountDexy, ' amountDexy');
 		console.log(amountErg, ' amountErg');
 		console.log(rate, ' rate');
 
-		//---------------
-		//Build Outputs
-		//---------------
+		amountDexy = amountDexy - 20n; //"ENSURE WE TAKE LESS"
+		console.log(amountDexy, ' corrected Dexy for test');
+
 		const swapOutValue = swapInValue;
 		const lpXOut = BigInt(BigInt(lpXIn) - BigInt(direction) * BigInt(amountErg));
 		const lpYOut = BigInt(BigInt(lpYIn) + BigInt(direction) * BigInt(amountDexy));
@@ -152,13 +154,12 @@ describe('asd', async () => {
 
 		//add sign
 		console.dir(unsignedTx, { depth: null });
-		//const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
-		//expect(signedTx).toBeTruthy();
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
 	});
 	it.skip('sfs', async () => {
 		const signedTx = await mintInitialOutputs();
 		console.log(signedTx);
 		expect(signedTx).toBeTruthy();
-		//9 //13
 	});
 });

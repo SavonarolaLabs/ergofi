@@ -41,15 +41,30 @@ export function lpSwapInputDexy(
 	const rate = Number(reservesYIn) / Number(reservesXIn);
 	let amountErg;
 	// in case amountDexy is OUTPUT
+
 	if (direction == directionSell) {
-		amountErg = BigInt(
-			Math.ceil(Number((amountDexy + 1n) * feeDenomLp) / (rate * Number(feeNumLp)))
-		); //AlreadyRounded
-	} else {
+		//amountDexy = 1000n;
 		amountErg =
-			BigInt(Math.floor((Number(amountDexy) * Number(feeNumLp)) / (Number(feeDenomLp) * rate))) -
-			100n; //Any reason there -100n ?
+			(amountDexy * reservesXIn * feeDenomLp) / (reservesYIn * feeNumLp - amountDexy * feeNumLp) +
+			1n; // cause >=?
+	} else {
+		//amountDexy = 1000n;
+		amountErg =
+			(reservesXIn * amountDexy * feeNumLp) / (reservesYIn * feeDenomLp + amountDexy * feeNumLp) -
+			1n; // cause <=
 	}
+
+	// if (direction == directionSell) {
+	// 	console.log('we are here');
+	// 	amountErg = BigInt(
+	// 		Math.floor(Number((amountDexy + 1n) * feeDenomLp) / (rate * Number(feeNumLp)))
+	// 	); //- 100n; //- 1n; //Rounded but need to check -1n <==
+	// } else {
+	// 	//
+	// 	amountErg = BigInt(
+	// 		Math.ceil((Number(amountDexy) * Number(feeNumLp)) / (Number(feeDenomLp) * rate))
+	// 	); //+100n; //Rounded but need to check +1n <==
+	// }
 
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }

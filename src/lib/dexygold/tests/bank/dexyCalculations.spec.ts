@@ -79,8 +79,8 @@ describe('asd', async () => {
 	it('Swap (sell Ergs) should work - w. simple input', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
-		const { value: lpXIn, lpTokenAmount: lpYIn, dexyAmount: lpTokensIn } = parseLpBox(lpIn);
-
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: abcd } = parseLpBox(lpIn);
+		const lpYIn = BigInt(abcd);
 		const swapIn = get(dexygold_lp_swap_box);
 		const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
 
@@ -88,8 +88,9 @@ describe('asd', async () => {
 
 		//user Inputs //TODO: Get inputs
 		const height = 1000000;
-		const ergInput = 10_000_000n;
+		const ergInput = 1_000_000_000n;
 		const direction = directionSell;
+		//const direction = directionBuy;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
@@ -106,16 +107,26 @@ describe('asd', async () => {
 			feeNumLp,
 			feeDenomLp
 		);
+		console.log(amountDexy, ' amountDexy');
+		console.log(amountErg, ' amountErg');
+		console.log(rate, ' rate');
 
 		//---------------
 		//Build Outputs
 		//---------------
 		const swapOutValue = swapInValue;
-		const lpXOut = lpXIn - direction * amountErg;
-		const lpYOut = lpYIn + direction * amountDexy;
+		const lpXOut = BigInt(BigInt(lpXIn) - BigInt(direction) * BigInt(amountErg));
+		const lpYOut = BigInt(BigInt(lpYIn) + BigInt(direction) * BigInt(amountDexy));
+
+		console.log(lpXIn, ' => ', lpXOut, ' delta =', lpXOut - lpXIn);
+		console.log(lpYIn, ' => ', lpYOut, ' delta =', lpYOut - lpYIn);
+
+		console.log(lpXOut);
+		console.log(lpYOut);
 
 		//const swapin2 = realMintedTestBoxes.lpSwapNFT;
 		//const lpin2 = realMintedTestBoxes.lpNFT;
+		//console.dir([lpIn, swapIn, ...userUtxos], { depth: null });
 
 		// Build Tx
 		const unsignedTx = new TransactionBuilder(height)
@@ -140,10 +151,14 @@ describe('asd', async () => {
 			.toEIP12Object();
 
 		//add sign
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
-		expect(signedTx).toBeTruthy();
+		console.dir(unsignedTx, { depth: null });
+		//const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		//expect(signedTx).toBeTruthy();
 	});
-	it.only('sfs', async () => {
-		const signed = await mintInitialOutputs();
+	it.skip('sfs', async () => {
+		const signedTx = await mintInitialOutputs();
+		console.log(signedTx);
+		expect(signedTx).toBeTruthy();
+		//9 //13
 	});
 });

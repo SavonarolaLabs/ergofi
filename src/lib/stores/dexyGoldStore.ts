@@ -40,8 +40,12 @@ const lpIn = {
 	]
 };
 
-export function initTestBoxes() {
-	dexygold_lp_box.set(outputBoxes.lp);
+export async function initTestBoxes() {
+	const signedTx = await mintInitialOutputs();
+
+	//dexygold_lp_box.set(outputBoxes.lp);
+	dexygold_lp_box.set(signedTx.outputs[13]);
+	dexygold_lp_swap_box.set(signedTx.outputs[9]);
 
 	dexygold_tracking95_box.set(outputBoxes.tracking95);
 	dexygold_tracking98_box.set(outputBoxes.tracking98);
@@ -58,13 +62,12 @@ export function initTestBoxes() {
 	dexygold_lp_mint_box.set(outputBoxes.lpMint);
 	dexygold_lp_redeem_box.set(outputBoxes.lpRedeem);
 	dexygold_lp_extract_box.set(outputBoxes.lpExtract);
-	dexygold_lp_swap_box.set(outputBoxes.lpSwap);
+	//dexygold_lp_swap_box.set(outputBoxes.lpSwap);
 
 	//dexygold_lp_proxy_swap_buy_box.set(outputBoxes.lpSwapBuyV1);
 	//dexygold_lp_proxy_swap_sell_box.set(outputBoxes.lpSwapSellV1);
 	//dexygold_ballot_box.set(outputBoxes.ballot);
 	//dexygold_update_box.set(outputBoxes.update);
-	mintInitialOutputs();
 }
 
 export async function mintInitialOutputs() {
@@ -333,7 +336,6 @@ const outputBoxes = {
 		value: 1000000000,
 		assets: [{ tokenId: lpMintNFT, amount: 1n }] //dexyTokenId
 	},
-
 	lpRedeem: {
 		ergoTree: lpRedeemErgoTree,
 		value: 1000000000,

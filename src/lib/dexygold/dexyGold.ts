@@ -18,11 +18,12 @@ export function lpSwapInputErg(
 	let amountDexy: bigint;
 
 	if (direction === directionSell) {
-		amountDexy =
-			BigInt(Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))) - 1n;
+		amountDexy = BigInt(
+			Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))
+		); //Round Down //- 1n;
 	} else {
 		amountDexy = BigInt(
-			Math.floor((Number(amountErg + 100n) * (Number(feeDenomLp) * rate)) / Number(feeNumLp))
+			Math.ceil((Number(amountErg + 100n) * (Number(feeDenomLp) * rate)) / Number(feeNumLp)) //Round UP
 		);
 	}
 

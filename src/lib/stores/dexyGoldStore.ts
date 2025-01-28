@@ -213,9 +213,21 @@ export const fakeUserBox = {
 	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
 	index: 0
 };
+export const fakeUserWithDexyBox = {
+	boxId: '32a710592b1277d4cc0e97752d39823afacae1b269c72e9d23b06baaa587e618',
+	value: '1000000000000000',
+	ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+	assets: [
+		{ tokenId: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed', amount: 100000 }
+	],
+	creationHeight: 1443463,
+	additionalRegisters: {},
+	transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+	index: 0
+};
 
 const initialUserBoxes = [
-	fakeUserBox,
+	fakeUserWithDexyBox,
 	gortInitialBox,
 	//gortIdInitialBox,
 	oracleTokenIdInitialBox,

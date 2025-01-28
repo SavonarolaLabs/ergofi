@@ -64,6 +64,7 @@
 	import SwapWidgetTokenRow from './SwapWidgetTokenRow.svelte';
 	import { headline } from './stores/ui';
 	import { directionBuy, directionSell } from './api/ergoNode';
+	import Tint from './icons/Tint.svelte';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -723,9 +724,12 @@
 							}}
 						>
 							{#if fromCurrency.isLpToken}
-								<div class="te leading-0 flex w-full flex-col justify-center text-xs">
-									<div>Liquidity</div>
-									<div>Token</div>
+								<div class="flex items-center gap-3 text-white">
+									<div class="text-lg text-blue-300"><Tint></Tint></div>
+									<div class=" leading-0 flex w-full flex-col justify-center text-xs">
+										<div>Liquidity</div>
+										<div>Token</div>
+									</div>
 								</div>
 							{:else}
 								<div class="flex items-center gap-3">
@@ -900,9 +904,12 @@
 						}}
 					>
 						{#if toCurrency.isLpToken}
-							<div class="te leading-0 flex w-full flex-col justify-center text-xs">
-								<div>Liquidity</div>
-								<div>Token</div>
+							<div class="flex items-center gap-3 text-white">
+								<div class="text-lg text-blue-300"><Tint></Tint></div>
+								<div class=" leading-0 flex w-full flex-col justify-center text-xs">
+									<div>Liquidity</div>
+									<div>Token</div>
+								</div>
 							</div>
 						{:else}
 							<div class="flex items-center gap-3">

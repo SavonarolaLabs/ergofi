@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Tint from './icons/Tint.svelte';
+
 	export let c: {
 		isLpPool?: boolean;
 		isLpToken?: boolean;
@@ -28,9 +30,12 @@
 			</div>
 		</div>
 
-		<div class="text-center">
-			<div class="text-xs">Liquidity</div>
-			<div class="text-xs">{c.isLpToken ? 'Token' : 'Pool'}</div>
+		<div class="flex gap-2">
+			<Tint></Tint>
+			<div class="text-center">
+				<div class="text-xs">Liquidity</div>
+				<div class="text-xs">{c.isLpToken ? 'Token' : 'Pool'}</div>
+			</div>
 		</div>
 	</div>
 {:else}

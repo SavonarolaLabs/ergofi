@@ -2,6 +2,7 @@
 	import Spinner from './Spinner.svelte';
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
+	import DexyGoldLpUTXO from './DexyGoldLpUTXO.svelte';
 	import {
 		confirmed_interactions,
 		mempool_interactions,
@@ -81,7 +82,11 @@
 
 <div class="widget text-gray-500">
 	<div class="pl-2">
-		<BankUTXO />
+		{#if $headline == 'DexyGold'}
+			<DexyGoldLpUTXO></DexyGoldLpUTXO>
+		{:else}
+			<BankUTXO />
+		{/if}
 		<!-- {#if $mempool_interactions.length > 0 || $prepared_interactions.length > 0}
 			<div in:fade={{ duration: 400 }} out:fly={{ y: -20, opacity: 0, duration: 300 }}>
 				<BankUtxoUnconfirmed confirmed={false} />

@@ -179,8 +179,6 @@ export function parseTrackingBox(box: any): ParsedTrackingBox {
 }
 
 export function parseDexyGoldOracleBox(box: any): ParsedDexyGoldOracleBox {
-	console.log('Parser');
-	console.log(box);
 	return {
 		value: asBigInt(box.value),
 		oraclePoolNFT: box.assets[0].tokenId,

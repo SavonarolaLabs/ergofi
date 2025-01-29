@@ -9,10 +9,16 @@ import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmaUSDAndDexy';
-import { parseLpBox, parseLpMintBox, parseLpSwapBox } from '$lib/stores/dexyGoldParser';
+import {
+	parseLpBox,
+	parseLpMintBox,
+	parseLpRedeemBox,
+	parseLpSwapBox
+} from '$lib/stores/dexyGoldParser';
 import {
 	dexygold_lp_box,
 	dexygold_lp_mint_box,
+	dexygold_lp_redeem_box,
 	dexygold_lp_swap_box,
 	fakeUserBox,
 	fakeUserWithDexyBox,
@@ -82,6 +88,48 @@ const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractCon
 
 // const dexyUSD = dexyTokenId;
 // const lpToken = lpTokenId;
+export function calculateLpMintInputErg(
+	contractErg: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractLpTokens: bigint = (contractErg * supplyLpIn) / lpXIn;
+	const contractDexy = (contractErg * (lpYIn * supplyLpIn)) / (supplyLpIn * lpXIn) + 1n; //roundUp bigInt + low values
+	// console.log('contractErg', contractErg);
+	// console.log('lpYIn * supplyLpIn', lpYIn * supplyLpIn);
+	// console.log('contractErg*lpYIn * supplyLpIn', contractErg * lpYIn * supplyLpIn);
+	// console.log(
+	// 	'contractErg*lpYIn * supplyLpIn/supplyLpIn',
+	// 	(contractErg * lpYIn * supplyLpIn) / supplyLpIn
+	// );
+	// console.log(
+	// 	'contractErg*lpYIn * supplyLpIn/supplyLpIn/lpXIn',
+	// 	(contractErg * lpYIn * supplyLpIn) / supplyLpIn / lpXIn
+	// );
+
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpMintInputDexy(
+	contractDexy: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractLpTokens: bigint = (contractDexy * supplyLpIn) / lpYIn;
+	const contractErg = (contractDexy * supplyLpIn * lpXIn) / (lpYIn * supplyLpIn) + 1n; //RoundUp
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpMintInputSharesUnlocked(
+	contractLpTokens: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractDexy = (contractLpTokens * lpYIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
+	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
+	return { contractDexy, contractErg, contractLpTokens };
+}
 
 describe.skip('LP swap with any input should work', async () => {
 	beforeAll(() => {
@@ -628,7 +676,8 @@ describe('LP Mint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('Initial TEST: Mint Lp (deposit Ergs and Dexy) should work', async () => {
+
+	it.only('Initial Test	: Mint LP  : Input ERG & DEXY', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -687,53 +736,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-
-	function calculateLpMintInputErg(
-		contractErg: bigint,
-		lpXIn: bigint,
-		lpYIn: bigint,
-		supplyLpIn: bigint
-	) {
-		const contractLpTokens: bigint = (contractErg * supplyLpIn) / lpXIn;
-		const contractDexy = (contractErg * (lpYIn * supplyLpIn)) / (supplyLpIn * lpXIn) + 1n; //roundUp bigInt + low values
-		// console.log('contractErg', contractErg);
-		// console.log('lpYIn * supplyLpIn', lpYIn * supplyLpIn);
-		// console.log('contractErg*lpYIn * supplyLpIn', contractErg * lpYIn * supplyLpIn);
-		// console.log(
-		// 	'contractErg*lpYIn * supplyLpIn/supplyLpIn',
-		// 	(contractErg * lpYIn * supplyLpIn) / supplyLpIn
-		// );
-		// console.log(
-		// 	'contractErg*lpYIn * supplyLpIn/supplyLpIn/lpXIn',
-		// 	(contractErg * lpYIn * supplyLpIn) / supplyLpIn / lpXIn
-		// );
-
-		return { contractDexy, contractErg, contractLpTokens };
-	}
-
-	function calculateLpMintInputDexy(
-		contractDexy: bigint,
-		lpXIn: bigint,
-		lpYIn: bigint,
-		supplyLpIn: bigint
-	) {
-		const contractLpTokens: bigint = (contractDexy * supplyLpIn) / lpYIn;
-		const contractErg = (contractDexy * supplyLpIn * lpXIn) / (lpYIn * supplyLpIn) + 1n; //RoundUp
-		return { contractDexy, contractErg, contractLpTokens };
-	}
-
-	function calculateLpMintInputSharesUnlocked(
-		contractLpTokens: bigint,
-		lpXIn: bigint,
-		lpYIn: bigint,
-		supplyLpIn: bigint
-	) {
-		const contractDexy = (contractLpTokens * lpYIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
-		const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
-		return { contractDexy, contractErg, contractLpTokens };
-	}
-
-	it.only('Input only Erg', async () => {
+	it.only('			: Mint LP  : Input only Erg', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -803,7 +806,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Input only Dexy', async () => {
+	it.only('			: Mint LP  : Input only Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -873,8 +876,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-
-	it('REWORK Input only Dexy', async () => {
+	it.only('			: Mint LP  : Input only Shares', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -886,25 +888,36 @@ describe('LP Mint with any input should work', async () => {
 		const userUtxos = [fakeUserWithDexyBox];
 		//user Inputs
 		const height = 1449119;
-		const dexyInput = 10_000n;
-		const ergoInput = 500_000n;
+		const sharesUnlocked = 64000000n;
 
 		//constants
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
+		const supplyLpIn = initialLp - lpTokensIn;
+		//initialLp - lpBalanceIn; Crit:100000000000 (all in)
+
+		// CALCULATION GO GO
+		let { contractErg: ergoInput, contractDexy: dexyInput } = calculateLpMintInputSharesUnlocked(
+			sharesUnlocked,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		); //RETURN 0 dexy
+		//console.log('dexyInput', dexyInput);
+		//console.log('sharesUnlocked', sharesUnlocked);
+
 		const lpMintOutValue = lpMintInValue;
 		const lpXOut = lpXIn + ergoInput;
 		const lpYOut = lpYIn + dexyInput;
-		const supplyLpIn = initialLp - lpTokensIn; //initialLp - lpBalanceIn; Crit:100000000000 (all in)
 
-		const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
-		const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
-		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
+		//const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
+		//const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
+		//const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
 
-		// console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
-		// console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
-		// console.log(sharesUnlocked, ' sharesUnlocked');
+		//console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
+		//console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
+		//console.log(sharesUnlocked, ' sharesUnlocked');
 
 		const lpTokensOut = lpTokensIn - sharesUnlocked;
 
@@ -933,64 +946,8 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it('REWORK Input only LP token', async () => {
-		//input BOXES
-		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
-		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
-		//const swapIn = get(dexygold_lp_swap_box);
-		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
-		const lpMintIn = get(dexygold_lp_mint_box);
-		const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(lpMintIn);
-
-		const userUtxos = [fakeUserWithDexyBox];
-		//user Inputs
-		const height = 1449119;
-		const dexyInput = 10_000n;
-		const ergoInput = 500_000n;
-
-		//constants
-		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
-		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-
-		const lpMintOutValue = lpMintInValue;
-		const lpXOut = lpXIn + ergoInput;
-		const lpYOut = lpYIn + dexyInput;
-		const supplyLpIn = initialLp - lpTokensIn; //initialLp - lpBalanceIn; Crit:100000000000 (all in)
-
-		const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
-		const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
-		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
-
-		// console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
-		// console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
-		// console.log(sharesUnlocked, ' sharesUnlocked');
-
-		const lpTokensOut = lpTokensIn - sharesUnlocked;
-
-		const unsignedTx = new TransactionBuilder(height)
-			.from([lpIn, lpMintIn, ...userUtxos], {
-				ensureInclusion: true
-			})
-			.to(
-				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
-					{ tokenId: lpNFT, amount: 1n },
-					{ tokenId: lpTokenId, amount: lpTokensOut },
-					{ tokenId: dexyTokenId, amount: lpYOut }
-				])
-			)
-			.to(
-				new OutputBuilder(lpMintOutValue, lpMintErgoTree).addTokens([
-					{ tokenId: lpMintNFT, amount: 1n }
-				])
-			)
-			.payFee(feeMining)
-			.sendChangeTo(userChangeAddress)
-			.build()
-			.toEIP12Object();
-
-		//console.dir(unsignedTx, { depth: null });
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
-		expect(signedTx).toBeTruthy();
+	it.only('With FEE', () => {
+		expect('TODO').toBe('done');
 	});
 });
 
@@ -999,8 +956,107 @@ describe.skip('LP Redeem with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('LP test', () => {
-		expect('need to add').toBe('done');
+
+	it.only('			: Mint LP  : Input only Shares', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+		//const swapIn = get(dexygold_lp_swap_box);
+		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
+		const lpReeemIn = get(dexygold_lp_redeem_box);
+		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpReeemIn);
+
+		const userUtxos = [fakeUserWithDexyBox];
+		//user Inputs
+		const height = 1449119;
+		const sharesUnlocked = 64000000n;
+
+		//constants
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		const supplyLpIn = initialLp - lpTokensIn;
+		//initialLp - lpBalanceIn; Crit:100000000000 (all in)
+
+		// make calculations
+		// val supplyLP = InitiallyLockedLP - poolLP._2
+		//val minReturnX = selfLP._2.toBigInt * reservesXAmount / supplyLP / 100 * 98  // 2% fee
+		//val minReturnY = selfLP._2.toBigInt * reservesY._2 / supplyLP / 100 * 98     // 2% fee
+
+		//val returnXAmount = returnOut.value - SELF.value + DexFee
+		//
+		//
+
+		// ??????
+		//
+		function calculateLpRedeemInputSharesUnlocked(
+			contractLpTokens: bigint,
+			lpXIn: bigint,
+			lpYIn: bigint,
+			supplyLpIn: bigint
+		) {
+			const contractDexy = ((contractLpTokens * lpYIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
+			const contractErg = ((contractLpTokens * lpXIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
+			return { contractDexy, contractErg, contractLpTokens };
+		}
+
+		// USER RECEIPT on OUTPUT 2
+
+		// CALCULATION GO GO
+		let { contractErg: ergoInput, contractDexy: dexyInput } = calculateLpRedeemInputSharesUnlocked(
+			sharesUnlocked,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		);
+		//console.log('dexyInput', dexyInput);
+		//console.log('sharesUnlocked', sharesUnlocked);
+
+		//const reservesXOut = reservesXIn - withdrawX;
+		//const reservesYOut = reservesYIn - withdrawY;
+		//const lpBalanceOut = lpBalanceIn + lpRedeemed;
+
+		//const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
+		//const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
+		//const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
+
+		//console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
+		//console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
+		//console.log(sharesUnlocked, ' sharesUnlocked');
+
+		const lpRedeemOutValue = lpRedeemInValue;
+		const lpXOut = lpXIn - ergoInput;
+		const lpYOut = lpYIn - dexyInput;
+		const lpTokensOut = lpTokensIn + sharesUnlocked;
+
+		const receiptValue = '';
+		const receiptBox = new OutputBuilder(receiptValue, userAddress);
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpReeemIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpRedeemOutValue, lpRedeemErgoTree).addTokens([
+					{ tokenId: lpRedeemNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
 	});
 });
 

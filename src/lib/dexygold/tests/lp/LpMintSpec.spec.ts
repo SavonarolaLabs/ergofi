@@ -24,7 +24,8 @@ describe('LpMintSpec', () => {
 	});
 
 	it('Mint Lp (deposit Ergs and Dexy) should work', () => {
-		const lpBalanceIn = 100000000n;
+		//initialLp: 100_000_000_000n
+		const lpBalanceIn = 100_000_000n;
 		const reservesXIn = 1000000000000n;
 		const reservesYIn = 100000000n;
 		const depositX = 500000n;

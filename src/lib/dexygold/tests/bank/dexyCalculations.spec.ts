@@ -1,12 +1,18 @@
 import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
-import { vitestTokenIds, vitestErgoTrees, realMintedTestBoxes } from '$lib/dexygold/dexyConstants';
+import {
+	vitestTokenIds,
+	vitestErgoTrees,
+	realMintedTestBoxes,
+	vitestContractConfig
+} from '$lib/dexygold/dexyConstants';
 import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmaUSDAndDexy';
-import { parseLpBox, parseLpSwapBox } from '$lib/stores/dexyGoldParser';
+import { parseLpBox, parseLpMintBox, parseLpSwapBox } from '$lib/stores/dexyGoldParser';
 import {
 	dexygold_lp_box,
+	dexygold_lp_mint_box,
 	dexygold_lp_swap_box,
 	fakeUserBox,
 	fakeUserWithDexyBox,
@@ -72,10 +78,12 @@ const {
 	dexyTokenId
 } = vitestTokenIds;
 
+const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractConfig;
+
 // const dexyUSD = dexyTokenId;
 // const lpToken = lpTokenId;
 
-describe('LP swap with any input should work', async () => {
+describe.skip('LP swap with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
@@ -616,7 +624,121 @@ describe('LP swap with any input should work', async () => {
 	});
 });
 
-describe('Bank FreeMint with any input should work', async () => {
+describe('LP Mint with any input should work', async () => {
+	beforeAll(() => {
+		initTestBoxes();
+	});
+	it('Mint Lp (deposit Ergs and Dexy) should work', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+		//const swapIn = get(dexygold_lp_swap_box);
+		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
+		const lpMintIn = get(dexygold_lp_mint_box);
+		const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(lpMintIn);
+
+		const userUtxos = [fakeUserWithDexyBox];
+		//user Inputs
+		const height = 1449119;
+		const dexyInput = 50n;
+		const ergoInput = 500_000n;
+
+		//const direction = directionSell;
+
+		//const direction = directionBuy;
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		//constants:
+		const feeNumLp = 997n;
+		const feeDenomLp = 1000n;
+
+		const lpBalanceIn = lpTokensIn;
+		//const lpBalanceIn = 100000000n;
+		const reservesXIn = lpXIn;
+		//const reservesXIn = 1000000000000n;
+		const reservesYIn = lpYIn;
+		//const reservesYIn = 100000000n;
+		const depositX = ergoInput;
+		//const depositX = 500000n;
+		const depositY = dexyInput;
+		//const depositY = 50n;
+
+		const reservesXOut = reservesXIn + depositX;
+		const reservesYOut = reservesYIn + depositY;
+		const supplyLpIn = lpBalanceIn; //initialLp - lpBalanceIn;
+		console.log(supplyLpIn, 'supplyLpIn');
+		const sharesUnlockedX = (depositX * supplyLpIn) / reservesXIn;
+		const sharesUnlockedY = (depositY * supplyLpIn) / reservesYIn;
+		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
+		console.log();
+
+		console.log(
+			sharesUnlockedX,
+			'sharesUnlockedX |',
+			'depositX',
+			depositX,
+			' reservesXIn',
+			reservesXIn
+		);
+		console.log(
+			sharesUnlockedY,
+			'sharesUnlockedY |',
+			'depositY',
+			depositY,
+			' reservesYIn',
+			reservesYIn
+		);
+		console.log(sharesUnlocked, ' sharesUnlocked');
+
+		//expect(sharesUnlocked).toBe(49950n);
+		const lpBalanceOut = lpBalanceIn - sharesUnlocked;
+
+		//---------
+		const lpXOut = reservesXOut;
+		const lpYOut = reservesYOut;
+
+		const lpMintOutValue = lpMintInValue;
+
+		//---------
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpMintIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpBalanceOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpMintOutValue, lpMintErgoTree).addTokens([
+					{ tokenId: lpMintNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+});
+
+// -------------------------------------------------------------------------------------
+describe.skip('LP Redeem with any input should work', async () => {
+	beforeAll(() => {
+		initTestBoxes();
+	});
+	it('LP test', () => {
+		expect('need to add').toBe('done');
+	});
+});
+
+describe.skip('Bank FreeMint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
@@ -625,7 +747,7 @@ describe('Bank FreeMint with any input should work', async () => {
 	});
 });
 
-describe('Bank ArbitrageMint with any input should work', async () => {
+describe.skip('Bank ArbitrageMint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});

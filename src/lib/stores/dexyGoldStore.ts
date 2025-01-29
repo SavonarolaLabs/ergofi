@@ -46,6 +46,8 @@ export async function initTestBoxes() {
 	//dexygold_lp_box.set(outputBoxes.lp);
 	dexygold_lp_box.set(signedTx.outputs[13]);
 	dexygold_lp_swap_box.set(signedTx.outputs[9]);
+	dexygold_lp_mint_box.set(signedTx.outputs[10]);
+	dexygold_lp_redeem_box.set(signedTx.outputs[11]);
 
 	dexygold_tracking95_box.set(outputBoxes.tracking95);
 	dexygold_tracking98_box.set(outputBoxes.tracking98);
@@ -59,8 +61,8 @@ export async function initTestBoxes() {
 
 	dexygold_buyback_box.set(outputBoxes.buyback);
 
-	dexygold_lp_mint_box.set(outputBoxes.lpMint);
-	dexygold_lp_redeem_box.set(outputBoxes.lpRedeem);
+	//dexygold_lp_mint_box.set(outputBoxes.lpMint);
+	//dexygold_lp_redeem_box.set(outputBoxes.lpRedeem);
 	dexygold_lp_extract_box.set(outputBoxes.lpExtract);
 	//dexygold_lp_swap_box.set(outputBoxes.lpSwap);
 
@@ -366,7 +368,7 @@ const outputBoxes = {
 		value: 43224547253880,
 		assets: [
 			{ tokenId: lpNFT, amount: 1n },
-			{ tokenId: lpTokenId, amount: initialLp }, //   "amount": ${initialLp - 6_400_000_000L}
+			{ tokenId: lpTokenId, amount: initialLp - 6_400_000_000n }, //   "amount": ${initialLp - 6_400_000_000L}
 			{ tokenId: dexyTokenId, amount: 1_000_000 } //1_000_001
 		]
 	}

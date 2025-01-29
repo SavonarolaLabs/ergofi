@@ -52,14 +52,15 @@ let validRedemption =
 
 		let a = (deltaReservesX * supplyLpIn * 100) / 98 >= _deltaSupplyLp * reservesXIn;
 		let b = (deltaReservesY * supplyLpIn * 100) / 98 >= _deltaSupplyLp * reservesYIn;
-		return a && b;
+		let c = a && !!b;
+		return c;
 	})() &&
 	validRateForRedeemingLp;
 
 let selfPreserved =
 	successor.propositionBytes == SELF.propositionBytes &&
 	successor.value >= SELF.value &&
-	successor.tokens == SELF.tokens;
+	successor.tokens() == SELF.tokens();
 
 const contract =
 	sigmaProp(validRedemption && selfPreserved) ||

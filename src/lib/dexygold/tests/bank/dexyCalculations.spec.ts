@@ -966,8 +966,8 @@ describe('LP Redeem with any input should work', async () => {
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
 		//const swapIn = get(dexygold_lp_swap_box);
 		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
-		const lpReeemIn = get(dexygold_lp_redeem_box);
-		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpReeemIn);
+		const lpRedeemIn = get(dexygold_lp_redeem_box);
+		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpRedeemIn);
 
 		const goldOracle = get(oracle_erg_xau_box);
 		console.log(goldOracle);
@@ -1006,8 +1006,16 @@ describe('LP Redeem with any input should work', async () => {
 			lpYIn: bigint,
 			supplyLpIn: bigint
 		) {
-			const contractDexy = ((contractLpTokens * lpYIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
-			const contractErg = ((contractLpTokens * lpXIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
+			//OLD from PROXY
+			//const contractDexy = ((contractLpTokens * lpYIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
+			//const contractErg = ((contractLpTokens * lpXIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
+
+			//NEW
+			const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn) - 1n;
+			// contractErg < (98 * contractLpTokens * lpXIn) / (100 * supplyLpIn);
+			const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn) - 1n;
+			// contractDexy < 98 contractLpTokens * lpYIn/(100*supplyLpIn);
+
 			return { contractDexy, contractErg, contractLpTokens };
 		}
 
@@ -1020,7 +1028,10 @@ describe('LP Redeem with any input should work', async () => {
 			lpYIn,
 			supplyLpIn
 		);
-		console.log('rate:', lpXIn / lpYIn);
+		console.log('ergoInput', ergoInput);
+		console.log('dexyInput', dexyInput);
+		console.log('sharesUnlocked', sharesUnlocked);
+
 		//console.log('dexyInput', dexyInput);
 		//console.log('sharesUnlocked', sharesUnlocked);
 
@@ -1037,6 +1048,7 @@ describe('LP Redeem with any input should work', async () => {
 		//console.log(sharesUnlocked, ' sharesUnlocked');
 
 		const lpRedeemOutValue = lpRedeemInValue;
+
 		const lpXOut = lpXIn - ergoInput;
 		const lpYOut = lpYIn - dexyInput;
 		const lpTokensOut = lpTokensIn + sharesUnlocked;
@@ -1045,7 +1057,7 @@ describe('LP Redeem with any input should work', async () => {
 		//const receiptBox = new OutputBuilder(receiptValue, userAddress);
 
 		const unsignedTx = new TransactionBuilder(height)
-			.from([lpIn, lpReeemIn, ...userUtxos], {
+			.from([lpIn, lpRedeemIn, ...userUtxos], {
 				ensureInclusion: true
 			})
 			.withDataFrom([goldOracle])

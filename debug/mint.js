@@ -1,59 +1,9 @@
 import { mintTx } from "./mintTx.js";
+import { createInputs, createOutputs, min, PK, sigmaProp } from "./utils.js";
 
-function sigmaProp(a) {
-	return a;
-}
-function PK(a) {
-	return false;
-}
-
-const min = Math.min
-
-const createInputs = (tx) => {
-    return (i) => {
-      const boxes = tx.inputs.reduce((acc, input, index) => {
-        acc[index] = {
-          value: Number(input.value),
-          propositionBytes: input.ergoTree,
-          tokens: (j) => {
-            const assets = input.assets.reduce((assetAcc, asset, assetIndex) => {
-              assetAcc[assetIndex] = { _1: asset.tokenId, _2: Number(asset.amount) };
-              return assetAcc;
-            }, {});
-            return j === undefined ? JSON.stringify(assets) : assets[j];
-          }
-        };
-        return acc;
-      }, {});
-      return boxes[i];
-    };
-  };
-  
-  const createOutputs = (tx) => {
-    return (i) => {
-      const boxes = tx.outputs.reduce((acc, output, index) => {
-        acc[index] = {
-          value: Number(output.value),
-          propositionBytes: output.ergoTree,
-          tokens: (j) => {
-            const assets = output.assets.reduce((assetAcc, asset, assetIndex) => {
-              assetAcc[assetIndex] = { _1: asset.tokenId, _2: Number(asset.amount) };
-              return assetAcc;
-            }, {});
-            return j === undefined ? JSON.stringify(assets) : assets[j];
-          }
-        };
-        return acc;
-      }, {});
-      return boxes[i];
-    };
-  };
-  
 let $initialLp = 100000000000;
-
 const INPUTS = createInputs(mintTx);
 const OUTPUTS = createOutputs(mintTx);
-  
 const SELF = INPUTS(1);
 
 let lpBoxInIndex = 0;

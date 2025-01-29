@@ -133,7 +133,17 @@ export function calculateLpMintInputSharesUnlocked(
 	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
 	return { contractDexy, contractErg, contractLpTokens };
 }
+export function calculateLpRedeemInputSharesUnlocked(
+	contractLpTokens: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn) - 1n;
+	const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn) - 1n;
 
+	return { contractDexy, contractErg, contractLpTokens };
+}
 describe.skip('LP swap with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
@@ -960,23 +970,18 @@ describe('LP Redeem with any input should work', async () => {
 		initTestBoxes();
 	});
 
-	it.only('			: Mint LP  : Input only Shares', async () => {
+	it.only('			: Redeem LP  : Input only Shares', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
-		//const swapIn = get(dexygold_lp_swap_box);
-		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
+
 		const lpRedeemIn = get(dexygold_lp_redeem_box);
 		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpRedeemIn);
 
 		const goldOracle = get(oracle_erg_xau_box);
-		console.log(goldOracle);
-
-		const { value: dexyGoldValue, oraclePoolNFT, R4Rate } = parseDexyGoldOracleBox(goldOracle);
-		console.log(R4Rate, 'R4Rate');
-		//64077603245544n
 
 		const userUtxos = [fakeUserWithDexyBox];
+
 		//user Inputs
 		const height = 1449119;
 		const sharesUnlocked = 64000000n;
@@ -986,75 +991,21 @@ describe('LP Redeem with any input should work', async () => {
 		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
+		//calculations
 		const supplyLpIn = initialLp - lpTokensIn;
-		//initialLp - lpBalanceIn; Crit:100000000000 (all in)
 
-		// make calculations
-		// val supplyLP = InitiallyLockedLP - poolLP._2
-		//val minReturnX = selfLP._2.toBigInt * reservesXAmount / supplyLP / 100 * 98  // 2% fee
-		//val minReturnY = selfLP._2.toBigInt * reservesY._2 / supplyLP / 100 * 98     // 2% fee
-
-		//val returnXAmount = returnOut.value - SELF.value + DexFee
-		//
-		//
-
-		// ??????
-		//
-		function calculateLpRedeemInputSharesUnlocked(
-			contractLpTokens: bigint,
-			lpXIn: bigint,
-			lpYIn: bigint,
-			supplyLpIn: bigint
-		) {
-			//OLD from PROXY
-			//const contractDexy = ((contractLpTokens * lpYIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
-			//const contractErg = ((contractLpTokens * lpXIn) / supplyLpIn / 100n) * 98n - 1n; // -1n LESS THAN
-
-			//NEW
-			const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn) - 1n;
-			// contractErg < (98 * contractLpTokens * lpXIn) / (100 * supplyLpIn);
-			const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn) - 1n;
-			// contractDexy < 98 contractLpTokens * lpYIn/(100*supplyLpIn);
-
-			return { contractDexy, contractErg, contractLpTokens };
-		}
-
-		// USER RECEIPT on OUTPUT 2
-
-		// CALCULATION GO GO
 		let { contractErg: ergoInput, contractDexy: dexyInput } = calculateLpRedeemInputSharesUnlocked(
 			sharesUnlocked,
 			lpXIn,
 			lpYIn,
 			supplyLpIn
 		);
-		console.log('ergoInput', ergoInput);
-		console.log('dexyInput', dexyInput);
-		console.log('sharesUnlocked', sharesUnlocked);
-
-		//console.log('dexyInput', dexyInput);
-		//console.log('sharesUnlocked', sharesUnlocked);
-
-		//const reservesXOut = reservesXIn - withdrawX;
-		//const reservesYOut = reservesYIn - withdrawY;
-		//const lpBalanceOut = lpBalanceIn + lpRedeemed;
-
-		//const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
-		//const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
-		//const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
-
-		//console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
-		//console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
-		//console.log(sharesUnlocked, ' sharesUnlocked');
 
 		const lpRedeemOutValue = lpRedeemInValue;
 
 		const lpXOut = lpXIn - ergoInput;
 		const lpYOut = lpYIn - dexyInput;
 		const lpTokensOut = lpTokensIn + sharesUnlocked;
-
-		//const receiptValue = '';
-		//const receiptBox = new OutputBuilder(receiptValue, userAddress);
 
 		const unsignedTx = new TransactionBuilder(height)
 			.from([lpIn, lpRedeemIn, ...userUtxos], {

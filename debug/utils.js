@@ -21,7 +21,8 @@ export const createInputs = (tx) => {
               return assetAcc;
             }, {});
             return j === undefined ? JSON.stringify(assets) : assets[j];
-          }
+          },
+          ...input.additionalRegisters
         };
         return acc;
       }, {});
@@ -41,10 +42,37 @@ export const createOutputs = (tx) => {
               return assetAcc;
             }, {});
             return j === undefined ? JSON.stringify(assets) : assets[j];
-          }
+          },
+          ...output.additionalRegisters
         };
         return acc;
       }, {});
       return boxes[i];
     };
   };
+
+  export const createContext = (tx) => {
+    return {
+      dataInputs: (i) => {
+        const dataInputs = tx.dataInputs.reduce((acc, dataInput, index) => {
+          acc[index] = {
+            value: Number(dataInput.value),
+            propositionBytes: dataInput.ergoTree,
+            tokens: (j) => {
+              const assets = dataInput.assets.reduce((assetAcc, asset, assetIndex) => {
+                assetAcc[assetIndex] = { _1: asset.tokenId, _2: Number(asset.amount) };
+                return assetAcc;
+              }, {});
+              return j === undefined ? JSON.stringify(assets) : assets[j];
+            },
+            ...dataInput.additionalRegisters
+          };
+          return acc;
+        }, {});
+        return dataInputs[i];
+      }
+    };
+  };
+  
+  
+  

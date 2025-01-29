@@ -6,15 +6,23 @@
 			"request": "launch",
 			"name": "swap.js",
 			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/debug/swap.js",
+			"program": "${workspaceFolder}/debug/swap",
 			"console": "integratedTerminal"
 		},
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "mint.es",
+			"name": "mint",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/debug/mint.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "redeem",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/debug/redeem.js",
 			"console": "integratedTerminal"
 		}
 	]

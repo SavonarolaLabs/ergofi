@@ -43,11 +43,13 @@ const lpIn = {
 export async function initTestBoxes() {
 	const signedTx = await mintInitialOutputs();
 
+	console.log('');
 	//dexygold_lp_box.set(outputBoxes.lp);
 	dexygold_lp_box.set(signedTx.outputs[13]);
 	dexygold_lp_swap_box.set(signedTx.outputs[9]);
 	dexygold_lp_mint_box.set(signedTx.outputs[10]);
 	dexygold_lp_redeem_box.set(signedTx.outputs[11]);
+	oracle_erg_xau_box.set(signedTx.outputs[14]);
 
 	dexygold_tracking95_box.set(outputBoxes.tracking95);
 	dexygold_tracking98_box.set(outputBoxes.tracking98);
@@ -371,5 +373,13 @@ const outputBoxes = {
 			{ tokenId: lpTokenId, amount: initialLp - 6_400_000_000n }, //   "amount": ${initialLp - 6_400_000_000L}
 			{ tokenId: dexyTokenId, amount: 1_000_000 } //1_000_001
 		]
+	},
+	oracle: {
+		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+		value: 43224547253880,
+		assets: [{ tokenId: oraclePoolNFT, amount: 1n }],
+		additionalRegisters: {
+			R4: SLong(64077603245544n).toHex()
+		}
 	}
 };

@@ -1,4 +1,4 @@
-import { mintTx } from "./mintTx";
+import { mintTx } from "./mintTx.js";
 
 function sigmaProp(a) {
 	return a;

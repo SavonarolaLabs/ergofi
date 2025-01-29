@@ -761,20 +761,20 @@ describe('LP Mint with any input should work', async () => {
 			lpYIn,
 			supplyLpIn
 		); //RETURN 0 dexy
-		console.log('dexyInput', dexyInput);
-		console.log('sharesUnlocked', sharesUnlocked);
+		//console.log('dexyInput', dexyInput);
+		//console.log('sharesUnlocked', sharesUnlocked);
 
 		const lpMintOutValue = lpMintInValue;
 		const lpXOut = lpXIn + ergoInput;
 		const lpYOut = lpYIn + dexyInput;
 
-		const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
-		const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
+		//const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
+		//const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
 		//const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
 
-		console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
-		console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
-		console.log(sharesUnlocked, ' sharesUnlocked');
+		//console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
+		//console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
+		//console.log(sharesUnlocked, ' sharesUnlocked');
 
 		const lpTokensOut = lpTokensIn - sharesUnlocked;
 

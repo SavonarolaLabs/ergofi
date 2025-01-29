@@ -4,9 +4,17 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch swap.js",
+			"name": "swap.js",
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/debug/swap.js",
+			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "mint.es",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/debug/mint.js",
 			"console": "integratedTerminal"
 		}
 	]

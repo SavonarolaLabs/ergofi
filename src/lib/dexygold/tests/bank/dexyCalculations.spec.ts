@@ -10,6 +10,7 @@ import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmaUSDAndDexy';
 import {
+	parseDexyGoldOracleBox,
 	parseLpBox,
 	parseLpMintBox,
 	parseLpRedeemBox,
@@ -23,7 +24,8 @@ import {
 	fakeUserBox,
 	fakeUserWithDexyBox,
 	initTestBoxes,
-	mintInitialOutputs
+	mintInitialOutputs,
+	oracle_erg_xau_box
 } from '$lib/stores/dexyGoldStore';
 import { nanoErgToErg } from '$lib/TransactionUtils';
 import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
@@ -952,7 +954,7 @@ describe('LP Mint with any input should work', async () => {
 });
 
 // -------------------------------------------------------------------------------------
-describe.skip('LP Redeem with any input should work', async () => {
+describe('LP Redeem with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
@@ -965,6 +967,13 @@ describe.skip('LP Redeem with any input should work', async () => {
 		//const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapIn);
 		const lpReeemIn = get(dexygold_lp_redeem_box);
 		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpReeemIn);
+
+		const goldOracle = get(oracle_erg_xau_box);
+		console.log(goldOracle);
+
+		const { value: dexyGoldValue, oraclePoolNFT, R4Rate } = parseDexyGoldOracleBox(goldOracle);
+		console.log(R4Rate, 'R4Rate');
+		//64077603245544n
 
 		const userUtxos = [fakeUserWithDexyBox];
 		//user Inputs
@@ -1010,6 +1019,7 @@ describe.skip('LP Redeem with any input should work', async () => {
 			lpYIn,
 			supplyLpIn
 		);
+		console.log('rate:', lpXIn / lpYIn);
 		//console.log('dexyInput', dexyInput);
 		//console.log('sharesUnlocked', sharesUnlocked);
 

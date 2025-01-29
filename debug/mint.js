@@ -1,3 +1,5 @@
+import { mintTx } from "./mintTx";
+
 function sigmaProp(a) {
 	return a;
 }
@@ -5,91 +7,54 @@ function PK(a) {
 	return false;
 }
 
-const min = Math.min;
+const min = Math.min
 
+const createInputs = (tx) => {
+    return (i) => {
+      const boxes = tx.inputs.reduce((acc, input, index) => {
+        acc[index] = {
+          value: Number(input.value),
+          propositionBytes: input.ergoTree,
+          tokens: (j) => {
+            const assets = input.assets.reduce((assetAcc, asset, assetIndex) => {
+              assetAcc[assetIndex] = { _1: asset.tokenId, _2: Number(asset.amount) };
+              return assetAcc;
+            }, {});
+            return j === undefined ? JSON.stringify(assets) : assets[j];
+          }
+        };
+        return acc;
+      }, {});
+      return boxes[i];
+    };
+  };
+  
+  const createOutputs = (tx) => {
+    return (i) => {
+      const boxes = tx.outputs.reduce((acc, output, index) => {
+        acc[index] = {
+          value: Number(output.value),
+          propositionBytes: output.ergoTree,
+          tokens: (j) => {
+            const assets = output.assets.reduce((assetAcc, asset, assetIndex) => {
+              assetAcc[assetIndex] = { _1: asset.tokenId, _2: Number(asset.amount) };
+              return assetAcc;
+            }, {});
+            return j === undefined ? JSON.stringify(assets) : assets[j];
+          }
+        };
+        return acc;
+      }, {});
+      return boxes[i];
+    };
+  };
+  
 let $initialLp = 100000000000;
 
-const INPUTS = (i) => {
-	const boxes = {
-		0: {
-			// lpBoxIn
-			value: 43224547253880,
-			tokens: (i) => {
-				const assets = {
-					0: {
-						_1: '323bf7f5cfcc33f3e4f1bd559113e46592139835b64bfe02aa810658980cb50c',
-						_2: 1
-					},
-					1: {
-						_1: '23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4',
-						_2: 93600000000
-					},
-					2: {
-						_1: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed',
-						_2: 1000000
-					}
-				};
-				return i == undefined ? JSON.stringify(assets) : assets[i];
-			}
-		},
-		1: {
-			propositionBytes: 'self',
-			value: 1000000000,
-			tokens: (i) => {
-				const assets = {
-					0: {
-						_1: '27521c68cbf6863bf2e6a087495d2b6794db36303e18dfac68e1d9e1824931de',
-						_2: 1
-					}
-				};
-				return i == undefined ? JSON.stringify(assets) : assets[i];
-			}
-		}
-	};
-	return boxes[i];
-};
+const INPUTS = createInputs(mintTx);
+const OUTPUTS = createOutputs(mintTx);
+  
 const SELF = INPUTS(1);
-
-const OUTPUTS = (i) => {
-	const boxes = {
-		0: {
-			// lpBoxOut
-			value: 43224547753880,
-			tokens: (i) => {
-				const assets = {
-					0: {
-						_1: '323bf7f5cfcc33f3e4f1bd559113e46592139835b64bfe02aa810658980cb50c',
-						_2: 1
-					},
-					1: {
-						_1: '23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4',
-						_2: 93599998918
-					},
-					2: {
-						_1: 'f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed',
-						_2: 1000050
-					}
-				};
-				return i == undefined ? JSON.stringify(assets) : assets[i];
-			}
-		},
-		1: {
-			// successor
-			propositionBytes: 'self',
-			value: 1000000000,
-			tokens: (i) => {
-				const assets = {
-					0: {
-						_1: '27521c68cbf6863bf2e6a087495d2b6794db36303e18dfac68e1d9e1824931de',
-						_2: 1
-					}
-				};
-				return i == undefined ? JSON.stringify(assets) : assets[i];
-			}
-		}
-	};
-	return boxes[i];
-};
 
 let lpBoxInIndex = 0;
 let lpBoxOutIndex = 0;

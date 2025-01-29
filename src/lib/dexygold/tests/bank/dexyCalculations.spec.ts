@@ -643,63 +643,25 @@ describe('LP Mint with any input should work', async () => {
 		const dexyInput = 10_000n;
 		const ergoInput = 500_000n;
 
-		//const direction = directionSell;
-
-		//const direction = directionBuy;
+		//constants
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
-		//constants:
-		const feeNumLp = 997n;
-		const feeDenomLp = 1000n;
-
-		//const lpBalanceIn = 100000000n;
-		const reservesXIn = lpXIn;
-		//const reservesXIn = 1000000000000n;
-		const reservesYIn = lpYIn;
-		//const reservesYIn = 100000000n;
-		const depositX = ergoInput;
-		//const depositX = 500000n;
-		const depositY = dexyInput;
-		//const depositY = 50n;
-
-		const reservesXOut = reservesXIn + depositX;
-		const reservesYOut = reservesYIn + depositY;
-		const supplyLpIn = initialLp - lpTokensIn; //initialLp - lpBalanceIn; Crit:100000000000 (all in)
-		console.log(supplyLpIn, 'supplyLpIn'); //93600000000n
-		const sharesUnlockedX = (depositX * supplyLpIn) / reservesXIn; // 74?? vs 1082 ???
-		const sharesUnlockedY = (depositY * supplyLpIn) / reservesYIn;
-		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
-		console.log();
-
-		console.log(
-			sharesUnlockedX,
-			'sharesUnlockedX |',
-			'depositX',
-			depositX,
-			' reservesXIn',
-			reservesXIn
-		);
-		console.log(
-			sharesUnlockedY,
-			'sharesUnlockedY |',
-			'depositY',
-			depositY,
-			' reservesYIn',
-			reservesYIn
-		);
-		console.log(sharesUnlocked, ' sharesUnlocked');
-
-		//expect(sharesUnlocked).toBe(49950n);
-		const lpBalanceOut = lpTokensIn - sharesUnlocked;
-
-		//---------
-		const lpXOut = reservesXOut;
-		const lpYOut = reservesYOut;
-
 		const lpMintOutValue = lpMintInValue;
+		const lpXOut = lpXIn + ergoInput;
+		const lpYOut = lpYIn + dexyInput;
+		const supplyLpIn = initialLp - lpTokensIn; //initialLp - lpBalanceIn; Crit:100000000000 (all in)
 
-		//---------
+		const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
+		const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
+		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
+
+		// console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
+		// console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
+		// console.log(sharesUnlocked, ' sharesUnlocked');
+
+		const lpTokensOut = lpTokensIn - sharesUnlocked;
+
 		const unsignedTx = new TransactionBuilder(height)
 			.from([lpIn, lpMintIn, ...userUtxos], {
 				ensureInclusion: true
@@ -707,7 +669,7 @@ describe('LP Mint with any input should work', async () => {
 			.to(
 				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
-					{ tokenId: lpTokenId, amount: lpBalanceOut },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
 					{ tokenId: dexyTokenId, amount: lpYOut }
 				])
 			)
@@ -721,7 +683,7 @@ describe('LP Mint with any input should work', async () => {
 			.build()
 			.toEIP12Object();
 
-		console.dir(unsignedTx, { depth: null });
+		//console.dir(unsignedTx, { depth: null });
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});

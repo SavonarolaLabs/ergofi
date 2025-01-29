@@ -123,7 +123,6 @@ let validMintLp =
 	deltaReservesY > 0 &&
 	(() => {
 		let sharesUnlocked = Math.floor(min(X, Y));
-		console.log('shares', sharesUnlocked);
 		return deltaSupplyLp <= sharesUnlocked;
 	})();
 

@@ -114,14 +114,16 @@ let deltaSupplyLp = lpReservesIn._2 - lpReservesOut._2;
 let deltaReservesX = reservesXOut - reservesXIn;
 let deltaReservesY = reservesYOut - reservesYIn;
 
+let X = (deltaReservesX * supplyLpIn) / reservesXIn;
+let Y = (deltaReservesY * supplyLpIn) / reservesYIn;
+
 let validMintLp =
 	deltaSupplyLp > 0 &&
 	deltaReservesX > 0 &&
 	deltaReservesY > 0 &&
 	(() => {
-		let X = (deltaReservesX * supplyLpIn) / reservesXIn;
-		let Y = (deltaReservesY * supplyLpIn) / reservesYIn;
-		let sharesUnlocked = min(X, Y);
+		let sharesUnlocked = Math.floor(min(X, Y));
+		console.log('shares', sharesUnlocked);
 		return deltaSupplyLp <= sharesUnlocked;
 	})();
 

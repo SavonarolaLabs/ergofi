@@ -640,7 +640,7 @@ describe('LP Mint with any input should work', async () => {
 		const userUtxos = [fakeUserWithDexyBox];
 		//user Inputs
 		const height = 1449119;
-		const dexyInput = 50n;
+		const dexyInput = 10_000n;
 		const ergoInput = 500_000n;
 
 		//const direction = directionSell;
@@ -653,7 +653,6 @@ describe('LP Mint with any input should work', async () => {
 		const feeNumLp = 997n;
 		const feeDenomLp = 1000n;
 
-		const lpBalanceIn = lpTokensIn;
 		//const lpBalanceIn = 100000000n;
 		const reservesXIn = lpXIn;
 		//const reservesXIn = 1000000000000n;
@@ -666,9 +665,9 @@ describe('LP Mint with any input should work', async () => {
 
 		const reservesXOut = reservesXIn + depositX;
 		const reservesYOut = reservesYIn + depositY;
-		const supplyLpIn = lpBalanceIn; //initialLp - lpBalanceIn;
-		console.log(supplyLpIn, 'supplyLpIn');
-		const sharesUnlockedX = (depositX * supplyLpIn) / reservesXIn;
+		const supplyLpIn = initialLp - lpTokensIn; //initialLp - lpBalanceIn; Crit:100000000000 (all in)
+		console.log(supplyLpIn, 'supplyLpIn'); //93600000000n
+		const sharesUnlockedX = (depositX * supplyLpIn) / reservesXIn; // 74?? vs 1082 ???
 		const sharesUnlockedY = (depositY * supplyLpIn) / reservesYIn;
 		const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
 		console.log();
@@ -692,7 +691,7 @@ describe('LP Mint with any input should work', async () => {
 		console.log(sharesUnlocked, ' sharesUnlocked');
 
 		//expect(sharesUnlocked).toBe(49950n);
-		const lpBalanceOut = lpBalanceIn - sharesUnlocked;
+		const lpBalanceOut = lpTokensIn - sharesUnlocked;
 
 		//---------
 		const lpXOut = reservesXOut;

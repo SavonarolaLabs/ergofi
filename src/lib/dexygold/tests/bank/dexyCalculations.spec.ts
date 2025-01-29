@@ -1,4 +1,5 @@
 import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
+import { debugRedeem } from '$lib/dexygold/debugContracts';
 import {
 	vitestTokenIds,
 	vitestErgoTrees,
@@ -1040,13 +1041,14 @@ describe('LP Redeem with any input should work', async () => {
 		const lpYOut = lpYIn - dexyInput;
 		const lpTokensOut = lpTokensIn + sharesUnlocked;
 
-		const receiptValue = '';
-		const receiptBox = new OutputBuilder(receiptValue, userAddress);
+		//const receiptValue = '';
+		//const receiptBox = new OutputBuilder(receiptValue, userAddress);
 
 		const unsignedTx = new TransactionBuilder(height)
 			.from([lpIn, lpReeemIn, ...userUtxos], {
 				ensureInclusion: true
 			})
+			.withDataFrom([goldOracle])
 			.to(
 				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
 					{ tokenId: lpNFT, amount: 1n },
@@ -1065,6 +1067,7 @@ describe('LP Redeem with any input should work', async () => {
 			.toEIP12Object();
 
 		//console.dir(unsignedTx, { depth: null });
+		debugRedeem(unsignedTx);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});

@@ -1,5 +1,5 @@
 import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
-import { debugRedeem } from '$lib/dexygold/debugContracts';
+import { debugFreemint, debugRedeem } from '$lib/dexygold/debugContracts';
 import {
 	vitestTokenIds,
 	vitestErgoTrees,
@@ -1209,14 +1209,14 @@ describe('Bank FreeMint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('			: Mint Dexy : Input only ERG', async () => {
+	it.only('			: Mint Dexy : Input only ERG', async () => {
 		//input BOXES
 
 		//const lpRedeemIn = get(dexygold_lp_redeem_box);
 		const bankIn = get(dexygold_bank_box);
 		const freeMintIn = get(dexygold_bank_free_mint_box);
 		const buybankIn = get(dexygold_buyback_box);
-
+		console.dir(bankIn, { depth: null });
 		const { value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn);
 		const {
 			value: freeMintXIn,
@@ -1337,7 +1337,7 @@ describe('Bank FreeMint with any input should work', async () => {
 		]);
 
 		const unsignedTx = new TransactionBuilder(height)
-			.from([bankIn, freeMintIn, buybankIn, ...userUtxos], {
+			.from([freeMintIn, bankIn, buybankIn, ...userUtxos], {
 				ensureInclusion: true
 			})
 			.withDataFrom(dataInputs)
@@ -1350,7 +1350,7 @@ describe('Bank FreeMint with any input should work', async () => {
 			.toEIP12Object();
 
 		//console.dir(unsignedTx, { depth: null });
-		//debugRedeem(unsignedTx);
+		debugFreemint(unsignedTx);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});

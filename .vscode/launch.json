@@ -32,6 +32,14 @@
 			"skipFiles": ["<node_internals>/**"],
 			"program": "${workspaceFolder}/debug/arbmint.js",
 			"console": "integratedTerminal"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "freemint",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/debug/freemint.js",
+			"console": "integratedTerminal"
 		}
 	]
 }

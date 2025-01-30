@@ -22,6 +22,12 @@ export function debugArbmint(tx){
 	saveTx('arbmint', tx);
 }
 
+/**
+ * @param {import("@fleet-sdk/common").EIP12UnsignedTransaction} tx
+ */
+export function debugFreemint(tx){
+	saveTx('freemint', tx);
+}
 
 /**
  * Saves a transaction object to a JavaScript file.

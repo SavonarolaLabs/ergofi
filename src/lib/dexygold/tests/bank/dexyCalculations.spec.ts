@@ -133,6 +133,7 @@ export function calculateLpMintInputSharesUnlocked(
 	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
 	return { contractDexy, contractErg, contractLpTokens };
 }
+
 export function calculateLpRedeemInputSharesUnlocked(
 	contractLpTokens: bigint,
 	lpXIn: bigint,
@@ -144,11 +145,37 @@ export function calculateLpRedeemInputSharesUnlocked(
 
 	return { contractDexy, contractErg, contractLpTokens };
 }
-describe.skip('LP swap with any input should work', async () => {
+function calculateLpRedeemInputErg(
+	contractErg: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	let contractLpTokens = (100n * supplyLpIn * contractErg) / (98n * lpXIn);
+	const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn); //- 1n;
+	// const contractDexy =
+	// 	(98n * (100n * supplyLpIn * contractErg) * lpYIn) / (100n * supplyLpIn * 98n * lpXIn //- 1n;
+	contractLpTokens = contractLpTokens + 1n; // add after calc
+	return { contractDexy, contractErg, contractLpTokens };
+}
+function calculateLpRedeemInputDexy(
+	contractDexy: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	let contractLpTokens = (100n * supplyLpIn * contractDexy) / (98n * lpYIn);
+	const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn); //- 1n;
+	//const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn); //- 1n;
+	//const contractErg  = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn); //- 1n;
+	contractLpTokens = contractLpTokens + 1n; // add after calc
+	return { contractDexy, contractErg, contractLpTokens };
+}
+
+describe('LP swap with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	// INPUT ERG
 	it('Initial Test	: Sell ERG : Input ERG', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
@@ -420,7 +447,6 @@ describe.skip('LP swap with any input should work', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	//applyFeeSell(inputERG: bigint, feeMining: bigint)
 	it('Initial Test	: Sell ERG : Input Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box);
@@ -690,7 +716,7 @@ describe('LP Mint with any input should work', async () => {
 		initTestBoxes();
 	});
 
-	it.only('Initial Test	: Mint LP  : Input ERG & DEXY', async () => {
+	it('Initial Test	: Mint LP  : Input ERG & DEXY', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -749,7 +775,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('			: Mint LP  : Input only Erg', async () => {
+	it('			: Mint LP  : Input only Erg', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -819,7 +845,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('			: Mint LP  : Input only Dexy', async () => {
+	it('			: Mint LP  : Input only Dexy', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -889,7 +915,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('			: Mint LP  : Input only Shares', async () => {
+	it('			: Mint LP  : Input only Shares', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -959,7 +985,7 @@ describe('LP Mint with any input should work', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('With FEE', () => {
+	it.skip('With FEE (TODO)', () => {
 		expect('TODO').toBe('done');
 	});
 });
@@ -970,7 +996,7 @@ describe('LP Redeem with any input should work', async () => {
 		initTestBoxes();
 	});
 
-	it.only('			: Redeem LP  : Input only Shares', async () => {
+	it('			: Redeem LP : Input only Shares', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
@@ -1030,9 +1056,141 @@ describe('LP Redeem with any input should work', async () => {
 			.toEIP12Object();
 
 		//console.dir(unsignedTx, { depth: null });
-		debugRedeem(unsignedTx);
+		//debugRedeem(unsignedTx);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
+	});
+	it('			: Redeem LP : Input only ERG', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+
+		const lpRedeemIn = get(dexygold_lp_redeem_box);
+		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpRedeemIn);
+
+		const goldOracle = get(oracle_erg_xau_box);
+
+		const userUtxos = [fakeUserWithDexyBox];
+
+		//user Inputs
+		const height = 1449119;
+		//const sharesUnlocked = 64000000n;
+		const ergoInput = 1_000_000_000n;
+
+		//constants
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		//calculations
+		const supplyLpIn = initialLp - lpTokensIn;
+
+		let { contractLpTokens: sharesUnlocked, contractDexy: dexyInput } = calculateLpRedeemInputErg(
+			ergoInput,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		);
+
+		const lpRedeemOutValue = lpRedeemInValue;
+		const lpXOut = lpXIn - ergoInput;
+		const lpYOut = lpYIn - dexyInput;
+		const lpTokensOut = lpTokensIn + sharesUnlocked;
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpRedeemIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([goldOracle])
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpRedeemOutValue, lpRedeemErgoTree).addTokens([
+					{ tokenId: lpRedeemNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		//debugRedeem(unsignedTx);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it('			: Redeem LP : Input only Dexy', async () => {
+		//input BOXES
+		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
+		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);
+
+		const lpRedeemIn = get(dexygold_lp_redeem_box);
+		const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpRedeemIn);
+
+		const goldOracle = get(oracle_erg_xau_box);
+
+		const userUtxos = [fakeUserWithDexyBox];
+
+		//user Inputs
+		const height = 1449119;
+		//const sharesUnlocked = 64000000n;
+		//const ergoInput = 1_000_000_000n;
+		const dexyInput = 10_000n; //
+
+		//constants
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		//calculations
+		const supplyLpIn = initialLp - lpTokensIn;
+
+		let { contractLpTokens: sharesUnlocked, contractErg: ergoInput } = calculateLpRedeemInputDexy(
+			dexyInput,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		);
+
+		const lpRedeemOutValue = lpRedeemInValue;
+		const lpXOut = lpXIn - ergoInput;
+		const lpYOut = lpYIn - dexyInput;
+		const lpTokensOut = lpTokensIn + sharesUnlocked;
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpRedeemIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom([goldOracle])
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpRedeemOutValue, lpRedeemErgoTree).addTokens([
+					{ tokenId: lpRedeemNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		//debugRedeem(unsignedTx);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it.skip('With FEE (TODO)', () => {
+		expect('TODO').toBe('done');
 	});
 });
 

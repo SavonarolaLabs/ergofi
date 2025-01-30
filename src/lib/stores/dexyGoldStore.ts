@@ -51,17 +51,27 @@ export async function initTestBoxes() {
 	dexygold_lp_redeem_box.set(signedTx.outputs[11]);
 	oracle_erg_xau_box.set(signedTx.outputs[14]);
 
-	dexygold_tracking95_box.set(outputBoxes.tracking95);
-	dexygold_tracking98_box.set(outputBoxes.tracking98);
-	dexygold_tracking101_box.set(outputBoxes.tracking101);
+	dexygold_bank_free_mint_box.set(signedTx.outputs[0]); //[0]
+	dexygold_bank_arbitrage_mint_box.set(signedTx.outputs[1]); //[1]
+	dexygold_tracking95_box.set(signedTx.outputs[2]); // [2]
+	dexygold_tracking98_box.set(signedTx.outputs[3]); // [3]
+	dexygold_tracking101_box.set(signedTx.outputs[4]); //[4]
+	dexygold_bank_box.set(signedTx.outputs[5]); //[5]
+	dexygold_buyback_box.set(signedTx.outputs[6]); //[6]
 
-	dexygold_bank_box.set(outputBoxes.bank);
-	dexygold_bank_free_mint_box.set(outputBoxes.freeMint);
-	dexygold_bank_arbitrage_mint_box.set(outputBoxes.arbitrageMint);
+	//---------------------------------------
+
+	//dexygold_tracking95_box.set(outputBoxes.tracking95); // [2]
+	//dexygold_tracking98_box.set(outputBoxes.tracking98); // [3]
+	//dexygold_tracking101_box.set(outputBoxes.tracking101); //[4]
+
+	//dexygold_bank_box.set(outputBoxes.bank); //[5]
+	//dexygold_bank_free_mint_box.set(outputBoxes.freeMint); //[0]
+	//dexygold_bank_arbitrage_mint_box.set(outputBoxes.arbitrageMint); //[1]
 	dexygold_bank_intervention_box.set(outputBoxes.intervention);
 	dexygold_bank_payout_box.set(outputBoxes.payout);
 
-	dexygold_buyback_box.set(outputBoxes.buyback);
+	//dexygold_buyback_box.set(outputBoxes.buyback); //[6]
 
 	//dexygold_lp_mint_box.set(outputBoxes.lpMint);
 	//dexygold_lp_redeem_box.set(outputBoxes.lpRedeem);

@@ -82,7 +82,7 @@ export const redeemTx = {
   ],
   "outputs": [
     {
-      "value": "42800946690793",
+      "value": "43223547253880",
       "ergoTree": "1014040004020402040404020400040004000404040404060e20d69fb6bea54006a0f4cc5f54486bf431e6083ee736176a02522b5b87d6dc96780e2027521c68cbf6863bf2e6a087495d2b6794db36303e18dfac68e1d9e1824931de0e203d8743ba7060ccd0a3437bbe0c3d9a2ff16d1ac66ff08af220e053b7dd77d8d4040004000e207db50c9a8b13fb02e9a330c0bef6f75a7e2cd8df312962ca10b7bc3169ce75d60e20e670ada0f96aab06aae481986182dbb0d351c6ae0e1ca65b47ef6bea7a69f6fb050008cd02eb083423041003740c9e791b2fea5ecf6e273669630a25b7ecabf9145395e447d807d601b2a5730000d602db6308a7d603db63087201d604b27203730100d605b27202730200d606db6308b2a4730300d6078cb2db6308b2a473040073050001eb02d1ededededed93c27201c2a793b27202730600b27203730700938c7204018c720501938cb27203730800018cb272027309000193b17203730aececec937207730b937207730c937207730dedeced91b17206730e938cb27206730f00017310937207731193998c7205028c72040273127313",
       "creationHeight": 1449119,
       "assets": [
@@ -92,11 +92,11 @@ export const redeemTx = {
         },
         {
           "tokenId": "23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4",
-          "amount": "93664000000"
+          "amount": "93600151086"
         },
         {
           "tokenId": "f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed",
-          "amount": "990201"
+          "amount": "999977"
         }
       ],
       "additionalRegisters": {}
@@ -121,17 +121,17 @@ export const redeemTx = {
       "additionalRegisters": {}
     },
     {
-      "value": "1000423599463087",
+      "value": "1000000998900000",
       "ergoTree": "0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c",
       "creationHeight": 1449119,
       "assets": [
         {
           "tokenId": "23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4",
-          "amount": "36000000"
+          "amount": "99848914"
         },
         {
           "tokenId": "f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed",
-          "amount": "109799"
+          "amount": "100023"
         }
       ],
       "additionalRegisters": {}

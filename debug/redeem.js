@@ -52,7 +52,7 @@ let validRedemption =
 
 		let a = (deltaReservesX * supplyLpIn * 100) / 98 >= _deltaSupplyLp * reservesXIn;
 		let b = (deltaReservesY * supplyLpIn * 100) / 98 >= _deltaSupplyLp * reservesYIn;
-		let c = a && !!b;
+		let c = a && b;
 		return c;
 	})() &&
 	validRateForRedeemingLp;

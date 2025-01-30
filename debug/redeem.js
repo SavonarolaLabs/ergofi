@@ -1,6 +1,5 @@
-import { redeemTx } from './redeemTx.js';
-import { createContext, createInputs, createOutputs, PK, sigmaProp } from './utils.js';
-import { parse } from '@fleet-sdk/serializer';
+import { redeemTx } from "./redeemTx.js";
+import { createContext, createInputs, createOutputs, PK, sigmaProp } from "./utils.js";
 
 const CONTEXT = createContext(redeemTx);
 const INPUTS = createInputs(redeemTx);
@@ -32,8 +31,8 @@ let reservesYOut = lpBoxOut.tokens(2)._2;
 
 let supplyLpIn = initialLp - lpReservesIn._2;
 
-let oracleRateXy = Number(parse(oracleBox.R4)) / 1000000;
-let lpRateXyIn = reservesXIn / reservesYIn;
+let oracleRateXy = Number(oracleBox.R4) / 1000000
+let lpRateXyIn = reservesXIn / reservesYIn
 
 let validOracleBox = oracleBox.tokens(0)._1 == oracleNFT;
 

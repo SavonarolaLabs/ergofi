@@ -16,6 +16,14 @@ export function debugRedeem(tx){
 }
 
 /**
+ * @param {import("@fleet-sdk/common").EIP12UnsignedTransaction} tx
+ */
+export function debugArbmint(tx){
+	saveTx('arbmint', tx);
+}
+
+
+/**
  * Saves a transaction object to a JavaScript file.
  * 
  * @param {string} name - The name of the transaction.

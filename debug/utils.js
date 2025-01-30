@@ -1,3 +1,6 @@
+import { parse } from '@fleet-sdk/serializer';
+
+
 export function sigmaProp(a) {
     return a;
 }
@@ -22,7 +25,9 @@ export const createInputs = (tx) => {
             }, {});
             return j === undefined ? JSON.stringify(assets) : assets[j];
           },
-          ...input.additionalRegisters
+          ...Object.fromEntries(
+            Object.entries(input.additionalRegisters).map(([key, value]) => [key, parse(value)])
+          )
         };
         return acc;
       }, {});
@@ -43,7 +48,9 @@ export const createOutputs = (tx) => {
             }, {});
             return j === undefined ? JSON.stringify(assets) : assets[j];
           },
-          ...output.additionalRegisters
+          ...Object.fromEntries(
+            Object.entries(output.additionalRegisters).map(([key, value]) => [key, parse(value)])
+          )
         };
         return acc;
       }, {});
@@ -65,7 +72,9 @@ export const createOutputs = (tx) => {
               }, {});
               return j === undefined ? JSON.stringify(assets) : assets[j];
             },
-            ...dataInput.additionalRegisters
+            ...Object.fromEntries(
+              Object.entries(dataInput.additionalRegisters).map(([key, value]) => [key, parse(value)])
+            )
           };
           return acc;
         }, {});
@@ -74,5 +83,8 @@ export const createOutputs = (tx) => {
     };
   };
   
+  export function getTxHeight(tx){
+    return tx.outputs[0].creationHeight;
+  }
   
   

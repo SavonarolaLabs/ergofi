@@ -11,6 +11,15 @@ export function PK(a) {
 export const min = Math.min;
 export const max = Math.max;
 
+function parseRegister(reg){
+  let parsed = parse(reg);
+  if(typeof parsed == 'bigint'){
+    return Number(parsed)
+  }else{
+    return parsed;
+  }
+} 
+
 export const createInputs = (tx) => {
 	return (i) => {
 		const boxes = tx.inputs.reduce((acc, input, index) => {
@@ -27,7 +36,7 @@ export const createInputs = (tx) => {
 				...Object.fromEntries(
 					Object.entries(input.additionalRegisters).map(([key, value]) => [
 						key,
-						Number(parse(value))
+						parseRegister(value)
 					])
 				)
 			};
@@ -53,7 +62,7 @@ export const createOutputs = (tx) => {
 				...Object.fromEntries(
 					Object.entries(output.additionalRegisters).map(([key, value]) => [
 						key,
-						Number(parse(value))
+						parseRegister(value)
 					])
 				)
 			};
@@ -80,7 +89,7 @@ export const createContext = (tx) => {
 					...Object.fromEntries(
 						Object.entries(dataInput.additionalRegisters).map(([key, value]) => [
 							key,
-							Number(parse(value))
+							parseRegister(value)
 						])
 					)
 				};

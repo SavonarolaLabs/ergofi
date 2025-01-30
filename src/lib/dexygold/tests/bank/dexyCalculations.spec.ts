@@ -6,11 +6,14 @@ import {
 	realMintedTestBoxes,
 	vitestContractConfig
 } from '$lib/dexygold/dexyConstants';
-import { lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
+import { bankMintInpuErg, lpSwapInputDexy, lpSwapInputErg } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmaUSDAndDexy';
 import {
+	parseBankBox,
+	parseBankFreeMintBox,
+	parseBuybackBox,
 	parseDexyGoldOracleBox,
 	parseLpBox,
 	parseLpMintBox,
@@ -18,6 +21,9 @@ import {
 	parseLpSwapBox
 } from '$lib/stores/dexyGoldParser';
 import {
+	dexygold_bank_box,
+	dexygold_bank_free_mint_box,
+	dexygold_buyback_box,
 	dexygold_lp_box,
 	dexygold_lp_mint_box,
 	dexygold_lp_redeem_box,
@@ -29,7 +35,13 @@ import {
 	oracle_erg_xau_box
 } from '$lib/stores/dexyGoldStore';
 import { nanoErgToErg } from '$lib/TransactionUtils';
-import { OutputBuilder, RECOMMENDED_MIN_FEE_VALUE, TransactionBuilder } from '@fleet-sdk/core';
+import {
+	OutputBuilder,
+	RECOMMENDED_MIN_FEE_VALUE,
+	SInt,
+	SLong,
+	TransactionBuilder
+} from '@fleet-sdk/core';
 import { before } from 'node:test';
 import { get } from 'svelte/store';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -208,7 +220,6 @@ describe('LP swap with any input should work', async () => {
 			feeNumLp,
 			feeDenomLp
 		);
-
 		const swapOutValue = swapInValue;
 		const lpXOut = lpXIn - direction * amountErg;
 		const lpYOut = lpYIn + direction * amountDexy;
@@ -1194,14 +1205,167 @@ describe('LP Redeem with any input should work', async () => {
 	});
 });
 
-describe.skip('Bank FreeMint with any input should work', async () => {
+describe('Bank FreeMint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('bank test', () => {
-		expect('need to add').toBe('done');
+	it('			: Mint Dexy : Input only ERG', async () => {
+		//input BOXES
+
+		//const lpRedeemIn = get(dexygold_lp_redeem_box);
+		const bankIn = get(dexygold_bank_box);
+		const freeMintIn = get(dexygold_bank_free_mint_box);
+		const buybankIn = get(dexygold_buyback_box);
+
+		const { value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn);
+		const {
+			value: freeMintXIn,
+			freeMintNFT,
+			R4ResetHeight,
+			R5AwailableAmount
+		} = parseBankFreeMintBox(freeMintIn);
+
+		const { value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn);
+		const lpIn = get(dexygold_lp_box);
+		const goldOracle = get(oracle_erg_xau_box);
+
+		const { dexyAmount: lpYIn, value: lpXIn } = parseLpBox(lpIn);
+		const { oraclePoolNFT, R4Rate: oracleRate } = parseDexyGoldOracleBox(goldOracle);
+		//const oracleDimension = 1_000_000n;
+		const oracleDimension = 1n;
+
+		// value: asBigInt(box.value),
+		// oraclePoolNFT: box.assets[0].tokenId,
+		// R4Rate: parse<bigint>(box.additionalRegisters.R4)
+		// LOGICAL (IF LP RATE IS HIGHER THAN ORACLE ORACLE 0,98 )
+		//val validRateFreeMint = lpRate * 100 > oracleRate * 98
+		let lpRate = lpXIn / lpYIn;
+		console.log(
+			lpRate * 100n > oracleRate * 98n,
+			' |',
+			'lpRate*100n:',
+			lpRate * 100n,
+			' vs ',
+			oracleRate * 98n,
+			'oracleRate * 98'
+		);
+
+		const dataInputs = [goldOracle, lpIn];
+
+		const userUtxos = [fakeUserWithDexyBox];
+
+		//user Inputs
+		const height = 1449119;
+		const ergoInput = 1_000_000_000n;
+
+		//constants
+		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+
+		//calculations
+		const freeMintXOut = freeMintXIn; // PRESERVE
+		const bankFeeNum: bigint = 3n; //<== CHECK
+		const buybackFeeNum: bigint = 2n; //<== CHECK
+		const feeDenom = 1000n;
+		const contractErg = ergoInput;
+
+		const { contractDexy, bankErgsAdded, buybackErgsAdded } = bankMintInpuErg(
+			oracleRate,
+			oracleDimension,
+			bankFeeNum,
+			buybackFeeNum,
+			feeDenom,
+			contractErg
+		);
+		console.log(
+			contractDexy,
+			' Dexy <= ',
+			contractErg,
+			' ERG',
+			bankErgsAdded,
+			' - ',
+			buybackErgsAdded,
+			' - '
+		);
+
+		// HEIGHT ?
+		const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
+		const remainingDexyIn = R5AwailableAmount;
+		let remainingDexyOut;
+
+		let dexyMinted = contractDexy; //''
+		let availableToMint;
+		let resetHeightOut;
+
+		if (isReset) {
+			resetHeightOut = height + 350 + 5 - 1; //<== //360 => 365
+			availableToMint = lpYIn / 100n; //1%
+			console.log('availableToMint ', availableToMint);
+			remainingDexyOut = availableToMint - dexyMinted;
+		} else {
+			resetHeightOut = R4ResetHeight; //
+			availableToMint = R5AwailableAmount; //
+			if (remainingDexyIn < dexyMinted) {
+				console.log('Not reset | Not enough Dexy');
+			}
+			remainingDexyOut = remainingDexyIn - dexyMinted;
+		}
+		console.log(resetHeightOut, ' resetHeightOut');
+		console.log(remainingDexyOut, ' remainingDexyOut');
+
+		const bankXOut = bankXIn + bankErgsAdded; // ?
+		const bankYOut = bankYIn - contractDexy; // ?
+
+		const buybackXOut = buybackXIn + buybackErgsAdded; // RECALCULATE
+
+		const bankOut = new OutputBuilder(bankXOut, bankErgoTree).addTokens([
+			{ tokenId: bankNFT, amount: 1n },
+			{ tokenId: dexyTokenId, amount: bankYOut }
+		]);
+
+		const freeMintOut = new OutputBuilder(freeMintXOut, freeMintErgoTree)
+			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+			.setAdditionalRegisters({
+				R4: SInt(Number(resetHeightOut)).toHex(),
+				R5: SLong(remainingDexyOut).toHex()
+			});
+
+		const buybackOut = new OutputBuilder(buybackXOut, buybackErgoTree).addTokens([
+			{ tokenId: buybackNFT, amount: 1n }
+		]);
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([bankIn, freeMintIn, buybankIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.withDataFrom(dataInputs)
+			.to(freeMintOut)
+			.to(bankOut)
+			.to(buybackOut)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		//debugRedeem(unsignedTx);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+
+	it.skip('With FEE (TODO)', () => {
+		expect('TODO').toBe('done');
 	});
 });
+
+//	dexygold_bank_free_mint_box.set(signedTx.outputs[0]); //[0]
+//	dexygold_bank_arbitrage_mint_box.set(signedTx.outputs[1]); //[1]
+//	dexygold_tracking95_box.set(signedTx.outputs[2]); // [2]
+//	dexygold_tracking98_box.set(signedTx.outputs[3]); // [3]
+//	dexygold_tracking101_box.set(signedTx.outputs[4]); //[4]
+//	dexygold_bank_box.set(signedTx.outputs[5]); //[5]
+//	dexygold_buyback_box.set(signedTx.outputs[6]); //[6]
 
 describe.skip('Bank ArbitrageMint with any input should work', async () => {
 	beforeAll(() => {

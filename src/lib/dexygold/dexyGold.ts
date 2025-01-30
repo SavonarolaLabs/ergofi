@@ -110,13 +110,17 @@ export function bankMintInpuErg(
 
 	const contractDexy =
 		(contractErg * feeDenom * oracleDimension) /
-		(oracleRateXy * (bankFeeNum + feeDenom + buybackFeeNum));
+		(oracleRateXy * (bankFeeNum + feeDenom + buybackFeeNum)); // - 1n;
 
 	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / oracleDimension;
 	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / oracleDimension;
+	//console.log('oracleRateXy:', oracleRateXy);
+	//console.log('oracleRatDim:', oracleRateXy / oracleDimension);
+	//console.log('bankRate:', bankRate);
+	//console.log('buybackRate:', buybackRate);
 
-	const bankErgsAdded = bankRate * contractDexy;
-	const buybackErgsAdded = buybackRate * contractDexy;
+	const bankErgsAdded = bankRate * contractDexy + 1n; //ensure >=
+	const buybackErgsAdded = buybackRate * contractDexy + 1n; //ensure >=
 
 	return { contractDexy, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
 }

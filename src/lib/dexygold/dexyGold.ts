@@ -108,19 +108,34 @@ export function bankMintInpuErg(
 ) {
 	//const oracleDimension = 1_000_000n;
 
-	const contractDexy =
-		(contractErg * feeDenom * oracleDimension) /
-		(oracleRateXy * (bankFeeNum + feeDenom + buybackFeeNum)); // - 1n;
+	//---------------------
 
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / oracleDimension;
-	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / oracleDimension;
+	//const contractDexy =
+	//	(contractErg * feeDenom) / (oracleRateXy * (bankFeeNum + feeDenom + buybackFeeNum)); // - 1n;
+	////Dexy minted?
+
+	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom; /// oracleDimension;
+	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom; /// oracleDimension;
 	//console.log('oracleRateXy:', oracleRateXy);
 	//console.log('oracleRatDim:', oracleRateXy / oracleDimension);
 	//console.log('bankRate:', bankRate);
 	//console.log('buybackRate:', buybackRate);
 
-	const bankErgsAdded = bankRate * contractDexy + 1n; //ensure >=
-	const buybackErgsAdded = buybackRate * contractDexy + 1n; //ensure >=
+	const contractDexy = contractErg / bankRate - 1n; // ergsAdded to BANK
+	const bankErgsAdded = contractErg;
+	//const ergsAdded >= contractDexy * bankRate
+
+	//const bankErgsAdded = contractDexy * bankRate + 1n; //ensure >=
+	const buybackErgsAdded = contractDexy * buybackRate + 1n; //ensure >=
+
+	// //--
+	// val bankRate = oracleRate * (bankFeeNum + feeDenom) / feeDenom
+	// val buybackRate = oracleRate * buybackFeeNum / feeDenom
+
+	// ergsAdded >= dexyMinted * bankRate && ergsAdded > 0 // dexyMinted must be (+)ve, since both ergsAdded and bankRate are (+)ve
+
+	// buybackErgsAdded >= dexyMinted * buybackRate && buybackErgsAdded > 0
+	// //--
 
 	return { contractDexy, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
 }

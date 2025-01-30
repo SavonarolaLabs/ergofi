@@ -5,7 +5,7 @@ const HEIGHT = getTxHeight(freemintTx);
 const CONTEXT = createContext(freemintTx);
 const INPUTS = createInputs(freemintTx);
 const OUTPUTS = createOutputs(freemintTx);
-const SELF = INPUTS(1);
+const SELF = INPUTS(0);
 
 let bankInIndex = 1;
 let buybackInIndex = 2;
@@ -57,11 +57,11 @@ let validRateFreeMint = lpRate * 100 > oracleRate * 98;
 
 let dexyMinted = bankBoxIn.tokens(1)._2 - bankBoxOut.tokens(1)._2;
 let ergsAdded = bankBoxOut.value - bankBoxIn.value;
-let bankRate = (oracleRate * (bankFeeNum + feeDenom)) / feeDenom;
+let bankRate = Math.floor((oracleRate * (bankFeeNum + feeDenom)) / feeDenom);
 let validBankDelta = ergsAdded >= dexyMinted * bankRate && ergsAdded > 0;
 
 let buybackErgsAdded = buybackOut.value - buybackBoxIn.value;
-let buybackRate = (oracleRate * buybackFeeNum) / feeDenom;
+let buybackRate = Math.floor((oracleRate * buybackFeeNum) / feeDenom);
 let validBuybackDelta = buybackErgsAdded >= dexyMinted * buybackRate && buybackErgsAdded > 0;
 let validDelta = validBankDelta && validBuybackDelta;
 

@@ -1230,9 +1230,10 @@ describe('Bank FreeMint with any input should work', async () => {
 		const goldOracle = get(oracle_erg_xau_box);
 
 		const { dexyAmount: lpYIn, value: lpXIn } = parseLpBox(lpIn);
-		const { oraclePoolNFT, R4Rate: oracleRate } = parseDexyGoldOracleBox(goldOracle);
-		const oracleDimension = 1_000_000n;
-		//const oracleDimension = 1n;
+		const { oraclePoolNFT, R4Rate: oracleRateTemp } = parseDexyGoldOracleBox(goldOracle);
+		const oracleRate = oracleRateTemp / 1_000_000n;
+		// Real Oracle x 1_000_000n
+		const oracleDimension = 1n;
 
 		// value: asBigInt(box.value),
 		// oraclePoolNFT: box.assets[0].tokenId,
@@ -1270,7 +1271,7 @@ describe('Bank FreeMint with any input should work', async () => {
 		const feeDenom = 1000n;
 		const contractErg = ergoInput;
 
-		const { contractDexy, bankErgsAdded, buybackErgsAdded } = bankMintInpuErg(
+		let { contractDexy, bankErgsAdded, buybackErgsAdded } = bankMintInpuErg(
 			oracleRate,
 			oracleDimension,
 			bankFeeNum,
@@ -1278,6 +1279,10 @@ describe('Bank FreeMint with any input should work', async () => {
 			feeDenom,
 			contractErg
 		);
+
+		bankErgsAdded = bankErgsAdded + 2000000n;
+		buybackErgsAdded = buybackErgsAdded + 2000000n;
+
 		console.log(
 			contractDexy,
 			' Dexy <= ',
@@ -1299,7 +1304,7 @@ describe('Bank FreeMint with any input should work', async () => {
 		let resetHeightOut;
 
 		if (isReset) {
-			resetHeightOut = height + 350 + 5 - 1; //<== //360 => 365
+			resetHeightOut = height + 360 + 5 - 1; //<== //360 => 365
 			availableToMint = lpYIn / 100n; //1%
 			console.log('availableToMint ', availableToMint);
 			remainingDexyOut = availableToMint - dexyMinted;

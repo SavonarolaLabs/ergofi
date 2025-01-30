@@ -1231,8 +1231,8 @@ describe('Bank FreeMint with any input should work', async () => {
 
 		const { dexyAmount: lpYIn, value: lpXIn } = parseLpBox(lpIn);
 		const { oraclePoolNFT, R4Rate: oracleRate } = parseDexyGoldOracleBox(goldOracle);
-		//const oracleDimension = 1_000_000n;
-		const oracleDimension = 1n;
+		const oracleDimension = 1_000_000n;
+		//const oracleDimension = 1n;
 
 		// value: asBigInt(box.value),
 		// oraclePoolNFT: box.assets[0].tokenId,
@@ -1332,7 +1332,8 @@ describe('Bank FreeMint with any input should work', async () => {
 			});
 
 		const buybackOut = new OutputBuilder(buybackXOut, buybackErgoTree).addTokens([
-			{ tokenId: buybackNFT, amount: 1n }
+			{ tokenId: buybackNFT, amount: 1n },
+			{ tokenId: gort, amount: gortAmount }
 		]);
 
 		const unsignedTx = new TransactionBuilder(height)

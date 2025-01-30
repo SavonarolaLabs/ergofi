@@ -393,7 +393,7 @@ const outputBoxes = {
 		value: 43224547253880,
 		assets: [{ tokenId: oraclePoolNFT, amount: 1n }],
 		additionalRegisters: {
-			R4: SLong(43224547n).toHex()
+			R4: SLong(43224547n * 1_000_000n).toHex()
 		}
 	}
 };

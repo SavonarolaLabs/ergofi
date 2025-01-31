@@ -290,7 +290,7 @@ const outputBoxes = {
 		value: 1000000000,
 		assets: [{ tokenId: arbitrageMintNFT, amount: 1n }],
 		additionalRegisters: {
-			R4: SInt(1449519).toHex(), //Reset Height:     1449119      || HEIGHT + T_free + T_buffer
+			R4: SInt(1449119 + 1000).toHex(), //Reset Height:     1449119   // + = not reset / - = reset   || HEIGHT + T_free + T_buffer
 			R5: SLong(10000n).toHex() //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
 		}
 	},

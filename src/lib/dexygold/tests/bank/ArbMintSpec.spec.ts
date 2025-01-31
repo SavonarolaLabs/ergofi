@@ -10,6 +10,7 @@ import {
 import { MockChain } from '@fleet-sdk/mock-chain';
 
 import { vitestTokenIds, vitestErgoTrees } from '../../dexyConstants';
+import { bankMint } from '$lib/dexygold/dexyGold';
 
 const {
 	arbitrageMintNFT,
@@ -71,6 +72,22 @@ describe('ArbMintSpec', () => {
 		const t_arb = 30n;
 		const remainingDexyIn = 10000000n;
 		const remainingDexyOut = remainingDexyIn - dexyMinted;
+
+		const {
+			contractErg,
+			bankErgsAdded: compare1,
+			buybackErgsAdded: compare2
+		} = bankMint(oracleRateXy, 1_000_000n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
+
+		console.log(
+			'valid calculations:',
+			bankErgsAdded == compare1,
+			' ',
+			buybackErgsAdded == compare2,
+			' ',
+			bankErgsAdded + buybackErgsAdded == contractErg
+		);
+
 		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
 		fundingParty.addBalance({ nanoergs: fakeNanoErgs });
 		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');

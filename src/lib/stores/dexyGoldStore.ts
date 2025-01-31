@@ -290,8 +290,8 @@ const outputBoxes = {
 		value: 1000000000,
 		assets: [{ tokenId: arbitrageMintNFT, amount: 1n }],
 		additionalRegisters: {
-			R4: SInt(intZero).toHex(), //"R4": "$intZero", //Reset Height:     selfR4      || HEIGHT + T_free + T_buffer
-			R5: SLong(longZero).toHex() //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
+			R4: SInt(1449519).toHex(), //Reset Height:     1449119      || HEIGHT + T_free + T_buffer
+			R5: SLong(10000n).toHex() //"R5": "$longZero" //Available Amount: R5 - minted || NewAmount
 		}
 	},
 	tracking95: {
@@ -324,7 +324,7 @@ const outputBoxes = {
 			R4: SInt(Number(101)).toHex(), // constant
 			R5: SInt(Number(100)).toHex(), // constant "
 			R6: SBool(false).toHex(),
-			R7: SInt(Number(intMax)).toHex()
+			R7: SInt(Number(0)).toHex() //SInt(Number(intMax)).toHex() oor
 		}
 	},
 	bank: {
@@ -390,10 +390,10 @@ const outputBoxes = {
 	},
 	oracle: {
 		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
-		value: 43224547253880,
+		value: 1000000000,
 		assets: [{ tokenId: oraclePoolNFT, amount: 1n }],
 		additionalRegisters: {
-			R4: SLong(43224547n * 1_000_000n).toHex()
+			R4: SLong((43224547n * 1_000_000n * 90n) / 100n).toHex() // 105/100 = 105% LP // 90/100 = 90% LP // Valid only Free 99%
 		}
 	}
 };

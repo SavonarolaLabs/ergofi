@@ -96,7 +96,7 @@ export function bankMint(
 
 	const contractErg = bankErgsAdded + buybackErgsAdded;
 
-	return { contractErg, bankErgsAdded, buybackErgsAdded }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
+	return { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
 }
 
 export function bankMintInpuErg(

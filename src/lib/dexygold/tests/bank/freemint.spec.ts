@@ -278,7 +278,7 @@ describe('Bank Mint with any input should work', async () => {
 	let freeMintOut;
 	let buybackOut;
 
-	const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+	let fundingParty;
 	const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
 	const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
 	const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
@@ -385,9 +385,14 @@ describe('Bank Mint with any input should work', async () => {
 		]);
 
 		// Setup inputs
-		fundingParty.addBalance({
-			nanoergs: fakeNanoErgs
-		});
+		//const bob = mockChain.newParty("Bob");
+		//fundingParty = mockChain.addParty(fakeUserWithDexyBox.ergoTree, 'Funding');
+		fundingParty = mockChain.newParty('Funding');
+		fundingParty.addBalance(
+			{
+				nanoergs: fakeUserWithDexyBox.value,
+				tokens: fakeUserWithDexyBox.assets
+			})
 
 		buybackParty.withUTxOs(buybackBoxIn);
 		oracleParty.withUTxOs(goldOracle);
@@ -434,25 +439,6 @@ describe('Bank Mint with any input should work', async () => {
 			buybackBoxIn,
 			...fundingParty.utxos
 		];
-		const dataInputs = [...oracleParty.utxos, ...lpParty.utxos];
-
-		// Outputs
-		const freeMintOut = new OutputBuilder(freeMintXOut, freeMintParty.address)
-			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
-			.setAdditionalRegisters({
-				R4: SInt(Number(resetHeightOut)).toHex(),
-				R5: SLong(remainingDexyOut).toHex()
-			});
-
-		const bankOut = new OutputBuilder(bankXOut, bankParty.address).addTokens([
-			{ tokenId: bankNFT, amount: 1n },
-			{ tokenId: dexyUSD, amount: bankYOut }
-		]);
-
-		const buybackOut = new OutputBuilder(buybackXOut, buybackParty.address).addTokens([
-			{ tokenId: buybackNFT, amount: 1n },
-			{ tokenId: gort, amount: gortAmount }
-		]);
 
 		// Build TX
 		const tx = new TransactionBuilder(mockChain.height)
@@ -462,14 +448,14 @@ describe('Bank Mint with any input should work', async () => {
 			.to(bankOut)
 			.to(buybackOut)
 			.payFee(feeMining)
-			.sendChangeTo(fundingParty.address)
+			.sendChangeTo(userChangeAddress)
 			.build();
 
 		debugFreemint(tx.toEIP12Object());
 
 		//console.dir(tx.toEIP12Object(), { depth: null });
 		// Execute => should pass
-		const executed = mockChain.execute(tx, { throw: false });
+		const executed = mockChain.execute(tx, { signers: [fundingParty], throw: false });
 		expect(executed).toBe(true);
 	});
 });

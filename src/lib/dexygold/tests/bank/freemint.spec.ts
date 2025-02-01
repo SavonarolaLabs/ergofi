@@ -385,8 +385,6 @@ describe('Bank Mint with any input should work', async () => {
 		]);
 
 		// Setup inputs
-		//const bob = mockChain.newParty("Bob");
-		//fundingParty = mockChain.addParty(fakeUserWithDexyBox.ergoTree, 'Funding');
 		fundingParty = mockChain.newParty('Funding');
 		fundingParty.addBalance(
 			{

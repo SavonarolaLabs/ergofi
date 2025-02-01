@@ -203,175 +203,154 @@ function calculateLpRedeemInputDexy(
 }
 
 describe('Bank Mint with any input should work', async () => {
-	beforeAll(() => {
-		initTestBoxes();
-	});
-
 	let mockChain: MockChain;
+	let height = 1449119 + 11;
+	// Start each test with a fresh chain at height ~1M
+	mockChain = new MockChain({ height: height });
+	let freeMintIn;
+	let bankIn;
+	let buybankIn;
+	let lpIn;
+	let goldOracle;
 
-	beforeEach(() => {
-		// Start each test with a fresh chain at height ~1M
-		mockChain = new MockChain({ height: 1_000_000 });
-	});
+	let ergoInput;
+	let feeMining;
+	let userAddress;
+	let userChangeAddress;
 
-	afterEach(() => {
-		mockChain.reset();
-	});
+	let freeMintXIn;
+	let freeMintNFT;
+	let R4ResetHeight;
+	let R5AwailableAmount;
 
-	it('Free mint - RESET  SignTx()', async () => {
-		//input BOXES
+	let bankXIn;
+	let bankNFT;
+	let bankYIn;
+	let buybackXIn;
+	let buybackNFT;
+	let gortAmount;
 
-		//const lpRedeemIn = get(dexygold_lp_redeem_box);
-		//----------------- Arb Mint -------------------
-		const freeMintIn = get(dexygold_bank_free_mint_box);
-		const {
+	let lpYData;
+	let lpXData;
+	let lpTokenAmount;
+
+	let oraclePoolNFT;
+	let oracleRateData;
+
+	let dataInputs;
+	let userUtxos;
+
+	const T_free = 360n;
+	const T_arb = 30n;
+	const thresholdPercent = 101n;
+	const T_buffer = 5n;
+	const bankFeeNum = 3n;
+	const buybackFeeNum = 2n;
+	const feeDenom = 1000n;
+
+	let lpRate;
+	let oracleRate;
+
+	let dexyMinted;
+
+	let contractErg;
+	let bankErgsAdded;
+	let buybackErgsAdded;
+	let bankRate;
+	let buybackRate;
+
+	let maxAllowedIfReset;
+	let remainingDexyIn;
+	let remainingDexyOut;
+	let bankXOut;
+	let bankYOut;
+	let buybackXOut;
+	let freeMintXOut;
+
+	let isCounterReset;
+
+	let availableToMint;
+	let resetHeightIn;
+	let resetHeightOut;
+
+	let buybackBoxIn;
+	let bankOut;
+	let freeMintOut;
+	let buybackOut;
+
+	const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
+	const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
+	const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
+	const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
+	const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
+	const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
+
+	beforeAll(async () => {
+		await initTestBoxes();
+
+		dexyMinted = 3000n - 1n;
+
+		freeMintIn = get(dexygold_bank_free_mint_box);
+		({
 			value: freeMintXIn,
 			freeMintNFT,
 			R4ResetHeight,
 			R5AwailableAmount
-		} = parseBankFreeMintBox(freeMintIn);
-		//console.log(' ');
-		//console.log('----------------- Arb Mint -------------------');
-		//console.dir(arbMintIn, { depth: null });
-		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AwailableAmount);
-		//------------------------------------------------
+		} = parseBankFreeMintBox(freeMintIn));
 
-		//----------------- Check Bank -------------------
-		const bankIn = get(dexygold_bank_box);
-		const { value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn);
-		//console.log(' ');
-		//console.log('----------------- Check Bank -------------------');
-		//console.dir(bankIn, { depth: null });
-		//console.log('bankIn', bankXIn, bankNFT, bankYIn);
-		//------------------------------------------------
+		bankIn = get(dexygold_bank_box);
+		({ value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn));
 
-		//------------------- Buyback --------------------
-		const buybankIn = get(dexygold_buyback_box);
-		const { value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn);
-		//console.log(' ');
-		//console.log('------------------- Buyback --------------------');
-		//console.dir(buybankIn, { depth: null });
-		//console.log('buybankIn', buybackXIn, buybackNFT, gortAmount);
-		//------------------------------------------------
+		buybankIn = get(dexygold_buyback_box);
+		({ value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn));
 
-		//------------------ Tracking --------------------
-		const tracking = get(dexygold_tracking101_box);
-		const { value, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } =
-			parseTrackingBox(tracking);
-		//console.log(' ');
-		//console.log('------------------ Tracking --------------------');
-		//console.dir(tracking, { depth: null });
-		//console.log('tracking:', value, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight);
-		//------------------------------------------------
+		lpIn = get(dexygold_lp_box);
+		({ dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn));
 
-		//------------------ LP --------------------
-		const lpIn = get(dexygold_lp_box);
-		const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn);
-		//console.log(' ');
-		//console.log('------------------ LP --------------------');
-		//console.dir(lpIn, { depth: null });
-		//console.log('lpIn:', lpXData, lpYData, lpTokenAmount);
-		//------------------------------------------------
+		goldOracle = get(oracle_erg_xau_box);
+		({ oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle));
 
-		//------------------ Oracle --------------------
-		const goldOracle = get(oracle_erg_xau_box);
-		const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle);
-		//console.log(' ');
-		//console.log('------------------ Oracle --------------------');
-		//console.dir(goldOracle, { depth: null });
-		//console.log('goldOracle:', oraclePoolNFT, oracleRateData);
-		//------------------------------------------------
-
-		const dataInputs = [goldOracle, lpIn]; //, tracking];
-		const userUtxos = [fakeUserWithDexyBox];
+		dataInputs = [goldOracle, lpIn]; //, tracking];
+		userUtxos = [fakeUserWithDexyBox];
 
 		//user Inputs
-		const height = 1449119 + 11; // + 10; //+10 = Reseted
-		const ergoInput = 1_000_000_000n;
+		height = 1449119 + 11; // + 10; //+10 = Reseted
+		ergoInput = 1_000_000_000n;
 
-		//constants
-		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
-		const userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		feeMining = RECOMMENDED_MIN_FEE_VALUE;
+		userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
-		//constants v2
-		const T_free = 360n;
-		const T_arb = 30n;
-		const thresholdPercent = 101n;
-		const T_buffer = 5n;
-		const bankFeeNum = 3n;
-		const buybackFeeNum = 2n;
-		const feeDenom = 1000n;
+		lpRate = lpXData / lpYData;
+		oracleRate = oracleRateData / 1_000_000n;
 
-		//Check result in contract
-		const lpRate = lpXData / lpYData; //bigint?
-		const lpRateNum = Number(lpXData) / Number(lpYData); //or number?
-		console.log('lpRate ', lpRate, ' vs ', lpRateNum, '	bigint vs num');
-
-		// val oracleRate = oracleBox.R4[Long].get / 1000000L
-		const oracleRate = oracleRateData / 1_000_000n;
-		const oracleRateNum = Number(oracleRateData) / 1_000_000;
-		console.log('Oracle ', oracleRate, ' vs ', oracleRateNum, '	bigint vs num');
-
-		const dexyMinted = 3000n - 1n; // same in TEST
-
-		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
+		({ contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
 			oracleRate,
 			1n,
 			bankFeeNum,
 			buybackFeeNum,
 			feeDenom,
 			dexyMinted
-		);
+		));
+		remainingDexyIn = R5AwailableAmount;
+		maxAllowedIfReset = lpYData / 100n;
+		remainingDexyOut = maxAllowedIfReset - dexyMinted;
 
-		console.log(
-			contractErg,
-			bankErgsAdded,
-			buybackErgsAdded,
-			contractErg == bankErgsAdded + buybackErgsAdded,
-			bankRate,
-			buybackRate
-		);
+		bankXOut = bankXIn + bankErgsAdded;
+		bankYOut = bankYIn - dexyMinted;
+		buybackXOut = buybackXIn + buybackErgsAdded;
 
-		const oracleRateWithFee = bankRate + buybackRate; // bigint
-		console.log(oracleRateWithFee, oracleRateWithFee - (oracleRate * 100_500n) / 100_000n);
-		console.log('oracleRateWithFee', oracleRateWithFee);
-		//Treshhold: (Oracle x 99% => Free Valid and Arb not Valid)
-		//FreeMint (98 * oracleRate)
-		const validRateFreeMint = lpRate * 100n > oracleRate * 98n;
-		console.log(validRateFreeMint, 'validRate FreeMint');
-		//Arb mint (101,505 * oracleRate)
-		const validThreshold = lpRate * 100n > thresholdPercent * oracleRateWithFee;
-		console.log(validThreshold, 'validRate ArbMint');
+		freeMintXOut = freeMintXIn;
 
-		// Refresh Amount:
-		//Free MINT:
-		const maxAllowedIfResetFree = lpYData / 100n; // max 1% of LP dexy reserves to free-mint per period
-		console.log(maxAllowedIfResetFree, 'refreshAmount FreeMint');
-		//ARB MINT :
-		const maxAllowedIfResetArb = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee;
-		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
+		resetHeightIn = R4ResetHeight;
+		resetHeightOut = height + Number(T_free + T_buffer - 1n);
 
-		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		isCounterReset = height > R4ResetHeight;
 
-		// // HEIGHT ?
-		//isCounterReset = HEIGHT > selfInR4
-		let isCounterReset = height > R4ResetHeight;
-		console.log(height > R4ResetHeight, height, ' vs ', R4ResetHeight);
-
-		// HEIGHT ?
-		let remainingDexyOut;
-
-		//let dexyMinted = contractDexy; //''
-		let availableToMint;
-		let resetHeightOut;
-
-		//isCounterReset = false; //for test
 		if (isCounterReset) {
 			console.log('Reset +');
 			resetHeightOut = height + Number(T_free + T_buffer - 1n); //<== //360 => 365
-			availableToMint = maxAllowedIfResetFree;
+			availableToMint = maxAllowedIfReset;
 			console.log('availableToMint ', availableToMint);
 			remainingDexyOut = availableToMint - dexyMinted;
 		} else {
@@ -383,47 +362,51 @@ describe('Bank Mint with any input should work', async () => {
 			}
 			remainingDexyOut = availableToMint - dexyMinted;
 		}
-		expect(remainingDexyOut).toBeGreaterThanOrEqual(0);
 
-		console.log(resetHeightOut, ' resetHeightOut');
-		console.log(remainingDexyOut, ' remainingDexyOut');
-
-		// const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
-		// const remainingDexyIn = R5AwailableAmount;
-		// let remainingDexyOut;
-
-		// let dexyMinted = contractDexy; //''
-		// let availableToMint;
-		// let resetHeightOut;
-
-		//bankErgsAdded, buybackErgsAdded
-		const bankXOut = bankXIn + bankErgsAdded; // ?
-		const bankYOut = bankYIn - dexyMinted; // ?
-		const buybackXOut = buybackXIn + buybackErgsAdded; // RECALCULATE
-
-		const freeMintXOut = freeMintXIn;
-
-		const buybackBoxIn = new ErgoUnsignedInput(buybankIn);
+		buybackBoxIn = new ErgoUnsignedInput(buybankIn);
 		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
 
 		//------------------------------
-		const bankOut = new OutputBuilder(bankXOut, bankErgoTree).addTokens([
+		bankOut = new OutputBuilder(bankXOut, bankErgoTree).addTokens([
 			{ tokenId: bankNFT, amount: 1n },
 			{ tokenId: dexyTokenId, amount: bankYOut }
 		]);
 
-		const freeMintOut = new OutputBuilder(freeMintXOut, freeMintErgoTree)
+		freeMintOut = new OutputBuilder(freeMintXOut, freeMintErgoTree)
 			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
 			.setAdditionalRegisters({
 				R4: SInt(Number(resetHeightOut)).toHex(),
 				R5: SLong(BigInt(remainingDexyOut)).toHex()
 			});
 
-		const buybackOut = new OutputBuilder(buybackXOut, buybackErgoTree).addTokens([
+		buybackOut = new OutputBuilder(buybackXOut, buybackErgoTree).addTokens([
 			{ tokenId: buybackNFT, amount: 1n },
 			{ tokenId: gort, amount: gortAmount }
 		]);
 
+		// Setup inputs
+		fundingParty.addBalance({
+			nanoergs: fakeNanoErgs
+		});
+
+		buybackParty.withUTxOs(buybackBoxIn);
+		oracleParty.withUTxOs(goldOracle);
+		bankParty.withUTxOs(bankIn);
+		lpParty.withUTxOs(lpIn);
+		freeMintParty.withUTxOs(freeMintIn);
+	});
+
+	beforeEach(() => {
+		let height = 1449119 + 11;
+		// Start each test with a fresh chain at height ~1M
+		mockChain = new MockChain({ height: height });
+	});
+
+	afterEach(() => {
+		mockChain.reset();
+	});
+
+	it('Free mint - RESET  SignTx()', async () => {
 		const unsignedTx = new TransactionBuilder(height)
 			.from([freeMintIn, bankIn, buybackBoxIn, ...userUtxos], {
 				ensureInclusion: true
@@ -444,98 +427,6 @@ describe('Bank Mint with any input should work', async () => {
 	});
 
 	it.only('Free mint - RESET  MochChain', () => {
-		const oracleRateXy = 10000n * 1000000n; // 10^10
-		const bankFeeNum = 3n; // => 0.5% fee part
-		const buybackFeeNum = 2n; // => 0.5% fee part
-		const feeDenom = 1000n;
-
-		const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / 1000000n; // => 10030
-		const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / 1000000n; // => 20
-
-		const lpBalance = 100000000n;
-		const lpReservesX = 100000000000000n;
-		const lpReservesY = 10000000000n;
-
-		const dexyMinted = 35000n; // positive
-		const bankErgsAdded = bankRate * dexyMinted; // 10030 * 35000
-		const buybackErgsAdded = buybackRate * dexyMinted; // 20 * 35000
-
-		const bankReservesXIn = 100000000000000n;
-		const bankReservesYIn = 90200000100n;
-		const bankReservesYOut = bankReservesYIn - dexyMinted;
-		const bankReservesXOut = bankReservesXIn + bankErgsAdded;
-
-		// Registers in freeMintBox
-		//const resetHeightIn = BigInt(mockChain.height + 1); //
-		//const resetHeightOut = resetHeightIn; // not reset
-
-		const t_free = 360n;
-		const resetHeightIn = BigInt(mockChain.height) - 1n; //reset
-		const resetHeightOut = BigInt(mockChain.height) + t_free + 3n; //buffer = 5
-
-		const maxAllowedIfReset = lpReservesY / 100n;
-		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
-
-		const remainingDexyIn = 10000000n;
-		//const remainingDexyOut = remainingDexyIn - dexyMinted;
-
-		// Parties for each box
-		const fundingParty = mockChain.addParty(fakeScriptErgoTree, 'Funding');
-		const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');
-		const oracleParty = mockChain.addParty(fakeScriptErgoTree, 'Oracle');
-		const lpParty = mockChain.addParty(lpErgoTree, 'LpBox');
-		const freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
-		const bankParty = mockChain.addParty(bankErgoTree, 'Bank');
-
-		// Setup inputs
-		fundingParty.addBalance({
-			nanoergs: fakeNanoErgs
-		});
-		buybackParty.addBalance({
-			nanoergs: fakeNanoErgs,
-			tokens: [{ tokenId: buybackNFT, amount: 1n }]
-		});
-		oracleParty.addBalance(
-			{
-				nanoergs: minStorageRent,
-				tokens: [{ tokenId: oraclePoolNFT, amount: 1n }]
-			},
-			{
-				R4: SLong(oracleRateXy).toHex()
-			}
-		);
-		lpParty.addBalance({
-			nanoergs: lpReservesX,
-			tokens: [
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpToken, amount: lpBalance },
-				{ tokenId: dexyUSD, amount: lpReservesY }
-			]
-		});
-		freeMintParty.addBalance(
-			{
-				nanoergs: minStorageRent,
-				tokens: [{ tokenId: freeMintNFT, amount: 1n }]
-			},
-			{
-				R4: SInt(Number(resetHeightIn)).toHex(),
-				R5: SLong(remainingDexyIn).toHex()
-			}
-		);
-		bankParty.addBalance({
-			nanoergs: bankReservesXIn,
-			tokens: [
-				{ tokenId: bankNFT, amount: 1n },
-				{ tokenId: dexyUSD, amount: bankReservesYIn }
-			]
-		});
-
-		// set context var for buyback
-		const buybackBoxIn = new ErgoUnsignedInput(buybackParty.utxos.at(0));
-		buybackBoxIn.setContextExtension({
-			0: SInt(1).toHex()
-		});
-
 		// main + data inputs
 		const mainInputs = [
 			...freeMintParty.utxos,
@@ -546,22 +437,22 @@ describe('Bank Mint with any input should work', async () => {
 		const dataInputs = [...oracleParty.utxos, ...lpParty.utxos];
 
 		// Outputs
-		const freeMintOut = new OutputBuilder(minStorageRent, freeMintParty.address)
+		const freeMintOut = new OutputBuilder(freeMintXOut, freeMintParty.address)
 			.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
 			.setAdditionalRegisters({
 				R4: SInt(Number(resetHeightOut)).toHex(),
 				R5: SLong(remainingDexyOut).toHex()
 			});
 
-		const bankOut = new OutputBuilder(bankReservesXOut, bankParty.address).addTokens([
+		const bankOut = new OutputBuilder(bankXOut, bankParty.address).addTokens([
 			{ tokenId: bankNFT, amount: 1n },
-			{ tokenId: dexyUSD, amount: bankReservesYOut }
+			{ tokenId: dexyUSD, amount: bankYOut }
 		]);
 
-		const buybackOut = new OutputBuilder(
-			fakeNanoErgs + buybackErgsAdded,
-			buybackParty.address
-		).addTokens([{ tokenId: buybackNFT, amount: 1n }]);
+		const buybackOut = new OutputBuilder(buybackXOut, buybackParty.address).addTokens([
+			{ tokenId: buybackNFT, amount: 1n },
+			{ tokenId: gort, amount: gortAmount }
+		]);
 
 		// Build TX
 		const tx = new TransactionBuilder(mockChain.height)
@@ -570,7 +461,7 @@ describe('Bank Mint with any input should work', async () => {
 			.to(freeMintOut)
 			.to(bankOut)
 			.to(buybackOut)
-			.payFee(fee)
+			.payFee(feeMining)
 			.sendChangeTo(fundingParty.address)
 			.build();
 

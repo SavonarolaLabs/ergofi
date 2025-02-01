@@ -62,22 +62,13 @@ export const freemintTx = {
       }
     },
     {
-      "boxId": "6feb5a0cc11feb5fec4695b82ad81420e63a8c6cf87b6d2d372b8e7afc090f03",
-      "value": "1000000000000000",
-      "ergoTree": "0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c",
-      "creationHeight": 1443463,
-      "assets": [
-        {
-          "tokenId": "f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed",
-          "amount": "100000"
-        },
-        {
-          "tokenId": "23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4",
-          "amount": "100000000"
-        }
-      ],
+      "boxId": "1390b170355808b431707df0fa381f8625043ea472e5016eb738eb6738f662f6",
+      "value": "10000000000000",
+      "ergoTree": "10010101d17300",
+      "creationHeight": 1449130,
+      "assets": [],
       "additionalRegisters": {},
-      "transactionId": "180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c",
+      "transactionId": "f40e1f747150ae1d51c6280c6c7e5e4057481363873405be820404437861735e",
       "index": 0,
       "extension": {}
     }
@@ -180,17 +171,13 @@ export const freemintTx = {
       "additionalRegisters": {}
     },
     {
-      "value": "999882748190602",
-      "ergoTree": "0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c",
+      "value": "9882748190602",
+      "ergoTree": "10010101d17300",
       "creationHeight": 1449130,
       "assets": [
         {
           "tokenId": "f679b3efbcd969c3f9699013e33169966211ac409a250332ca3dcb6694a512ed",
-          "amount": "102999"
-        },
-        {
-          "tokenId": "23b682cde32b4d0e8492caa472b526f8419f7181363534e0cbab92b3c5d452d4",
-          "amount": "100000000"
+          "amount": "2999"
         }
       ],
       "additionalRegisters": {}

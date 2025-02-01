@@ -252,40 +252,5 @@ const headers = [
 export function fakeContext() {
 	const blockHeaders = BlockHeaders.from_json(headers);
 	const preHeader = PreHeader.from_block_header(BlockHeader.from_json(headers[0]));
-	const chanParams = blockchainParameterFromErgoNodeIfo(info);
 	return new ErgoStateContext(preHeader, blockHeaders, Parameters.default_parameters());
-}
-
-const info = {
-	lastBlockId: '5b9b19ac028c6956b4cdf8ec75227934b8134ff3635ed3aceac8a8bf20788dce',
-	height: 1282261,
-	maxBoxGix: 6197269,
-	maxTxGix: 1167892,
-	params: {
-		height: 506880,
-		storageFeeFactor: 1250000,
-		minValuePerByte: 360,
-		maxBlockSize: 1271009,
-		maxBlockCost: 7030268,
-		blockVersion: 2,
-		tokenAccessCost: 100,
-		inputCost: 2000,
-		dataInputCost: 100,
-		outputCost: 100
-	}
-};
-function blockchainParameterFromErgoNodeIfo(info) {
-	return {
-		storageFeeFactor: info.params.storageFeeFactor,
-		minValuePerByte: info.params.minValuePerByte,
-		maxBlockSize: info.params.maxBlockSize,
-		tokenAccessCost: info.params.tokenAccessCost,
-		inputCost: info.params.inputCost,
-		dataInputCost: info.params.dataInputCost,
-		outputCost: info.params.outputCost,
-		maxBlockCost: info.params.maxBlockCost,
-		softForkStartingHeight: 100,
-		softForkVotesCollected: 50,
-		blockVersion: info.params.blockVersion
-	};
 }

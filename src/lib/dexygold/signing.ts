@@ -1,4 +1,4 @@
-import { fakeContext } from '../fakeContext';
+import { createContext } from '../fakeContext';
 
 import { ErgoBox, ErgoBoxes } from 'ergo-lib-wasm-nodejs';
 import { mnemonicToSeedSync } from 'bip39';
@@ -32,7 +32,8 @@ export async function getProver(mnemonic: string): Promise<wasm.Wallet> {
 
 export async function signTx(
 	tx: EIP12UnsignedTransaction,
-	mnemonic: string
+	mnemonic: string,
+	height: number|undefined = undefined
 ): Promise<SignedTransaction> {
 	const prover = await getProver(mnemonic);
 
@@ -48,7 +49,33 @@ export async function signTx(
 	});
 
 	const signedTx = prover.sign_transaction(
-		fakeContext(),
+		await createContext(height),
+		wasm.UnsignedTransaction.from_json(JSON.stringify(tx)),
+		boxes_to_spend,
+		data_boxes
+	);
+	return signedTx.to_js_eip12();
+}
+
+export async function signTxRealContext(
+	tx: EIP12UnsignedTransaction,
+	mnemonic: string,
+): Promise<SignedTransaction> {
+	const prover = await getProver(mnemonic);
+
+	const boxesToSign = tx.inputs;
+	const boxes_to_spend = ErgoBoxes.empty();
+	boxesToSign.forEach((box) => {
+		boxes_to_spend.add(ErgoBox.from_json(JSON.stringify(box)));
+	});
+
+	const data_boxes = ErgoBoxes.empty();
+	tx.dataInputs.forEach((box) => {
+		data_boxes.add(ErgoBox.from_json(JSON.stringify(box)));
+	});
+
+	const signedTx = prover.sign_transaction(
+		await createContext(),
 		wasm.UnsignedTransaction.from_json(JSON.stringify(tx)),
 		boxes_to_spend,
 		data_boxes

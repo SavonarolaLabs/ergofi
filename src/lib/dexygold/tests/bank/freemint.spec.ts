@@ -425,11 +425,11 @@ describe('Bank Mint with any input should work', async () => {
 
 		//console.dir(unsignedTx, { depth: null });
 		debugFreemint(unsignedTx);
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();
 	});
 
-	it.only('Free mint - RESET  MochChain', () => {
+	it('Free mint - RESET  MochChain', () => {
 		// main + data inputs
 		const mainInputs = [
 			...freeMintParty.utxos,

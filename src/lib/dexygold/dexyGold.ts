@@ -78,6 +78,28 @@ export function lpSwapInputDexy(
 
 // -------------------------------- TEST AND REWORK --------------------------
 // Same for FreeMint and ArbitrageMint so called bankMint
+export function bankMintBigInt(
+	oracleRateXy: bigint, // oracle x 1_000_000 ???
+	oracleDimension: bigint,
+	bankFeeNum: bigint,
+	buybackFeeNum: bigint,
+	feeDenom: bigint,
+	contractDexy: bigint
+) {
+	//const oracleDimension = 1_000_000n;
+
+	const bankRate =
+		Number(oracleRateXy * (bankFeeNum + feeDenom)) / Number(feeDenom * oracleDimension);
+	const buybackRate = Number(oracleRateXy * buybackFeeNum) / Number(feeDenom * oracleDimension);
+
+	const bankErgsAdded = BigInt(Math.floor(bankRate * Number(contractDexy)));
+	const buybackErgsAdded = BigInt(Math.floor(buybackRate * Number(contractDexy)));
+
+	const contractErg = bankErgsAdded + buybackErgsAdded;
+
+	return { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
+}
+
 export function bankMint(
 	oracleRateXy: bigint, // oracle x 1_000_000 ???
 	oracleDimension: bigint,
@@ -88,8 +110,8 @@ export function bankMint(
 ) {
 	//const oracleDimension = 1_000_000n;
 
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / oracleDimension;
-	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / oracleDimension;
+	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / (feeDenom * oracleDimension);
+	const buybackRate = (oracleRateXy * buybackFeeNum) / (feeDenom * oracleDimension);
 
 	const bankErgsAdded = bankRate * contractDexy;
 	const buybackErgsAdded = buybackRate * contractDexy;
@@ -106,16 +128,16 @@ export function bankMintInpuErg(
 	buybackFeeNum: bigint,
 	feeDenom: bigint,
 	totalErgs: bigint
-  ) {
+) {
 	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / scale;
 	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / scale;
-  
+
 	const contractDexy = totalErgs / (bankRate + buybackRate);
 	const bankErgsAdded = bankRate * contractDexy;
 	const buybackErgsAdded = buybackRate * contractDexy;
-  
+
 	return { contractDexy, bankErgsAdded, buybackErgsAdded };
-  }
+}
 
 //TODO: Add Wrapper with FEE
 export function bankInput() {

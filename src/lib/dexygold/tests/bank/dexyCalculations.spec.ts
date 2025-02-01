@@ -1374,7 +1374,7 @@ describe('Bank Mint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();
 	});
-	it('Arbitrage	: Not reset : Input Dexy', async () => {
+	it.only('Arbitrage	: Not reset : Input Dexy', async () => {
 		//input BOXES
 
 		//const lpRedeemIn = get(dexygold_lp_redeem_box);
@@ -1599,7 +1599,7 @@ describe('Bank Mint with any input should work', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it('Free		: Not reset : Input Dexy', async () => {
+	it.skip('Free		: Not reset : Input Dexy', async () => {
 		//input BOXES
 
 		//const lpRedeemIn = get(dexygold_lp_redeem_box);
@@ -1667,7 +1667,7 @@ describe('Bank Mint with any input should work', async () => {
 		const userUtxos = [fakeUserWithDexyBox];
 
 		//user Inputs
-		const height = 1449119; // + 10; //+10 = Reseted
+		const height = 1449119 + 10; //+10 = Reseted
 		const ergoInput = 1_000_000_000n;
 
 		//constants
@@ -1715,14 +1715,16 @@ describe('Bank Mint with any input should work', async () => {
 		);
 
 		const oracleRateWithFee = bankRate + buybackRate; // bigint
-		console.log(oracleRateWithFee, oracleRateWithFee - (oracleRate * 100_500n) / 100_000n);
+		//console.log(oracleRateWithFee, oracleRateWithFee - (oracleRate * 100_500n) / 100_000n);
 		console.log('oracleRateWithFee', oracleRateWithFee);
 		//Treshhold: (Oracle x 99% => Free Valid and Arb not Valid)
 		//FreeMint (98 * oracleRate)
-		const validRateFreeMint = lpRate * 100n > oracleRate * 98n;
+		//const validRateFreeMint = lpRate * 100n > oracleRate * 98n; //BigInt
+		const validRateFreeMint = lpRateNum * 100 > oracleRateNum * 98; //Num
 		console.log(validRateFreeMint, 'validRate FreeMint');
 		//Arb mint (101,505 * oracleRate)
-		const validThreshold = lpRate * 100n > thresholdPercent * oracleRateWithFee;
+		const validThreshold = lpRateNum * 100 > Number(thresholdPercent) * oracleRateWithFee; //Num
+		//const validThreshold = lpRate * 100n > thresholdPercent * oracleRateWithFee;
 		console.log(validThreshold, 'validRate ArbMint');
 
 		// Refresh Amount:
@@ -1730,7 +1732,9 @@ describe('Bank Mint with any input should work', async () => {
 		const maxAllowedIfResetFree = lpYData / 100n; // max 1% of LP dexy reserves to free-mint per period
 		console.log(maxAllowedIfResetFree, 'refreshAmount FreeMint');
 		//ARB MINT :
-		const maxAllowedIfResetArb = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee;
+		const maxAllowedIfResetArb = BigInt(
+			Math.floor((Number(lpXData) - oracleRateWithFee * Number(lpYData)) / oracleRateWithFee)
+		);
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:

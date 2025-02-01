@@ -443,7 +443,7 @@ describe('Bank Mint with any input should work', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it('Free mint - RESET  MochChain', () => {
+	it.only('Free mint - RESET  MochChain', () => {
 		const oracleRateXy = 10000n * 1000000n; // 10^10
 		const bankFeeNum = 3n; // => 0.5% fee part
 		const buybackFeeNum = 2n; // => 0.5% fee part
@@ -573,6 +573,8 @@ describe('Bank Mint with any input should work', async () => {
 			.payFee(fee)
 			.sendChangeTo(fundingParty.address)
 			.build();
+
+		debugFreemint(tx.toEIP12Object());
 
 		//console.dir(tx.toEIP12Object(), { depth: null });
 		// Execute => should pass

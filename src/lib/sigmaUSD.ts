@@ -15,22 +15,11 @@ import {
 	unconfrimed_bank_usd,
 	unconfrimed_reserve_border_left_USD,
 	unconfrimed_reserve_border_right_RSV,
-	updateBestBankBoxLocal,
 	type ErgoBox
 } from './stores/bank';
-import { get } from 'svelte/store';
-import {
-	addPreparedInteraction,
-	addSignedInteraction,
-	cancelPreparedInteractionById,
-	confirmed_interactions,
-	mempool_interactions,
-	prepared_interactions,
-	type Interaction
-} from './stores/preparedInteractions';
+
 import {
 	ErgoAddress,
-	ErgoUnsignedTransaction,
 	OutputBuilder,
 	SAFE_MIN_BOX_VALUE,
 	SLong,
@@ -732,39 +721,6 @@ export function calculateInputsRSVErgInRSVPrice(
 
 	const swapRate = new BigNumber(totalRSV.toString()).dividedBy(totalErgoRequired.toString());
 	return { rateRSVERG, contractFee, totalErgoRequired, swapFee, swapRate };
-}
-
-// Web3 Wallet interactions
-async function getWeb3WalletData() {
-	await window.ergoConnector.nautilus.connect();
-	const me = await ergo.get_change_address();
-	const utxos = await ergo.get_utxos();
-	const height = await ergo.get_current_height();
-	return { me, utxos, height };
-}
-async function createInteractionAndSubmitTx(
-	unsignedTx: ErgoUnsignedTransaction,
-	ownAddressList: string[]
-) {
-	console.log('createInteractionAndSubmitTx');
-	const interactionId = addPreparedInteraction(unsignedTx, ownAddressList);
-	try {
-		console.log({ unsignedTx });
-		const signed = await ergo.sign_tx(unsignedTx);
-
-		addSignedInteraction(signed, interactionId, ownAddressList);
-
-		updateBestBankBoxLocal(
-			get(confirmed_interactions),
-			get(mempool_interactions),
-			get(prepared_interactions)
-		);
-		console.log({ signed });
-		//submitTx(signed, interactionId);
-	} catch (e) {
-		console.log(e);
-		cancelPreparedInteractionById(interactionId);
-	}
 }
 
 // (f1)

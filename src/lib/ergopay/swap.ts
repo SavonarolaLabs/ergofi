@@ -39,7 +39,7 @@ function buildSigmUsdSwapTransaction(
 	let unsignedTx;
 
 	let height = 1453531; //<==
-
+	console.log(swapPair, `${swapPair}_${lastInput}`);
 	switch (`${swapPair}_${lastInput}`) {
 		case 'ERG/SIGUSD_ERG': //from ERG to SIGUSD
 			unsignedTx = buyUSDInputERGTx(

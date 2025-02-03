@@ -1,5 +1,14 @@
 import { SIGUSD_BANK_ADDRESS } from '$lib/api/ergoNode';
-import { buyUSDInputERGTx } from '$lib/sigmaUSD';
+import {
+	buyRSVInputERGTx,
+	buyRSVInputRSVTx,
+	buyUSDInputERGTx,
+	buyUSDInputUSDTx,
+	sellRSVInputERGTx,
+	sellRSVInputRSVTx,
+	sellUSDInputERGTx,
+	sellUSDInputUSDTx
+} from '$lib/sigmaUSD';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
@@ -39,53 +48,24 @@ function buildSigmUsdSwapTransaction(
 	let unsignedTx;
 
 	let height = 1453531; //<==
-	console.log(swapPair, `${swapPair}_${lastInput}`);
 
+	console.log(swapPair, `${swapPair}_${lastInput}`);
+	console.log('🚀 ~ bankBox:', bankBox);
+	console.log('🚀 ~ oracleBox:', oracleBox);
+	// prettier-ignore
 	switch (`${swapPair}_${lastInput}`) {
-		case 'ERG/SIGUSD_ERG': //from ERG to SIGUSD
-			unsignedTx = buyUSDInputERGTx(
-				BigInt(amount),
-				address,
-				SIGUSD_BANK_ADDRESS,
-				utxo,
-				height,
-				-1n,
-				bankBox,
-				oracleBox,
-				BigInt(feeMining)
-			);
-			break;
-		case 'ERG/SIGUSD_To':
-			// Логика для ERG/SIGUSD, когда lastInput = To
-			unsignedTx = { type: 'Swap SIGUSD to ERG', details: { swapPair, amount, address } };
-			break;
-		case 'SIGUSD/ERG_From':
-			// Логика для SIGUSD/ERG, когда lastInput = From
-			unsignedTx = { type: 'Swap SIGUSD to ERG', details: { swapPair, amount, address } };
-			break;
-		case 'SIGUSD/ERG_To':
-			// Логика для SIGUSD/ERG, когда lastInput = To
-			unsignedTx = { type: 'Swap ERG to SIGUSD', details: { swapPair, amount, address } };
-			break;
-		case 'ERG/SIGRSV_From':
-			// Логика для ERG/SIGRSV, когда lastInput = From
-			unsignedTx = { type: 'Swap ERG to SIGRSV', details: { swapPair, amount, address } };
-			break;
-		case 'ERG/SIGRSV_To':
-			// Логика для ERG/SIGRSV, когда lastInput = To
-			unsignedTx = { type: 'Swap SIGRSV to ERG', details: { swapPair, amount, address } };
-			break;
-		case 'SIGRSV/ERG_From':
-			// Логика для SIGRSV/ERG, когда lastInput = From
-			unsignedTx = { type: 'Swap SIGRSV to ERG', details: { swapPair, amount, address } };
-			break;
-		case 'SIGRSV/ERG_To':
-			// Логика для SIGRSV/ERG, когда lastInput = To
-			unsignedTx = { type: 'Swap ERG to SIGRSV', details: { swapPair, amount, address } };
-			break;
-		default:
-			throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
-	}
+        // prettier-ignore
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        default:
+            throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
+    }
 
 	return {
 		status: 'ok',

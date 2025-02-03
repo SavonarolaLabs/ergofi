@@ -102,16 +102,16 @@ export function bankMintBigInt(
 
 export function bankMint(
 	oracleRateXy: bigint, // oracle x 1_000_000 ???
-	oracleDimension: bigint,
+	scale: bigint,
 	bankFeeNum: bigint,
 	buybackFeeNum: bigint,
 	feeDenom: bigint,
 	contractDexy: bigint
 ) {
-	//const oracleDimension = 1_000_000n;
+	//const scale = 1_000_000n;
 
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / (feeDenom * oracleDimension);
-	const buybackRate = (oracleRateXy * buybackFeeNum) / (feeDenom * oracleDimension);
+	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / (feeDenom * scale);
+	const buybackRate = (oracleRateXy * buybackFeeNum) / (feeDenom * scale);
 
 	const bankErgsAdded = bankRate * contractDexy;
 	const buybackErgsAdded = buybackRate * contractDexy;
@@ -136,7 +136,7 @@ export function bankMintInpuErg(
 	const bankErgsAdded = bankRate * contractDexy;
 	const buybackErgsAdded = buybackRate * contractDexy;
 
-	return { contractDexy, bankErgsAdded, buybackErgsAdded };
+	return { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate };
 }
 
 //TODO: Add Wrapper with FEE
@@ -146,3 +146,71 @@ export function bankInput() {
 //TODO: Add Wrapper with FEE
 export function bankInputErg() {}
 // -------------------------------- -------------- --------------------------
+
+export function calculateLpMintInputErg(
+	contractErg: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractLpTokens: bigint = (contractErg * supplyLpIn) / lpXIn;
+	const contractDexy = (contractErg * (lpYIn * supplyLpIn)) / (supplyLpIn * lpXIn) + 1n; //roundUp bigInt + low values
+
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpMintInputDexy(
+	contractDexy: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractLpTokens: bigint = (contractDexy * supplyLpIn) / lpYIn;
+	const contractErg = (contractDexy * supplyLpIn * lpXIn) / (lpYIn * supplyLpIn) + 1n; //RoundUp
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpMintInputSharesUnlocked(
+	contractLpTokens: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractDexy = (contractLpTokens * lpYIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
+	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
+	return { contractDexy, contractErg, contractLpTokens };
+}
+
+export function calculateLpRedeemInputSharesUnlocked(
+	contractLpTokens: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn) - 1n;
+	const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn) - 1n;
+
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpRedeemInputErg(
+	contractErg: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	let contractLpTokens = (100n * supplyLpIn * contractErg) / (98n * lpXIn);
+	const contractDexy = (98n * contractLpTokens * lpYIn) / (100n * supplyLpIn); //- 1n;
+
+	contractLpTokens = contractLpTokens + 1n; // add after calc
+	return { contractDexy, contractErg, contractLpTokens };
+}
+export function calculateLpRedeemInputDexy(
+	contractDexy: bigint,
+	lpXIn: bigint,
+	lpYIn: bigint,
+	supplyLpIn: bigint
+) {
+	let contractLpTokens = (100n * supplyLpIn * contractDexy) / (98n * lpYIn);
+	const contractErg = (98n * contractLpTokens * lpXIn) / (100n * supplyLpIn); //- 1n;
+
+	contractLpTokens = contractLpTokens + 1n; // add after calc
+	return { contractDexy, contractErg, contractLpTokens };
+}

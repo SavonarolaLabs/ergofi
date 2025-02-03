@@ -22,7 +22,7 @@ vi.mock('./swap', async () => {
 describe('parseCommandLineArgs', () => {
 	it('should throw an error for missing arguments', () => {
 		vi.spyOn(process, 'argv', 'get').mockReturnValue(['node', 'script.js']);
-		expect(() => parseCommandLineArgs()).toThrow("Usage: node script.js '<jsonString>'");
+		expect(() => parseCommandLineArgs()).toThrow("Usage: bun swap.cli.ts '<jsonString>'");
 	});
 
 	it('should throw an error for invalid JSON input', () => {

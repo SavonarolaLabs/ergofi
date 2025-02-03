@@ -9,10 +9,6 @@ import type {
 
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
-/**
- * Main “library” file. Contains only exports and NO top-level code that runs immediately.
- */
-
 function grepBestOracleBox(_arg: any): ErgoBox {
 	throw new Error('Function not implemented.');
 }
@@ -55,7 +51,7 @@ export function parseCommandLineArgs(): ErgopayLinkParams {
 	const args = process.argv.slice(2);
 
 	if (args.length !== 1) {
-		throw new Error("Usage: node script.js '<jsonString>'");
+		throw new Error("Usage: bun swap.cli.ts '<jsonString>'");
 	}
 
 	try {

@@ -5,7 +5,7 @@ export type ErgopayLinkParams = {
 	swapPair: string;
 	amount: number;
 	ePayLinkId: string;
-	: string;
+	lastInput: string;
 	address: string;
 	feeMining: number;
 };

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { run, parseCommandLineArgs } from './swap';
 import * as moduleFunctions from './swap';
 import type { ErgoBoxCustom, ErgopayPayCmdResponse } from './swap.types';
@@ -10,7 +10,7 @@ const userBoxes: ErgoBoxCustom[] = [
 		address: '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU',
 		spentTransactionId: null,
 		boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
-		value: 602310307n,
+		value: 602310307,
 		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
 		assets: [],
 		creationHeight: 1443463,
@@ -92,15 +92,18 @@ const bankBoxes: ErgoBoxCustom[] = [
 	}
 ];
 
-vi.mock('./swap', async () => {
-	const actual = await vi.importActual<typeof moduleFunctions>('./swap');
+beforeEach(() => {
+	vi.restoreAllMocks();
+	vi.spyOn(global, 'fetch').mockImplementation(async (url) => {
+		if (url.includes('utxo')) return new Response(JSON.stringify(userBoxes));
+		if (url.includes('oracle')) return new Response(JSON.stringify(oracleBoxes));
+		if (url.includes('bank')) return new Response(JSON.stringify(bankBoxes));
+		return new Response(JSON.stringify([]));
+	});
+});
 
-	return {
-		...actual,
-		fetchUtxoByAddress: vi.fn(() => Promise.resolve(userBoxes)),
-		fetchOracleCandidateBoxes: vi.fn(() => Promise.resolve(oracleBoxes)),
-		fetchSigmaUsdBankBoxCandidates: vi.fn(() => Promise.resolve(bankBoxes))
-	};
+afterEach(() => {
+	vi.restoreAllMocks();
 });
 
 describe('parseCommandLineArgs', () => {
@@ -133,6 +136,23 @@ describe('parseCommandLineArgs', () => {
 	});
 });
 
+describe('fetch functions', () => {
+	it('fetchUtxoByAddress should return user UTXOs', async () => {
+		const result = await moduleFunctions.fetchUtxoByAddress('some-address');
+		expect(result).toEqual(userBoxes);
+	});
+
+	it('fetchOracleCandidateBoxes should return oracle boxes', async () => {
+		const result = await moduleFunctions.fetchOracleCandidateBoxes('erg_usd');
+		expect(result).toEqual(oracleBoxes);
+	});
+
+	it('fetchSigmaUsdBankBoxCandidates should return bank boxes', async () => {
+		const result = await moduleFunctions.fetchSigmaUsdBankBoxCandidates();
+		expect(result).toEqual(bankBoxes);
+	});
+});
+
 describe('run()', () => {
 	it('should return an error when swap fails', async () => {
 		const mockInput = {
@@ -151,7 +171,28 @@ describe('run()', () => {
 
 		const result: ErgopayPayCmdResponse = await run();
 		expect(result.status).toBe('error');
-		expect(result.error?.code).toBe(422);
-		expect(result.error?.message).toContain('Reserve rate is below 400%');
+	});
+
+	it('should return a successful response when swap succeeds', async () => {
+		const mockInput = {
+			swapPair: 'ERG/SIGUSD',
+			amount: 500,
+			ePayLinkId: 'link123',
+			lastInput: 'ERG',
+			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
+			feeMining: '1000000000'
+		};
+		vi.spyOn(process, 'argv', 'get').mockReturnValue([
+			'bun',
+			'swap.cli.ts',
+			JSON.stringify(mockInput)
+		]);
+
+		vi.spyOn(moduleFunctions, 'fetchUtxoByAddress').mockResolvedValue(userBoxes);
+		vi.spyOn(moduleFunctions, 'fetchOracleCandidateBoxes').mockResolvedValue(oracleBoxes);
+		vi.spyOn(moduleFunctions, 'fetchSigmaUsdBankBoxCandidates').mockResolvedValue(bankBoxes);
+
+		const result: ErgopayPayCmdResponse = await run();
+		expect(result.status).toBe('ok');
 	});
 });

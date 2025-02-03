@@ -188,10 +188,6 @@ describe('run()', () => {
 			JSON.stringify(mockInput)
 		]);
 
-		vi.spyOn(moduleFunctions, 'fetchUtxoByAddress').mockResolvedValue(userBoxes);
-		vi.spyOn(moduleFunctions, 'fetchOracleCandidateBoxes').mockResolvedValue(oracleBoxes);
-		vi.spyOn(moduleFunctions, 'fetchSigmaUsdBankBoxCandidates').mockResolvedValue(bankBoxes);
-
 		const result: ErgopayPayCmdResponse = await run();
 		expect(result.status).toBe('ok');
 	});

@@ -19,6 +19,18 @@ const userBoxes: ErgoBoxCustom[] = [
 		index: 0
 	}
 ];
+
+// {
+//     "boxId": "807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b",
+//     "value": 602310307,
+//     "ergoTree": "0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c",
+//     "assets": [],
+//     "creationHeight": 1443463,
+//     "additionalRegisters": {},
+//     "transactionId": "180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c",
+//     "index": 0
+// }
+
 const oracleBoxes: ErgoBoxCustom[] = [
 	{
 		additionalRegisters: {
@@ -125,11 +137,11 @@ describe('run()', () => {
 	it('should return an error when swap fails', async () => {
 		// Mock parseCommandLineArgs to avoid messing with real process.argv
 		vi.spyOn(moduleFunctions, 'parseCommandLineArgs').mockReturnValue({
-			swapPair: 'ERG/USD',
-			amount: 100,
+			swapPair: 'ERG/SIGUSD',
+			amount: 1_000_000_000, //1 ERG
 			ePayLinkId: 'link123',
-			lastInput: 'input456',
-			address: '9hF23...'
+			lastInput: 'ERG',
+			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8' //to ALICE
 		} as any);
 
 		const result: ErgopayPayCmdResponse = await run();

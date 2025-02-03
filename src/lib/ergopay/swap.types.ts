@@ -1,19 +1,19 @@
 // swap.types.ts
 import type { UnsignedTransaction } from '@fleet-sdk/common';
-import { ErgoBox } from '@fleet-sdk/core';
 
 export type ErgopayLinkParams = {
 	swapPair: string;
 	amount: number;
 	ePayLinkId: string;
-	lastInput: string;
+	: string;
 	address: string;
+	feeMining: number;
 };
 
 export type ErgopayPaySigmaUsdSwapParams = ErgopayLinkParams & {
-	utxo: ErgoBox[];
-	oracleCandidates: ErgoBox[];
-	bankCandidates: ErgoBox[];
+	utxo: ErgoBoxCustom[];
+	oracleCandidates: ErgoBoxCustom[];
+	bankCandidates: ErgoBoxCustom[];
 };
 
 export type CmdError = {
@@ -37,7 +37,7 @@ export type BuildSigmUsdSwapTransactionResponse = {
 
 export interface Token {
 	tokenId: string;
-	amount: bigint | number;
+	amount: number;
 }
 
 export interface ErgoBoxCustom {
@@ -46,7 +46,7 @@ export interface ErgoBoxCustom {
 	address: string;
 	spentTransactionId: string | null;
 	boxId: string;
-	value: bigint | number;
+	value: number;
 	ergoTree: string;
 	assets: Token[];
 	creationHeight: number;

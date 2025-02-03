@@ -792,7 +792,7 @@ export async function buyUSDInputERG(
 	await createInteractionAndSubmitTx(tx, [me]);
 }
 
-export async function buyUSDInputERGTx(
+export function buyUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -819,7 +819,7 @@ export async function buyUSDInputERGTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(

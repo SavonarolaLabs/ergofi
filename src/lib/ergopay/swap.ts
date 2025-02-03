@@ -1,3 +1,5 @@
+import { SIGUSD_BANK_ADDRESS } from '$lib/api/ergoNode';
+import { buyUSDInputERGTx } from '$lib/sigmaUSD';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
@@ -9,12 +11,12 @@ import type {
 
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
-function grepBestOracleBox(_arg: any): ErgoBoxCustom {
-	throw new Error('Function not implemented.');
+function grepBestOracleBox(oracleCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
+	return oracleCandidates[0];
 }
 
-function grepBestSigmaUsdBankBox(_oracleCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
-	throw new Error('Function not implemented.');
+function grepBestSigmaUsdBankBox(bankCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
+	return bankCandidates[0];
 }
 
 function getSigmaUsdSwapParamValidationErrors(
@@ -29,17 +31,64 @@ function getSigmaUsdSwapParamValidationErrors(
 }
 
 function buildSigmUsdSwapTransaction(
-	_params: ErgopayPaySigmaUsdSwapParams,
-	_utxo: ErgoBoxCustom[],
-	_oracleBox: ErgoBoxCustom,
-	_bankBox: ErgoBoxCustom
+	{ swapPair, amount, ePayLinkId, lastInput, address, feeMining }: ErgopayPaySigmaUsdSwapParams,
+	utxo: ErgoBoxCustom[],
+	oracleBox: ErgoBoxCustom,
+	bankBox: ErgoBoxCustom
 ): BuildSigmUsdSwapTransactionResponse {
+	let unsignedTx;
+
+	let height = 1453531; //<==
+
+	switch (`${swapPair}_${lastInput}`) {
+		case 'ERG/SIGUSD_ERG': //from ERG to SIGUSD
+			unsignedTx = buyUSDInputERGTx(
+				BigInt(amount),
+				address,
+				SIGUSD_BANK_ADDRESS,
+				utxo,
+				height,
+				-1n,
+				bankBox,
+				oracleBox,
+				BigInt(feeMining)
+			);
+			break;
+		case 'ERG/SIGUSD_To':
+			// Логика для ERG/SIGUSD, когда lastInput = To
+			unsignedTx = { type: 'Swap SIGUSD to ERG', details: { swapPair, amount, address } };
+			break;
+		case 'SIGUSD/ERG_From':
+			// Логика для SIGUSD/ERG, когда lastInput = From
+			unsignedTx = { type: 'Swap SIGUSD to ERG', details: { swapPair, amount, address } };
+			break;
+		case 'SIGUSD/ERG_To':
+			// Логика для SIGUSD/ERG, когда lastInput = To
+			unsignedTx = { type: 'Swap ERG to SIGUSD', details: { swapPair, amount, address } };
+			break;
+		case 'ERG/SIGRSV_From':
+			// Логика для ERG/SIGRSV, когда lastInput = From
+			unsignedTx = { type: 'Swap ERG to SIGRSV', details: { swapPair, amount, address } };
+			break;
+		case 'ERG/SIGRSV_To':
+			// Логика для ERG/SIGRSV, когда lastInput = To
+			unsignedTx = { type: 'Swap SIGRSV to ERG', details: { swapPair, amount, address } };
+			break;
+		case 'SIGRSV/ERG_From':
+			// Логика для SIGRSV/ERG, когда lastInput = From
+			unsignedTx = { type: 'Swap SIGRSV to ERG', details: { swapPair, amount, address } };
+			break;
+		case 'SIGRSV/ERG_To':
+			// Логика для SIGRSV/ERG, когда lastInput = To
+			unsignedTx = { type: 'Swap ERG to SIGRSV', details: { swapPair, amount, address } };
+			break;
+		default:
+			throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
+	}
+
 	return {
-		status: 'error',
-		error: {
-			code: 422,
-			message: 'Reserve rate is below 400%. SigmaUSD mint is not possible.'
-		}
+		status: 'ok',
+		unsignedTx
 	};
 }
 
@@ -117,5 +166,6 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 
 	const swapParams = { ...cmdParams, utxo, oracleCandidates, bankCandidates };
 	const swapResult = executeSigmaUsdSwap(swapParams);
+	console.log('TX READY:', swapResult);
 	return swapResult;
 }

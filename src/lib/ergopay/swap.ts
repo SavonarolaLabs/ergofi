@@ -49,8 +49,8 @@ function buildSigmUsdSwapTransaction(
 	let height = 1453531; //<==
 
 	console.log(swapPair, `${swapPair}_${lastInput}`);
-	console.log('🚀 ~ bankBox:', bankBox);
-	console.log('🚀 ~ oracleBox:', oracleBox);
+	//console.log('🚀 ~ bankBox:', bankBox);
+	//console.log('🚀 ~ oracleBox:', oracleBox);
 	// prettier-ignore
 	switch (`${swapPair}_${lastInput}`) {
         // prettier-ignore

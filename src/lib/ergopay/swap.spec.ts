@@ -157,7 +157,7 @@ describe('run()', () => {
 	it('should return an error when swap fails', async () => {
 		const mockInput = {
 			swapPair: 'ERG/SIGUSD',
-			amount: 1000000000,
+			amount: 100000000,
 			ePayLinkId: 'link123',
 			lastInput: 'ERG',
 			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
@@ -176,7 +176,7 @@ describe('run()', () => {
 	it('should return a successful response when swap succeeds', async () => {
 		const mockInput = {
 			swapPair: 'ERG/SIGUSD',
-			amount: 500,
+			amount: 100000000,
 			ePayLinkId: 'link123',
 			lastInput: 'ERG',
 			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',

@@ -92,35 +92,22 @@ describe('Bank Mint with any input should work', async () => {
 	let height = 1449119 + 11;
 	// Start each test with a fresh chain at height ~1M
 	mockChain = new MockChain({ height: height });
-	let freeMintIn;
-	let bankIn;
-	let buybankIn;
-	let lpIn;
-	let goldOracle;
+
+	let freeMintIn, bankIn, buybankIn, lpIn, goldOracle;
 
 	let ergoInput;
 	let feeMining;
 	let userAddress;
 	let userChangeAddress;
 
-	let freeMintXIn;
-	let freeMintNFT;
-	let R4ResetHeight;
-	let R5AwailableAmount;
+	let freeMintXIn, freeMintNFT, R4ResetHeight, R5AwailableAmount;
 
-	let bankXIn;
-	let bankNFT;
-	let bankYIn;
-	let buybackXIn;
-	let buybackNFT;
-	let gortAmount;
+	let bankXIn, bankNFT, bankYIn;
+	let buybackXIn, buybackNFT, gortAmount;
 
-	let lpYData;
-	let lpXData;
-	let lpTokenAmount;
+	let lpYData, lpXData, lpTokenAmount;
 
-	let oraclePoolNFT;
-	let oracleRateData;
+	let oraclePoolNFT, oracleRateData;
 
 	let dataInputs;
 	let userUtxos;
@@ -133,24 +120,14 @@ describe('Bank Mint with any input should work', async () => {
 	const buybackFeeNum = 2n;
 	const feeDenom = 1000n;
 
-	let lpRate;
-	let oracleRate;
+	let lpRate, oracleRate;
 
 	let dexyMinted;
 
-	let contractErg;
-	let bankErgsAdded;
-	let buybackErgsAdded;
-	let bankRate;
-	let buybackRate;
+	let contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate;
 
-	let maxAllowedIfReset;
-	let remainingDexyIn;
-	let remainingDexyOut;
-	let bankXOut;
-	let bankYOut;
-	let buybackXOut;
-	let freeMintXOut;
+	let maxAllowedIfReset, remainingDexyIn, remainingDexyOut;
+	let bankXOut, bankYOut, buybackXOut, freeMintXOut;
 
 	let isCounterReset;
 
@@ -158,10 +135,8 @@ describe('Bank Mint with any input should work', async () => {
 	let resetHeightIn;
 	let resetHeightOut;
 
-	let buybackBoxIn;
-	let bankOut;
-	let freeMintOut;
-	let buybackOut;
+	let buybackBoxIn; //with Var[0]
+	let bankOut, freeMintOut, buybackOut;
 
 	let fundingParty;
 	const buybackParty = mockChain.addParty(buybackErgoTree, 'Buyback');

@@ -34,3 +34,23 @@ export type BuildSigmUsdSwapTransactionResponse = {
 	unsignedTx?: UnsignedTransaction;
 	error?: CmdError;
 };
+
+export interface Token {
+	tokenId: string;
+	amount: bigint | number;
+}
+
+export interface ErgoBoxCustom {
+	globalIndex: number;
+	inclusionHeight: number;
+	address: string;
+	spentTransactionId: string | null;
+	boxId: string;
+	value: bigint | number;
+	ergoTree: string;
+	assets: Token[];
+	creationHeight: number;
+	additionalRegisters: Record<string, string>;
+	transactionId: string;
+	index: number;
+}

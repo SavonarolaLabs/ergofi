@@ -1,19 +1,19 @@
-import { ErgoBox } from '@fleet-sdk/core'; // or from './swap.types' if you prefer
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
 	ErgopayPayCmdResponse,
 	BuildSigmUsdSwapTransactionResponse,
-	CmdError
+	CmdError,
+	ErgoBoxCustom
 } from './swap.types';
 
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
-function grepBestOracleBox(_arg: any): ErgoBox {
+function grepBestOracleBox(_arg: any): ErgoBoxCustom {
 	throw new Error('Function not implemented.');
 }
 
-function grepBestSigmaUsdBankBox(_oracleCandidates: ErgoBox[]): ErgoBox {
+function grepBestSigmaUsdBankBox(_oracleCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
 	throw new Error('Function not implemented.');
 }
 
@@ -30,9 +30,9 @@ function getSigmaUsdSwapParamValidationErrors(
 
 function buildSigmUsdSwapTransaction(
 	_params: ErgopayPaySigmaUsdSwapParams,
-	_utxo: ErgoBox[],
-	_oracleBox: ErgoBox,
-	_bankBox: ErgoBox
+	_utxo: ErgoBoxCustom[],
+	_oracleBox: ErgoBoxCustom,
+	_bankBox: ErgoBoxCustom
 ): BuildSigmUsdSwapTransactionResponse {
 	return {
 		status: 'error',
@@ -94,15 +94,15 @@ function executeSigmaUsdSwap(params: ErgopayPaySigmaUsdSwapParams): ErgopayPayCm
 /**
  * Dummy fetch functions that we can mock in tests.
  */
-export function fetchUtxoByAddress(_address: string): Promise<ErgoBox[]> {
+export function fetchUtxoByAddress(_address: string): Promise<ErgoBoxCustom[]> {
 	return Promise.resolve([]);
 }
 
-export function fetchOracleCandidateBoxes(_oracle: string): Promise<ErgoBox[]> {
+export function fetchOracleCandidateBoxes(_oracle: string): Promise<ErgoBoxCustom[]> {
 	return Promise.resolve([]);
 }
 
-export function fetchSigmaUsdBankBoxCandidates(): Promise<ErgoBox[]> {
+export function fetchSigmaUsdBankBoxCandidates(): Promise<ErgoBoxCustom[]> {
 	return Promise.resolve([]);
 }
 

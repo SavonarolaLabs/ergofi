@@ -90,7 +90,8 @@ function parseCommandLineArgs(): ErgopayLinkParams {
 	}
 
 	try {
-		return JSON.parse(args[0]);
+		const parsedParams: ErgopayLinkParams = JSON.parse(args[0]);
+		return parsedParams;
 	} catch (error) {
 		console.error('Invalid JSON input:', error);
 		process.exit(1);

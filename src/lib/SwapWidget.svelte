@@ -517,27 +517,14 @@
 		let swapPairLastInput = `${fromToken}/${toToken}_${lastInput == 'From' ? fromToken : toToken}`;
 
 		console.log({ swapPairLastInput, fromAmount });
-		let amount;
 
-		if (lastInput === 'From') {
-			if (fromToken === 'ERG') {
-				amount = ergStringToNanoErgBigInt(fromAmount);
-			} else if (fromToken === 'SigUSD') {
-				amount = usdStringToCentBigInt(fromAmount);
-			} else {
-				// SigRSV -> ERG
-				amount = BigInt(fromAmount);
-			}
-		} else {
-			if (toToken === 'ERG') {
-				amount = ergStringToNanoErgBigInt(fromAmount);
-			} else if (toToken === 'SigUSD') {
-				amount = usdStringToCentBigInt(fromAmount);
-			} else {
-				// SigRSV -> ERG
-				amount = BigInt(fromAmount);
-			}
-		}
+		let amount;
+		if (lastInput === 'From' && fromToken === 'ERG') amount = ergStringToNanoErgBigInt(fromAmount);
+		if (lastInput === 'From' && fromToken === 'SigUSD') amount = usdStringToCentBigInt(fromAmount);
+		if (lastInput === 'From' && fromToken === 'SigRSV') amount = BigInt(fromAmount);
+		if (lastInput === 'To' && fromToken === 'ERG') amount = ergStringToNanoErgBigInt(toAmount);
+		if (lastInput === 'To' && fromToken === 'SigUSD') amount = usdStringToCentBigInt(toAmount);
+		if (lastInput === 'To' && fromToken === 'SigRSV') amount = BigInt(toAmount);
 
 		let unsignedTx;
 

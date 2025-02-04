@@ -50,8 +50,8 @@ export function calculateBankRateUSDInputERG(
 	oraclePrice: bigint,
 	requestErg: bigint,
 	direction: Direction
-): { rateSCERG: number; fee: bigint; requestSC: bigint } {
-	let rateSCERG: number;
+): { contractRate: number; fee: bigint; requestSC: bigint } {
+	let contractRate: number;
 	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
@@ -63,9 +63,9 @@ export function calculateBankRateUSDInputERG(
 		(requestErg * FEE_BANK_DENOM) / (scNominalPrice * (FEE_BANK_DENOM + FEE_BANK * direction));
 	const bcDeltaExpected = scNominalPrice * requestSC;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
-	rateSCERG = Number(requestSC) / Number(requestErg);
+	contractRate = Number(requestSC) / Number(requestErg);
 
-	return { rateSCERG, fee, requestSC }; //cents for nanoerg
+	return { contractRate, fee, requestSC }; //cents for nanoerg
 }
 export function calculateBankRateRSVInputRSV(
 	inErg: bigint,
@@ -371,7 +371,7 @@ export function calculateInputsUsdErgInUsd(
 		.integerValue(BigNumber.ROUND_CEIL);
 
 	if (!totalSigUSD.isNaN() && totalSigUSD.gt(0)) {
-		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+		const { contractRate, feeContract, totalErgoRequired, feeTotal, rateTotal } =
 			calculateInputsUsdErgInUsdPrice(
 				direction,
 				totalSigUSD,
@@ -387,7 +387,7 @@ export function calculateInputsUsdErgInUsd(
 		const totalFee = new BigNumber(feeTotal.toString()).dividedBy('1000000000').toFixed(2);
 		return { totalErg, finalPrice, totalFee };
 	} else {
-		const { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal } =
+		const { contractRate, feeContract, totalErgoRequired, feeTotal, rateTotal } =
 			calculateInputsUsdErgInUsdPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_USD.toString()),
@@ -416,7 +416,7 @@ export function calculateInputsUsdErgInUsdPrice(
 	let totalErgoRequired: bigint;
 
 	const {
-		rateSCERG,
+		contractRate,
 		fee: feeContract,
 		bcDeltaExpectedWithFee: contractErgoRequired
 	} = calculateBankRateUSDInputUSD(
@@ -445,7 +445,7 @@ export function calculateInputsUsdErgInUsdPrice(
 	//console.log(contractErgoRequired - feeMining - uiFeeErg, ' final ERG');
 
 	const rateTotal = new BigNumber(totalSC.toString()).dividedBy(totalErgoRequired.toString());
-	return { rateSCERG, feeContract, totalErgoRequired, feeTotal, rateTotal };
+	return { contractRate, feeContract, totalErgoRequired, feeTotal, rateTotal };
 }
 
 // Swap Price | RSV <-> ERG

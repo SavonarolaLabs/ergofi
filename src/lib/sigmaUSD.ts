@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { UI_FEE_ADDRESS, type Output } from './api/ergoNode';
+import { UI_FEE_ADDRESS } from './api/ergoNode';
 import { absBigInt, maxBigInt, minBigInt } from './utils';
 import {
 	applyFee,
@@ -20,7 +20,7 @@ export const BASE_INPUT_AMOUNT_ERG = 1n; //1 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 export const BASE_INPUT_AMOUNT_RSV = 10_000n; //10k RSV
 
-// BankRate
+// BankRate - SigmaUSD Math
 export function calculateBankRateUSDInputUSD(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -43,7 +43,6 @@ export function calculateBankRateUSDInputUSD(
 
 	return { contractRate, fee, bcDeltaExpectedWithFee };
 }
-
 export function calculateBankRateUSDInputERG(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -114,6 +113,7 @@ export function calculateBankRateRSVInputERG(
 
 	return { contractRate, fee, requestRSV };
 }
+
 // BankBox Out
 export function calculateBankOutUsd(
 	inErg: bigint,

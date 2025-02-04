@@ -1,4 +1,3 @@
-import { TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset } from './api/ergoNode';
 import type { NodeBox } from './stores/bank.types';
 import { decodeBigInt } from './utils';
 
@@ -16,12 +15,8 @@ export type ParsedErgUsdOracleBox = {
 
 export function parseSigUsdBankBox(bankBox: NodeBox): ParsedSigUsdBankBox {
 	const inErg = BigInt(bankBox.value);
-	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
-	);
-	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
-	);
+	const inSigUSD = BigInt(bankBox.assets[0].amount);
+	const inSigRSV = BigInt(bankBox.assets[1].amount);
 	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
 	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
 

@@ -727,28 +727,6 @@ export function calculateInputsRSVErgInRSVPrice(
 }
 
 // (f1)
-export async function buyUSDInputERG(
-	inputErg: bigint = 1_000_000_000n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = buyUSDInputERGTx(
-		inputErg,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	console.log(tx);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function buyUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
@@ -833,27 +811,6 @@ export function buyUSDInputERGTx(
 }
 
 // (f2)
-export async function buyUSDInputUSD(
-	inputUSD: bigint = 1_00n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = buyUSDInputUSDTx(
-		inputUSD,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function buyUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
@@ -923,27 +880,6 @@ export function buyUSDInputUSDTx(
 }
 
 // (f3)
-export async function sellUSDInputUSD(
-	inputUSD: bigint = 1_00n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = sellUSDInputUSDTx(
-		inputUSD,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function sellUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
@@ -1014,27 +950,6 @@ export function sellUSDInputUSDTx(
 }
 
 // (f4)
-export async function sellUSDInputERG(
-	inputErg: bigint = 1_000_000_000n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = sellUSDInputERGTx(
-		inputErg,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function sellUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
@@ -1123,27 +1038,6 @@ export function sellUSDInputERGTx(
 }
 
 // (f5)
-export async function buyRSVInputERG(
-	inputErg: bigint = 1_000_000_000n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = buyRSVInputERGTx(
-		inputErg,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function buyRSVInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
@@ -1248,27 +1142,6 @@ export function buyRSVInputERGTx(
 }
 
 // (f6)
-export async function buyRSVInputRSV(
-	requestRSV: bigint = 2200n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = buyRSVInputRSVTx(
-		requestRSV,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function buyRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
@@ -1351,27 +1224,6 @@ export function buyRSVInputRSVTx(
 }
 
 // (f7)
-export async function sellRSVInputRSV(
-	requestRSV: bigint = 2200n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = sellRSVInputRSVTx(
-		requestRSV,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function sellRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
@@ -1450,27 +1302,6 @@ export function sellRSVInputRSVTx(
 }
 
 // (f8)
-export async function sellRSVInputERG(
-	inputErg: bigint = 1_000_000_000n,
-	bankBox: NodeBox,
-	oracleBox: NodeBox,
-	feeMining: bigint,
-	me: string,
-	utxos: NodeBox[],
-	height: number
-) {
-	const tx = sellRSVInputERGTx(
-		inputErg,
-		me,
-		SIGUSD_BANK_ADDRESS,
-		utxos,
-		height,
-		bankBox,
-		oracleBox,
-		feeMining
-	);
-	await createInteractionAndSubmitTx(tx, [me]);
-}
 export function sellRSVInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,

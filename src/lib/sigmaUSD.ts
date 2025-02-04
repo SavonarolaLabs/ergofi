@@ -68,6 +68,7 @@ export function calculateBankRateUSDInputUSD(
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
+
 export function calculateBankRateUSDInputERG(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -139,7 +140,7 @@ export function calculateBankRateRSVInputERG(
 	return { rateRSVERG, fee, requestRSV };
 }
 // BankBox Out
-export function calculateOutputSc(
+export function calculateBankOutUsd(
 	inErg: bigint,
 	inSigUSD: bigint,
 	inSigRSV: bigint,
@@ -169,7 +170,8 @@ export function calculateOutputSc(
 		outCircSigRSV
 	};
 }
-export function calculateOutputRsv(
+
+export function calculateBankOutRsv(
 	inErg: bigint,
 	inSigUSD: bigint,
 	inSigRSV: bigint,
@@ -769,7 +771,7 @@ export function buyUSDInputERGTx(
 	// //DEBUG RESULT: Need to Fix:   ----------------------
 
 	//Part 3 - Calculate BankBox
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -835,7 +837,7 @@ export function buyUSDInputUSDTx(
 		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
 	//Part 3 - Calculate BankBox
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -904,7 +906,7 @@ export function sellUSDInputUSDTx(
 		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
 
 	//Part 3 - Calculate BankBox
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -996,7 +998,7 @@ export function sellUSDInputERGTx(
 	}
 
 	//Part 3 - Calculate BankBox
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputSc(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -1101,7 +1103,7 @@ export function buyRSVInputERGTx(
 	// //DEBUG RESULT: Need to Fix:   ----------------------
 	console.log(uiSwapFee, ' changed swapFee');
 
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -1178,7 +1180,7 @@ export function buyRSVInputRSVTx(
 			direction
 		);
 
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -1255,7 +1257,7 @@ export function sellRSVInputRSVTx(
 			direction
 		);
 
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
 		inSigUSD,
 		inSigRSV,
@@ -1361,7 +1363,7 @@ export function sellRSVInputERGTx(
 		uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
 	}
 
-	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateOutputRsv(
+	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
 		inSigUSD,
 		inSigRSV,

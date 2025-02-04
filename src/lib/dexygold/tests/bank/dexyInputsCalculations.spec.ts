@@ -116,6 +116,8 @@ const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractCon
 
 // -------------------------------------------------------------------------------------
 
+// fabric:
+
 describe('Bank Mint with any input should work', async () => {
 	beforeAll(() => {
 		initTestBoxes();

@@ -55,14 +55,14 @@ function buildSigmUsdSwapTransaction(
 	// prettier-ignore
 	switch (`${swapPair}_${lastInput}`) {
         // prettier-ignore
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height,  1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, -1n, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         default:
             throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
     }

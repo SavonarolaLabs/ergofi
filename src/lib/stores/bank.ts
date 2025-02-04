@@ -1,6 +1,7 @@
 import { get, writable } from 'svelte/store';
 import type { Interaction, MempoolSocketUpdate } from './preparedInteractions';
 import { getMaxFeeLeaf } from './bankBoxSelection';
+import type { NodeBox, OracleData } from './bank.types';
 
 export const reserve_rate = writable<number>(0);
 export const reserve_border_left_USD = writable<number>(0);
@@ -29,38 +30,11 @@ export const unconfrimed_bank_reserve_rate = writable<bigint>(400n);
 export const fee_mining = writable<bigint>(1_100_000n); //0.0011 ERG
 
 // sigmausd
-export const oracle_box = writable<ErgoBox>();
-export const bank_box = writable<ErgoBox>();
+export const oracle_box = writable<NodeBox>();
+export const bank_box = writable<NodeBox>();
 // dexygold
-export const dexOLDygold_lp_box = writable<ErgoBox>();
-export const ergOLD_xau_box = writable<ErgoBox>();
-
-export type ErgoBox = {
-	additionalRegisters: Record<string, string>;
-	address: string;
-	assets: {
-		amount: number;
-		tokenId: string;
-	}[];
-	boxId: string;
-	creationHeight: number;
-	ergoTree: string;
-	globalIndex: number;
-	inclusionHeight: number;
-	index: number;
-	spentTransactionId: string | null;
-	transactionId: string;
-	value: number;
-};
-
-type OracleData = {
-	confirmed_erg_usd: ErgoBox[];
-	confirmed_erg_xau: ErgoBox[];
-	unconfirmed_erg_usd: ErgoBox[];
-	unconfirmed_erg_xau: ErgoBox[];
-	confirmed_dexygold_lp: ErgoBox[];
-	unconfirmed_dexygold_lp: ErgoBox[];
-};
+export const dexOLDygold_lp_box = writable<NodeBox>();
+export const ergOLD_xau_box = writable<NodeBox>();
 
 export function handleOracleBoxesUpdate(message: OracleData) {
 	// if (message.unconfirmed_erg_usd.length > 0) {

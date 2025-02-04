@@ -1,4 +1,5 @@
 // swap.types.ts
+import type { NodeBox, OracleData } from '$lib/stores/bank.types';
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
 export type ErgopayLinkParams = {
@@ -11,8 +12,8 @@ export type ErgopayLinkParams = {
 };
 
 export type ErgopayPaySigmaUsdSwapParams = ErgopayLinkParams & {
-	utxo: ErgoBoxCustom[];
-	oracleCandidates: ErgoBoxCustom[];
+	utxo: NodeBox[];
+	oracleData: OracleData;
 	bankCandidates: ErgoBoxCustom[];
 };
 

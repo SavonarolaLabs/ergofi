@@ -26,6 +26,7 @@ import {
 	TransactionBuilder
 } from '@fleet-sdk/core';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from './sigmaUSDAndDexy';
+import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
 
 export type OracleBoxesData = {
 	inErg: bigint;

@@ -9,6 +9,7 @@ import {
 	sellUSDInputERGTx,
 	sellUSDInputUSDTx
 } from '$lib/sigmaUSD';
+import type { NodeBox, OracleData } from '$lib/stores/bank.types';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
@@ -19,8 +20,8 @@ import type {
 } from './swap.types';
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
-function grepBestOracleBox(oracleCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
-	return oracleCandidates[0];
+function grepBestOracleBox(oracleCandidates: OracleData): NodeBox {
+	return oracleCandidates.confirmed_erg_usd[0];
 }
 
 function grepBestSigmaUsdBankBox(bankCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
@@ -40,8 +41,8 @@ function getSigmaUsdSwapParamValidationErrors(
 
 function buildSigmUsdSwapTransaction(
 	{ swapPair, amount, ePayLinkId, lastInput, address, feeMining }: ErgopayPaySigmaUsdSwapParams,
-	utxo: ErgoBoxCustom[],
-	oracleBox: ErgoBoxCustom,
+	utxo: NodeBox[],
+	oracleBox: NodeBox,
 	bankBox: ErgoBoxCustom
 ): BuildSigmUsdSwapTransactionResponse {
 	let unsignedTx;
@@ -96,7 +97,7 @@ function executeSigmaUsdSwap(params: ErgopayPaySigmaUsdSwapParams): ErgopayPayCm
 		return { status: 'error', error };
 	}
 
-	const oracleBox = grepBestOracleBox(params.oracleCandidates);
+	const oracleBox = grepBestOracleBox(params.oracleData);
 	const bankBox = grepBestSigmaUsdBankBox(params.bankCandidates);
 
 	const buildTxResponse = buildSigmUsdSwapTransaction(params, params.utxo, oracleBox, bankBox);
@@ -124,7 +125,8 @@ export async function fetchUtxoByAddress(_address: string): Promise<ErgoBoxCusto
 	return response.json();
 }
 
-export async function fetchOracleCandidateBoxes(_oracle: string): Promise<ErgoBoxCustom[]> {
+export async function fetchOracleData(): Promise<ErgoBoxCustom[]> {
+	// TODO: same response as we get from oracle socket.
 	const response = await fetch('https://dummyapi.io/oracle');
 	return response.json();
 }
@@ -137,10 +139,10 @@ export async function fetchSigmaUsdBankBoxCandidates(): Promise<ErgoBoxCustom[]>
 export async function run(): Promise<ErgopayPayCmdResponse> {
 	const cmdParams = parseCommandLineArgs();
 	const utxo = await fetchUtxoByAddress(cmdParams.address);
-	const oracleCandidates = await fetchOracleCandidateBoxes('erg_usd');
+	const oracleData = await fetchOracleData();
 	const bankCandidates = await fetchSigmaUsdBankBoxCandidates();
 
-	const swapParams = { ...cmdParams, utxo, oracleCandidates, bankCandidates };
+	const swapParams = { ...cmdParams, utxo, oracleData, bankCandidates };
 	const swapResult = executeSigmaUsdSwap(swapParams);
 	console.log('TX READY:', swapResult);
 	return swapResult;

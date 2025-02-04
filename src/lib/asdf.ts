@@ -12,14 +12,14 @@ import {
 import { get } from 'svelte/store';
 
 // Web3 Wallet interactions
-async function getWeb3WalletData() {
+export async function getWeb3WalletData() {
 	await window.ergoConnector.nautilus.connect();
 	const me = await ergo.get_change_address();
 	const utxos = await ergo.get_utxos();
 	const height = await ergo.get_current_height();
 	return { me, utxos, height };
 }
-async function createInteractionAndSubmitTx(
+export async function createInteractionAndSubmitTx(
 	unsignedTx: ErgoUnsignedTransaction,
 	ownAddressList: string[]
 ) {

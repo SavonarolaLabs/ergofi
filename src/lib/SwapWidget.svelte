@@ -107,7 +107,6 @@
 	let toAmount = '';
 	let toAmount2 = '';
 	let swapPrice: number = 0.0;
-	let globalUiFeeErg;
 	let lastInput: LastUserInput = 'From';
 
 	let minerFee = 0.01;
@@ -311,6 +310,42 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
+	// prettier-ignore
+	function calculateAmountAndSwapPrice(lastInput:string, fromToken:string, toToken:string){
+		if (lastInput === 'From' && fromToken === 'ERG' && toToken === 'SigUSD') {
+			const { totalSigUSD, finalPrice } = calculateInputsUsdErgInErg(directionBuy, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
+			toAmount = totalSigUSD; swapPrice = finalPrice;
+		}
+		if (lastInput === 'From' && fromToken === 'ERG' && toToken === 'SigRSV') {
+			const { totalSigRSV,finalPrice } = calculateInputsRSVErgInErg(directionBuy, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
+			toAmount = totalSigRSV; swapPrice = finalPrice;
+		}
+		if (lastInput === 'From' && fromToken === 'SigUSD' && toToken === 'ERG') {
+			const { totalErg,finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
+			toAmount = totalErg; swapPrice = finalPrice;
+		}
+		if (lastInput === 'From' && fromToken === 'SigRSV' && toToken === 'ERG') {
+			const { totalErg,finalPrice } = calculateInputsRSVErgInRSV(directionSell, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
+			toAmount = totalErg; swapPrice = finalPrice;
+		}
+		if (lastInput === 'To' && fromToken === 'ERG' && toToken === 'SigUSD') {
+			const { totalErg,finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
+			fromAmount = totalErg; swapPrice = finalPrice;
+		}
+		if (lastInput === 'To' && fromToken === 'ERG' && toToken === 'SigRSV') {
+			const { totalErg,finalPrice } = calculateInputsRSVErgInRSV(directionBuy, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
+			fromAmount = totalErg; swapPrice = finalPrice;
+		}
+		if (lastInput === 'To' && fromToken === 'SigUSD' && toToken === 'ERG') {
+			const { totalSigUSD,finalPrice } = calculateInputsUsdErgInErg(directionSell, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
+			fromAmount = totalSigUSD; swapPrice = finalPrice;
+		}
+		if (lastInput === 'To' && fromToken === 'SigRSV' && toToken === 'ERG') {
+			const { totalSigRSV,finalPrice } = calculateInputsRSVErgInErg(directionSell, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
+			fromAmount = totalSigRSV; swapPrice = finalPrice;
+		}
+	}
+
 	function doRecalc(oracleBox: ErgoBox, bankBox: ErgoBox) {
 		if (!oracleBox || !bankBox) return;
 		updateBankBoxAndOracle(oracleBox, bankBox);
@@ -333,120 +368,7 @@
 
 		const fromToken = fromCurrency.tokens[0];
 		const toToken = toCurrency.tokens[0];
-
-		// Distinguish direction based on last input:
-		if (lastInput === 'From') {
-			// User typed in `fromAmount`
-			if (fromToken === 'ERG' && toToken === 'SigUSD') {
-				// ERG -> SigUSD
-				const { totalSigUSD, finalPrice, contractErg, uiFeeErg } = calculateInputsUsdErgInErg(
-					directionBuy,
-					fromAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				toAmount = totalSigUSD;
-				globalUiFeeErg = uiFeeErg;
-				swapPrice = finalPrice;
-			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
-				// ERG -> SigRSV
-				const { totalSigRSV, finalPrice, contractErg, uiFeeErg } = calculateInputsRSVErgInErg(
-					directionBuy,
-					fromAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				toAmount = totalSigRSV;
-				globalUiFeeErg = uiFeeErg;
-				swapPrice = finalPrice;
-			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
-				// SigUSD -> ERG
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
-					directionSell,
-					fromAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				toAmount = totalErg;
-				swapPrice = finalPrice;
-			} else {
-				// SigRSV -> ERG
-				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
-					directionSell,
-					fromAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				toAmount = totalErg;
-				swapPrice = finalPrice;
-			}
-		} else {
-			// lastInput === 'To' => user typed in `toAmount`
-			if (fromToken === 'ERG' && toToken === 'SigUSD') {
-				// user typed in "SigUSD" => figure out how many ERG
-				const { totalErg, finalPrice } = calculateInputsUsdErgInUsd(
-					directionBuy,
-					toAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				fromAmount = totalErg;
-				swapPrice = finalPrice;
-			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
-				// user typed in "SigRSV"
-				const { totalErg, finalPrice } = calculateInputsRSVErgInRSV(
-					directionBuy,
-					toAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				fromAmount = totalErg;
-				swapPrice = finalPrice;
-			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
-				// user typed in "ERG" => figure out how many SigUSD
-				const { totalSigUSD, finalPrice, contractErg, uiFeeErg } = calculateInputsUsdErgInErg(
-					directionSell,
-					toAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				fromAmount = totalSigUSD;
-				globalUiFeeErg = uiFeeErg;
-				swapPrice = finalPrice;
-			} else {
-				// fromToken === 'SigRSV' && toToken === 'ERG'
-				// user typed in "ERG" => figure out how many SigRSV
-				const { totalSigRSV, finalPrice, contractErg, uiFeeErg } = calculateInputsRSVErgInErg(
-					directionSell,
-					toAmount,
-					$bankBoxInNanoErg,
-					$bankBoxInCircSigUsdInCent,
-					$bankBoxInCircSigRsv,
-					$oraclePriceSigUsd,
-					$fee_mining
-				);
-				fromAmount = totalSigRSV;
-				globalUiFeeErg = uiFeeErg;
-				swapPrice = finalPrice;
-			}
-		}
+		calculateAmountAndSwapPrice(lastInput, fromToken, toToken);
 	}
 
 	/* ---------------------------------------

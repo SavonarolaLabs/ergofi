@@ -108,7 +108,6 @@
 	let toAmount2 = '';
 	let swapPrice: number = 0.0;
 	let globalUiFeeErg;
-	let globalContractERG;
 	let lastInput: LastUserInput = 'From';
 
 	let minerFee = 0.01;
@@ -340,7 +339,7 @@
 			// User typed in `fromAmount`
 			if (fromToken === 'ERG' && toToken === 'SigUSD') {
 				// ERG -> SigUSD
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
+				const { totalSigUSD, finalPrice, contractErg, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionBuy,
 					fromAmount,
 					$bankBoxInNanoErg,
@@ -350,11 +349,10 @@
 				);
 				toAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
-				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
 				// ERG -> SigRSV
-				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
+				const { totalSigRSV, finalPrice, contractErg, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionBuy,
 					fromAmount,
 					$bankBoxInNanoErg,
@@ -365,7 +363,6 @@
 				);
 				toAmount = totalSigRSV;
 				globalUiFeeErg = uiFeeErg;
-				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
 				// SigUSD -> ERG
@@ -422,7 +419,7 @@
 				swapPrice = finalPrice;
 			} else if (fromToken === 'SigUSD' && toToken === 'ERG') {
 				// user typed in "ERG" => figure out how many SigUSD
-				const { totalSigUSD, finalPrice, contractERG, uiFeeErg } = calculateInputsUsdErgInErg(
+				const { totalSigUSD, finalPrice, contractErg, uiFeeErg } = calculateInputsUsdErgInErg(
 					directionSell,
 					toAmount,
 					$bankBoxInNanoErg,
@@ -432,12 +429,11 @@
 				);
 				fromAmount = totalSigUSD;
 				globalUiFeeErg = uiFeeErg;
-				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			} else {
 				// fromToken === 'SigRSV' && toToken === 'ERG'
 				// user typed in "ERG" => figure out how many SigRSV
-				const { totalSigRSV, finalPrice, contractERG, uiFeeErg } = calculateInputsRSVErgInErg(
+				const { totalSigRSV, finalPrice, contractErg, uiFeeErg } = calculateInputsRSVErgInErg(
 					directionSell,
 					toAmount,
 					$bankBoxInNanoErg,
@@ -448,7 +444,6 @@
 				);
 				fromAmount = totalSigRSV;
 				globalUiFeeErg = uiFeeErg;
-				globalContractERG = contractERG;
 				swapPrice = finalPrice;
 			}
 		}

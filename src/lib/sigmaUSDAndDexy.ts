@@ -7,11 +7,11 @@ export type Direction = -1n | 1n;
 // Types
 type FeeResult = {
 	uiSwapFee: bigint;
-	contractERG: bigint;
+	contractErg: bigint;
 };
 
 type ReverseFeeResult = {
-	inputERG: bigint;
+	inputErg: bigint;
 	uiSwapFee: bigint;
 };
 
@@ -21,26 +21,26 @@ type ReverseFeeSellResult = {
 };
 
 // Functions
-export function applyFee(inputERG: bigint, feeMining: bigint): FeeResult {
-	const uiSwapFee = (inputERG * FEE_UI) / FEE_UI_DENOM;
-	const contractERG = inputERG - feeMining - uiSwapFee;
-	return { uiSwapFee, contractERG };
+export function applyFee(inputErg: bigint, feeMining: bigint): FeeResult {
+	const uiSwapFee = (inputErg * FEE_UI) / FEE_UI_DENOM;
+	const contractErg = inputErg - feeMining - uiSwapFee;
+	return { uiSwapFee, contractErg };
 }
 
-export function reverseFee(contractERG: bigint, feeMining: bigint): ReverseFeeResult {
-	const uiSwapFee = (contractERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const inputERG = contractERG + feeMining + uiSwapFee;
-	return { inputERG, uiSwapFee };
+export function reverseFee(contractErg: bigint, feeMining: bigint): ReverseFeeResult {
+	const uiSwapFee = (contractErg * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
+	const inputErg = contractErg + feeMining + uiSwapFee;
+	return { inputErg, uiSwapFee };
 }
 
-export function reverseFeeSell(contractERG: bigint, feeMining: bigint): ReverseFeeSellResult {
-	const uiSwapFee = (contractERG * FEE_UI) / FEE_UI_DENOM;
-	const userERG = contractERG - feeMining - uiSwapFee;
+export function reverseFeeSell(contractErg: bigint, feeMining: bigint): ReverseFeeSellResult {
+	const uiSwapFee = (contractErg * FEE_UI) / FEE_UI_DENOM;
+	const userERG = contractErg - feeMining - uiSwapFee;
 	return { userERG, uiSwapFee };
 }
 
-export function applyFeeSell(inputERG: bigint, feeMining: bigint): FeeResult {
-	const uiSwapFee = (inputERG * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
-	const contractERG = inputERG + feeMining + uiSwapFee;
-	return { uiSwapFee, contractERG };
+export function applyFeeSell(inputErg: bigint, feeMining: bigint): FeeResult {
+	const uiSwapFee = (inputErg * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
+	const contractErg = inputErg + feeMining + uiSwapFee;
+	return { uiSwapFee, contractErg };
 }

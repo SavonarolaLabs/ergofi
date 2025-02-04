@@ -1,5 +1,5 @@
-import type { NodeBox } from './stores/bank.types';
-import { decodeBigInt } from './utils';
+import type { NodeBox } from '../stores/bank.types';
+import { decodeBigInt } from '../utils';
 
 export type ParsedSigUsdBankBox = {
 	inErg: bigint;

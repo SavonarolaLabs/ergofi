@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { calculateReserveRateAndBorders } from './sigmaUSD';
-	import Spinner from './Spinner.svelte';
 	import {
 		bank_price_rsv_buy,
 		bank_price_rsv_sell,
@@ -20,6 +18,7 @@
 		type Interaction
 	} from './stores/preparedInteractions';
 	import { onMount } from 'svelte';
+	import { calculateReserveRateAndBorders } from './sigmausd/sigmaUSDBankWidget';
 
 	onMount(() => {
 		updateUnconfirmed();

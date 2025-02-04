@@ -8,7 +8,7 @@ import {
 	sellRSVInputRSVTx,
 	sellUSDInputERGTx,
 	sellUSDInputUSDTx
-} from '$lib/sigmaUSD';
+} from '$lib/sigmausd/sigmaUSD';
 import type { NodeBox, OracleData } from '$lib/stores/bank.types';
 import type {
 	ErgopayLinkParams,

@@ -5,9 +5,9 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { TOKEN_BANK_NFT, TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset } from './api/ergoNode';
+import { TOKEN_BANK_NFT, TOKEN_SIGRSV, TOKEN_SIGUSD, type Asset } from '../api/ergoNode';
 import type { Direction } from './sigmaUSDAndDexy';
-import type { NodeBox } from './stores/bank.types';
+import type { NodeBox } from '../stores/bank.types';
 
 function buildSigUsdBankBoxOut(
 	bankAddr: ErgoAddress,

@@ -2,22 +2,6 @@
 	import { onMount } from 'svelte';
 
 	import BigNumber from 'bignumber.js';
-	import {
-		calculateInputsUsdErgInErg,
-		BASE_INPUT_AMOUNT_ERG,
-		calculateInputsUsdErgInUsd,
-		calculateReserveRateAndBorders,
-		calculateInputsRSVErgInErg,
-		calculateInputsRSVErgInRSV,
-		buyRSVInputERGTx,
-		buyRSVInputRSVTx,
-		buyUSDInputERGTx,
-		buyUSDInputUSDTx,
-		sellRSVInputERGTx,
-		sellRSVInputRSVTx,
-		sellUSDInputERGTx,
-		sellUSDInputUSDTx
-	} from './sigmaUSD';
 
 	import {
 		centsToUsd,
@@ -45,8 +29,7 @@
 		reserve_border_right_ERG,
 		reserve_border_right_RSV,
 		reserve_border_right_USD,
-		reserve_rate,
-		type ErgoBox
+		reserve_rate
 	} from './stores/bank';
 	import {
 		web3wallet_available_wallets,
@@ -65,7 +48,26 @@
 	import { directionBuy, directionSell, SIGUSD_BANK_ADDRESS } from './api/ergoNode';
 	import Tint from './icons/Tint.svelte';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
-	import { parseErgUsdOracleBox, parseSigUsdBankBox } from './sigmaUSDParser';
+	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
+	import {
+		buyUSDInputERGTx,
+		buyUSDInputUSDTx,
+		sellUSDInputERGTx,
+		sellUSDInputUSDTx,
+		buyRSVInputERGTx,
+		buyRSVInputRSVTx,
+		sellRSVInputERGTx,
+		sellRSVInputRSVTx
+	} from './sigmausd/sigmaUSD';
+	import { calculateReserveRateAndBorders } from './sigmausd/sigmaUSDBankWidget';
+	import {
+		BASE_INPUT_AMOUNT_ERG,
+		calculateInputsRSVErgInErg,
+		calculateInputsUsdErgInErg,
+		calculateInputsUsdErgInUsd,
+		calculateInputsRSVErgInRSV
+	} from './sigmausd/sigmaUSDInputRecalc';
+	import { parseSigUsdBankBox, parseErgUsdOracleBox } from './sigmausd/sigmaUSDParser';
 
 	/* ---------------------------------------
 	 * Types & Constants

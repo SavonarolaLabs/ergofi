@@ -17,7 +17,7 @@ import {
 } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
-import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmaUSDAndDexy';
+import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmausd/sigmaUSDAndDexy';
 import {
 	parseBankArbitrageMintBox,
 	parseBankBox,

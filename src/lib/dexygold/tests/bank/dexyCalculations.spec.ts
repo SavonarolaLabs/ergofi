@@ -487,7 +487,7 @@ describe('LP swap with any input should work', async () => {
 		} = lpSwapInputDexy(direction, dexyInput, lpXIn, lpYIn, feeNumLp, feeDenomLp);
 
 		// FEE PART:
-		const { userERG: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining);
+		const { userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining);
 
 		const swapOutValue = swapInValue;
 		const lpXOut = lpXIn - direction * contractERG;

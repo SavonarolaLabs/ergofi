@@ -441,7 +441,7 @@ export function calculateInputsUsdErgInUsdPrice(
 		//f3
 		////console.log('f3.price');
 		////console.log(contractErgoRequired, ' contract ERG');
-		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
+		({ userErg: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
 			contractErgoRequired,
 			feeMining
 		));
@@ -659,7 +659,7 @@ export function calculateInputsRSVErgInRSVPrice(
 		));
 	} else {
 		//f7
-		({ userERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
+		({ userErg: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFeeSell(
 			contractErgoRequired,
 			feeMining
 		));
@@ -842,8 +842,8 @@ export function sellUSDInputUSDTx(
 	);
 
 	// PART X
-	const { userERG, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
-	//console.log(contractUSD, 'USD -> ERG ', userERG);
+	const { userErg, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
+	//console.log(contractUSD, 'USD -> ERG ', userErg);
 
 	// PART X - Build
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
@@ -1167,8 +1167,8 @@ export function sellRSVInputRSVTx(
 	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
 	// PART X
-	const { userERG, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
-	//console.log(contractUSD, 'USD -> ERG ', userERG);
+	const { userErg, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
+	//console.log(contractUSD, 'USD -> ERG ', userErg);
 
 	//Part 4 - Calculate TX
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(

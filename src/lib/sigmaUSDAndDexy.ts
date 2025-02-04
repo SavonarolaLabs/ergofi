@@ -16,7 +16,7 @@ type ReverseFeeResult = {
 };
 
 type ReverseFeeSellResult = {
-	userERG: bigint;
+	userErg: bigint;
 	uiSwapFee: bigint;
 };
 
@@ -35,8 +35,8 @@ export function reverseFee(contractErg: bigint, feeMining: bigint): ReverseFeeRe
 
 export function reverseFeeSell(contractErg: bigint, feeMining: bigint): ReverseFeeSellResult {
 	const uiSwapFee = (contractErg * FEE_UI) / FEE_UI_DENOM;
-	const userERG = contractErg - feeMining - uiSwapFee;
-	return { userERG, uiSwapFee };
+	const userErg = contractErg - feeMining - uiSwapFee;
+	return { userErg, uiSwapFee };
 }
 
 export function applyFeeSell(inputErg: bigint, feeMining: bigint): FeeResult {

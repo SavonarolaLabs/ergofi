@@ -25,6 +25,7 @@ import {
 
 // TODO: remove asdf dependency
 import type { NodeBox } from './stores/bank.types';
+import { parseErgUsdOracleBox, parseSigUsdBankBox } from './sigmaUSDParser';
 
 //TODO: revisit this type after parsing bank and oracle boxes
 export type OracleBoxesData = {
@@ -193,33 +194,6 @@ export function calculateBankOutRsv(
 		outSigRSV,
 		outCircSigUSD,
 		outCircSigRSV
-	};
-}
-
-// Helper Functions
-export function extractBoxesData(oracleBox: Output, bankBox: Output): OracleBoxesData {
-	const inErg = BigInt(bankBox.value);
-	const inSigUSD = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGUSD)!.amount
-	);
-	const inSigRSV = BigInt(
-		bankBox.assets.find((asset: Asset) => asset.tokenId == TOKEN_SIGRSV)!.amount
-	);
-	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
-	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
-	// ORACLE PRICE / 100n
-	//console.log('oracle box:', oracleBox);
-	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
-
-	return {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox,
-		oracleBox
 	};
 }
 
@@ -741,16 +715,8 @@ export function buyUSDInputERGTx(
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
@@ -821,16 +787,8 @@ export function buyUSDInputUSDTx(
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
@@ -890,16 +848,8 @@ export function sellUSDInputUSDTx(
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
@@ -964,16 +914,8 @@ export function sellUSDInputERGTx(
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2.1 - Calculate Price
 	let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
@@ -1055,16 +997,8 @@ export function buyRSVInputERGTx(
 	// ---------------------------------
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)
@@ -1157,16 +1091,8 @@ export function buyRSVInputRSVTx(
 	// ---------------------------------
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1234,16 +1160,8 @@ export function sellRSVInputRSVTx(
 	const contractRSV = requestRSV; // ?
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1319,16 +1237,8 @@ export function sellRSVInputERGTx(
 	// ---------------------------------
 
 	//Part 1 - Get Oracle
-	const {
-		inErg,
-		inSigUSD,
-		inSigRSV,
-		inCircSigUSD,
-		inCircSigRSV,
-		oraclePrice,
-		bankBox: bankBoxDelete,
-		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
+	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)

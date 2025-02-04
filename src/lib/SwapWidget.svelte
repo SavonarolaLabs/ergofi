@@ -7,7 +7,6 @@
 		BASE_INPUT_AMOUNT_ERG,
 		calculateInputsUsdErgInUsd,
 		calculateReserveRateAndBorders,
-		extractBoxesData,
 		calculateInputsRSVErgInErg,
 		calculateInputsRSVErgInRSV,
 		buyRSVInputERGTx,
@@ -66,6 +65,7 @@
 	import { directionBuy, directionSell, SIGUSD_BANK_ADDRESS } from './api/ergoNode';
 	import Tint from './icons/Tint.svelte';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
+	import { parseErgUsdOracleBox, parseSigUsdBankBox } from './sigmaUSDParser';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -231,7 +231,8 @@
 		reserve_border_right_RSV.set(rightRSV);
 	}
 	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		const { inErg, inCircSigUSD, oraclePrice, inCircSigRSV } = extractBoxesData(oracleBox, bankBox);
+		const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+		const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 		bankBoxInNanoErg.set(inErg);
 		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
 		bankBoxInCircSigRsv.set(inCircSigRSV);

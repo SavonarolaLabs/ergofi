@@ -10,14 +10,6 @@ import {
 } from './api/ergoNode';
 import { absBigInt, decodeBigInt, maxBigInt, minBigInt } from './utils';
 import {
-	unconfirmed_bank_erg,
-	unconfrimed_bank_reserve_rate,
-	unconfrimed_bank_usd,
-	unconfrimed_reserve_border_left_USD,
-	unconfrimed_reserve_border_right_RSV
-} from './stores/bank';
-
-import {
 	ErgoAddress,
 	OutputBuilder,
 	SAFE_MIN_BOX_VALUE,
@@ -30,6 +22,7 @@ import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from './sigmaUSDAn
 import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
 import type { NodeBox } from './stores/bank.types';
 
+//TODO: revisit this type after parsing bank and oracle boxes
 export type OracleBoxesData = {
 	inErg: bigint;
 	inSigUSD: bigint;
@@ -1576,51 +1569,6 @@ export async function sellRSVInputERGTx(
 	);
 
 	return unsignedMintTransaction;
-}
-
-// TODO: ADD RSV
-export function calculateIntractionsERGUSD(interactions: Interaction[]) {
-	const nanoErgAdd: bigint = BigInt(
-		interactions.reduce((a, e) => a + e.ergAmountInNanoErg, 0).toFixed()
-	);
-	const usdCentAdd: bigint = BigInt(
-		interactions
-			.filter((i) => i.amountCurrency == 'SigUSD')
-			.reduce((a, e) => a + e.amountExact, 0)
-			.toFixed()
-	);
-	return { nanoErgAdd, usdCentAdd };
-}
-export async function updateUnconfirmedBank(
-	bankBoxInNanoErg: bigint,
-	bankBoxInCircSigUsdInCent: bigint,
-	oraclePriceSigUsd: bigint,
-	rsvPriceBuy: number,
-	rsvPriceSell: number,
-	mempoolInteractions: Interaction[],
-	preparedInteractions: Interaction[]
-) {
-	const { nanoErgAdd: ergAddMem, usdCentAdd: usdAddMem } =
-		calculateIntractionsERGUSD(mempoolInteractions);
-	const { nanoErgAdd: ergAddPrep, usdCentAdd: usdAddPrep } =
-		calculateIntractionsERGUSD(preparedInteractions);
-
-	const newBankErg = bankBoxInNanoErg + ergAddMem + ergAddPrep;
-	const newBankUsd = bankBoxInCircSigUsdInCent + usdAddMem + usdAddPrep;
-
-	const { reserveRate, leftUSD, rightRSV } = calculateReserveRateAndBorders(
-		newBankErg,
-		newBankUsd,
-		oraclePriceSigUsd,
-		rsvPriceBuy,
-		rsvPriceSell
-	);
-	unconfirmed_bank_erg.set(newBankErg);
-	unconfrimed_bank_usd.set(newBankUsd);
-	unconfrimed_reserve_border_left_USD.set(leftUSD);
-	unconfrimed_reserve_border_right_RSV.set(rightRSV);
-
-	unconfrimed_bank_reserve_rate.set(reserveRate);
 }
 
 // TX

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { updateUnconfirmedBank } from './sigmaUSD';
+	import { calculateReserveRateAndBorders } from './sigmaUSD';
 	import Spinner from './Spinner.svelte';
 	import {
 		bank_price_rsv_buy,
@@ -9,10 +9,16 @@
 		oraclePriceSigUsd,
 		unconfirmed_bank_erg,
 		unconfrimed_bank_reserve_rate,
-		unconfrimed_reserve_border_left_USD
+		unconfrimed_bank_usd,
+		unconfrimed_reserve_border_left_USD,
+		unconfrimed_reserve_border_right_RSV
 	} from './stores/bank';
 	import { nanoErgToErg, oracleRateToUsd } from './utils';
-	import { mempool_interactions, prepared_interactions } from './stores/preparedInteractions';
+	import {
+		mempool_interactions,
+		prepared_interactions,
+		type Interaction
+	} from './stores/preparedInteractions';
 	import { onMount } from 'svelte';
 
 	onMount(() => {
@@ -21,8 +27,54 @@
 		mempool_interactions.subscribe(updateUnconfirmed);
 	});
 
-	function updateUnconfirmed() {
-		updateUnconfirmedBank(
+	// TODO: ADD RSV
+	function calculateIntractionsERGUSD(interactions: Interaction[]) {
+		const nanoErgAdd: bigint = BigInt(
+			interactions.reduce((a, e) => a + e.ergAmountInNanoErg, 0).toFixed()
+		);
+		const usdCentAdd: bigint = BigInt(
+			interactions
+				.filter((i) => i.amountCurrency == 'SigUSD')
+				.reduce((a, e) => a + e.amountExact, 0)
+				.toFixed()
+		);
+		return { nanoErgAdd, usdCentAdd };
+	}
+
+	async function updateUnconfirmedBank(
+		bankBoxInNanoErg: bigint,
+		bankBoxInCircSigUsdInCent: bigint,
+		oraclePriceSigUsd: bigint,
+		rsvPriceBuy: number,
+		rsvPriceSell: number,
+		mempoolInteractions: Interaction[],
+		preparedInteractions: Interaction[]
+	): Promise<void> {
+		const { nanoErgAdd: ergAddMem, usdCentAdd: usdAddMem } =
+			calculateIntractionsERGUSD(mempoolInteractions);
+		const { nanoErgAdd: ergAddPrep, usdCentAdd: usdAddPrep } =
+			calculateIntractionsERGUSD(preparedInteractions);
+
+		const newBankErg = bankBoxInNanoErg + ergAddMem + ergAddPrep;
+		const newBankUsd = bankBoxInCircSigUsdInCent + usdAddMem + usdAddPrep;
+
+		const { reserveRate, leftUSD, rightRSV } = calculateReserveRateAndBorders(
+			newBankErg,
+			newBankUsd,
+			oraclePriceSigUsd,
+			rsvPriceBuy,
+			rsvPriceSell
+		);
+		unconfirmed_bank_erg.set(newBankErg);
+		unconfrimed_bank_usd.set(newBankUsd);
+		unconfrimed_reserve_border_left_USD.set(leftUSD);
+		unconfrimed_reserve_border_right_RSV.set(rightRSV);
+
+		unconfrimed_bank_reserve_rate.set(reserveRate);
+	}
+
+	async function updateUnconfirmed() {
+		await updateUnconfirmedBank(
 			$bankBoxInNanoErg,
 			$bankBoxInCircSigUsdInCent,
 			$oraclePriceSigUsd,

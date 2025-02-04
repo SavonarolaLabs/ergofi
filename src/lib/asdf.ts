@@ -6,10 +6,10 @@ import {
 	cancelPreparedInteractionById,
 	confirmed_interactions,
 	mempool_interactions,
-	prepared_interactions,
-	type Interaction
+	prepared_interactions
 } from './stores/preparedInteractions';
 import { get } from 'svelte/store';
+import { submitTx } from './mempoolChannels';
 
 // Web3 Wallet interactions
 export async function getWeb3WalletData() {
@@ -37,7 +37,7 @@ export async function createInteractionAndSubmitTx(
 			get(prepared_interactions)
 		);
 		console.log({ signed });
-		//submitTx(signed, interactionId);
+		submitTx(signed, interactionId);
 	} catch (e) {
 		console.log(e);
 		cancelPreparedInteractionById(interactionId);

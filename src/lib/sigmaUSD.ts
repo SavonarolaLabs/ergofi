@@ -16,7 +16,13 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from './sigmaUSDAndDexy';
+import {
+	applyFee,
+	applyFeeSell,
+	reverseFee,
+	reverseFeeSell,
+	type Direction
+} from './sigmaUSDAndDexy';
 
 // TODO: remove asdf dependency
 import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
@@ -47,7 +53,7 @@ export function calculateBankRateUSDInputUSD(
 	inCircSigUSD: bigint,
 	oraclePrice: bigint,
 	requestSC: bigint,
-	direction: bigint
+	direction: Direction
 ): { rateSCERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
 	let rateSCERG: number;
 	// Stable PART --------
@@ -64,12 +70,13 @@ export function calculateBankRateUSDInputUSD(
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
+
 export function calculateBankRateUSDInputERG(
 	inErg: bigint,
 	inCircSigUSD: bigint,
 	oraclePrice: bigint,
 	requestErg: bigint,
-	direction: bigint
+	direction: Direction
 ): { rateSCERG: number; fee: bigint; requestSC: bigint } {
 	let rateSCERG: number;
 	// Stable PART --------
@@ -93,7 +100,7 @@ export function calculateBankRateRSVInputRSV(
 	inCircSigRSV: bigint,
 	oraclePrice: bigint,
 	requestRSV: bigint,
-	direction: bigint
+	direction: Direction
 ): { rateRSVERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
 	let rateRSVERG: number;
 	// Stable PART --------
@@ -116,7 +123,7 @@ export function calculateBankRateRSVInputERG(
 	inCircSigRSV: bigint,
 	oraclePrice: bigint,
 	requestErg: bigint,
-	direction: bigint
+	direction: Direction
 ): { rateRSVERG: number; fee: bigint; requestRSV: bigint } {
 	let rateRSVERG: number;
 	// Stable PART --------
@@ -143,7 +150,7 @@ export function calculateOutputSc(
 	inCircSigRSV: bigint,
 	requestSC: bigint,
 	requestErg: bigint,
-	direction: bigint
+	direction: Direction
 ): {
 	outErg: bigint;
 	outSigUSD: bigint;
@@ -173,7 +180,7 @@ export function calculateOutputRsv(
 	inCircSigRSV: bigint,
 	requestRSV: bigint,
 	requestErg: bigint,
-	direction: bigint
+	direction: Direction
 ) {
 	const outErg = inErg + requestErg * direction;
 	const outSigRSV = inSigRSV - requestRSV * direction;
@@ -297,7 +304,7 @@ export function calculateReserveRateAndBorders(
 // Swap Price | USD <-> ERG
 // (f1.price && f4.price)
 export function calculateInputsUsdErgInErg(
-	direction: bigint,
+	direction: Direction,
 	buyAmountInput: any,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -337,7 +344,7 @@ export function calculateInputsUsdErgInErg(
 	}
 }
 export function calculateInputsUsdErgInErgPrice(
-	direction: bigint,
+	direction: Direction,
 	buyAmount: BigNumber,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -413,7 +420,7 @@ export function calculateInputsUsdErgInErgPrice(
 }
 // (f3.price && f2.price)
 export function calculateInputsUsdErgInUsd(
-	direction: bigint,
+	direction: Direction,
 	buyTotalInput: any,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -457,7 +464,7 @@ export function calculateInputsUsdErgInUsd(
 	}
 }
 export function calculateInputsUsdErgInUsdPrice(
-	direction: bigint,
+	direction: Direction,
 	buyTotal: BigNumber,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -505,7 +512,7 @@ export function calculateInputsUsdErgInUsdPrice(
 // Swap Price | RSV <-> ERG
 // (f5.price && f8.price)
 export function calculateInputsRSVErgInErg(
-	direction: bigint,
+	direction: Direction,
 	buyAmountInput: any,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -548,7 +555,7 @@ export function calculateInputsRSVErgInErg(
 	}
 }
 export function calculateInputsRSVErgInErgPrice(
-	direction: bigint,
+	direction: Direction,
 	buyAmount: BigNumber,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -629,7 +636,7 @@ export function calculateInputsRSVErgInErgPrice(
 }
 // (f6.price && f7.price)
 export function calculateInputsRSVErgInRSV(
-	direction: bigint,
+	direction: Direction,
 	inputRSV: any,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -674,7 +681,7 @@ export function calculateInputsRSVErgInRSV(
 	}
 }
 export function calculateInputsRSVErgInRSVPrice(
-	direction: bigint,
+	direction: Direction,
 	inputRSV: BigNumber,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
@@ -724,18 +731,18 @@ export async function buyUSDInputERG(
 	inputErg: bigint = 1_000_000_000n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = 1n;
 	const tx = await buyUSDInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -750,7 +757,7 @@ export function buyUSDInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -832,18 +839,18 @@ export async function buyUSDInputUSD(
 	inputUSD: bigint = 1_00n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = 1n;
 	const tx = await buyUSDInputUSDTx(
 		inputUSD,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -856,7 +863,7 @@ export async function buyUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -923,18 +930,18 @@ export async function sellUSDInputUSD(
 	inputUSD: bigint = 1_00n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = -1n;
 	const tx = await sellUSDInputUSDTx(
 		inputUSD,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -947,7 +954,7 @@ export async function sellUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1015,18 +1022,18 @@ export async function sellUSDInputERG(
 	inputErg: bigint = 1_000_000_000n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = -1n;
 	const tx = await sellUSDInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1039,7 +1046,7 @@ export async function sellUSDInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1124,18 +1131,18 @@ export async function buyRSVInputERG(
 	inputErg: bigint = 1_000_000_000n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = 1n;
 	const tx = await buyRSVInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1148,7 +1155,7 @@ export async function buyRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1251,17 +1258,18 @@ export async function buyRSVInputRSV(
 	requestRSV: bigint = 2200n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-	const direction = 1n;
 	const tx = await buyRSVInputRSVTx(
 		requestRSV,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1274,7 +1282,7 @@ export async function buyRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1354,17 +1362,18 @@ export async function sellRSVInputRSV(
 	requestRSV: bigint = 2200n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-	const direction = -1n;
 	const tx = await sellRSVInputRSVTx(
 		requestRSV,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1377,7 +1386,7 @@ export async function sellRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1453,18 +1462,18 @@ export async function sellRSVInputERG(
 	inputErg: bigint = 1_000_000_000n,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
-	feeMining: bigint
+	feeMining: bigint,
+	me: string,
+	utxos: NodeBox[],
+	height: number
 ) {
-	const { me, utxos, height } = await getWeb3WalletData();
-
-	const direction = -1n;
 	const tx = await sellRSVInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		direction,
+		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1477,7 +1486,7 @@ export async function sellRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: bigint,
+	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
@@ -1573,7 +1582,7 @@ export async function sellRSVInputERGTx(
 
 // TX
 export function buildTx_SIGUSD_ERG_USD(
-	direction: bigint,
+	direction: Direction,
 	contractErg: bigint,
 	contractUSD: bigint,
 	holderBase58PK: string,
@@ -1629,7 +1638,7 @@ export function buildTx_SIGUSD_ERG_USD(
 }
 
 export function buildTx_SIGUSD_ERG_RSV(
-	direction: bigint,
+	direction: Direction,
 	contractErg: bigint,
 	contractRSV: bigint,
 	holderBase58PK: string,
@@ -1707,7 +1716,7 @@ function buildBankBoxOut_SIGUSD(
 }
 
 function buildReceiptBoxOut_SIGUSD(
-	direction: bigint,
+	direction: Direction,
 	myAddr: ErgoAddress,
 	contractErg: bigint,
 	tokenId: string,

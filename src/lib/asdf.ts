@@ -37,9 +37,12 @@ export async function createInteractionAndSubmitTx(
 			get(prepared_interactions)
 		);
 		console.log({ signed });
+		//TODO: remove interaction canceling from inside submitTx
 		submitTx(signed, interactionId);
 	} catch (e) {
 		console.log(e);
+		// TODO: revert updateBestBankBoxLocal
+
 		cancelPreparedInteractionById(interactionId);
 	}
 }

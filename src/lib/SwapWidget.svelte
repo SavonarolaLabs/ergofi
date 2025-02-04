@@ -65,6 +65,7 @@
 	import { headline } from './stores/ui';
 	import { directionBuy, directionSell } from './api/ergoNode';
 	import Tint from './icons/Tint.svelte';
+	import { getWeb3WalletData } from './asdf';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -511,44 +512,82 @@
 		const fromToken = fromCurrency.tokens[0];
 		const toToken = toCurrency.tokens[0];
 
+		const { me, utxos, height } = await getWeb3WalletData();
+
 		if (lastInput === 'From') {
 			if (fromToken === 'ERG' && toToken === 'SigUSD') {
 				await buyUSDInputERG(
 					ergStringToNanoErgBigInt(fromAmount),
 					$bank_box,
 					$oracle_box,
-					$fee_mining
+					$fee_mining,
+					me,
+					utxos,
+					height
 				);
 			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
 				await buyRSVInputERG(
 					ergStringToNanoErgBigInt(fromAmount),
 					$bank_box,
 					$oracle_box,
-					$fee_mining
+					$fee_mining,
+					me,
+					utxos,
+					height
 				);
 			} else if (fromToken === 'SigUSD') {
 				await sellUSDInputUSD(
 					usdStringToCentBigInt(fromAmount),
 					$bank_box,
 					$oracle_box,
-					$fee_mining
+					$fee_mining,
+					me,
+					utxos,
+					height
 				);
 			} else {
 				// SigRSV -> ERG
-				await sellRSVInputRSV(BigInt(fromAmount), $bank_box, $oracle_box, $fee_mining);
+				await sellRSVInputRSV(
+					BigInt(fromAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining,
+					me,
+					utxos,
+					height
+				);
 			}
 		} else {
 			// lastInput === 'To'
 			if (fromToken === 'ERG' && toToken === 'SigUSD') {
-				await buyUSDInputUSD(usdStringToCentBigInt(toAmount), $bank_box, $oracle_box, $fee_mining);
+				await buyUSDInputUSD(
+					usdStringToCentBigInt(toAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining,
+					me,
+					utxos,
+					height
+				);
 			} else if (fromToken === 'ERG' && toToken === 'SigRSV') {
-				await buyRSVInputRSV(BigInt(toAmount), $bank_box, $oracle_box, $fee_mining);
+				await buyRSVInputRSV(
+					BigInt(toAmount),
+					$bank_box,
+					$oracle_box,
+					$fee_mining,
+					me,
+					utxos,
+					height
+				);
 			} else if (fromToken === 'SigUSD') {
 				await sellUSDInputERG(
 					ergStringToNanoErgBigInt(toAmount),
 					$bank_box,
 					$oracle_box,
-					$fee_mining
+					$fee_mining,
+					me,
+					utxos,
+					height
 				);
 			} else {
 				// SigRSV -> ERG
@@ -556,7 +595,10 @@
 					ergStringToNanoErgBigInt(toAmount),
 					$bank_box,
 					$oracle_box,
-					$fee_mining
+					$fee_mining,
+					me,
+					utxos,
+					height
 				);
 			}
 		}

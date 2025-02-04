@@ -466,7 +466,7 @@
 	}
 
 	function handleFromBalanceClick() {
-		fromAmount = fromBalance;
+		fromAmount = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
 		doRecalc($oracle_box, $bank_box);
 	}
 

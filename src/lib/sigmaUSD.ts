@@ -27,8 +27,8 @@ export function calculateBankRateUSDInputUSD(
 	oraclePrice: bigint,
 	requestSC: bigint,
 	direction: Direction
-): { rateSCERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
-	let rateSCERG: number;
+): { contractRate: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
+	let contractRate: number;
 	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice;
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
@@ -39,9 +39,9 @@ export function calculateBankRateUSDInputUSD(
 	const bcDeltaExpected = scNominalPrice * requestSC;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 	const bcDeltaExpectedWithFee = bcDeltaExpected + fee * direction;
-	rateSCERG = Number(requestSC) / Number(bcDeltaExpectedWithFee);
+	contractRate = Number(requestSC) / Number(bcDeltaExpectedWithFee);
 
-	return { rateSCERG, fee, bcDeltaExpectedWithFee };
+	return { contractRate, fee, bcDeltaExpectedWithFee };
 }
 
 export function calculateBankRateUSDInputERG(
@@ -74,8 +74,8 @@ export function calculateBankRateRSVInputRSV(
 	oraclePrice: bigint,
 	requestRSV: bigint,
 	direction: Direction
-): { rateRSVERG: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
-	let rateRSVERG: number;
+): { contractRate: number; fee: bigint; bcDeltaExpectedWithFee: bigint } {
+	let contractRate: number;
 	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
@@ -86,9 +86,9 @@ export function calculateBankRateRSVInputRSV(
 	const bcDeltaExpected = equityRate * requestRSV;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
 	const bcDeltaExpectedWithFee = bcDeltaExpected + direction * fee;
-	rateRSVERG = Number(requestRSV) / Number(bcDeltaExpectedWithFee);
+	contractRate = Number(requestRSV) / Number(bcDeltaExpectedWithFee);
 
-	return { rateRSVERG, fee, bcDeltaExpectedWithFee };
+	return { contractRate, fee, bcDeltaExpectedWithFee };
 }
 export function calculateBankRateRSVInputERG(
 	inErg: bigint,
@@ -97,8 +97,8 @@ export function calculateBankRateRSVInputERG(
 	oraclePrice: bigint,
 	requestErg: bigint,
 	direction: Direction
-): { rateRSVERG: number; fee: bigint; requestRSV: bigint } {
-	let rateRSVERG: number;
+): { contractRate: number; fee: bigint; requestRSV: bigint } {
+	let contractRate: number;
 	// Stable PART --------
 	const bcReserveNeededIn = inCircSigUSD * oraclePrice; // nanoergs
 	const liabilitiesIn: bigint = maxBigInt(minBigInt(bcReserveNeededIn, inErg), 0n);
@@ -110,9 +110,9 @@ export function calculateBankRateRSVInputERG(
 		(requestErg * FEE_BANK_DENOM) / (equityRate * (FEE_BANK_DENOM + FEE_BANK * direction));
 	const bcDeltaExpected = equityRate * requestRSV;
 	const fee = absBigInt((bcDeltaExpected * FEE_BANK) / FEE_BANK_DENOM);
-	rateRSVERG = Number(requestRSV) / Number(requestErg);
+	contractRate = Number(requestRSV) / Number(requestErg);
 
-	return { rateRSVERG, fee, requestRSV };
+	return { contractRate, fee, requestRSV };
 }
 // BankBox Out
 export function calculateBankOutUsd(
@@ -314,11 +314,7 @@ export function calculateInputsUsdErgInErgPrice(
 	}
 
 	//Part 2 - Calculate Price
-	let {
-		rateSCERG: contractRate,
-		fee: contractFee,
-		requestSC: contractUSD
-	} = calculateBankRateUSDInputERG(
+	let { fee: contractFee, requestSC: contractUSD } = calculateBankRateUSDInputERG(
 		bankBoxInNanoErg,
 		bankBoxInCircSigUsdInCent,
 		oraclePriceSigUsd,
@@ -333,14 +329,13 @@ export function calculateInputsUsdErgInErgPrice(
 
 	//---------------------------------
 	//Part 2 - Calculate Price ()
-	const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateUSDInputUSD(
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			oraclePriceSigUsd,
-			contractUSD,
-			direction
-		);
+	const { contractRate, bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateUSDInputUSD(
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
+		oraclePriceSigUsd,
+		contractUSD,
+		direction
+	);
 
 	// --------------------------------
 	if (direction == -1n) {
@@ -526,11 +521,7 @@ export function calculateInputsRSVErgInErgPrice(
 
 	// CHANGE FUNCTION <--------
 	//Part 2 - Calculate Price
-	let {
-		rateRSVERG: contractRate,
-		fee: contractFee,
-		requestRSV: contractRSV
-	} = calculateBankRateRSVInputERG(
+	let { fee: contractFee, requestRSV: contractRSV } = calculateBankRateRSVInputERG(
 		bankBoxInNanoErg,
 		bankBoxInCircSigUsdInCent,
 		bankBoxInCircSigRSV,
@@ -544,15 +535,14 @@ export function calculateInputsRSVErgInErgPrice(
 	}
 
 	//Part 2 - Calculate Price ()
-	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateRSVInputRSV(
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			bankBoxInCircSigRSV,
-			oraclePriceSigUsd,
-			contractRSV,
-			direction
-		);
+	const { contractRate, bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateRSVInputRSV(
+		bankBoxInNanoErg,
+		bankBoxInCircSigUsdInCent,
+		bankBoxInCircSigRSV,
+		oraclePriceSigUsd,
+		contractRSV,
+		direction
+	);
 
 	// --------------------------------
 	if (direction == 1n) {
@@ -591,7 +581,7 @@ export function calculateInputsRSVErgInRSV(
 	const totalRSV = new BigNumber(inputRSV).integerValue(BigNumber.ROUND_CEIL);
 
 	if (!totalRSV.isNaN() && totalRSV.gt(0)) {
-		const { rateRSVERG, contractFee, totalErgoRequired, swapFee, swapRate } =
+		const { contractRate, contractFee, totalErgoRequired, swapFee, swapRate } =
 			calculateInputsRSVErgInRSVPrice(
 				direction,
 				totalRSV,
@@ -608,7 +598,7 @@ export function calculateInputsRSVErgInRSV(
 		const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
 		return { totalErg, finalPrice, totalFee };
 	} else {
-		const { rateRSVERG, contractFee, totalErgoRequired, swapFee, swapRate } =
+		const { contractRate, contractFee, totalErgoRequired, swapFee, swapRate } =
 			calculateInputsRSVErgInRSVPrice(
 				direction,
 				new BigNumber(BASE_INPUT_AMOUNT_USD.toString()),
@@ -639,7 +629,7 @@ export function calculateInputsRSVErgInRSVPrice(
 	let totalErgoRequired: bigint;
 
 	const {
-		rateRSVERG,
+		contractRate,
 		fee: contractFee,
 		bcDeltaExpectedWithFee: contractErgoRequired
 	} = calculateBankRateRSVInputRSV(
@@ -667,7 +657,7 @@ export function calculateInputsRSVErgInRSVPrice(
 	const swapFee = contractFee + feeMining + uiFeeErg;
 
 	const swapRate = new BigNumber(totalRSV.toString()).dividedBy(totalErgoRequired.toString());
-	return { rateRSVERG, contractFee, totalErgoRequired, swapFee, swapRate };
+	return { contractRate, contractFee, totalErgoRequired, swapFee, swapRate };
 }
 
 // (f1)
@@ -691,7 +681,7 @@ export function buyUSDInputERGTx(
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
-	const { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
+	const { requestSC: contractUSD } = calculateBankRateUSDInputERG(
 		inErg,
 		inCircSigUSD,
 		oraclePrice,
@@ -701,8 +691,13 @@ export function buyUSDInputERGTx(
 
 	//---- DEBUG Price Calculation ----
 	//Part 2 - Calculate Price ()
-	const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+	const { bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateUSDInputUSD(
+		inErg,
+		inCircSigUSD,
+		oraclePrice,
+		contractUSD,
+		direction
+	);
 
 	//Adjust fee
 	if (contractErg > contractErgCompare) uiSwapFee = uiSwapFee + (-contractErgCompare + contractErg);
@@ -764,8 +759,13 @@ export function buyUSDInputUSDTx(
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
-	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+	const { bcDeltaExpectedWithFee: contractErg } = calculateBankRateUSDInputUSD(
+		inErg,
+		inCircSigUSD,
+		oraclePrice,
+		contractUSD,
+		direction
+	);
 
 	//Part 3 - Calculate BankBox
 	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
@@ -826,8 +826,13 @@ export function sellUSDInputUSDTx(
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2 - Calculate Price
-	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+	const { bcDeltaExpectedWithFee: contractErg } = calculateBankRateUSDInputUSD(
+		inErg,
+		inCircSigUSD,
+		oraclePrice,
+		contractUSD,
+		direction
+	);
 
 	//Part 3 - Calculate BankBox
 	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutUsd(
@@ -885,7 +890,7 @@ export function sellUSDInputERGTx(
 	//Part 0 - use Fee
 
 	let uiSwapFee;
-	const { uiSwapFee: abc, contractErg: contractErg } = applyFeeSell(inputErg, feeMining);
+	const { uiSwapFee: abc, contractErg } = applyFeeSell(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	//Part 1 - Get Oracle
@@ -893,7 +898,7 @@ export function sellUSDInputERGTx(
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
 	//Part 2.1 - Calculate Price
-	let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
+	let { requestSC: contractUSD } = calculateBankRateUSDInputERG(
 		inErg,
 		inCircSigUSD,
 		oraclePrice,
@@ -906,8 +911,13 @@ export function sellUSDInputERGTx(
 		contractUSD = contractUSD + 1n;
 	}
 
-	const { rateSCERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateUSDInputUSD(inErg, inCircSigUSD, oraclePrice, contractUSD, direction);
+	const { bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateUSDInputUSD(
+		inErg,
+		inCircSigUSD,
+		oraclePrice,
+		contractUSD,
+		direction
+	);
 
 	if (contractErg < contractErgCompare) {
 		uiSwapFee = uiSwapFee + (contractErgCompare - contractErg);
@@ -966,7 +976,7 @@ export function buyRSVInputERGTx(
 	//Part 0 - use Fee
 	let uiSwapFee;
 
-	const { uiSwapFee: abc, contractErg: contractErg } = applyFee(inputErg, feeMining);
+	const { uiSwapFee: abc, contractErg } = applyFee(inputErg, feeMining);
 	uiSwapFee = abc;
 
 	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
@@ -978,7 +988,7 @@ export function buyRSVInputERGTx(
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)
-	const { rateRSVERG: contractRate, requestRSV: contractRSV } = calculateBankRateRSVInputERG(
+	const { requestRSV: contractRSV } = calculateBankRateRSVInputERG(
 		inErg,
 		inCircSigUSD,
 		inCircSigRSV,
@@ -991,15 +1001,14 @@ export function buyRSVInputERGTx(
 
 	//---- DEBUG Price Calculation ----
 	//Part 2 - Calculate Price ()
-	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			contractRSV,
-			direction
-		);
+	const { bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateRSVInputRSV(
+		inErg,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		contractRSV,
+		direction
+	);
 
 	console.log('---------F5---------');
 	console.log(inputErg, 'Input ERG');
@@ -1073,15 +1082,14 @@ export function buyRSVInputRSVTx(
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
-	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			requestRSV,
-			direction
-		);
+	const { bcDeltaExpectedWithFee: contractErg } = calculateBankRateRSVInputRSV(
+		inErg,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		requestRSV,
+		direction
+	);
 
 	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
@@ -1141,17 +1149,15 @@ export function sellRSVInputRSVTx(
 	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
-	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
-	const { rateRSVERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			requestRSV,
-			direction
-		);
+	const { bcDeltaExpectedWithFee: contractErg } = calculateBankRateRSVInputRSV(
+		inErg,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		requestRSV,
+		direction
+	);
 
 	const { outErg, outSigUSD, outSigRSV, outCircSigUSD, outCircSigRSV } = calculateBankOutRsv(
 		inErg,
@@ -1166,9 +1172,7 @@ export function sellRSVInputRSVTx(
 
 	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
-	// PART X
 	const { userErg, uiSwapFee } = reverseFeeSell(contractErg, feeMining);
-	//console.log(contractUSD, 'USD -> ERG ', userErg);
 
 	//Part 4 - Calculate TX
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_RSV(
@@ -1206,22 +1210,13 @@ export function sellRSVInputERGTx(
 	feeMining: bigint
 ): any {
 	const direction: Direction = -1n;
-	//Part 0 - use Fee
-	let uiSwapFee;
 
-	const { uiSwapFee: abc, contractErg: contractErg } = applyFeeSell(inputErg, feeMining);
-	uiSwapFee = abc;
+	let { uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining);
 
-	// if buy RSV Input ERG -> Clear Fee (f1 + f4)
-	// ---------------------------------
-
-	//Part 1 - Get Oracle
 	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
 
-	// ----------------- REWORK? ----------------
-	//Part 2 - Calculate Price (REVERSED)
-	let { rateRSVERG: contractRate, requestRSV: contractRSV } = calculateBankRateRSVInputERG(
+	let { requestRSV: contractRSV } = calculateBankRateRSVInputERG(
 		inErg,
 		inCircSigUSD,
 		inCircSigRSV,
@@ -1230,22 +1225,19 @@ export function sellRSVInputERGTx(
 		direction
 	);
 
-	//---- DEBUG Price Calculation ----
 	//Part 2 - Calculate Price ()
-	//Part 2.2 - Reversed round UP ()
 	if (direction == -1n) {
 		contractRSV = contractRSV + 1n;
 	}
 
-	const { rateRSVERG: contractRateCompare, bcDeltaExpectedWithFee: contractErgCompare } =
-		calculateBankRateRSVInputRSV(
-			inErg,
-			inCircSigUSD,
-			inCircSigRSV,
-			oraclePrice,
-			contractRSV,
-			direction
-		);
+	const { bcDeltaExpectedWithFee: contractErgCompare } = calculateBankRateRSVInputRSV(
+		inErg,
+		inCircSigUSD,
+		inCircSigRSV,
+		oraclePrice,
+		contractRSV,
+		direction
+	);
 
 	//Adjust fee
 	if (contractErg < contractErgCompare) {

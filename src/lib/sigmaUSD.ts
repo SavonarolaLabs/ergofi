@@ -433,7 +433,7 @@ export function calculateInputsUsdErgInUsdPrice(
 	);
 	if (direction === 1n) {
 		//f2
-		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
+		({ inputErg: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
 			contractErgoRequired,
 			feeMining
 		));
@@ -653,7 +653,7 @@ export function calculateInputsRSVErgInRSVPrice(
 
 	if (direction === 1n) {
 		//f6
-		({ inputERG: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
+		({ inputErg: totalErgoRequired, uiSwapFee: uiFeeErg } = reverseFee(
 			contractErgoRequired,
 			feeMining
 		));
@@ -780,7 +780,7 @@ export function buyUSDInputUSDTx(
 	);
 
 	//Part 0 - use Fee Reversed
-	const { inputERG, uiSwapFee } = reverseFee(contractErg, feeMining);
+	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
 
 	//Part 4 - Calculate TX
 	const unsignedMintTransaction = buildTx_SIGUSD_ERG_USD(
@@ -1096,7 +1096,7 @@ export function buyRSVInputRSVTx(
 
 	// if buy RSV Input RSV -> Fee Reversed (f2 + f3)
 	//Part 0 - use Fee Reversed
-	const { inputERG, uiSwapFee } = reverseFee(contractErg, feeMining);
+	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
 	// BUILD RSV TX FUNCTION --------
 
 	//Part 4 - Calculate TX

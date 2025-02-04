@@ -507,6 +507,7 @@
 		doRecalc($oracle_box, $bank_box);
 	}
 
+	/* prettier-ignore */
 	async function handleSwapButton() {
 		// Check direction based on the last typed field
 		const fromToken = fromCurrency.tokens[0];
@@ -519,16 +520,15 @@
 		console.log({ swapPairLastInput, fromAmount });
 
 		let amount;
-		if (lastInput === 'From' && fromToken === 'ERG') amount = ergStringToNanoErgBigInt(fromAmount);
+		if (lastInput === 'From' && fromToken === 'ERG') 	amount = ergStringToNanoErgBigInt(fromAmount);
 		if (lastInput === 'From' && fromToken === 'SigUSD') amount = usdStringToCentBigInt(fromAmount);
 		if (lastInput === 'From' && fromToken === 'SigRSV') amount = BigInt(fromAmount);
-		if (lastInput === 'To' && fromToken === 'ERG') amount = ergStringToNanoErgBigInt(toAmount);
-		if (lastInput === 'To' && fromToken === 'SigUSD') amount = usdStringToCentBigInt(toAmount);
-		if (lastInput === 'To' && fromToken === 'SigRSV') amount = BigInt(toAmount);
+		if (lastInput === 'To'	 && fromToken === 'ERG') 	amount = ergStringToNanoErgBigInt(toAmount);
+		if (lastInput === 'To'	 && fromToken === 'SigUSD') amount = usdStringToCentBigInt(toAmount);
+		if (lastInput === 'To'	 && fromToken === 'SigRSV') amount = BigInt(toAmount);
 
 		let unsignedTx;
 
-		/* prettier-ignore */
 		switch (swapPairLastInput.toLocaleUpperCase()) {
 			case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
 			case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;

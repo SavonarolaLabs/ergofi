@@ -14,8 +14,7 @@ import {
 	unconfrimed_bank_reserve_rate,
 	unconfrimed_bank_usd,
 	unconfrimed_reserve_border_left_USD,
-	unconfrimed_reserve_border_right_RSV,
-	type ErgoBox
+	unconfrimed_reserve_border_right_RSV
 } from './stores/bank';
 
 import {
@@ -26,7 +25,10 @@ import {
 	TransactionBuilder
 } from '@fleet-sdk/core';
 import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from './sigmaUSDAndDexy';
+
+// TODO: remove asdf dependency
 import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
+import type { NodeBox } from './stores/bank.types';
 
 export type OracleBoxesData = {
 	inErg: bigint;
@@ -727,8 +729,8 @@ export function calculateInputsRSVErgInRSVPrice(
 // (f1)
 export async function buyUSDInputERG(
 	inputErg: bigint = 1_000_000_000n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -756,8 +758,8 @@ export function buyUSDInputERGTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//Part 0 - use Fee
@@ -835,8 +837,8 @@ export function buyUSDInputERGTx(
 // (f2)
 export async function buyUSDInputUSD(
 	inputUSD: bigint = 1_00n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -862,8 +864,8 @@ export async function buyUSDInputUSDTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	const contractUSD = inputUSD;
@@ -926,8 +928,8 @@ export async function buyUSDInputUSDTx(
 // (f3)
 export async function sellUSDInputUSD(
 	inputUSD: bigint = 1_00n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -953,8 +955,8 @@ export async function sellUSDInputUSDTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	const contractUSD = inputUSD;
@@ -1018,8 +1020,8 @@ export async function sellUSDInputUSDTx(
 // (f4)
 export async function sellUSDInputERG(
 	inputErg: bigint = 1_000_000_000n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -1045,8 +1047,8 @@ export async function sellUSDInputERGTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//Part 0 - use Fee
@@ -1127,8 +1129,8 @@ export async function sellUSDInputERGTx(
 // (f5)
 export async function buyRSVInputERG(
 	inputErg: bigint = 1_000_000_000n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -1154,8 +1156,8 @@ export async function buyRSVInputERGTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
@@ -1254,8 +1256,8 @@ export async function buyRSVInputERGTx(
 // (f6)
 export async function buyRSVInputRSV(
 	requestRSV: bigint = 2200n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -1280,8 +1282,8 @@ export async function buyRSVInputRSVTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
@@ -1357,8 +1359,8 @@ export async function buyRSVInputRSVTx(
 // (f7)
 export async function sellRSVInputRSV(
 	requestRSV: bigint = 2200n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -1383,8 +1385,8 @@ export async function sellRSVInputRSVTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	const contractRSV = requestRSV; // ?
@@ -1456,8 +1458,8 @@ export async function sellRSVInputRSVTx(
 // (f8)
 export async function sellRSVInputERG(
 	inputErg: bigint = 1_000_000_000n,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ) {
 	const { me, utxos, height } = await getWeb3WalletData();
@@ -1483,8 +1485,8 @@ export async function sellRSVInputERGTx(
 	utxos: Array<any>,
 	height: number,
 	direction: bigint,
-	bankBox: ErgoBox,
-	oracleBox: ErgoBox,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//direction = 1n; // 1n or -1n
@@ -1629,10 +1631,10 @@ export function buildTx_SIGUSD_ERG_USD(
 	holderBase58PK: string,
 	bankBase58PK: string,
 	height: number,
-	bankBox: any,
-	oracleBox: any,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	uiSwapFee: bigint,
-	utxos: Array<any>,
+	utxos: NodeBox[],
 	outErg: bigint,
 	outSigUSD: bigint,
 	outSigRSV: bigint,
@@ -1668,13 +1670,12 @@ export function buildTx_SIGUSD_ERG_USD(
 
 	const unsignedMintTransaction = new TransactionBuilder(height)
 		.from([bankBox, ...utxos])
+		.withDataFrom(oracleBox)
 		.to([BankOutBox, receiptBox, uiFeeBox])
 		.sendChangeTo(myAddr)
 		.payFee(feeMining)
 		.build()
 		.toEIP12Object();
-
-	unsignedMintTransaction.dataInputs = [oracleBox];
 
 	return unsignedMintTransaction;
 }
@@ -1686,10 +1687,10 @@ export function buildTx_SIGUSD_ERG_RSV(
 	holderBase58PK: string,
 	bankBase58PK: string,
 	height: number,
-	bankBox: any,
-	oracleBox: any,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
 	uiSwapFee: bigint,
-	utxos: Array<any>,
+	utxos: NodeBox[],
 	outErg: bigint,
 	outSigUSD: bigint,
 	outSigRSV: bigint,
@@ -1725,13 +1726,12 @@ export function buildTx_SIGUSD_ERG_RSV(
 
 	const unsignedMintTransaction = new TransactionBuilder(height)
 		.from([bankBox, ...utxos])
+		.withDataFrom(oracleBox)
 		.to([BankOutBox, receiptBox, uiFeeBox])
 		.sendChangeTo(myAddr)
 		.payFee(feeMining)
 		.build()
 		.toEIP12Object();
-
-	unsignedMintTransaction.dataInputs = [oracleBox];
 
 	return unsignedMintTransaction;
 }

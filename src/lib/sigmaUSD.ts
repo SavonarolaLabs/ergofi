@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import {
-	SIGUSD_BANK_ADDRESS,
 	TOKEN_BANK_NFT,
 	TOKEN_SIGRSV,
 	TOKEN_SIGUSD,
@@ -25,7 +24,6 @@ import {
 } from './sigmaUSDAndDexy';
 
 // TODO: remove asdf dependency
-import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
 import type { NodeBox } from './stores/bank.types';
 
 //TODO: revisit this type after parsing bank and oracle boxes
@@ -70,7 +68,6 @@ export function calculateBankRateUSDInputUSD(
 
 	return { rateSCERG, fee, bcDeltaExpectedWithFee };
 }
-
 export function calculateBankRateUSDInputERG(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -237,6 +234,8 @@ export function calculateReserveRate(bankErg: bigint, bankUSD: bigint, oraclePri
 	);
 	return reserveRate; //%
 }
+
+// prettier-ignore
 export function calculateReserveRateAndBorders(
 	inErg: bigint,
 	inCircSigUSD: bigint,
@@ -286,18 +285,13 @@ export function calculateReserveRateAndBorders(
 		const borderRSV = deltaErg.multipliedBy(priceRSV);
 		return borderRSV;
 	}
-
 	const leftUSD = Number(calculateBorderUSD(leftBorder, bankUSD, bankERG, priceUSD).toFixed(0));
-	const rightUSD = Number(calculateBorderUSD(rightBorder, bankUSD, bankERG, priceUSD).toFixed(0));
 	const leftERG = Number(BigNumber(leftUSD).dividedBy(priceUSD).toFixed(0));
+	const rightUSD = Number(calculateBorderUSD(rightBorder, bankUSD, bankERG, priceUSD).toFixed(0));
 	const rightERG = Number(BigNumber(rightUSD).dividedBy(priceUSD).toFixed(0));
-	const leftRSV = Number(
-		calculateBorderRSV(leftBorder, bankUSD, bankERG, priceUSD, priceRSVBuy).toFixed(0)
-	);
-	const rightRSV = Number(
-		calculateBorderRSV(rightBorder, bankUSD, bankERG, priceUSD, priceRSVSell).toFixed(0)
-	);
-
+	const leftRSV = Number(	calculateBorderRSV(leftBorder, bankUSD, bankERG, priceUSD, priceRSVBuy).toFixed(0));
+	const rightRSV = Number(calculateBorderRSV(rightBorder, bankUSD, bankERG, priceUSD, priceRSVSell).toFixed(0));
+	
 	return { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV };
 }
 

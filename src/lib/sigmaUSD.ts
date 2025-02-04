@@ -742,7 +742,6 @@ export async function buyUSDInputERG(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -750,19 +749,18 @@ export async function buyUSDInputERG(
 	console.log(tx);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-
 export function buyUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
 	//Part 0 - use Fee
+	const direction: Direction = 1n;
 	let uiSwapFee;
 
 	const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg, feeMining);
@@ -850,7 +848,6 @@ export async function buyUSDInputUSD(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -863,11 +860,11 @@ export async function buyUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
+	const direction: Direction = 1n;
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
@@ -941,7 +938,6 @@ export async function sellUSDInputUSD(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -954,11 +950,11 @@ export async function sellUSDInputUSDTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
+	const direction: Direction = -1n;
 	const contractUSD = inputUSD;
 
 	//Part 1 - Get Oracle
@@ -1033,7 +1029,6 @@ export async function sellUSDInputERG(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1046,12 +1041,13 @@ export async function sellUSDInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
+	const direction: Direction = -1n;
 	//Part 0 - use Fee
+
 	let uiSwapFee;
 	const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg, feeMining);
 	uiSwapFee = abc;
@@ -1142,7 +1138,6 @@ export async function buyRSVInputERG(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1155,12 +1150,11 @@ export async function buyRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
-	//direction = 1n; // 1n or -1n
+	const direction: Direction = 1n;
 	//Part 0 - use Fee
 	let uiSwapFee;
 
@@ -1269,7 +1263,6 @@ export async function buyRSVInputRSV(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1282,11 +1275,11 @@ export async function buyRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
+	const direction: Direction = 1n;
 	//direction = 1n; // 1n or -1n
 
 	const contractRSV = requestRSV;
@@ -1373,7 +1366,6 @@ export async function sellRSVInputRSV(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1386,11 +1378,11 @@ export async function sellRSVInputRSVTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
+	const direction: Direction = -1n;
 	const contractRSV = requestRSV; // ?
 
 	//Part 1 - Get Oracle
@@ -1473,7 +1465,6 @@ export async function sellRSVInputERG(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		-1n,
 		bankBox,
 		oracleBox,
 		feeMining
@@ -1486,12 +1477,11 @@ export async function sellRSVInputERGTx(
 	bankBase58PK: string,
 	utxos: Array<any>,
 	height: number,
-	direction: Direction,
 	bankBox: NodeBox,
 	oracleBox: NodeBox,
 	feeMining: bigint
 ): any {
-	//direction = 1n; // 1n or -1n
+	const direction: Direction = -1n;
 	//Part 0 - use Fee
 	let uiSwapFee;
 

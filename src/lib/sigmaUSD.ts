@@ -736,7 +736,7 @@ export async function buyUSDInputERG(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await buyUSDInputERGTx(
+	const tx = buyUSDInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -842,7 +842,7 @@ export async function buyUSDInputUSD(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await buyUSDInputUSDTx(
+	const tx = buyUSDInputUSDTx(
 		inputUSD,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -854,7 +854,7 @@ export async function buyUSDInputUSD(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function buyUSDInputUSDTx(
+export function buyUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -877,7 +877,7 @@ export async function buyUSDInputUSDTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractErg } =
@@ -932,7 +932,7 @@ export async function sellUSDInputUSD(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await sellUSDInputUSDTx(
+	const tx = sellUSDInputUSDTx(
 		inputUSD,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -944,7 +944,7 @@ export async function sellUSDInputUSD(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function sellUSDInputUSDTx(
+export function sellUSDInputUSDTx(
 	inputUSD: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -967,7 +967,7 @@ export async function sellUSDInputUSDTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	//Part 2 - Calculate Price
 	const { rateSCERG: contractRate, bcDeltaExpectedWithFee: contractERG } =
@@ -1023,7 +1023,7 @@ export async function sellUSDInputERG(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await sellUSDInputERGTx(
+	const tx = sellUSDInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -1035,7 +1035,7 @@ export async function sellUSDInputERG(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function sellUSDInputERGTx(
+export function sellUSDInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -1062,7 +1062,7 @@ export async function sellUSDInputERGTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	//Part 2.1 - Calculate Price
 	let { rateSCERG: contractRate, requestSC: contractUSD } = calculateBankRateUSDInputERG(
@@ -1132,7 +1132,7 @@ export async function buyRSVInputERG(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await buyRSVInputERGTx(
+	const tx = buyRSVInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -1144,7 +1144,7 @@ export async function buyRSVInputERG(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function buyRSVInputERGTx(
+export function buyRSVInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -1174,7 +1174,7 @@ export async function buyRSVInputERGTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)
@@ -1257,7 +1257,7 @@ export async function buyRSVInputRSV(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await buyRSVInputRSVTx(
+	const tx = buyRSVInputRSVTx(
 		requestRSV,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -1269,7 +1269,7 @@ export async function buyRSVInputRSV(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function buyRSVInputRSVTx(
+export function buyRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -1297,7 +1297,7 @@ export async function buyRSVInputRSVTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1360,7 +1360,7 @@ export async function sellRSVInputRSV(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await sellRSVInputRSVTx(
+	const tx = sellRSVInputRSVTx(
 		requestRSV,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -1372,7 +1372,7 @@ export async function sellRSVInputRSV(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function sellRSVInputRSVTx(
+export function sellRSVInputRSVTx(
 	requestRSV: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -1395,7 +1395,7 @@ export async function sellRSVInputRSVTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price
@@ -1459,7 +1459,7 @@ export async function sellRSVInputERG(
 	utxos: NodeBox[],
 	height: number
 ) {
-	const tx = await sellRSVInputERGTx(
+	const tx = sellRSVInputERGTx(
 		inputErg,
 		me,
 		SIGUSD_BANK_ADDRESS,
@@ -1471,7 +1471,7 @@ export async function sellRSVInputERG(
 	);
 	await createInteractionAndSubmitTx(tx, [me]);
 }
-export async function sellRSVInputERGTx(
+export function sellRSVInputERGTx(
 	inputErg: bigint,
 	holderBase58PK: string,
 	bankBase58PK: string,
@@ -1501,7 +1501,7 @@ export async function sellRSVInputERGTx(
 		oraclePrice,
 		bankBox: bankBoxDelete,
 		oracleBox: oracleBoxDelete
-	}: OracleBoxesData = await extractBoxesData(oracleBox, bankBox);
+	}: OracleBoxesData = extractBoxesData(oracleBox, bankBox);
 
 	// ----------------- REWORK? ----------------
 	//Part 2 - Calculate Price (REVERSED)

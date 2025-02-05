@@ -2,7 +2,7 @@ import { compileDexyContractFromFile } from './compile';
 import { contractFiles } from './contractFiles';
 import fs from 'fs';
 import path from 'path';
-import { contractCompileVariables, dexyGold } from './dexyConstants';
+import { contractCompileVariables, DEXY_GOLD } from './dexyConstants';
 
 const OUTPUT_FILE = 'src/lib/dexygold/dexyAddressConstants.ts';
 
@@ -16,21 +16,21 @@ async function compileAllContracts() {
 				// val bankUpdateErgoTree = ScriptUtil.compile(Map(), bankUpdateScript)
 				// val bankUpdateAddress = getStringFromAddress(getAddressFromErgoTree(bankUpdateErgoTree))
 				const variables = contractCompileVariables;
-				variables['contractToUpdateNFT'] = dexyGold.bankNFT;
+				variables['contractToUpdateNFT'] = DEXY_GOLD.bankNFT;
 				const address = compileDexyContractFromFile(filePath, variables);
 				lines.push(`export const DEXY_BANK_UPDATE_UPDATE = "${address}";`);
 
 				// val extractUpdateScript = readContract("bank/update/update.es", "contractToUpdateNFT" -> defaultSubstitutionMap("extractionNFT"))
 				// val extractUpdateErgoTree = ScriptUtil.compile(Map(), extractUpdateScript)
 				// val extractUpdateAddress = getStringFromAddress(getAddressFromErgoTree(extractUpdateErgoTree))
-				variables['contractToUpdateNFT'] = dexyGold.extractionNFT;
+				variables['contractToUpdateNFT'] = DEXY_GOLD.extractionNFT;
 				const address2 = compileDexyContractFromFile(filePath);
 				lines.push(`export const DEXY_BANK_UPDATE_UPDATE_EXTRACT = "${address2}";`);
 
 				// val interventionUpdateScript = readContract("bank/update/update.es", "contractToUpdateNFT" -> defaultSubstitutionMap("interventionNFT"))
 				// val interventionUpdateErgoTree = ScriptUtil.compile(Map(), interventionUpdateScript)
 				// val interventionUpdateAddress = getStringFromAddress(getAddressFromErgoTree(interventionUpdateErgoTree))
-				variables['contractToUpdateNFT'] = dexyGold.interventionNFT;
+				variables['contractToUpdateNFT'] = DEXY_GOLD.interventionNFT;
 				const address3 = compileDexyContractFromFile(filePath);
 				lines.push(`export const DEXY_BANK_UPDATE_UPDATE_INTERVENTION = "${address3}";`);
 			} else {

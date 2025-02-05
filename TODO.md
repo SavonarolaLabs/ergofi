@@ -37,11 +37,11 @@ export const dexyAddresses = {
 ```js
 export function interventionDeploymentRequest(): Object {
     const box = {
-        address: dexyGold.interventionAddress,
+        address: DEXY_GOLD.interventionAddress,
         value: '1000000000',
         assets: [
             {
-                tokenId: dexyGold.interventionNFT,
+                tokenId: DEXY_GOLD.interventionNFT,
                 amount: '1'
             }
         ]

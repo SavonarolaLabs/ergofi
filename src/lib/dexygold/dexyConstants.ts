@@ -261,7 +261,7 @@ export const dexyAddresses = {
 	extractUpdateAddress: DEXY_BANK_EXTRACT_UPDATE_ADDRESS
 };
 
-export const dexyGold = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };
+export const DEXY_GOLD = { ...mainnetTokenIds, ...contractConfig, ...dexyAddresses };
 
 // contract compilation variables
 function convertHexToBase64(obj: Object) {

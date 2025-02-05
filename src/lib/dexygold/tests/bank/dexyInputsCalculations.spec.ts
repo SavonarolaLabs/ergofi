@@ -244,7 +244,7 @@ describe('Bank Mint with any input should work', async () => {
 
 		resetHeightIn = R4ResetHeight; //--- --- --- --- --- --- --- ---
 
-		({ isCounterReset, resetHeightOut, remainingDexyOut } = calculateResetAndAmount(
+		({ isCounterReset, resetHeightOut, remainingDexyOut } = calculateResetAndAmountArbMint(
 			height,
 			R4ResetHeight,
 			R5AvailableAmount,
@@ -252,7 +252,7 @@ describe('Bank Mint with any input should work', async () => {
 			maxAllowedIfReset
 		));
 
-		function calculateResetAndAmount(
+		function calculateResetAndAmountArbMint(
 			height: number,
 			resetHeight: bigint,
 			availableAmount: bigint,

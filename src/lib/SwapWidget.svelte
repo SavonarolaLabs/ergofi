@@ -993,10 +993,14 @@
 		bottom: 0;
 		left: 0;
 
-		width: 50px;
-		height: 50px;
+		width: 100px;
+		height: 100px;
 
 		background: #1f2937;
+		translate: -50% 84%;
+
+		transform-origin: center;
+		transform: rotate(26deg);
 	}
 
 	.border-color {

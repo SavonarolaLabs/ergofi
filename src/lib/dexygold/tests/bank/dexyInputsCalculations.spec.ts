@@ -138,7 +138,7 @@ function dexyGoldBankArbitrageInputDexyTx(
 	utxos: NodeBox[],
 	arbState: DexyGoldArbitrageInputs
 ): EIP12UnsignedTransaction {
-	const { T_arb, T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+	const { T_arb, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
 	const {
 		value: arbMintXIn,
@@ -150,9 +150,6 @@ function dexyGoldBankArbitrageInputDexyTx(
 	const { value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(arbState.buybankIn);
 	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(arbState.lpIn);
 	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(arbState.goldOracle);
-	const { trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } = parseTrackingBox(
-		arbState.tracking101
-	);
 
 	const dataInputs = [arbState.goldOracle, arbState.lpIn, arbState.tracking101];
 	const userUtxos = utxos; //<== rename
@@ -186,26 +183,21 @@ function dexyGoldBankArbitrageInputDexyTx(
 	//Part 0 - use Fee Reversed
 	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
 
-	const dexyMinted = dexyContract; //<===
-
-	const remainingDexyIn = R5AvailableAmount;
 	const maxAllowedIfReset = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee; //arb
 	//maxAllowedIfReset = lpYData / 100n; //free
 
 	const bankXOut = bankXIn + bankErgsAdded;
-	const bankYOut = bankYIn - dexyMinted;
+	const bankYOut = bankYIn - dexyContract;
 	const buybackXOut = buybackXIn + buybackErgsAdded;
 
 	//freeMintXOut = freeMintXIn;
 	const arbMintXOut = arbMintXIn;
 
-	const resetHeightIn = R4ResetHeight; //--- --- --- --- --- --- --- ---
-
-	const { isCounterReset, resetHeightOut, remainingDexyOut } = calculateResetAndAmountArbMint(
+	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountArbMint(
 		height,
 		R4ResetHeight,
 		R5AvailableAmount,
-		dexyMinted,
+		dexyContract,
 		maxAllowedIfReset,
 		T_arb,
 		T_buffer

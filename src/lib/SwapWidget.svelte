@@ -977,8 +977,8 @@
 			0% 0%,
 			/* top-left */ 100% 0%,
 			/* top-right */ 100% 100%,
-			/* bottom-right */ 5% 100%,
-			/* move inward along bottom edge */ 0% 95% /* diagonal back up to left edge */
+			/* bottom-right */ 10% 100%,
+			/* move inward along bottom edge */ 0% 93.2%
 		);
 	}
 

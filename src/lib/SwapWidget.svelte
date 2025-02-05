@@ -973,13 +973,30 @@
 
 <style>
 	.clipped {
+		position: relative;
+		border-width: 1.5px;
+
 		clip-path: polygon(
 			0% 0%,
 			/* top-left */ 100% 0%,
 			/* top-right */ 100% 100%,
 			/* bottom-right */ 10% 100%,
-			/* move inward along bottom edge */ 0% 93.2%
+			0% 93.2% /* 'cut' corner */
 		);
+
+		overflow: hidden;
+	}
+
+	.clipped::before {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+
+		width: 50px;
+		height: 50px;
+
+		background: #1f2937;
 	}
 
 	.border-color {

@@ -145,10 +145,7 @@
 			{/each}
 
 			{#each $mempool_interactions as m (m.id)}
-				<a
-					target="_blank"
-					href="https://sigmaspace.io/en/transaction/{m.transactionId}"
-				>
+				<a target="_blank" href="https://sigmaspace.io/en/transaction/{m.transactionId}">
 					<div
 						class="row"
 						class:text-white={m.own}
@@ -201,10 +198,7 @@
 			{/each}
 
 			{#each $confirmed_interactions as c (c.id)}
-				<a
-					target="_blank"
-					href="https://sigmaspace.io/en/transaction/{c.transactionId}"
-				>
+				<a target="_blank" href="https://sigmaspace.io/en/transaction/{c.transactionId}">
 					<div class="row" class:text-green-500={c.own}>
 						<div class="left pb-1">
 							<div>

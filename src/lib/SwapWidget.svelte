@@ -68,6 +68,7 @@
 		calculateInputsRSVErgInRSV
 	} from './sigmausd/sigmaUSDInputRecalc';
 	import { parseSigUsdBankBox, parseErgUsdOracleBox } from './sigmausd/sigmaUSDParser';
+	import PrimaryButton from './PrimaryButton.svelte';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -955,17 +956,13 @@
 	{:else}
 		<div class="flex">
 			<button
+				style="display:none"
 				on:click={toggleFeeSlider}
-				class="mr-1 rounded-lg bg-orange-600 px-4 py-3 font-medium text-orange-300 hover:bg-orange-500 hover:text-white"
+				class="mr-1 rounded-lg bg-gray-500 px-4 py-3 font-medium text-gray-200 hover:bg-gray-100 hover:text-black"
 			>
 				<Gear></Gear>
 			</button>
-			<button
-				on:click={handleSwapButton}
-				class="grow rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
-			>
-				Swap
-			</button>
+			<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$headline}></PrimaryButton>
 		</div>
 	{/if}
 </div>

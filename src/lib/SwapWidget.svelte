@@ -980,8 +980,8 @@
 			0% 0%,
 			/* top-left */ 100% 0%,
 			/* top-right */ 100% 100%,
-			/* bottom-right */ 10% 100%,
-			0% 93.2% /* 'cut' corner */
+			/* bottom-right */ 7.5% 100%,
+			/* move inward along bottom edge */ 0% 90% /* diagonal back up to left edge */
 		);
 
 		overflow: hidden;
@@ -997,10 +997,10 @@
 		height: 100px;
 
 		background: #1f2937;
-		translate: -50% 84%;
+		translate: -54% 84%;
 
 		transform-origin: center;
-		transform: rotate(26deg);
+		transform: rotate(45deg);
 	}
 
 	.border-color {

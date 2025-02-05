@@ -35,7 +35,7 @@
 		font-size: 1rem;
 		text-transform: uppercase;
 		color: var(--white-color);
-		clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
+		clip-path: polygon(94.7% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}
 
 	.btn__content {
@@ -47,7 +47,7 @@
 		left: 2px;
 		right: 2px;
 		bottom: 2px;
-		clip-path: polygon(92% 0, 100% 25%, 100% 100%, 8% 100%, 0% 75%, 0 0);
+		clip-path: polygon(94.7% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}
 
 	.btn--secondary {

@@ -563,7 +563,7 @@
 
 <!-- UI Layout -->
 <div class="widget relative">
-	<div class="clipped mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6">
+	<div class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800 p-6">
 		<!-- FROM SELECTION -->
 		<div
 			class="flex flex-col transition-all"
@@ -573,7 +573,7 @@
 				: 'min-height:200px'}
 		>
 			<div>
-				<div class="rounded-md bg-gray-900">
+				<div class="rounded-md bg-gray-800">
 					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 						<span class="text-sm"
 							>{fromCurrency.isLpPool
@@ -602,7 +602,7 @@
 					</div>
 
 					<div
-						class="relative flex flex-col rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
+						class="relative flex flex-col rounded-lg bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
 						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
 							? '58px'
 							: '116px'}; "
@@ -624,7 +624,7 @@
 								id="fromDropdownBtn"
 								type="button"
 								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									fromDropdownOpen = !fromDropdownOpen;
 									toDropdownOpen = false;
@@ -681,7 +681,7 @@
 									style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
 										? 2
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-									class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+									class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 									on:click={() => {
 										fromDropdownOpen = !fromDropdownOpen;
 										toDropdownOpen = false;
@@ -713,7 +713,7 @@
 								style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
 									? '116'
 									: '58'}px; margin-right:-4px"
-								class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
+								class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 							>
 								<div>
 									{#each fromCurrencies as c, i}
@@ -753,7 +753,7 @@
 							on:mouseenter={handleMouseEnter}
 							on:mouseleave={handleMouseLeave}
 							on:click={handleSwapPair}
-							class="border-color flex items-center justify-center rounded-full border-4 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+							class="border-color flex items-center justify-center rounded-full border-4 bg-gray-800 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 							style="width:42px;height:42px;"
 						>
 							{#if currencySwapHovered}
@@ -767,7 +767,7 @@
 			</div>
 
 			<!-- TO SELECTION -->
-			<div class="rounded-md bg-gray-900">
+			<div class="rounded-md bg-gray-800">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 					<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
 					<span class="text-sm"
@@ -782,7 +782,7 @@
 				</div>
 
 				<div
-					class="relative flex flex-col rounded-lg bg-gray-900 transition-all focus-within:ring-1 focus-within:ring-blue-500"
+					class="relative flex flex-col rounded-lg bg-gray-800 transition-all focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
 						? '58px'
 						: '116px'}; "
@@ -804,7 +804,7 @@
 							id="toDropdownBtn"
 							type="button"
 							style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-							class="border-color flex w-full items-center justify-between rounded-lg bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+							class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 							on:click={() => {
 								toDropdownOpen = !toDropdownOpen;
 								fromDropdownOpen = false;
@@ -861,7 +861,7 @@
 								style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 2
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									toDropdownOpen = !toDropdownOpen;
 									fromDropdownOpen = false;
@@ -892,7 +892,7 @@
 							style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
 								? '116'
 								: '58'}px; margin-right:-4px"
-							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
+							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 						>
 							<div class="py-1">
 								{#each getAllowedToCurrencies(currencyERG) as c}
@@ -983,7 +983,7 @@
 	}
 
 	.border-color {
-		border-color: #1f2937;
+		border-color: #16151f;
 	}
 	.widget::before {
 		content: '';

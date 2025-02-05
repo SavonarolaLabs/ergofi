@@ -1152,12 +1152,12 @@ describe('Bank Mint with any input should work', async () => {
 			value: arbMintXIn,
 			arbitrageMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankArbitrageMintBox(arbMintIn);
 		//console.log(' ');
 		//console.log('----------------- Arb Mint -------------------');
 		//console.dir(arbMintIn, { depth: null });
-		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AwailableAmount);
+		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AvailableAmount);
 		//------------------------------------------------
 
 		//----------------- Check Bank -------------------
@@ -1277,7 +1277,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		const remainingDexyIn = R5AvailableAmount;
 
 		// // HEIGHT ?
 		//isCounterReset = HEIGHT > selfInR4
@@ -1301,7 +1301,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}
@@ -1313,7 +1313,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(remainingDexyOut, ' remainingDexyOut');
 
 		// const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
-		// const remainingDexyIn = R5AwailableAmount;
+		// const remainingDexyIn = R5AvailableAmount;
 		// let remainingDexyOut;
 
 		// let dexyMinted = contractDexy; //''
@@ -1377,7 +1377,7 @@ describe('Bank Mint with any input should work', async () => {
 			value: freeMintXIn,
 			freeMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankFreeMintBox(freeMintIn);
 
 		//----------------- Check Bank -------------------
@@ -1473,7 +1473,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		const remainingDexyIn = R5AvailableAmount;
 
 		// // HEIGHT ?
 		//isCounterReset = HEIGHT > selfInR4
@@ -1497,7 +1497,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}
@@ -1509,7 +1509,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(remainingDexyOut, ' remainingDexyOut');
 
 		// const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
-		// const remainingDexyIn = R5AwailableAmount;
+		// const remainingDexyIn = R5AvailableAmount;
 		// let remainingDexyOut;
 
 		// let dexyMinted = contractDexy; //''
@@ -1573,12 +1573,12 @@ describe('Bank Mint with any input should work', async () => {
 			value: arbMintXIn,
 			arbitrageMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankArbitrageMintBox(arbMintIn);
 		//console.log(' ');
 		//console.log('----------------- Arb Mint -------------------');
 		//console.dir(arbMintIn, { depth: null });
-		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AwailableAmount);
+		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AvailableAmount);
 		//------------------------------------------------
 
 		//----------------- Check Bank -------------------
@@ -1698,7 +1698,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		const remainingDexyIn = R5AvailableAmount;
 
 		// // HEIGHT ?
 		//isCounterReset = HEIGHT > selfInR4
@@ -1722,7 +1722,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}
@@ -1734,7 +1734,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(remainingDexyOut, ' remainingDexyOut');
 
 		// const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
-		// const remainingDexyIn = R5AwailableAmount;
+		// const remainingDexyIn = R5AvailableAmount;
 		// let remainingDexyOut;
 
 		// let dexyMinted = contractDexy; //''
@@ -1798,12 +1798,12 @@ describe('Bank Mint with any input should work', async () => {
 			value: freeMintXIn,
 			freeMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankFreeMintBox(freeMintIn);
 		//console.log(' ');
 		//console.log('----------------- Arb Mint -------------------');
 		//console.dir(arbMintIn, { depth: null });
-		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AwailableAmount);
+		//console.log('arbMintIn', arbMintXIn, arbitrageMintNFT, R4ResetHeight, R5AvailableAmount);
 		//------------------------------------------------
 
 		//----------------- Check Bank -------------------
@@ -1923,7 +1923,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		const remainingDexyIn = R5AvailableAmount;
 
 		// // HEIGHT ?
 		//isCounterReset = HEIGHT > selfInR4
@@ -1947,7 +1947,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}
@@ -1959,7 +1959,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(remainingDexyOut, ' remainingDexyOut');
 
 		// const isReset = height > R4ResetHeight; //  val isCounterReset = HEIGHT > selfInR4	//R4ResetHeight
-		// const remainingDexyIn = R5AwailableAmount;
+		// const remainingDexyIn = R5AvailableAmount;
 		// let remainingDexyOut;
 
 		// let dexyMinted = contractDexy; //''
@@ -2023,7 +2023,7 @@ describe('Bank Mint with any input should work', async () => {
 			value: arbMintXIn,
 			arbitrageMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankArbitrageMintBox(arbMintIn);
 
 		//----------------- Check Bank -------------------
@@ -2129,7 +2129,7 @@ describe('Bank Mint with any input should work', async () => {
 		console.log(maxAllowedIfResetArb, 'refreshAmount ArbMint');
 
 		//Free/Arb remaining:
-		const remainingDexyIn = R5AwailableAmount;
+		const remainingDexyIn = R5AvailableAmount;
 
 		// // HEIGHT ?
 		//isCounterReset = HEIGHT > selfInR4
@@ -2153,7 +2153,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}

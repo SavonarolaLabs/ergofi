@@ -12,8 +12,8 @@ export const arbmintTx = {
         }
       ],
       "additionalRegisters": {
-        "R5": "05a09c01",
-        "R4": "04c8f2b001"
+        "R4": "04c8f2b001",
+        "R5": "05a09c01"
       },
       "transactionId": "41a258524f558fe62e85513aeb88627023a7befa9e066804427045dffb2d9d38",
       "index": 1,
@@ -136,9 +136,9 @@ export const arbmintTx = {
       ],
       "additionalRegisters": {
         "R5": "04c801",
-        "R6": "0100",
         "R7": "0400",
-        "R4": "04ca01"
+        "R4": "04ca01",
+        "R6": "0100"
       },
       "transactionId": "41a258524f558fe62e85513aeb88627023a7befa9e066804427045dffb2d9d38",
       "index": 4

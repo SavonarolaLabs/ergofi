@@ -5,7 +5,7 @@ export type ParsedBankArbitrageMintBox = {
 	value: bigint;
 	arbitrageMintNFT: string;
 	R4ResetHeight: bigint;
-	R5AwailableAmount: bigint;
+	R5AvailableAmount: bigint;
 };
 
 export type ParsedBankBox = {
@@ -18,7 +18,7 @@ export type ParsedBankFreeMintBox = {
 	value: bigint;
 	freeMintNFT: string;
 	R4ResetHeight: bigint;
-	R5AwailableAmount: bigint;
+	R5AvailableAmount: bigint;
 };
 
 export type ParsedBankInterventionBox = {
@@ -85,7 +85,7 @@ export function parseBankArbitrageMintBox(box: any): ParsedBankArbitrageMintBox 
 		value: asBigInt(box.value),
 		arbitrageMintNFT: box.assets[0].tokenId,
 		R4ResetHeight: parse<bigint>(box.additionalRegisters.R4),
-		R5AwailableAmount: parse<bigint>(box.additionalRegisters.R5)
+		R5AvailableAmount: parse<bigint>(box.additionalRegisters.R5)
 	};
 }
 
@@ -102,7 +102,7 @@ export function parseBankFreeMintBox(box: any): ParsedBankFreeMintBox {
 		value: asBigInt(box.value),
 		freeMintNFT: box.assets[0].tokenId,
 		R4ResetHeight: parse<bigint>(box.additionalRegisters.R4),
-		R5AwailableAmount: parse<bigint>(box.additionalRegisters.R5)
+		R5AvailableAmount: parse<bigint>(box.additionalRegisters.R5)
 	};
 }
 

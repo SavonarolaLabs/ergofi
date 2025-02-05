@@ -100,7 +100,7 @@ describe('Bank Mint with any input should work', async () => {
 	let userAddress;
 	let userChangeAddress;
 
-	let freeMintXIn, freeMintNFT, R4ResetHeight, R5AwailableAmount;
+	let freeMintXIn, freeMintNFT, R4ResetHeight, R5AvailableAmount;
 
 	let bankXIn, bankNFT, bankYIn;
 	let buybackXIn, buybackNFT, gortAmount;
@@ -155,7 +155,7 @@ describe('Bank Mint with any input should work', async () => {
 			value: freeMintXIn,
 			freeMintNFT,
 			R4ResetHeight,
-			R5AwailableAmount
+			R5AvailableAmount
 		} = parseBankFreeMintBox(freeMintIn));
 
 		bankIn = get(dexygold_bank_box);
@@ -192,7 +192,7 @@ describe('Bank Mint with any input should work', async () => {
 			feeDenom,
 			dexyMinted
 		));
-		remainingDexyIn = R5AwailableAmount;
+		remainingDexyIn = R5AvailableAmount;
 		maxAllowedIfReset = lpYData / 100n;
 		remainingDexyOut = maxAllowedIfReset - dexyMinted;
 
@@ -216,7 +216,7 @@ describe('Bank Mint with any input should work', async () => {
 		} else {
 			console.log('---NOT RESETED---');
 			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AwailableAmount; //
+			availableToMint = R5AvailableAmount; //
 			if (remainingDexyIn < dexyMinted) {
 				console.log('Not reset | Not enough Dexy');
 			}

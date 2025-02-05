@@ -582,7 +582,7 @@
 <!-- UI Layout -->
 <div class="widget relative">
 	<div
-		class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800"
+		class="clipped mx-auto w-full max-w-md rounded-lg rounded-br-none border border-gray-800"
 		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
 		style="padding:8px"
@@ -1006,4 +1006,5 @@
 	.border-color {
 		border-color: #16151f;
 	}
+	/* https://yandex.ru/images/search?from=tabbar&img_url=https%3A%2F%2Fceles.club%2Fuploads%2Fposts%2F2022-10%2F1667213180_56-celes-club-p-zolotoi-fon-odnotonnii-oboi-56.jpg&lr=10410&p=1&pos=3&rpt=simage&text=gold%20texture */
 </style>

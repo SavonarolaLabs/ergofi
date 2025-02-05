@@ -12,8 +12,6 @@
 </button>
 
 <style>
-	@import url('https://fonts.googleapis.com/css?family=Barlow|Tomorrow:400,700&display=swap');
-
 	:root {
 		--yellow-color: #ecfc09;
 		--red-color: #ff003c;
@@ -31,7 +29,6 @@
 		background-color: var(--black-color);
 		cursor: pointer;
 		position: relative;
-		font-family: Tomorrow, sans-serif;
 		font-size: 1rem;
 		text-transform: uppercase;
 		color: var(--white-color);

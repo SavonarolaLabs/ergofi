@@ -573,7 +573,7 @@
 				: 'min-height:200px'}
 		>
 			<div>
-				<div class="rounded-md bg-gray-800">
+				<div class="rounded-md rounded-bl-none bg-gray-800">
 					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 						<span class="text-sm"
 							>{fromCurrency.isLpPool
@@ -623,8 +623,8 @@
 							<button
 								id="fromDropdownBtn"
 								type="button"
-								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px;  height:62px;"
+								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									fromDropdownOpen = !fromDropdownOpen;
 									toDropdownOpen = false;
@@ -767,7 +767,7 @@
 			</div>
 
 			<!-- TO SELECTION -->
-			<div class="rounded-md bg-gray-800">
+			<div class="rounded-md rounded-tl-none rounded-tr-none bg-gray-800">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 					<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
 					<span class="text-sm"

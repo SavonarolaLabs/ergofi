@@ -559,6 +559,24 @@
 			toDropdownOpen = false;
 		}
 	}
+
+	let fromBtnRect = { top: 0, left: 0, width: 0 };
+	let toBtnRect = { top: 0, left: 0, width: 0 };
+
+	function toggleFromDropdown(e) {
+		// measure the button so we can position the dropdown outside the clipped container
+		const rect = e.currentTarget.getBoundingClientRect();
+		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
+		fromDropdownOpen = !fromDropdownOpen;
+		toDropdownOpen = false;
+	}
+
+	function toggleToDropdown(e) {
+		const rect = e.currentTarget.getBoundingClientRect();
+		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
+		toDropdownOpen = !toDropdownOpen;
+		fromDropdownOpen = false;
+	}
 </script>
 
 <!-- UI Layout -->
@@ -625,10 +643,7 @@
 								type="button"
 								style="width:271px; margin-right:-4px; margin-bottom:-4px; border-width:4px;  height:62px;"
 								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
-								on:click={() => {
-									fromDropdownOpen = !fromDropdownOpen;
-									toDropdownOpen = false;
-								}}
+								on:click={toggleFromDropdown}
 							>
 								{#if fromCurrency.isLpToken}
 									<div class="flex items-center gap-3 text-white">
@@ -682,10 +697,7 @@
 										? 4
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 									class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
-									on:click={() => {
-										fromDropdownOpen = !fromDropdownOpen;
-										toDropdownOpen = false;
-									}}
+									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
 										<!-- Show the first token name, e.g. "ERG" -->
@@ -705,50 +717,12 @@
 							</div>
 						{/if}
 						<!-- LP second token END -->
-
-						<!-- Dropdown list -->
-						{#if fromDropdownOpen}
-							<div
-								id="fromDropdownMenu"
-								style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
-									? '116'
-									: '58'}px; margin-right:-4px"
-								class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md rounded-br-none border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
-							>
-								<div>
-									{#each fromCurrencies as c, i}
-										<button
-											class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-											style="height:56px"
-											on:click={() => {
-												fromCurrency = c;
-												fromDropdownOpen = false;
-												const allowed = getAllowedToCurrencies(fromCurrency);
-												toCurrency = allowed[0];
-												saveFromToCurrencyToLocalStorage();
-												doRecalc($oracle_box, $bank_box);
-												updateTitle();
-											}}
-										>
-											<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
-										</button>
-										{#if i != fromCurrencies.length - 1}
-											<hr class="border-slate-800" />
-										{/if}
-									{/each}
-								</div>
-							</div>
-						{/if}
 					</div>
 				</div>
 
 				<!-- DIRECTION -->
 				<div class="relative" style="height:4px;">
-					<div
-						class="absolute"
-						class:hidden={fromDropdownOpen}
-						style="z-index:5;margin-top:-18px; left:170px"
-					>
+					<div class="absolute" style="z-index:5;margin-top:-18px; left:170px">
 						<button
 							on:mouseenter={handleMouseEnter}
 							on:mouseleave={handleMouseLeave}
@@ -805,10 +779,7 @@
 							type="button"
 							style="width: 271px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
-							on:click={() => {
-								toDropdownOpen = !toDropdownOpen;
-								fromDropdownOpen = false;
-							}}
+							on:click={toggleToDropdown}
 						>
 							{#if toCurrency.isLpToken}
 								<div class="flex items-center gap-3 text-white">
@@ -862,10 +833,7 @@
 									? 4
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 								class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
-								on:click={() => {
-									toDropdownOpen = !toDropdownOpen;
-									fromDropdownOpen = false;
-								}}
+								on:click={toggleToDropdown}
 							>
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
@@ -884,34 +852,6 @@
 						</div>
 					{/if}
 					<!-- LP second token END -->
-
-					<!-- Dropdown list -->
-					{#if toDropdownOpen}
-						<div
-							id="toDropdownMenu"
-							style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
-								? '116'
-								: '58'}px; margin-right:-4px"
-							class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
-						>
-							<div class="py-1">
-								{#each getAllowedToCurrencies(currencyERG) as c}
-									<button
-										class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-										on:click={() => {
-											toCurrency = c;
-											toDropdownOpen = false;
-											saveFromToCurrencyToLocalStorage();
-											doRecalc($oracle_box, $bank_box);
-											updateTitle();
-										}}
-									>
-										<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/if}
 				</div>
 			</div>
 		</div>
@@ -971,11 +911,72 @@
 	</div>
 </div>
 
+<!-- Dropdown list -->
+{#if fromDropdownOpen}
+	<div
+		id="fromDropdownMenu"
+		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;left: {fromBtnRect.left}px;top:{fromBtnRect.top -
+			4}px; margin-right:-4px"
+		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md rounded-br-none border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+	>
+		<div>
+			{#each fromCurrencies as c, i}
+				<button
+					class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+					style="height:56px"
+					on:click={() => {
+						fromCurrency = c;
+						fromDropdownOpen = false;
+						const allowed = getAllowedToCurrencies(fromCurrency);
+						toCurrency = allowed[0];
+						saveFromToCurrencyToLocalStorage();
+						doRecalc($oracle_box, $bank_box);
+						updateTitle();
+					}}
+				>
+					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
+				</button>
+				{#if i != fromCurrencies.length - 1}
+					<hr class="border-slate-800" />
+				{/if}
+			{/each}
+		</div>
+	</div>
+{/if}
+
+<!-- Dropdown list -->
+{#if toDropdownOpen}
+	<div
+		id="toDropdownMenu"
+		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;
+		left: {toBtnRect.left}px;
+		top:{toBtnRect.top - 4}px; margin-right:-4px"
+		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+	>
+		<div class="py-1">
+			{#each getAllowedToCurrencies(currencyERG) as c}
+				<button
+					class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+					on:click={() => {
+						toCurrency = c;
+						toDropdownOpen = false;
+						saveFromToCurrencyToLocalStorage();
+						doRecalc($oracle_box, $bank_box);
+						updateTitle();
+					}}
+				>
+					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
+				</button>
+			{/each}
+		</div>
+	</div>
+{/if}
+
 <style>
 	.clipped {
 		position: relative;
 		border-width: 4px;
-		/* clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%); */
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
 	}
 
 	.clipped::before {

@@ -581,7 +581,11 @@
 
 <!-- UI Layout -->
 <div class="widget relative">
-	<div class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800 p-6">
+	<div
+		class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800 p-6"
+		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
+		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
+	>
 		<!-- FROM SELECTION -->
 		<div
 			class="flex flex-col transition-all"
@@ -973,10 +977,15 @@
 {/if}
 
 <style>
+	.clip-short {
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
+	}
 	.clipped {
 		position: relative;
 		border-width: 4px;
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
+	}
+	.clip-long {
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 91.5%);
 	}
 
 	.clipped::before {

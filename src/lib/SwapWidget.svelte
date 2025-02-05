@@ -563,7 +563,7 @@
 
 <!-- UI Layout -->
 <div class="widget relative">
-	<div class="mx-auto w-full max-w-md rounded-lg p-6 shadow">
+	<div class=" mx-auto w-full max-w-md rounded-lg p-6 shadow">
 		<!-- FROM SELECTION -->
 		<div
 			class="flex flex-col transition-all"
@@ -624,7 +624,7 @@
 								id="fromDropdownBtn"
 								type="button"
 								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									fromDropdownOpen = !fromDropdownOpen;
 									toDropdownOpen = false;
@@ -753,7 +753,7 @@
 							on:mouseenter={handleMouseEnter}
 							on:mouseleave={handleMouseLeave}
 							on:click={handleSwapPair}
-							class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+							class="border-color flex items-center justify-center rounded-full border-4 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 							style="width:42px;height:42px;"
 						>
 							{#if currencySwapHovered}
@@ -804,7 +804,7 @@
 							id="toDropdownBtn"
 							type="button"
 							style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-							class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+							class="border-color flex w-full items-center justify-between rounded-lg bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 							on:click={() => {
 								toDropdownOpen = !toDropdownOpen;
 								fromDropdownOpen = false;
@@ -972,19 +972,22 @@
 </div>
 
 <style>
+	.border-color {
+		border-color: #191b26;
+	}
 	.widget::before {
 		content: '';
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		width: 550px;
-		height: 550px;
-		background-image: url('/sigmagon.svg');
-		opacity: 0.2;
+		width: 600px;
+		height: 600px;
+		background-image: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 81.999435 81.999962"><path  fill="%231F2937" d="m 41.000218,0 c -0.422,0 -0.84,0.083 -1.23,0.244 l -26.718,11.07 c -0.786844,0.32548 -1.412067,0.950343 -1.738,1.737 L 0.24421771,39.771 c -0.32562361,0.786634 -0.32562361,1.670366 0,2.457 L 11.314218,68.947 c 0.325372,0.787031 0.950782,1.412081 1.738,1.737 l 26.719,11.07 c 0.786171,0.327945 1.670829,0.327945 2.457,0 l 26.72,-11.07 c 0.786529,-0.325606 1.411394,-0.950471 1.737,-1.737 l 11.07,-26.72 c 0.325624,-0.786634 0.325624,-1.670366 0,-2.457 l -11.07,-26.719 c -0.326491,-0.786283 -0.951529,-1.410962 -1.738,-1.737 l -26.719,-11.07 c -0.389,-0.161 -0.806,-0.244 -1.228,-0.244 Z"/></svg>');
+		opacity: 0.3;
 		background-size: contain;
 		background-repeat: no-repeat;
 		background-position: center;
-		z-index: 0; /* Place behind the content */
+		z-index: -1; /* Place behind the content */
 	}
 </style>

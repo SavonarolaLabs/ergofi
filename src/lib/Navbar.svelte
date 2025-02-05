@@ -13,7 +13,7 @@
 		<span class="text-xl font-medium">Ergfi</span>
 		<!-- <span class="text-md mx-2">/</span>
 		<span class="text-md">SigmaUSD</span> -->
-		<sup class="ml-1 text-xs text-gray-500">alpha 13</sup>
+		<sup class="ml-1 text-xs text-gray-500">alpha 14</sup>
 	</div>
 
 	<div class="flex gap-3" style="height:52px;">

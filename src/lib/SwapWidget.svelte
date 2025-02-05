@@ -562,72 +562,255 @@
 </script>
 
 <!-- UI Layout -->
-<div class="mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6 shadow">
-	<!-- FROM SELECTION -->
-	<div
-		class="flex flex-col transition-all"
-		class:justify-between={fromCurrency.isLpPool}
-		style={fromCurrency.isLpToken || toCurrency.isLpToken ? 'min-height:258px' : 'min-height:200px'}
-	>
-		<div>
+<div class="widget relative">
+	<div class="mx-auto w-full max-w-md rounded-lg p-6 shadow">
+		<!-- FROM SELECTION -->
+		<div
+			class="flex flex-col transition-all"
+			class:justify-between={fromCurrency.isLpPool}
+			style={fromCurrency.isLpToken || toCurrency.isLpToken
+				? 'min-height:258px'
+				: 'min-height:200px'}
+		>
+			<div>
+				<div class="rounded-md bg-gray-900">
+					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
+						<span class="text-sm"
+							>{fromCurrency.isLpPool
+								? 'Add Liquidity'
+								: fromCurrency.isLpToken
+									? 'Remove Liquidity'
+									: 'From'}</span
+						>
+						<button
+							class="flex items-center gap-1 text-sm hover:text-white"
+							on:click={handleFromBalanceClick}
+						>
+							<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
+							{#if fromCurrency.isLpPool}
+								{fromBalance} {fromCurrency.tokens[0]} {fromBalance} {fromCurrency.tokens[1]}
+							{:else if typeof fromBalance === 'number'}
+								{fromBalance.toLocaleString('en-US', {
+									minimumFractionDigits: 0,
+									maximumFractionDigits: 2
+								})}
+							{:else}
+								<WalletBalance />
+								{fromBalance}
+							{/if}
+						</button>
+					</div>
+
+					<div
+						class="relative flex flex-col rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
+						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
+							? '58px'
+							: '116px'}; "
+					>
+						<div class="flex">
+							<!-- FROM AMOUNT -->
+							<input
+								type="number"
+								class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+								placeholder="0"
+								min="0"
+								bind:value={fromAmount}
+								on:input={handleFromAmountChange}
+							/>
+
+							<!-- FROM CURRENCY DROPDOWN -->
+							<!-- Toggle button -->
+							<button
+								id="fromDropdownBtn"
+								type="button"
+								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+								on:click={() => {
+									fromDropdownOpen = !fromDropdownOpen;
+									toDropdownOpen = false;
+								}}
+							>
+								{#if fromCurrency.isLpToken}
+									<div class="flex items-center gap-3 text-white">
+										<div class="text-lg text-blue-300"><Tint></Tint></div>
+										<div class=" leading-0 flex w-full flex-col justify-center text-xs">
+											<div>Liquidity</div>
+											<div>Token</div>
+										</div>
+									</div>
+								{:else}
+									<div class="flex items-center gap-3">
+										<!-- Show the first token name, e.g. "ERG" -->
+										<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
+										{fromCurrency.tokens[0]}
+									</div>
+								{/if}
+								{#if fromCurrency.isToken || fromCurrency.isLpToken}
+									<svg
+										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill={fromCurrency.isLpToken ? 'gray' : 'currentColor'}
+									>
+										<path d="M12 15.5l-6-6h12l-6 6z" />
+									</svg>
+								{/if}
+							</button>
+						</div>
+
+						<!-- LP second token START -->
+						{#if fromCurrency.isLpPool}
+							<div class="flex">
+								<!-- FROM AMOUNT -->
+								<div style="border-top-width:2px;" class="grow border-gray-800">
+									<input
+										type="number"
+										class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+										placeholder="0"
+										min="0"
+										bind:value={fromAmount2}
+										on:input={handleFromAmount2Change}
+									/>
+								</div>
+
+								<!-- FROM CURRENCY DROPDOWN -->
+								<!-- Toggle button -->
+								<button
+									id="fromDropdownBtn2"
+									type="button"
+									style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+										? 2
+										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
+									class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
+									on:click={() => {
+										fromDropdownOpen = !fromDropdownOpen;
+										toDropdownOpen = false;
+									}}
+								>
+									<div class="flex items-center gap-3">
+										<!-- Show the first token name, e.g. "ERG" -->
+										<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
+										{fromCurrency.tokens[1]}
+									</div>
+
+									<svg
+										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
+									>
+										<path d="M12 15.5l-6-6h12l-6 6z" />
+									</svg>
+								</button>
+							</div>
+						{/if}
+						<!-- LP second token END -->
+
+						<!-- Dropdown list -->
+						{#if fromDropdownOpen}
+							<div
+								id="fromDropdownMenu"
+								style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
+									? '116'
+									: '58'}px; margin-right:-4px"
+								class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
+							>
+								<div>
+									{#each fromCurrencies as c, i}
+										<button
+											class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
+											style="height:56px"
+											on:click={() => {
+												fromCurrency = c;
+												fromDropdownOpen = false;
+												const allowed = getAllowedToCurrencies(fromCurrency);
+												toCurrency = allowed[0];
+												saveFromToCurrencyToLocalStorage();
+												doRecalc($oracle_box, $bank_box);
+												updateTitle();
+											}}
+										>
+											<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
+										</button>
+										{#if i != fromCurrencies.length - 1}
+											<hr class="border-slate-800" />
+										{/if}
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</div>
+				</div>
+
+				<!-- DIRECTION -->
+				<div class="relative" style="height:4px;">
+					<div
+						class="absolute"
+						class:hidden={fromDropdownOpen}
+						style="z-index:5;margin-top:-18px; left:170px"
+					>
+						<button
+							on:mouseenter={handleMouseEnter}
+							on:mouseleave={handleMouseLeave}
+							on:click={handleSwapPair}
+							class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+							style="width:42px;height:42px;"
+						>
+							{#if currencySwapHovered}
+								<ArrowUpDown size={20} />
+							{:else}
+								<ArrowDown />
+							{/if}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- TO SELECTION -->
 			<div class="rounded-md bg-gray-900">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
+					<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
 					<span class="text-sm"
-						>{fromCurrency.isLpPool
-							? 'Add Liquidity'
-							: fromCurrency.isLpToken
-								? 'Remove Liquidity'
-								: 'From'}</span
-					>
-					<button
-						class="flex items-center gap-1 text-sm hover:text-white"
-						on:click={handleFromBalanceClick}
-					>
-						<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
-						{#if fromCurrency.isLpPool}
-							{fromBalance} {fromCurrency.tokens[0]} {fromBalance} {fromCurrency.tokens[1]}
-						{:else if typeof fromBalance === 'number'}
-							{fromBalance.toLocaleString('en-US', {
-								minimumFractionDigits: 0,
-								maximumFractionDigits: 2
-							})}
+						>Price:
+						<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
+						{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
+							<SubNumber value={1 / swapPrice}></SubNumber>
 						{:else}
-							<WalletBalance />
-							{fromBalance}
+							{swapPrice}
 						{/if}
-					</button>
+					</span>
 				</div>
 
 				<div
-					class="relative flex flex-col rounded-lg bg-gray-900 focus-within:ring-1 focus-within:ring-blue-500"
-					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
+					class="relative flex flex-col rounded-lg bg-gray-900 transition-all focus-within:ring-1 focus-within:ring-blue-500"
+					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
 						? '58px'
 						: '116px'}; "
 				>
 					<div class="flex">
-						<!-- FROM AMOUNT -->
+						<!-- TO AMOUNT -->
 						<input
 							type="number"
 							class="w-full bg-transparent text-3xl text-gray-100 outline-none"
 							placeholder="0"
 							min="0"
-							bind:value={fromAmount}
-							on:input={handleFromAmountChange}
+							bind:value={toAmount}
+							on:input={handleToAmountChange}
 						/>
 
-						<!-- FROM CURRENCY DROPDOWN -->
+						<!-- TO CURRENCY DROPDOWN -->
 						<!-- Toggle button -->
 						<button
-							id="fromDropdownBtn"
+							id="toDropdownBtn"
 							type="button"
 							style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 							on:click={() => {
-								fromDropdownOpen = !fromDropdownOpen;
-								toDropdownOpen = false;
+								toDropdownOpen = !toDropdownOpen;
+								fromDropdownOpen = false;
 							}}
 						>
-							{#if fromCurrency.isLpToken}
+							{#if toCurrency.isLpToken}
 								<div class="flex items-center gap-3 text-white">
 									<div class="text-lg text-blue-300"><Tint></Tint></div>
 									<div class=" leading-0 flex w-full flex-col justify-center text-xs">
@@ -638,16 +821,16 @@
 							{:else}
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
-									<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
-									{fromCurrency.tokens[0]}
+									<div class="h-5 w-5 {tokenColor(toCurrency.tokens[0])} rounded-full"></div>
+									{toCurrency.tokens[0]}
 								</div>
 							{/if}
-							{#if fromCurrency.isToken || fromCurrency.isLpToken}
+							{#if toCurrency.isToken || toCurrency.isLpToken}
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 									xmlns="http://www.w3.org/2000/svg"
 									viewBox="0 0 24 24"
-									fill={fromCurrency.isLpToken ? 'gray' : 'currentColor'}
+									fill="currentColor"
 								>
 									<path d="M12 15.5l-6-6h12l-6 6z" />
 								</svg>
@@ -656,7 +839,7 @@
 					</div>
 
 					<!-- LP second token START -->
-					{#if fromCurrency.isLpPool}
+					{#if toCurrency.isLpPool}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
 							<div style="border-top-width:2px;" class="grow border-gray-800">
@@ -665,31 +848,30 @@
 									class="w-full bg-transparent text-3xl text-gray-100 outline-none"
 									placeholder="0"
 									min="0"
-									bind:value={fromAmount2}
-									on:input={handleFromAmount2Change}
+									bind:value={toAmount2}
+									on:input={handleToAmount2Change}
 								/>
 							</div>
 
 							<!-- FROM CURRENCY DROPDOWN -->
 							<!-- Toggle button -->
 							<button
-								id="fromDropdownBtn2"
+								id="toDropdownBtn2"
 								type="button"
-								style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+								style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 2
-									: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
+									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
-									fromDropdownOpen = !fromDropdownOpen;
-									toDropdownOpen = false;
+									toDropdownOpen = !toDropdownOpen;
+									fromDropdownOpen = false;
 								}}
 							>
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
-									<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
-									{fromCurrency.tokens[1]}
+									<div class="h-5 w-5 {tokenColor(toCurrency.tokens[1])} rounded-full"></div>
+									{toCurrency.tokens[1]}
 								</div>
-
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 									xmlns="http://www.w3.org/2000/svg"
@@ -704,24 +886,21 @@
 					<!-- LP second token END -->
 
 					<!-- Dropdown list -->
-					{#if fromDropdownOpen}
+					{#if toDropdownOpen}
 						<div
-							id="fromDropdownMenu"
-							style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
+							id="toDropdownMenu"
+							style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
 								? '116'
 								: '58'}px; margin-right:-4px"
 							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
 						>
-							<div>
-								{#each fromCurrencies as c, i}
+							<div class="py-1">
+								{#each getAllowedToCurrencies(currencyERG) as c}
 									<button
-										class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-										style="height:56px"
+										class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 										on:click={() => {
-											fromCurrency = c;
-											fromDropdownOpen = false;
-											const allowed = getAllowedToCurrencies(fromCurrency);
-											toCurrency = allowed[0];
+											toCurrency = c;
+											toDropdownOpen = false;
 											saveFromToCurrencyToLocalStorage();
 											doRecalc($oracle_box, $bank_box);
 											updateTitle();
@@ -729,243 +908,83 @@
 									>
 										<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
 									</button>
-									{#if i != fromCurrencies.length - 1}
-										<hr class="border-slate-800" />
-									{/if}
 								{/each}
 							</div>
 						</div>
 					{/if}
 				</div>
 			</div>
+		</div>
 
-			<!-- DIRECTION -->
-			<div class="relative" style="height:4px;">
-				<div
-					class="absolute"
-					class:hidden={fromDropdownOpen}
-					style="z-index:5;margin-top:-18px; left:170px"
-				>
-					<button
-						on:mouseenter={handleMouseEnter}
-						on:mouseleave={handleMouseLeave}
-						on:click={handleSwapPair}
-						class="flex items-center justify-center rounded-full border-4 border-gray-800 bg-gray-900 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
-						style="width:42px;height:42px;"
-					>
-						{#if currencySwapHovered}
-							<ArrowUpDown size={20} />
-						{:else}
-							<ArrowDown />
-						{/if}
-					</button>
-				</div>
+		<!-- Fee Settings (Expert) -->
+		{#if mintWarning}
+			<div class="my-4 flex flex w-full justify-center text-red-500">
+				{mintWarning}
 			</div>
-		</div>
-
-		<!-- TO SELECTION -->
-		<div class="rounded-md bg-gray-900">
-			<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
-				<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
-				<span class="text-sm"
-					>Price:
-					<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
-					{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
-						<SubNumber value={1 / swapPrice}></SubNumber>
-					{:else}
-						{swapPrice}
-					{/if}
-				</span>
-			</div>
-
-			<div
-				class="relative flex flex-col rounded-lg bg-gray-900 transition-all focus-within:ring-1 focus-within:ring-blue-500"
-				style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
-					? '58px'
-					: '116px'}; "
-			>
-				<div class="flex">
-					<!-- TO AMOUNT -->
-					<input
-						type="number"
-						class="w-full bg-transparent text-3xl text-gray-100 outline-none"
-						placeholder="0"
-						min="0"
-						bind:value={toAmount}
-						on:input={handleToAmountChange}
-					/>
-
-					<!-- TO CURRENCY DROPDOWN -->
-					<!-- Toggle button -->
-					<button
-						id="toDropdownBtn"
-						type="button"
-						style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-						class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
-						on:click={() => {
-							toDropdownOpen = !toDropdownOpen;
-							fromDropdownOpen = false;
-						}}
-					>
-						{#if toCurrency.isLpToken}
-							<div class="flex items-center gap-3 text-white">
-								<div class="text-lg text-blue-300"><Tint></Tint></div>
-								<div class=" leading-0 flex w-full flex-col justify-center text-xs">
-									<div>Liquidity</div>
-									<div>Token</div>
-								</div>
-							</div>
-						{:else}
-							<div class="flex items-center gap-3">
-								<!-- Show the first token name, e.g. "ERG" -->
-								<div class="h-5 w-5 {tokenColor(toCurrency.tokens[0])} rounded-full"></div>
-								{toCurrency.tokens[0]}
-							</div>
-						{/if}
-						{#if toCurrency.isToken || toCurrency.isLpToken}
-							<svg
-								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path d="M12 15.5l-6-6h12l-6 6z" />
-							</svg>
-						{/if}
-					</button>
-				</div>
-
-				<!-- LP second token START -->
-				{#if toCurrency.isLpPool}
-					<div class="flex">
-						<!-- FROM AMOUNT -->
-						<div style="border-top-width:2px;" class="grow border-gray-800">
-							<input
-								type="number"
-								class="w-full bg-transparent text-3xl text-gray-100 outline-none"
-								placeholder="0"
-								min="0"
-								bind:value={toAmount2}
-								on:input={handleToAmount2Change}
-							/>
-						</div>
-
-						<!-- FROM CURRENCY DROPDOWN -->
-						<!-- Toggle button -->
-						<button
-							id="toDropdownBtn2"
-							type="button"
-							style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
-								? 2
-								: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-							class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-900 px-3 py-2 font-medium text-gray-100 outline-none"
-							on:click={() => {
-								toDropdownOpen = !toDropdownOpen;
-								fromDropdownOpen = false;
-							}}
-						>
-							<div class="flex items-center gap-3">
-								<!-- Show the first token name, e.g. "ERG" -->
-								<div class="h-5 w-5 {tokenColor(toCurrency.tokens[1])} rounded-full"></div>
-								{toCurrency.tokens[1]}
-							</div>
-							<svg
-								class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill={toCurrency.isToken ? 'currentColor' : 'gray'}
-							>
-								<path d="M12 15.5l-6-6h12l-6 6z" />
-							</svg>
-						</button>
-					</div>
-				{/if}
-				<!-- LP second token END -->
-
-				<!-- Dropdown list -->
-				{#if toDropdownOpen}
-					<div
-						id="toDropdownMenu"
-						style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
-							? '116'
-							: '58'}px; margin-right:-4px"
-						class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-900 shadow-md ring-1 ring-black ring-opacity-5"
-					>
-						<div class="py-1">
-							{#each getAllowedToCurrencies(currencyERG) as c}
-								<button
-									class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-									on:click={() => {
-										toCurrency = c;
-										toDropdownOpen = false;
-										saveFromToCurrencyToLocalStorage();
-										doRecalc($oracle_box, $bank_box);
-										updateTitle();
-									}}
-								>
-									<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
-								</button>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
-
-	<!-- Fee Settings (Expert) -->
-	{#if mintWarning}
-		<div class="my-4 flex flex w-full justify-center text-red-500">
-			{mintWarning}
-		</div>
-	{/if}
-	<div
-		class={`mb-4 overflow-hidden transition-all duration-300 ${
-			showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
-		}`}
-	>
-		<input
-			type="range"
-			min="0.01"
-			max="1"
-			step="0.01"
-			bind:value={minerFee}
-			on:change={handleFeeChange}
-			class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700"
-		/>
-		<div class="mt-2 text-center text-sm text-gray-400">
-			Miner Fee: {minerFee.toFixed(2)} ERG
-		</div>
-	</div>
-	<!-- Swap Button -->
-	{#if mintWarning}
-		<button
-			on:click={handleSwapButton}
-			class="w-full rounded-lg bg-gray-600 py-3 font-medium text-white hover:bg-gray-500"
+		{/if}
+		<div
+			class={`mb-4 overflow-hidden transition-all duration-300 ${
+				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
+			}`}
 		>
-			Swap
-		</button>
-	{:else if $web3wallet_available_wallets.length == 0}
-		<a
-			target="_blank"
-			href={getWalletInstallLink()}
-			class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
-		>
-			Install Wallet
-		</a>
-	{:else}
-		<div class="flex">
+			<input
+				type="range"
+				min="0.01"
+				max="1"
+				step="0.01"
+				bind:value={minerFee}
+				on:change={handleFeeChange}
+				class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700"
+			/>
+			<div class="mt-2 text-center text-sm text-gray-400">
+				Miner Fee: {minerFee.toFixed(2)} ERG
+			</div>
+		</div>
+		<!-- Swap Button -->
+		{#if mintWarning}
 			<button
-				style="display:none"
-				on:click={toggleFeeSlider}
-				class="mr-1 rounded-lg bg-gray-500 px-4 py-3 font-medium text-gray-200 hover:bg-gray-100 hover:text-black"
+				on:click={handleSwapButton}
+				class="w-full rounded-lg bg-gray-600 py-3 font-medium text-white hover:bg-gray-500"
 			>
-				<Gear></Gear>
+				Swap
 			</button>
-			<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$headline}></PrimaryButton>
-		</div>
-	{/if}
+		{:else if $web3wallet_available_wallets.length == 0}
+			<a
+				target="_blank"
+				href={getWalletInstallLink()}
+				class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
+			>
+				Install Wallet
+			</a>
+		{:else}
+			<div class="flex">
+				<button
+					style="display:none"
+					on:click={toggleFeeSlider}
+					class="mr-1 rounded-lg bg-gray-500 px-4 py-3 font-medium text-gray-200 hover:bg-gray-100 hover:text-black"
+				>
+					<Gear></Gear>
+				</button>
+				<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$headline}></PrimaryButton>
+			</div>
+		{/if}
+	</div>
 </div>
 
 <style>
+	.widget::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 550px;
+		height: 550px;
+		background-image: url('/sigmagon.svg');
+		opacity: 0.2;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+		z-index: 0; /* Place behind the content */
+	}
 </style>

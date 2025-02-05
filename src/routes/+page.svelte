@@ -56,5 +56,6 @@
 		background-position-x: right;
 		background-position-y: bottom;
 		background-size: 640px;
+		z-index: -2;
 	}
 </style>

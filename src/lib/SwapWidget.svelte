@@ -634,7 +634,7 @@
 							<!-- FROM AMOUNT -->
 							<input
 								type="number"
-								class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+								class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
 								placeholder="0"
 								min="0"
 								bind:value={fromAmount}
@@ -646,7 +646,7 @@
 							<button
 								id="fromDropdownBtn"
 								type="button"
-								style="width:271px; margin-right:-4px; margin-bottom:-4px; border-width:4px;  height:62px;"
+								style="width:271px; border-right:none; margin-bottom:-4px; border-width:4px;  height:62px;"
 								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={toggleFromDropdown}
 							>
@@ -682,10 +682,10 @@
 						{#if fromCurrency.isLpPool}
 							<div class="flex">
 								<!-- FROM AMOUNT -->
-								<div style="border-top-width:4px;" class="border-color grow">
+								<div style="border-top-width:4px;" class="border-color w-[256px]">
 									<input
 										type="number"
-										class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+										class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
 										placeholder="0"
 										min="0"
 										bind:value={fromAmount2}
@@ -698,10 +698,10 @@
 								<button
 									id="fromDropdownBtn2"
 									type="button"
-									style="width: 166px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
 										? 4
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-									class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+									class=" border-color flex items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
@@ -770,7 +770,7 @@
 						<!-- TO AMOUNT -->
 						<input
 							type="number"
-							class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+							class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
 							placeholder="0"
 							min="0"
 							bind:value={toAmount}
@@ -782,7 +782,7 @@
 						<button
 							id="toDropdownBtn"
 							type="button"
-							style="width: 271px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 							on:click={toggleToDropdown}
 						>
@@ -818,10 +818,10 @@
 					{#if toCurrency.isLpPool}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
-							<div style="border-top-width:4px;" class="border-color grow">
+							<div style="border-top-width:4px;" class="border-color w-[256px]">
 								<input
 									type="number"
-									class="w-full bg-transparent text-3xl text-gray-100 outline-none"
+									class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
 									placeholder="0"
 									min="0"
 									bind:value={toAmount2}
@@ -834,7 +834,7 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width: 166px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
+								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 4
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 								class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
@@ -922,7 +922,7 @@
 	<div
 		id="fromDropdownMenu"
 		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;left: {fromBtnRect.left}px;top:{fromBtnRect.top -
-			4}px; margin-right:-4px"
+			4}px; border-right:none"
 		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md rounded-br-none border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 	>
 		<div>
@@ -956,7 +956,7 @@
 		id="toDropdownMenu"
 		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;
 		left: {toBtnRect.left}px;
-		top:{toBtnRect.top - 4}px; margin-right:-4px"
+		top:{toBtnRect.top - 4}px; border-right:none"
 		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 	>
 		<div class="py-1">

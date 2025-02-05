@@ -8,7 +8,7 @@
 	let pending = true;
 </script>
 
-<nav class="sticky top-0 flex items-center justify-between px-6 py-3" style="background: #16151f;">
+<nav class="sticky top-0 flex items-center justify-between px-6 py-3">
 	<div class="flex items-center text-gray-300">
 		<span class="text-xl font-medium">Ergfi</span>
 		<!-- <span class="text-md mx-2">/</span>

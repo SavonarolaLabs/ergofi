@@ -49,13 +49,20 @@
 {/if}
 
 <style>
-	.tachikoma-bg {
+	.tachikoma-old-bg {
 		background-size: contain;
-		background-image: url('/tachikoma.png');
+		background-image: url('/atachikoma.png');
 		background-repeat: no-repeat;
 		background-position-x: right;
 		background-position-y: bottom;
 		background-size: 640px;
 		z-index: -2;
+	}
+	.tachikoma-bg {
+		background-color: #16151f;
+		opacity: 1;
+		background-image: radial-gradient(#252152 0.5px, #16151f 0.5px);
+		background-size: 10px 10px;
+		z-index: -10;
 	}
 </style>

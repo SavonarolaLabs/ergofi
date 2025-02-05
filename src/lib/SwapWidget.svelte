@@ -625,7 +625,7 @@
 					</div>
 
 					<div
-						class="relative flex flex-col rounded-lg bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
+						class="relative flex flex-col bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
 						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
 							? '58px'
 							: '116px'}; "
@@ -746,7 +746,7 @@
 			</div>
 
 			<!-- TO SELECTION -->
-			<div class="rounded-md rounded-tl-none rounded-tr-none bg-gray-800">
+			<div class="bg-gray-800">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 					<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
 					<span class="text-sm"
@@ -834,10 +834,10 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
+								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-right-radius:0px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 4
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-								class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={toggleToDropdown}
 							>
 								<div class="flex items-center gap-3">

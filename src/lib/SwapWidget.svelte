@@ -975,7 +975,7 @@
 	.clipped {
 		position: relative;
 		border-width: 4px;
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
+		/* clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%); */
 	}
 
 	.clipped::before {
@@ -984,14 +984,11 @@
 		bottom: 0;
 		left: 0;
 
-		width: 100px;
-		height: 100px;
+		width: 0;
+		height: 0;
 
-		background: #1f2937;
-		translate: -54% 84%;
-
-		transform-origin: center;
-		transform: rotate(45deg);
+		border-bottom: 32px solid #1f2937;
+		border-right: 32px solid transparent;
 	}
 
 	.border-color {

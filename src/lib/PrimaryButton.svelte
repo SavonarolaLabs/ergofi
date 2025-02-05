@@ -8,7 +8,7 @@
 <button class="btn" on:click={onClick}>
 	<span class="btn__content" style="background-color: {bgColor};">{text}</span>
 	<span class="btn__glitch" style="background-color: {bgColor};"></span>
-	<span class="btn__label" style="background-color: {bgColor};">{subtext}</span>
+	<span class="btn__label" style="background-color: {bgColor}; color:black;">{subtext}</span>
 </button>
 
 <style>
@@ -21,6 +21,7 @@
 	}
 
 	.btn {
+		font-weight: 400;
 		min-width: 230px;
 		width: 100%;
 		height: 60px;

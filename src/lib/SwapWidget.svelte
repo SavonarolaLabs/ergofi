@@ -115,8 +115,8 @@
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 
-	let fromDropdownOpen = true;
-	let toDropdownOpen = false;
+	let fromDropdownOpen = false;
+	let toDropdownOpen = true;
 	let currencySwapHovered = false;
 
 	// Utility: Allowed "to" currencies depends on "fromCurrency"
@@ -623,7 +623,7 @@
 							<button
 								id="fromDropdownBtn"
 								type="button"
-								style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px;  height:62px;"
+								style="width:271px; margin-right:-4px; margin-bottom:-4px; border-width:4px;  height:62px;"
 								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									fromDropdownOpen = !fromDropdownOpen;
@@ -678,10 +678,10 @@
 								<button
 									id="fromDropdownBtn2"
 									type="button"
-									style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
-										? 2
+									style="width: 167px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+										? 1.5
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-									class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+									class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 									on:click={() => {
 										fromDropdownOpen = !fromDropdownOpen;
 										toDropdownOpen = false;
@@ -713,7 +713,7 @@
 								style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
 									? '116'
 									: '58'}px; margin-right:-4px"
-								class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+								class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md rounded-br-none border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 							>
 								<div>
 									{#each fromCurrencies as c, i}
@@ -782,7 +782,7 @@
 				</div>
 
 				<div
-					class="relative flex flex-col rounded-lg bg-gray-800 transition-all focus-within:ring-1 focus-within:ring-blue-500"
+					class="relative flex flex-col rounded-lg rounded-bl-none bg-gray-800 transition-all focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
 						? '58px'
 						: '116px'}; "
@@ -803,8 +803,8 @@
 						<button
 							id="toDropdownBtn"
 							type="button"
-							style="width:280px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-							class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+							style="width: 271px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
+							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 							on:click={() => {
 								toDropdownOpen = !toDropdownOpen;
 								fromDropdownOpen = false;
@@ -858,10 +858,10 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
-									? 2
+								style="width: 167px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
+									? 1.5
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									toDropdownOpen = !toDropdownOpen;
 									fromDropdownOpen = false;

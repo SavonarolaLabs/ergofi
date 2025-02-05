@@ -244,7 +244,7 @@ describe('Bank Mint with any input should work', async () => {
 
 		resetHeightIn = R4ResetHeight; //--- --- --- --- --- --- --- ---
 
-		({ isCounterReset } = calculateResetAndAmount(
+		({ isCounterReset, resetHeightOut, remainingDexyOut } = calculateResetAndAmount(
 			height,
 			R4ResetHeight,
 			R5AvailableAmount,
@@ -277,25 +277,7 @@ describe('Bank Mint with any input should work', async () => {
 				remainingDexyOut = availableToMint - dexyMinted;
 			}
 
-			return { isCounterReset };
-		}
-
-		isCounterReset = height > R4ResetHeight;
-
-		if (isCounterReset) {
-			console.log('Reset +');
-			resetHeightOut = height + Number(T_arb + T_buffer - 1n); //<== //360 => 365
-			availableToMint = maxAllowedIfReset;
-			console.log('availableToMint ', availableToMint);
-			remainingDexyOut = availableToMint - dexyMinted;
-		} else {
-			console.log('---NOT RESETED---');
-			resetHeightOut = R4ResetHeight; //
-			availableToMint = R5AvailableAmount; //
-			if (R5AvailableAmount < dexyMinted) {
-				console.log('Not reset | Not enough Dexy');
-			}
-			remainingDexyOut = availableToMint - dexyMinted;
+			return { isCounterReset, resetHeightOut, remainingDexyOut };
 		}
 	});
 

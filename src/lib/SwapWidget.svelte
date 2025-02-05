@@ -582,9 +582,10 @@
 <!-- UI Layout -->
 <div class="widget relative">
 	<div
-		class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800 p-6"
+		class="clipped mx-auto w-full max-w-md rounded-lg border border-gray-800"
 		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
+		style="padding:8px"
 	>
 		<!-- FROM SELECTION -->
 		<div
@@ -867,9 +868,10 @@
 			</div>
 		{/if}
 		<div
-			class={`mb-6 overflow-hidden transition-all duration-300 ${
+			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
 			}`}
+			style={'margin-bottom:6px'}
 		>
 			<input
 				type="range"

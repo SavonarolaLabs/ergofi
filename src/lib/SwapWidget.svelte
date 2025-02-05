@@ -980,14 +980,14 @@
 
 <style>
 	.clip-short {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 88.5%);
 	}
 	.clipped {
 		position: relative;
 		border-width: 4px;
 	}
 	.clip-long {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 91.5%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90.5%);
 	}
 
 	.clipped::before {

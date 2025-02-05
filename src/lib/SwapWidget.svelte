@@ -582,7 +582,7 @@
 <!-- UI Layout -->
 <div class="widget relative">
 	<div
-		class="clipped mx-auto w-full max-w-md rounded-lg rounded-br-none border border-gray-800"
+		class="clipped mx-auto w-full max-w-md rounded-xl rounded-br-none border border-gray-800"
 		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
 		style="padding:8px"
@@ -980,14 +980,14 @@
 
 <style>
 	.clip-short {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 88.5%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6.4% 100%, 0% 90.2%);
 	}
 	.clipped {
 		position: relative;
 		border-width: 4px;
 	}
 	.clip-long {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90.5%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6.2% 100%, 0% 92%);
 	}
 
 	.clipped::before {
@@ -999,8 +999,8 @@
 		width: 0;
 		height: 0;
 
-		border-bottom: 32px solid #1f2937;
-		border-right: 32px solid transparent;
+		border-bottom: 26px solid #1f2937;
+		border-right: 26px solid transparent;
 	}
 
 	.border-color {

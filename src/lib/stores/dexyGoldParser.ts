@@ -11,6 +11,7 @@ export type ParsedBankArbitrageMintBox = {
 export type ParsedBankBox = {
 	value: bigint;
 	bankNFT: string;
+	dexyTokenId: string;
 	dexyAmount: bigint;
 };
 
@@ -35,6 +36,7 @@ export type ParsedBankPayoutBox = {
 export type ParsedBuybackBox = {
 	value: bigint;
 	buybackNFT: string;
+	gortTokenId: string;
 	gortAmount: bigint;
 };
 
@@ -93,6 +95,7 @@ export function parseBankBox(box: any): ParsedBankBox {
 	return {
 		value: asBigInt(box.value),
 		bankNFT: box.assets[0].tokenId,
+		dexyTokenId: box.assets[1].tokenId,
 		dexyAmount: asBigInt(box.assets[1].amount)
 	};
 }
@@ -125,6 +128,7 @@ export function parseBuybackBox(box: any): ParsedBuybackBox {
 	return {
 		value: asBigInt(box.value),
 		buybackNFT: box.assets[0].tokenId,
+		gortTokenId: box.assets[1].tokenId,
 		gortAmount: asBigInt(box.assets[1].amount)
 	};
 }

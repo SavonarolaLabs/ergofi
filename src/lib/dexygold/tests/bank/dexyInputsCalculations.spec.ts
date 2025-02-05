@@ -5,7 +5,11 @@ import {
 	vitestContractConfig,
 	DEXY_GOLD
 } from '$lib/dexygold/dexyConstants';
-import { calculateBankMintInputDexy } from '$lib/dexygold/dexyGold';
+import {
+	calculateBankMintInputDexy,
+	calculateResetAndAmountArbMint,
+	dexyGoldBankArbitrageInputDexyTx
+} from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import { reverseFee } from '$lib/sigmausd/sigmaUSDAndDexy';
@@ -28,7 +32,6 @@ import {
 	initTestBoxes,
 	oracle_erg_xau_box
 } from '$lib/stores/dexyGoldStore';
-import type { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import {
 	ErgoUnsignedInput,
 	OutputBuilder,
@@ -110,140 +113,6 @@ type DexyGoldFreeInputs = {
 
 // calculateResetAndAmountFreeMint
 // dexyGoldBankFreeInputDexyTx
-
-export type DexyGoldArbitrageInputs = {
-	arbMintIn: NodeBox;
-	bankIn: NodeBox;
-	buybankIn: NodeBox;
-	lpIn: NodeBox;
-	goldOracle: NodeBox;
-	tracking101: NodeBox;
-};
-
-export function dexyGoldBankArbitrageInputDexyTx(
-	inputDexy: bigint,
-	userBase58PK: string,
-	height: number,
-	feeMining: bigint,
-	utxos: NodeBox[],
-	arbState: DexyGoldArbitrageInputs
-): EIP12UnsignedTransaction {
-	const { T_arb, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
-
-	const {
-		value: arbMintXIn,
-		arbitrageMintNFT,
-		R4ResetHeight,
-		R5AvailableAmount
-	} = parseBankArbitrageMintBox(arbState.arbMintIn);
-	const { value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(arbState.bankIn);
-	const { value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(arbState.buybankIn);
-	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(arbState.lpIn);
-	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(arbState.goldOracle);
-
-	const dataInputs = [arbState.goldOracle, arbState.lpIn, arbState.tracking101];
-	const userUtxos = utxos; //<== rename
-
-	const userAddress = userBase58PK; //<== rename
-	const userChangeAddress = userAddress; //<== delete after
-
-	let buybackBoxIn = new ErgoUnsignedInput(arbState.buybankIn);
-	buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
-
-	//--------------- Calculations -------------
-
-	//data process:
-	const lpRate = lpXData / lpYData; //<===
-	const oracleRate = oracleRateData / 1_000_000n;
-
-	// FEE ------------------------------
-	const dexyContract = inputDexy; //<===
-
-	const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
-		calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyContract);
-	const oracleRateWithFee = bankRate + buybackRate;
-
-	// FEE  ------------------------------
-	//Part 0 - use Fee Reversed
-	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
-
-	const maxAllowedIfReset = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee; //arb
-	//maxAllowedIfReset = lpYData / 100n; //free
-
-	const bankXOut = bankXIn + bankErgsAdded;
-	const bankYOut = bankYIn - dexyContract;
-	const buybackXOut = buybackXIn + buybackErgsAdded;
-
-	//freeMintXOut = freeMintXIn;
-	const arbMintXOut = arbMintXIn;
-
-	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountArbMint(
-		height,
-		R4ResetHeight,
-		R5AvailableAmount,
-		dexyContract,
-		maxAllowedIfReset,
-		T_arb,
-		T_buffer
-	);
-
-	//------------------------------
-	const bankOut = new OutputBuilder(bankXOut, bankErgoTree).addTokens([
-		{ tokenId: bankNFT, amount: 1n },
-		{ tokenId: dexyTokenId, amount: bankYOut }
-	]);
-
-	const arbMintOut = new OutputBuilder(arbMintXOut, arbitrageMintErgoTree)
-		.addTokens([{ tokenId: arbitrageMintNFT, amount: 1n }])
-		.setAdditionalRegisters({
-			R4: SInt(Number(resetHeightOut)).toHex(),
-			R5: SLong(BigInt(remainingDexyOut)).toHex()
-		});
-
-	const buybackOut = new OutputBuilder(buybackXOut, buybackErgoTree).addTokens([
-		{ tokenId: buybackNFT, amount: 1n },
-		{ tokenId: gort, amount: gortAmount }
-	]);
-
-	const swapFeeBox = new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS);
-
-	const unsignedTx = new TransactionBuilder(height)
-		.from([arbState.arbMintIn, arbState.bankIn, buybackBoxIn, ...userUtxos], {
-			ensureInclusion: true
-		})
-		.withDataFrom(dataInputs)
-		.to(arbMintOut)
-		.to(bankOut)
-		.to(buybackOut)
-		.to(swapFeeBox)
-		.payFee(feeMining)
-		.sendChangeTo(userChangeAddress)
-		.build()
-		.toEIP12Object();
-
-	return unsignedTx;
-}
-export function calculateResetAndAmountArbMint(
-	height: number,
-	resetHeight: bigint,
-	availableAmount: bigint,
-	dexyMinted: bigint,
-	maxAllowedIfReset: bigint,
-	tArb: bigint,
-	tBuffer: bigint
-) {
-	const isCounterReset = BigInt(height) > resetHeight;
-
-	if (isCounterReset) {
-		const resetHeightOut = height + Number(tArb + tBuffer - 1n);
-		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	} else {
-		const resetHeightOut = resetHeight;
-		const remainingDexyOut = availableAmount - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	}
-}
 
 describe('Bank Mint with any input should work', async () => {
 	let height = 1449119 + 11;

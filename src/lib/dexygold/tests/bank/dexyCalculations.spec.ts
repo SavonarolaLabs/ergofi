@@ -7,8 +7,8 @@ import {
 	vitestContractConfig
 } from '$lib/dexygold/dexyConstants';
 import {
-	bankMint,
-	bankMintInpuErg,
+	calculateBankMintInputDexy,
+	calculateBankMintInputErg,
 	calculateLpMintInputDexy,
 	calculateLpMintInputErg,
 	calculateLpMintInputSharesUnlocked,
@@ -210,7 +210,7 @@ describe('LP swap with any input should work', async () => {
 		const feeDenomLp = 1000n;
 
 		// FEE PART:
-		const { uiSwapFee: abc, contractERG: contractErg } = applyFee(inputErg, feeMining);
+		const { uiSwapFee: abc, contractErg } = applyFee(inputErg, feeMining);
 		uiSwapFee = abc;
 		//uiSwapFee = 11_000_000n; // CHANGE
 
@@ -345,7 +345,7 @@ describe('LP swap with any input should work', async () => {
 		const feeDenomLp = 1000n;
 
 		// FEE PART:
-		const { uiSwapFee: abc, contractERG: contractErg } = applyFeeSell(inputErg, feeMining);
+		const { uiSwapFee: abc, contractErg } = applyFeeSell(inputErg, feeMining);
 		uiSwapFee = abc;
 
 		//Direct conversion
@@ -1239,14 +1239,8 @@ describe('Bank Mint with any input should work', async () => {
 
 		const dexyMinted = 3000n; // same in TEST
 
-		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
-			oracleRate,
-			1n,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			dexyMinted
-		);
+		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+			calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
 
 		console.log(
 			contractErg,
@@ -1434,14 +1428,8 @@ describe('Bank Mint with any input should work', async () => {
 
 		const dexyMinted = 3000n; // same in TEST
 
-		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
-			oracleRate,
-			1n,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			dexyMinted
-		);
+		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+			calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
 
 		console.log(
 			contractErg,
@@ -1660,14 +1648,8 @@ describe('Bank Mint with any input should work', async () => {
 
 		const dexyMinted = 3000n; // same in TEST
 
-		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
-			oracleRate,
-			1n,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			dexyMinted
-		);
+		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+			calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
 
 		console.log(
 			contractErg,
@@ -1885,14 +1867,8 @@ describe('Bank Mint with any input should work', async () => {
 
 		const dexyMinted = 3000n; // same in TEST
 
-		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
-			oracleRate,
-			1n,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			dexyMinted
-		);
+		const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+			calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
 
 		console.log(
 			contractErg,
@@ -2088,10 +2064,10 @@ describe('Bank Mint with any input should work', async () => {
 			buybackErgsAdded,
 			bankRate,
 			buybackRate
-		} = bankMintInpuErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
+		} = calculateBankMintInputErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
 		//contractErg
 
-		// const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
+		// const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = calculateBankMintInputDexy(
 		// 	oracleRate,
 		// 	1n,
 		// 	bankFeeNum,

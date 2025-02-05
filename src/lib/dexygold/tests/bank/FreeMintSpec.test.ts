@@ -8,7 +8,7 @@ import { MockChain } from '@fleet-sdk/mock-chain';
 // Example placeholders for IDs, ergoTrees, etc. Replace with real data.
 // --------------------------------------------------------------------
 import { vitestTokenIds, vitestErgoTrees } from '../../dexyConstants';
-import { bankMint, bankMintInpuErg } from '$lib/dexygold/dexyGold';
+import { calculateBankMintInputDexy, calculateBankMintInputErg } from '$lib/dexygold/dexyGold';
 
 // Some placeholders or real references:
 const { freeMintNFT, bankNFT, buybackNFT, oraclePoolNFT, lpNFT, lpToken, dexyUSD } = vitestTokenIds;
@@ -54,7 +54,6 @@ describe('FreeMintSpec - Full Translation', () => {
 
 		let dexyMinted = 35000n; // positive
 
-
 		// Registers in freeMintBox
 		let resetHeightIn = BigInt(mockChain.height + 1);
 		let resetHeightOut = resetHeightIn; // not reset
@@ -69,7 +68,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		let freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
 		let bankParty = mockChain.addParty(bankErgoTree, 'Bank');
 
-		let { contractErg, bankErgsAdded, buybackErgsAdded } = bankMint(
+		let { contractErg, bankErgsAdded, buybackErgsAdded } = calculateBankMintInputDexy(
 			oracleRateXy,
 			1_000_000n,
 			bankFeeNum,
@@ -78,7 +77,7 @@ describe('FreeMintSpec - Full Translation', () => {
 			dexyMinted
 		);
 		expect(contractErg).toBe(351750000n);
-	
+
 		//let bankErgsAdded = bankRate * dexyMinted; // 10030 * 35000
 		//let buybackErgsAdded = buybackRate * dexyMinted; // 20 * 35000
 
@@ -179,7 +178,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});
-		
+
 	it.only('			: Mint Dexy : Input ERG', () => {
 		let oracleRateXy = 10000n * 1000000n; // 10^10
 		let bankFeeNum = 3n; // => 0.5% fee part
@@ -197,7 +196,6 @@ describe('FreeMintSpec - Full Translation', () => {
 
 		let ergInput = 351750000n;
 
-
 		// Registers in freeMintBox
 		let resetHeightIn = BigInt(mockChain.height + 1);
 		let resetHeightOut = resetHeightIn; // not reset
@@ -212,7 +210,7 @@ describe('FreeMintSpec - Full Translation', () => {
 		let freeMintParty = mockChain.addParty(freeMintErgoTree, 'FreeMint');
 		let bankParty = mockChain.addParty(bankErgoTree, 'Bank');
 
-		let { contractDexy, bankErgsAdded, buybackErgsAdded } = bankMintInpuErg(
+		let { contractDexy, bankErgsAdded, buybackErgsAdded } = calculateBankMintInputErg(
 			oracleRateXy,
 			1_000_000n,
 			bankFeeNum,
@@ -220,7 +218,7 @@ describe('FreeMintSpec - Full Translation', () => {
 			feeDenom,
 			ergInput
 		);
-	
+
 		//let bankErgsAdded = bankRate * dexyMinted; // 10030 * 35000
 		//let buybackErgsAdded = buybackRate * dexyMinted; // 20 * 35000
 
@@ -321,4 +319,4 @@ describe('FreeMintSpec - Full Translation', () => {
 		const executed = mockChain.execute(tx, { throw: false });
 		expect(executed).toBe(true);
 	});
-})
+});

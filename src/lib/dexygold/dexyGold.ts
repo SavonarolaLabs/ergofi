@@ -6,6 +6,7 @@ export type LpDexySwapResult = {
 	rate: number;
 };
 
+//--------------Calc LP--------------
 export function lpSwapInputErg(
 	direction: bigint,
 	amountErg: bigint,
@@ -36,7 +37,6 @@ export function lpSwapInputErg(
 
 	return { amountErg, amountDexy, rate };
 }
-
 export function lpSwapInputDexy(
 	direction: bigint,
 	amountDexy: bigint,
@@ -75,77 +75,6 @@ export function lpSwapInputDexy(
 
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
-
-// -------------------------------- TEST AND REWORK --------------------------
-// Same for FreeMint and ArbitrageMint so called bankMint
-export function bankMintBigInt(
-	oracleRateXy: bigint, // oracle x 1_000_000 ???
-	oracleDimension: bigint,
-	bankFeeNum: bigint,
-	buybackFeeNum: bigint,
-	feeDenom: bigint,
-	contractDexy: bigint
-) {
-	//const oracleDimension = 1_000_000n;
-
-	const bankRate =
-		Number(oracleRateXy * (bankFeeNum + feeDenom)) / Number(feeDenom * oracleDimension);
-	const buybackRate = Number(oracleRateXy * buybackFeeNum) / Number(feeDenom * oracleDimension);
-
-	const bankErgsAdded = BigInt(Math.floor(bankRate * Number(contractDexy)));
-	const buybackErgsAdded = BigInt(Math.floor(buybackRate * Number(contractDexy)));
-
-	const contractErg = bankErgsAdded + buybackErgsAdded;
-
-	return { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
-}
-
-export function bankMint(
-	oracleRateXy: bigint, // oracle x 1_000_000 ???
-	scale: bigint,
-	bankFeeNum: bigint,
-	buybackFeeNum: bigint,
-	feeDenom: bigint,
-	contractDexy: bigint
-) {
-	//const scale = 1_000_000n;
-
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / (feeDenom * scale);
-	const buybackRate = (oracleRateXy * buybackFeeNum) / (feeDenom * scale);
-
-	const bankErgsAdded = bankRate * contractDexy;
-	const buybackErgsAdded = buybackRate * contractDexy;
-
-	const contractErg = bankErgsAdded + buybackErgsAdded;
-
-	return { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
-}
-
-export function bankMintInpuErg(
-	oracleRateXy: bigint,
-	scale: bigint,
-	bankFeeNum: bigint,
-	buybackFeeNum: bigint,
-	feeDenom: bigint,
-	totalErgs: bigint
-) {
-	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / scale;
-	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / scale;
-
-	const contractDexy = totalErgs / (bankRate + buybackRate);
-	const bankErgsAdded = bankRate * contractDexy;
-	const buybackErgsAdded = buybackRate * contractDexy;
-
-	return { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate };
-}
-
-//TODO: Add Wrapper with FEE
-export function bankInput() {
-	// return { contractErg, bankErgsAdded, buybackErgsAdded }; // as result {contractDexy, contractErg , bankErgsAdded, buybackErgsAdded} + {finalPrice , totalFee, ...}
-}
-//TODO: Add Wrapper with FEE
-export function bankInputErg() {}
-// -------------------------------- -------------- --------------------------
 
 export function calculateLpMintInputErg(
 	contractErg: bigint,
@@ -214,3 +143,45 @@ export function calculateLpRedeemInputDexy(
 	contractLpTokens = contractLpTokens + 1n; // add after calc
 	return { contractDexy, contractErg, contractLpTokens };
 }
+
+//--------------Calc Bank--------------
+export function calculateBankMintInputDexy(
+	oracleRateXy: bigint, // oracle x 1_000_000 ???
+	scale: bigint,
+	bankFeeNum: bigint,
+	buybackFeeNum: bigint,
+	feeDenom: bigint,
+	contractDexy: bigint
+) {
+	//const scale = 1_000_000n;
+
+	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / (feeDenom * scale);
+	const buybackRate = (oracleRateXy * buybackFeeNum) / (feeDenom * scale);
+
+	const bankErgsAdded = bankRate * contractDexy;
+	const buybackErgsAdded = buybackRate * contractDexy;
+
+	const contractErg = bankErgsAdded + buybackErgsAdded;
+
+	return { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate }; // as result contractDexy, contractErg , bankErgsAdded, buybackErgsAdded
+}
+
+export function calculateBankMintInputErg(
+	oracleRateXy: bigint,
+	scale: bigint,
+	bankFeeNum: bigint,
+	buybackFeeNum: bigint,
+	feeDenom: bigint,
+	totalErgs: bigint
+) {
+	const bankRate = (oracleRateXy * (bankFeeNum + feeDenom)) / feeDenom / scale;
+	const buybackRate = (oracleRateXy * buybackFeeNum) / feeDenom / scale;
+
+	const contractDexy = totalErgs / (bankRate + buybackRate);
+	const bankErgsAdded = bankRate * contractDexy;
+	const buybackErgsAdded = buybackRate * contractDexy;
+
+	return { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate };
+}
+
+//

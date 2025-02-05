@@ -2,7 +2,7 @@ import { debugFreemint } from '$lib/dexygold/debugContracts';
 import { MockChain } from '@fleet-sdk/mock-chain';
 
 import { vitestTokenIds, vitestErgoTrees } from '$lib/dexygold/dexyConstants';
-import { bankMint } from '$lib/dexygold/dexyGold';
+import { calculateBankMintInputDexy } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import {
@@ -184,14 +184,8 @@ describe('Bank Mint with any input should work', async () => {
 		lpRate = lpXData / lpYData;
 		oracleRate = oracleRateData / 1_000_000n;
 
-		({ contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } = bankMint(
-			oracleRate,
-			1n,
-			bankFeeNum,
-			buybackFeeNum,
-			feeDenom,
-			dexyMinted
-		));
+		({ contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+			calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted));
 		remainingDexyIn = R5AvailableAmount;
 		maxAllowedIfReset = lpYData / 100n;
 		remainingDexyOut = maxAllowedIfReset - dexyMinted;

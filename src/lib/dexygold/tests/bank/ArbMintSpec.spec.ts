@@ -10,7 +10,7 @@ import {
 import { MockChain } from '@fleet-sdk/mock-chain';
 
 import { vitestTokenIds, vitestErgoTrees } from '../../dexyConstants';
-import { bankMint } from '$lib/dexygold/dexyGold';
+import { calculateBankMintInputDexy } from '$lib/dexygold/dexyGold';
 
 const {
 	arbitrageMintNFT,
@@ -77,7 +77,14 @@ describe('ArbMintSpec', () => {
 			contractErg,
 			bankErgsAdded: compare1,
 			buybackErgsAdded: compare2
-		} = bankMint(oracleRateXy, 1_000_000n, bankFeeNum, buybackFeeNum, feeDenom, dexyMinted);
+		} = calculateBankMintInputDexy(
+			oracleRateXy,
+			1_000_000n,
+			bankFeeNum,
+			buybackFeeNum,
+			feeDenom,
+			dexyMinted
+		);
 
 		console.log(
 			'valid calculations:',

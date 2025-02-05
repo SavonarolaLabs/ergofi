@@ -249,7 +249,9 @@ describe('Bank Mint with any input should work', async () => {
 			R4ResetHeight,
 			R5AvailableAmount,
 			dexyMinted,
-			maxAllowedIfReset
+			maxAllowedIfReset,
+			T_arb,
+			T_buffer
 		));
 
 		function calculateResetAndAmountArbMint(
@@ -257,13 +259,15 @@ describe('Bank Mint with any input should work', async () => {
 			resetHeight: bigint,
 			availableAmount: bigint,
 			dexyMinted: bigint,
-			maxAllowedIfReset: bigint
+			maxAllowedIfReset: bigint,
+			tArb: bigint,
+			tBuffer: bigint
 		) {
 			isCounterReset = BigInt(height) > resetHeight;
 
 			if (isCounterReset) {
 				console.log('Reset +');
-				resetHeightOut = height + Number(T_arb + T_buffer - 1n); //<== //360 => 365
+				resetHeightOut = height + Number(tArb + tBuffer - 1n); //<== //360 => 365
 				availableToMint = maxAllowedIfReset;
 				console.log('availableToMint ', availableToMint);
 				remainingDexyOut = availableToMint - dexyMinted;

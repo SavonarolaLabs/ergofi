@@ -229,11 +229,23 @@
 				</a>
 			{/each}
 		</div>
-		<h1 class="punk hidden-below-800 mb-2 text-9xl text-gray-700">{$headline}</h1>
+		<h1 class="sketch-font hidden-below-800 mb-2 text-9xl text-gray-700">{$headline}</h1>
 	</div>
 </div>
 
 <style>
+	@font-face {
+		font-family: 'FreeSketch';
+		src: url('/FreesketchfontRegular-ZpK68.otf') format('opentype');
+	}
+
+	.sketch-font {
+		font-family: 'FreeSketch', sans-serif;
+		line-height: 0.6;
+		margin-top: 0.4em;
+		margin-left: 0.06em;
+	}
+
 	.punk {
 		font-family: 'Cyberpunk', sans-serif;
 	}

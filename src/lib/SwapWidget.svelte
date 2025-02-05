@@ -563,7 +563,7 @@
 
 <!-- UI Layout -->
 <div class="widget relative">
-	<div class=" mx-auto w-full max-w-md rounded-lg p-6 shadow">
+	<div class="clipped mx-auto w-full max-w-md rounded-lg bg-gray-800 p-6">
 		<!-- FROM SELECTION -->
 		<div
 			class="flex flex-col transition-all"
@@ -972,8 +972,18 @@
 </div>
 
 <style>
+	.clipped {
+		clip-path: polygon(
+			0% 0%,
+			/* top-left */ 100% 0%,
+			/* top-right */ 100% 100%,
+			/* bottom-right */ 5% 100%,
+			/* move inward along bottom edge */ 0% 95% /* diagonal back up to left edge */
+		);
+	}
+
 	.border-color {
-		border-color: #191b26;
+		border-color: #1f2937;
 	}
 	.widget::before {
 		content: '';
@@ -984,10 +994,10 @@
 		width: 600px;
 		height: 600px;
 		background-image: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 81.999435 81.999962"><path  fill="%231F2937" d="m 41.000218,0 c -0.422,0 -0.84,0.083 -1.23,0.244 l -26.718,11.07 c -0.786844,0.32548 -1.412067,0.950343 -1.738,1.737 L 0.24421771,39.771 c -0.32562361,0.786634 -0.32562361,1.670366 0,2.457 L 11.314218,68.947 c 0.325372,0.787031 0.950782,1.412081 1.738,1.737 l 26.719,11.07 c 0.786171,0.327945 1.670829,0.327945 2.457,0 l 26.72,-11.07 c 0.786529,-0.325606 1.411394,-0.950471 1.737,-1.737 l 11.07,-26.72 c 0.325624,-0.786634 0.325624,-1.670366 0,-2.457 l -11.07,-26.719 c -0.326491,-0.786283 -0.951529,-1.410962 -1.738,-1.737 l -26.719,-11.07 c -0.389,-0.161 -0.806,-0.244 -1.228,-0.244 Z"/></svg>');
-		opacity: 0.3;
+		opacity: 0;
 		background-size: contain;
 		background-repeat: no-repeat;
 		background-position: center;
-		z-index: -1; /* Place behind the content */
+		z-index: 0; /* Place behind the content */
 	}
 </style>

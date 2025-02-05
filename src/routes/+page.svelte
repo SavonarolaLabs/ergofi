@@ -63,6 +63,6 @@
 		opacity: 1;
 		background-image: radial-gradient(#252152 0.5px, #16151f 0.5px);
 		background-size: 10px 10px;
-		z-index: -10;
+		z-index: -2;
 	}
 </style>

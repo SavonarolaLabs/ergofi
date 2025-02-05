@@ -98,30 +98,8 @@ const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractCon
 // -------------------------------------------------------------------------------------
 
 // fabric:
-
-function calculateResetAndAmountArbMint(
-	height: number,
-	resetHeight: bigint,
-	availableAmount: bigint,
-	dexyMinted: bigint,
-	maxAllowedIfReset: bigint,
-	tArb: bigint,
-	tBuffer: bigint
-) {
-	const isCounterReset = BigInt(height) > resetHeight;
-
-	if (isCounterReset) {
-		const resetHeightOut = height + Number(tArb + tBuffer - 1n);
-		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	} else {
-		const resetHeightOut = resetHeight;
-		const remainingDexyOut = availableAmount - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	}
-}
-
-type DexyGoldArbitrageInputs = {
+//--- --- --- --- --- --- --- --- --- ---
+type DexyGoldFreeInputs = {
 	arbMintIn: NodeBox;
 	bankIn: NodeBox;
 	buybankIn: NodeBox;
@@ -130,7 +108,19 @@ type DexyGoldArbitrageInputs = {
 	tracking101: NodeBox;
 };
 
-function dexyGoldBankArbitrageInputDexyTx(
+// calculateResetAndAmountFreeMint
+// dexyGoldBankFreeInputDexyTx
+
+export type DexyGoldArbitrageInputs = {
+	arbMintIn: NodeBox;
+	bankIn: NodeBox;
+	buybankIn: NodeBox;
+	lpIn: NodeBox;
+	goldOracle: NodeBox;
+	tracking101: NodeBox;
+};
+
+export function dexyGoldBankArbitrageInputDexyTx(
 	inputDexy: bigint,
 	userBase58PK: string,
 	height: number,
@@ -238,6 +228,27 @@ function dexyGoldBankArbitrageInputDexyTx(
 		.toEIP12Object();
 
 	return unsignedTx;
+}
+export function calculateResetAndAmountArbMint(
+	height: number,
+	resetHeight: bigint,
+	availableAmount: bigint,
+	dexyMinted: bigint,
+	maxAllowedIfReset: bigint,
+	tArb: bigint,
+	tBuffer: bigint
+) {
+	const isCounterReset = BigInt(height) > resetHeight;
+
+	if (isCounterReset) {
+		const resetHeightOut = height + Number(tArb + tBuffer - 1n);
+		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	} else {
+		const resetHeightOut = resetHeight;
+		const remainingDexyOut = availableAmount - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	}
 }
 
 describe('Bank Mint with any input should work', async () => {

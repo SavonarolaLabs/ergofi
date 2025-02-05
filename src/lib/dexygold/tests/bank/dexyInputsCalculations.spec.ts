@@ -118,6 +118,28 @@ const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractCon
 
 // fabric:
 
+function calculateResetAndAmountArbMint(
+	height: number,
+	resetHeight: bigint,
+	availableAmount: bigint,
+	dexyMinted: bigint,
+	maxAllowedIfReset: bigint,
+	tArb: bigint,
+	tBuffer: bigint
+) {
+	const isCounterReset = BigInt(height) > resetHeight;
+
+	if (isCounterReset) {
+		const resetHeightOut = height + Number(tArb + tBuffer - 1n);
+		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	} else {
+		const resetHeightOut = resetHeight;
+		const remainingDexyOut = availableAmount - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	}
+}
+
 describe('Bank Mint with any input should work', async () => {
 	let height = 1449119 + 11;
 	//MAIN DECLARATION:
@@ -253,36 +275,6 @@ describe('Bank Mint with any input should work', async () => {
 			T_arb,
 			T_buffer
 		));
-
-		function calculateResetAndAmountArbMint(
-			height: number,
-			resetHeight: bigint,
-			availableAmount: bigint,
-			dexyMinted: bigint,
-			maxAllowedIfReset: bigint,
-			tArb: bigint,
-			tBuffer: bigint
-		) {
-			isCounterReset = BigInt(height) > resetHeight;
-
-			if (isCounterReset) {
-				console.log('Reset +');
-				resetHeightOut = height + Number(tArb + tBuffer - 1n); //<== //360 => 365
-				availableToMint = maxAllowedIfReset;
-				console.log('availableToMint ', availableToMint);
-				remainingDexyOut = availableToMint - dexyMinted;
-			} else {
-				console.log('---NOT RESETED---');
-				resetHeightOut = resetHeight; //
-				availableToMint = availableAmount; //
-				if (availableAmount < dexyMinted) {
-					console.log('Not reset | Not enough Dexy');
-				}
-				remainingDexyOut = availableToMint - dexyMinted;
-			}
-
-			return { isCounterReset, resetHeightOut, remainingDexyOut };
-		}
 	});
 
 	it('Arbitrage	: Not reset : Input Dexy', async () => {

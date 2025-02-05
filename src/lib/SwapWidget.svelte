@@ -116,7 +116,7 @@
 	let showFeeSlider = false;
 
 	let fromDropdownOpen = false;
-	let toDropdownOpen = true;
+	let toDropdownOpen = false;
 	let currencySwapHovered = false;
 
 	// Utility: Allowed "to" currencies depends on "fromCurrency"
@@ -662,7 +662,7 @@
 						{#if fromCurrency.isLpPool}
 							<div class="flex">
 								<!-- FROM AMOUNT -->
-								<div style="border-top-width:2px;" class="border-color grow">
+								<div style="border-top-width:4px;" class="border-color grow">
 									<input
 										type="number"
 										class="w-full bg-transparent text-3xl text-gray-100 outline-none"
@@ -678,8 +678,8 @@
 								<button
 									id="fromDropdownBtn2"
 									type="button"
-									style="width: 167px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
-										? 1.5
+									style="width: 166px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
+										? 4
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 									class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 									on:click={() => {
@@ -842,7 +842,7 @@
 					{#if toCurrency.isLpPool}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
-							<div style="border-top-width:2px;" class="border-color grow">
+							<div style="border-top-width:4px;" class="border-color grow">
 								<input
 									type="number"
 									class="w-full bg-transparent text-3xl text-gray-100 outline-none"
@@ -858,8 +858,8 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width: 167px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
-									? 1.5
+								style="width: 166px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
+									? 4
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 								class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
@@ -923,7 +923,7 @@
 			</div>
 		{/if}
 		<div
-			class={`mb-4 overflow-hidden transition-all duration-300 ${
+			class={`mb-6 overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
 			}`}
 		>
@@ -974,10 +974,8 @@
 <style>
 	.clipped {
 		position: relative;
-		border-width: 1.5px;
-		/*
+		border-width: 4px;
 		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
-		*/
 	}
 
 	.clipped::before {
@@ -998,20 +996,5 @@
 
 	.border-color {
 		border-color: #16151f;
-	}
-	.widget::before {
-		content: '';
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 600px;
-		height: 600px;
-		background-image: url('data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 81.999435 81.999962"><path  fill="%231F2937" d="m 41.000218,0 c -0.422,0 -0.84,0.083 -1.23,0.244 l -26.718,11.07 c -0.786844,0.32548 -1.412067,0.950343 -1.738,1.737 L 0.24421771,39.771 c -0.32562361,0.786634 -0.32562361,1.670366 0,2.457 L 11.314218,68.947 c 0.325372,0.787031 0.950782,1.412081 1.738,1.737 l 26.719,11.07 c 0.786171,0.327945 1.670829,0.327945 2.457,0 l 26.72,-11.07 c 0.786529,-0.325606 1.411394,-0.950471 1.737,-1.737 l 11.07,-26.72 c 0.325624,-0.786634 0.325624,-1.670366 0,-2.457 l -11.07,-26.719 c -0.326491,-0.786283 -0.951529,-1.410962 -1.738,-1.737 l -26.719,-11.07 c -0.389,-0.161 -0.806,-0.244 -1.228,-0.244 Z"/></svg>');
-		opacity: 0;
-		background-size: contain;
-		background-repeat: no-repeat;
-		background-position: center;
-		z-index: 0; /* Place behind the content */
 	}
 </style>

@@ -1,53 +1,33 @@
-import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
-import { debugArbmint, debugFreemint, debugRedeem } from '$lib/dexygold/debugContracts';
+import { UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	vitestTokenIds,
 	vitestErgoTrees,
-	realMintedTestBoxes,
-	vitestContractConfig
+	vitestContractConfig,
+	DEXY_GOLD
 } from '$lib/dexygold/dexyConstants';
-import {
-	bankMint,
-	bankMintInpuErg,
-	calculateLpRedeemInputDexy,
-	calculateLpRedeemInputErg,
-	calculateLpRedeemInputSharesUnlocked,
-	lpSwapInputDexy,
-	lpSwapInputErg
-} from '$lib/dexygold/dexyGold';
+import { bankMint } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
-import { applyFee, applyFeeSell, reverseFee, reverseFeeSell } from '$lib/sigmausd/sigmaUSDAndDexy';
+import { reverseFee } from '$lib/sigmausd/sigmaUSDAndDexy';
 import type { NodeBox } from '$lib/stores/bank.types';
 import {
 	parseBankArbitrageMintBox,
 	parseBankBox,
-	parseBankFreeMintBox,
 	parseBuybackBox,
 	parseDexyGoldOracleBox,
 	parseLpBox,
-	parseLpMintBox,
-	parseLpRedeemBox,
-	parseLpSwapBox,
 	parseTrackingBox
 } from '$lib/stores/dexyGoldParser';
 import {
 	dexygold_bank_arbitrage_mint_box,
 	dexygold_bank_box,
-	dexygold_bank_free_mint_box,
 	dexygold_buyback_box,
 	dexygold_lp_box,
-	dexygold_lp_mint_box,
-	dexygold_lp_redeem_box,
-	dexygold_lp_swap_box,
 	dexygold_tracking101_box,
-	fakeUserBox,
 	fakeUserWithDexyBox,
 	initTestBoxes,
-	mintInitialOutputs,
 	oracle_erg_xau_box
 } from '$lib/stores/dexyGoldStore';
-import { nanoErgToErg } from '$lib/TransactionUtils';
 import type { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import {
 	ErgoUnsignedInput,
@@ -57,7 +37,6 @@ import {
 	SLong,
 	TransactionBuilder
 } from '@fleet-sdk/core';
-import { before } from 'node:test';
 import { get } from 'svelte/store';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -159,12 +138,7 @@ function dexyGoldBankArbitrageInputDexyTx(
 	utxos: NodeBox[],
 	arbState: DexyGoldArbitrageInputs
 ): EIP12UnsignedTransaction {
-	const T_arb = 30n,
-		T_free = 360n,
-		T_buffer = 5n;
-	const bankFeeNum = 3n,
-		buybackFeeNum = 2n,
-		feeDenom = 1000n;
+	const { T_arb, T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
 	const {
 		value: arbMintXIn,

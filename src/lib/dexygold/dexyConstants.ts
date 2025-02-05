@@ -251,8 +251,14 @@ export const contractConfig = {
 	//intMaxHex: '04feffffffffffffffff01',
 	epochLength: '30',
 	intZero: '0', //??
-	longZero: '0' //??
+	longZero: '0', //??
 	//LP dep lpToken: ${initialLp - 6400000000L}
+	T_arb: 30n,
+	T_free: 360n,
+	T_buffer_5: 5n,
+	bankFeeNum: 3n,
+	buybackFeeNum: 2n,
+	feeDenom: 1000n
 };
 
 export const dexyAddresses = {

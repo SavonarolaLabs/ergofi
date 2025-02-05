@@ -115,7 +115,7 @@
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 
-	let fromDropdownOpen = false;
+	let fromDropdownOpen = true;
 	let toDropdownOpen = false;
 	let currencySwapHovered = false;
 
@@ -662,7 +662,7 @@
 						{#if fromCurrency.isLpPool}
 							<div class="flex">
 								<!-- FROM AMOUNT -->
-								<div style="border-top-width:2px;" class="grow border-gray-800">
+								<div style="border-top-width:2px;" class="border-color grow">
 									<input
 										type="number"
 										class="w-full bg-transparent text-3xl text-gray-100 outline-none"
@@ -681,7 +681,7 @@
 									style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
 										? 2
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-									class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+									class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 									on:click={() => {
 										fromDropdownOpen = !fromDropdownOpen;
 										toDropdownOpen = false;
@@ -713,7 +713,7 @@
 								style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{fromCurrency.isLpPool
 									? '116'
 									: '58'}px; margin-right:-4px"
-								class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+								class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 							>
 								<div>
 									{#each fromCurrencies as c, i}
@@ -842,7 +842,7 @@
 					{#if toCurrency.isLpPool}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
-							<div style="border-top-width:2px;" class="grow border-gray-800">
+							<div style="border-top-width:2px;" class="border-color grow">
 								<input
 									type="number"
 									class="w-full bg-transparent text-3xl text-gray-100 outline-none"
@@ -861,7 +861,7 @@
 								style="width:187px; margin-right:-4px; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 2
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-								class="flex w-full items-center justify-between rounded-lg border-gray-800 bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={() => {
 									toDropdownOpen = !toDropdownOpen;
 									fromDropdownOpen = false;
@@ -892,7 +892,7 @@
 							style="width: 408px; border-top-left-radius:0px; border-top-right-radius:0px;top:{toCurrency.isLpPool
 								? '116'
 								: '58'}px; margin-right:-4px"
-							class="absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 border-gray-800 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+							class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
 						>
 							<div class="py-1">
 								{#each getAllowedToCurrencies(currencyERG) as c}
@@ -975,16 +975,9 @@
 	.clipped {
 		position: relative;
 		border-width: 1.5px;
-
-		clip-path: polygon(
-			0% 0%,
-			/* top-left */ 100% 0%,
-			/* top-right */ 100% 100%,
-			/* bottom-right */ 7.5% 100%,
-			/* move inward along bottom edge */ 0% 90% /* diagonal back up to left edge */
-		);
-
-		overflow: hidden;
+		/*
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 7.5% 100%, 0% 90%);
+		*/
 	}
 
 	.clipped::before {

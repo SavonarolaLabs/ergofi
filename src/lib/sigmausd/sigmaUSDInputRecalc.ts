@@ -25,24 +25,37 @@ export function calculateInputsUsdErgInErg(
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
-	let inputAmountERG = new BigNumber(buyAmountInput);
-	if (inputAmountERG.isNaN() || !inputAmountERG.gt(0)) {
-		inputAmountERG = new BigNumber(BASE_INPUT_AMOUNT_ERG.toString());
-	}
-	const { contractRate, contractFee, contractUSD, contractErg, uiFeeErg, swapFee, swapRate } =
-		calculateInputsUsdErgInErgPrice(
-			direction,
-			inputAmountERG,
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			oraclePriceSigUsd,
-			feeMining
-		);
+	const inputAmountERG = new BigNumber(buyAmountInput);
+	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+		const { contractRate, contractFee, contractUSD, contractErg, uiFeeErg, swapFee, swapRate } =
+			calculateInputsUsdErgInErgPrice(
+				direction,
+				inputAmountERG,
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
+				oraclePriceSigUsd,
+				feeMining
+			);
 
-	const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
-	const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
-	const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
-	return { totalSigUSD, finalPrice, totalFee, contractErg, uiFeeErg };
+		const totalSigUSD = new BigNumber(contractUSD.toString()).dividedBy('100').toFixed(2);
+		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const totalFee = new BigNumber(swapFee.toString()).dividedBy('1000000000').toFixed(2);
+		return { totalSigUSD, finalPrice, totalFee, contractErg, uiFeeErg };
+	} else {
+		const { contractRate, contractFee, contractUSD, contractErg, uiFeeErg, swapFee, swapRate } =
+			calculateInputsUsdErgInErgPrice(
+				direction,
+				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+				bankBoxInNanoErg,
+				bankBoxInCircSigUsdInCent,
+				oraclePriceSigUsd,
+				feeMining
+			);
+		const totalSigUSD = '';
+		const finalPrice = new BigNumber(10000000).multipliedBy(swapRate).toFixed(2);
+		const totalFee = '';
+		return { totalSigUSD, finalPrice, totalFee };
+	}
 }
 export function calculateInputsUsdErgInErgPrice(
 	direction: Direction,

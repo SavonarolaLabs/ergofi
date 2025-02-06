@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { run, parseCommandLineArgs } from './swap';
-import * as moduleFunctions from './swap';
-import type { ErgoBoxCustom, ErgopayPayCmdResponse } from './swap.types';
+import { run, parseCommandLineArgs } from './ergopaySwap';
+import * as moduleFunctions from './ergopaySwap';
+import type { ErgoBoxCustom, ErgopayPayCmdResponse } from './ergopaySwap.types';
 
 const userBoxes: ErgoBoxCustom[] = [
 	{

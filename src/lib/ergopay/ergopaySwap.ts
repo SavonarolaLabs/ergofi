@@ -17,7 +17,7 @@ import type {
 	BuildSigmUsdSwapTransactionResponse,
 	CmdError,
 	ErgoBoxCustom
-} from './swap.types';
+} from './ergopaySwap.types';
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
 function grepBestOracleBox(oracleCandidates: OracleData): NodeBox {

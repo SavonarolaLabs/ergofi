@@ -3,7 +3,7 @@
  * This code is separate from `swap.ts` so it won’t break Vitest mocks.
  */
 
-import { run } from './swap';
+import { run } from './ergopaySwap';
 
 (async function main() {
 	try {

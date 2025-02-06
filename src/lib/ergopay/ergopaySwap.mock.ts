@@ -1,3 +1,42 @@
+import type { NodeBox } from '$lib/stores/bank.types';
+
+export const userBoxes: NodeBox[] = [
+	{
+		boxId: '807e715029f3efba60ccf3a0f998ba025de1c22463c26db53287849ae4e31d3b',
+		value: 602310307,
+		ergoTree: '0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c',
+		assets: [],
+		creationHeight: 1443463,
+		additionalRegisters: {},
+		transactionId: '180a362bee63b7a36aad554493df07fe9abe59dc53e1a6266f6584e49e470e3c',
+		index: 0
+	}
+];
+
+export const oracleBoxes: { confirmed_erg_usd: NodeBox[] } = {
+	confirmed_erg_usd: [
+		{
+			additionalRegisters: {
+				R4: '05e082b38607',
+				R5: '0486b7b101'
+			},
+			assets: [
+				{
+					amount: 1,
+					tokenId: '011d3364de07e5a26f0c4eef0852cddb387039a921b7154ef3cab22c6eda887f'
+				}
+			],
+			boxId: '5cdadb8abae146b8b46ce594bc646b693dcf04a6baa04f68420d85e740b3d92f',
+			creationHeight: 1453501,
+			ergoTree:
+				'100904000580ade204040c0e2077dffd47b690caa52fe13345aaf64ecdf7d55f2e7e3496e8206311f491aa46cd04080404040004000e20720978c041239e7d6eb249d801f380557126f6324e12c5ba9172d820be2e1dded806d601b2a5730000d602c67201060ed603e4c6a70504d604c1a7d6059272047301d6069aa37302d1ec95e67202d801d607ed93e47202cbc2a793cbc272017303ecededededededed8fa3720391a39972037304720593db63087201db6308a792c17201720493e4c672010405e4c6a7040593e4c67201050472037207ededededededededed92a37203720593db63087201db6308a792c17201720493db63087201db6308a792c17201720493e4c672010405e4c6a7040592e4c672010504720690e4c6720105049a720673057207edededed93c27201c2a793db63087201db6308a791c17201720493e4c672010405e4c6a7040593e4c6720105047203938cb2db6308b2a4730600730700017308',
+			index: 0,
+			transactionId: 'e3d31aed0c8f07b3d710676cdfbbf324dfedf6f038853c2bbd4e153bc47d1f1a',
+			value: 4147250000
+		}
+	]
+};
+
 export const simgaUsdConfirmedTransaction = {
 	blockId: '075d95965ca32c0c052ea96ed6b0454f09b18bdf1404bb665758d4c06b6b568e',
 	dataInputs: [],

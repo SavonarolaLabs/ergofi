@@ -378,6 +378,7 @@
 	 * ------------------------------------- */
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
+
 		lastInput = 'From';
 		doRecalc($oracle_box, $bank_box);
 	}

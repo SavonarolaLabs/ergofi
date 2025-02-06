@@ -13,7 +13,7 @@ import {
 	calculateBankRateUSDInputUSD
 } from './sigmaUSDMath';
 
-export const BASE_INPUT_AMOUNT_ERG = 1n; //1 ERG
+export const BASE_INPUT_AMOUNT_ERG = 1_000_000_000n; //1 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
 export const BASE_INPUT_AMOUNT_RSV = 10_000n; //10k RSV
 
@@ -26,11 +26,16 @@ export function calculateInputsUsdErgInErg(
 	feeMining: bigint
 ): any {
 	const inputAmountERG = new BigNumber(buyAmountInput);
+
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+		const inputAmountNanoERG = BigInt(
+			inputAmountERG.multipliedBy('1000000000').integerValue(BigNumber.ROUND_FLOOR).toFixed(0)
+		);
+
 		const { contractRate, contractFee, contractUSD, contractErg, uiFeeErg, swapFee, swapRate } =
 			calculateInputsUsdErgInErgPrice(
 				direction,
-				inputAmountERG,
+				inputAmountNanoERG,
 				bankBoxInNanoErg,
 				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
@@ -45,7 +50,7 @@ export function calculateInputsUsdErgInErg(
 		const { contractRate, contractFee, contractUSD, contractErg, uiFeeErg, swapFee, swapRate } =
 			calculateInputsUsdErgInErgPrice(
 				direction,
-				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+				BASE_INPUT_AMOUNT_ERG,
 				bankBoxInNanoErg,
 				bankBoxInCircSigUsdInCent,
 				oraclePriceSigUsd,
@@ -59,18 +64,12 @@ export function calculateInputsUsdErgInErg(
 }
 export function calculateInputsUsdErgInErgPrice(
 	direction: Direction,
-	buyAmount: BigNumber,
+	inputErg: bigint,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
-	const inputAmountNanoERG = buyAmount
-		.multipliedBy('1000000000')
-		.integerValue(BigNumber.ROUND_FLOOR)
-		.toFixed(0);
-	const inputErg = BigInt(inputAmountNanoERG);
-
 	let uiFeeErg: bigint;
 	let contractErg: bigint;
 
@@ -107,7 +106,7 @@ export function calculateInputsUsdErgInErgPrice(
 	}
 
 	const swapFee = contractFee + feeMining + uiFeeErg;
-	const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputAmountNanoERG.toString());
+	const swapRate = new BigNumber(contractUSD.toString()).dividedBy(inputErg.toString());
 
 	return {
 		contractRate,
@@ -216,10 +215,13 @@ export function calculateInputsRSVErgInErg(
 ): any {
 	const inputAmountERG = new BigNumber(buyAmountInput);
 	if (!inputAmountERG.isNaN() && inputAmountERG.gt(0)) {
+		const inputAmountNanoERG = BigInt(
+			inputAmountERG.multipliedBy('1000000000').integerValue(BigNumber.ROUND_FLOOR).toFixed(0)
+		);
 		const { contractRate, contractFee, contractRSV, contractErg, uiFeeErg, swapFee, swapRate } =
 			calculateInputsRSVErgInErgPrice(
 				direction,
-				inputAmountERG,
+				inputAmountNanoERG,
 				bankBoxInNanoErg,
 				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
@@ -235,7 +237,7 @@ export function calculateInputsRSVErgInErg(
 		const { contractRate, contractFee, contractRSV, contractErg, uiFeeErg, swapFee, swapRate } =
 			calculateInputsRSVErgInErgPrice(
 				direction,
-				new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+				BASE_INPUT_AMOUNT_ERG,
 				bankBoxInNanoErg,
 				bankBoxInCircSigUsdInCent,
 				bankBoxInCircSigRSV,
@@ -250,19 +252,13 @@ export function calculateInputsRSVErgInErg(
 }
 export function calculateInputsRSVErgInErgPrice(
 	direction: Direction,
-	buyAmount: BigNumber,
+	inputErg: bigint,
 	bankBoxInNanoErg: bigint,
 	bankBoxInCircSigUsdInCent: bigint,
 	bankBoxInCircSigRSV: bigint,
 	oraclePriceSigUsd: bigint,
 	feeMining: bigint
 ): any {
-	const inputAmountNanoERG = buyAmount
-		.multipliedBy('1000000000')
-		.integerValue(BigNumber.ROUND_FLOOR)
-		.toFixed(0);
-	const inputErg = BigInt(inputAmountNanoERG);
-
 	let uiFeeErg: bigint;
 	let contractErg: bigint;
 
@@ -307,7 +303,7 @@ export function calculateInputsRSVErgInErgPrice(
 	}
 
 	const swapFee = contractFee + feeMining + uiFeeErg;
-	const swapRate = new BigNumber(contractRSV.toString()).dividedBy(inputAmountNanoERG.toString());
+	const swapRate = new BigNumber(contractRSV.toString()).dividedBy(inputErg.toString());
 
 	return {
 		contractRate,

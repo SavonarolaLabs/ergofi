@@ -16,15 +16,13 @@ import {
 } from '$lib/sigmausd/sigmaUSD';
 import type { NodeBox, OracleData } from '$lib/stores/bank.types';
 import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
+import { ErgoAddress } from '@fleet-sdk/core';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
-	ErgopayPayCmdResponse,
-	BuildSigmUsdSwapTransactionResponse,
-	CmdError,
-	ErgoBoxCustom
+	ErgopayPayCmdResponse
 } from './ergopaySwap.types';
-import type { UnsignedTransaction } from '@fleet-sdk/common';
+import type { EIP12UnsignedTransaction, UnsignedTransaction } from '@fleet-sdk/common';
 
 function grepBestOracleBox(oracles: OracleData): NodeBox {
 	return oracles.confirmed_erg_usd[0];
@@ -36,54 +34,25 @@ function grepBestSigmaUsdBankBox(bankCandidates: MempoolSocketUpdate): NodeBox {
 	)!;
 }
 
-function getSigmaUsdSwapParamValidationErrors(
-	params: ErgopayPaySigmaUsdSwapParams
-): CmdError | undefined {
-	if (typeof params.amount !== 'number') {
-		return {
-			code: 400,
-			message: 'Amount must be a number.'
-		};
-	}
-}
+// prettier-ignore
+function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EIP12UnsignedTransaction {
+	const { swapPair, amount, lastInput, payerAddress, feeMining, payerUtxo, oracleBox, bankBox, height } = params;
 
-function buildSigmUsdSwapTransaction(
-	{
-		swapPair,
-		amount,
-		ePayLinkId,
-		lastInput,
-		payerErgoTree,
-		feeMining
-	}: ErgopayPaySigmaUsdSwapParams,
-	utxo: NodeBox[],
-	oracleBox: NodeBox,
-	bankBox: NodeBox
-): BuildSigmUsdSwapTransactionResponse {
 	let unsignedTx;
-
-	let height = 1453531; //<==
-
-	console.log(swapPair, `${swapPair}_${lastInput}`);
-	// prettier-ignore
 	switch (`${swapPair}_${lastInput}`) {
-        // prettier-ignore
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         default:
-            throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
+            throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`); // TODO return explicit error
     }
 
-	return {
-		status: 'ok',
-		unsignedTx
-	};
+	return unsignedTx;
 }
 
 function reduceUnsignedTx(_unsignedTx: UnsignedTransaction): string {
@@ -104,43 +73,48 @@ export function parseCommandLineArgs(): ErgopayLinkParams {
 	}
 }
 
-function executeSigmaUsdSwap(params: ErgopayPaySigmaUsdSwapParams): ErgopayPayCmdResponse {
-	const error = getSigmaUsdSwapParamValidationErrors(params);
-	if (error) {
-		return { status: 'error', error };
-	}
-
-	const oracleBox = grepBestOracleBox(params.oracleData);
-	const bankBox = grepBestSigmaUsdBankBox(params.bankTransactions);
-
-	const buildTxResponse = buildSigmUsdSwapTransaction(params, params.payerUtxo, oracleBox, bankBox);
-
-	if (buildTxResponse.unsignedTx) {
-		try {
-			const reducedTx = reduceUnsignedTx(buildTxResponse.unsignedTx);
-			return { status: 'ok', reducedTx };
-		} catch (e) {
-			return {
-				status: 'error',
-				error: {
-					code: 500,
-					message: e instanceof Error ? e.message : String(e)
-				}
-			};
-		}
-	} else {
-		return buildTxResponse;
+function buildReducedSigmUsdSwapTransaction(
+	params: ErgopayPaySigmaUsdSwapParams
+): ErgopayPayCmdResponse {
+	try {
+		let unsignedTx = buildSigmUsdSwapTransaction(params);
+		const reducedTx = reduceUnsignedTx(unsignedTx);
+		return { status: 'ok', reducedTx };
+	} catch (e) {
+		return {
+			status: 'error',
+			error: {
+				code: 500,
+				message: e instanceof Error ? e.message : String(e)
+			}
+		};
 	}
 }
 
 export async function run(): Promise<ErgopayPayCmdResponse> {
 	const cmdParams = parseCommandLineArgs();
-	const utxo = await fetchUtxosByErgoTree(cmdParams.payerErgoTree);
-	const oracleData = await fetchOracleData();
-	const bankCandidates = await fetchSigmaUsdBankTransactions();
+	const payerErgoTree = ErgoAddress.fromBase58(cmdParams.payerAddress).ergoTree;
 
-	const swapParams = { ...cmdParams, utxo, oracleData, bankCandidates };
-	const swapResult = executeSigmaUsdSwap(swapParams);
-	console.log('TX READY:', swapResult);
-	return swapResult;
+	// fetch chain context
+	const payerUtxo = await fetchUtxosByErgoTree(payerErgoTree);
+	const oracleData = await fetchOracleData();
+	const bankTransactions = await fetchSigmaUsdBankTransactions();
+
+	// select best boxes
+	const oracleBox = grepBestOracleBox(oracleData);
+	const bankBox = grepBestSigmaUsdBankBox(bankTransactions);
+
+	// build swap transaction
+	const swapParams: ErgopayPaySigmaUsdSwapParams = {
+		...cmdParams,
+		payerUtxo,
+		oracleBox,
+		bankBox,
+		height: 1453531 // TODO: add fetch height
+	};
+
+	const txBuildAttempt: ErgopayPayCmdResponse = buildReducedSigmUsdSwapTransaction(swapParams);
+
+	console.log('TX READY:', txBuildAttempt);
+	return txBuildAttempt;
 }

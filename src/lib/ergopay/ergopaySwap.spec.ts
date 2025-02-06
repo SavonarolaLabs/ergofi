@@ -1,5 +1,8 @@
+// ergopaySwap.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { run, parseCommandLineArgs } from './ergopaySwap';
+import * as ergopaySwap from './ergopaySwap'; // <-- We'll import everything so we can mock reduceUnsignedTx
+import { run, parseCommandLineArgs } from './ergopaySwap'; // <-- The main functions we test
+
 import type { ErgopayPayCmdResponse } from './ergopaySwap.types';
 import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
 import {
@@ -14,15 +17,29 @@ const bankTransactions: MempoolSocketUpdate = {
 	unconfirmed_transactions: []
 };
 
+// --- Mock the entire ergopaySwap module but keep all original exports except reduceUnsignedTx:
+vi.mock('./ergopaySwap', async () => {
+	const actual = await vi.importActual<any>('./ergopaySwap');
+	return {
+		...actual,
+		// Provide a default mock for reduceUnsignedTx that returns a string
+		reduceUnsignedTx: vi.fn(() => 'mockedReducedTx')
+	};
+});
+
 beforeEach(() => {
 	vi.restoreAllMocks();
-	vi.spyOn(global, 'fetch').mockImplementation(async (url) => {
-		// @ts-ignore
-		if (url.includes('utxosByErgoTree')) return new Response(JSON.stringify(userBoxes));
-		// @ts-ignore
-		if (url.includes('oracles')) return new Response(JSON.stringify(oracleBoxes));
-		// @ts-ignore
-		if (url.includes('sigmUsdBank')) return new Response(JSON.stringify(bankTransactions));
+
+	// Mock fetch for every test so that the code using fetch(...) sees these responses:
+	vi.spyOn(global, 'fetch').mockImplementation(async (url: string | Request) => {
+		const urlString = typeof url === 'string' ? url : url.url;
+		if (urlString.includes('utxosByErgoTree')) {
+			return new Response(JSON.stringify(userBoxes));
+		} else if (urlString.includes('oracles')) {
+			return new Response(JSON.stringify(oracleBoxes));
+		} else if (urlString.includes('sigmUsdBank')) {
+			return new Response(JSON.stringify(bankTransactions));
+		}
 		return new Response(JSON.stringify([]));
 	});
 });
@@ -48,7 +65,7 @@ describe('parseCommandLineArgs', () => {
 			amount: 100,
 			ePayLinkId: 'link123',
 			lastInput: 'input456',
-			address: '9hF23...'
+			payerAddress: '9hF23...'
 		};
 		vi.spyOn(process, 'argv', 'get').mockReturnValue([
 			'bun',
@@ -80,13 +97,18 @@ describe('fetch functions', () => {
 
 describe('run()', () => {
 	it('should return an error when swap fails', async () => {
+		// Force reduceUnsignedTx to throw to simulate a swap failure
+		(ergopaySwap.reduceUnsignedTx as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+			throw new Error('Simulated reduce error');
+		});
+
 		const mockInput = {
 			swapPair: 'ERG/SIGUSD',
 			amount: 100000000,
 			ePayLinkId: 'link123',
 			lastInput: 'ERG',
-			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
-			feeMining: '1000000000'
+			payerAddress: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
+			fďeMining: 1000000000
 		};
 		vi.spyOn(process, 'argv', 'get').mockReturnValue([
 			'bun',
@@ -96,16 +118,19 @@ describe('run()', () => {
 
 		const result: ErgopayPayCmdResponse = await run();
 		expect(result.status).toBe('error');
+		expect(result.error?.message).toBe('Simulated reduce error');
 	});
 
 	it('should return a successful response when swap succeeds', async () => {
+		// By default, reduceUnsignedTx is mocked to return 'mockedReducedTx',
+		// so we do NOT override it here.
 		const mockInput = {
 			swapPair: 'ERG/SIGUSD',
 			amount: 100000000,
 			ePayLinkId: 'link123',
 			lastInput: 'ERG',
-			address: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
-			feeMining: '1000000000'
+			payerAddress: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
+			fďeMining: 1000000000
 		};
 		vi.spyOn(process, 'argv', 'get').mockReturnValue([
 			'bun',
@@ -115,5 +140,6 @@ describe('run()', () => {
 
 		const result: ErgopayPayCmdResponse = await run();
 		expect(result.status).toBe('ok');
+		expect(result).toHaveProperty('reducedTx', 'mockedReducedTx');
 	});
 });

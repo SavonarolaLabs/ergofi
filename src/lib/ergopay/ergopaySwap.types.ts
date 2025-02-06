@@ -8,14 +8,15 @@ export type ErgopayLinkParams = {
 	amount: number;
 	ePayLinkId: string;
 	lastInput: string;
-	payerErgoTree: string;
+	payerAddress: string;
 	feeMining: number;
 };
 
 export type ErgopayPaySigmaUsdSwapParams = ErgopayLinkParams & {
 	payerUtxo: NodeBox[];
-	oracleData: OracleData;
-	bankTransactions: MempoolSocketUpdate;
+	oracleBox: NodeBox;
+	bankBox: NodeBox;
+	height: number;
 };
 
 export type CmdError = {
@@ -28,12 +29,6 @@ type ReducedTransactionBase64UrlEncodedString = string;
 export type ErgopayPayCmdResponse = {
 	status: 'ok' | 'error';
 	reducedTx?: ReducedTransactionBase64UrlEncodedString;
-	error?: CmdError;
-};
-
-export type BuildSigmUsdSwapTransactionResponse = {
-	status: 'ok' | 'error';
-	unsignedTx?: UnsignedTransaction;
 	error?: CmdError;
 };
 

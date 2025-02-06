@@ -78,8 +78,8 @@ export function initMempoolChannels() {
 	dexygoldChannel
 		.join()
 		.receive('ok', (resp) => {
-			console.log('dexygoldChannel history:');
-			console.log(resp.history);
+			//console.log('dexygoldChannel history:');
+			//console.log(resp.history);
 		})
 		.receive('error', (resp) => {
 			console.error('Unable to join dexygold_transactions:', resp);

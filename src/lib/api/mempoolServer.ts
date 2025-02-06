@@ -1,4 +1,5 @@
 import type { ErgoBoxCustom } from '$lib/ergopay/ergopaySwap.types';
+import type { OracleData } from '$lib/stores/bank.types';
 import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
 
 export async function fetchUtxosByErgoTree(tree: string): Promise<ErgoBoxCustom[]> {
@@ -6,7 +7,7 @@ export async function fetchUtxosByErgoTree(tree: string): Promise<ErgoBoxCustom[
 	return response.json();
 }
 
-export async function fetchOracleData(): Promise<ErgoBoxCustom[]> {
+export async function fetchOracleData(): Promise<OracleData> {
 	const response = await fetch('https://dummyapi.io/oracles');
 	return response.json();
 }

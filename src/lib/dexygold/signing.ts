@@ -1,6 +1,12 @@
 import { createContext } from '../fakeContext';
 
-import { ErgoBox, ErgoBoxes } from 'ergo-lib-wasm-nodejs';
+import {
+	ErgoBox,
+	ErgoBoxes,
+	ErgoStateContext,
+	ReducedTransaction,
+	UnsignedTransaction
+} from 'ergo-lib-wasm-nodejs';
 import { mnemonicToSeedSync } from 'bip39';
 import * as wasm from 'ergo-lib-wasm-nodejs';
 import type { EIP12UnsignedTransaction, SignedTransaction } from '@fleet-sdk/common';
@@ -33,7 +39,7 @@ export async function getProver(mnemonic: string): Promise<wasm.Wallet> {
 export async function signTx(
 	tx: EIP12UnsignedTransaction,
 	mnemonic: string,
-	height: number|undefined = undefined
+	height: number | undefined = undefined
 ): Promise<SignedTransaction> {
 	const prover = await getProver(mnemonic);
 
@@ -59,7 +65,7 @@ export async function signTx(
 
 export async function signTxRealContext(
 	tx: EIP12UnsignedTransaction,
-	mnemonic: string,
+	mnemonic: string
 ): Promise<SignedTransaction> {
 	const prover = await getProver(mnemonic);
 
@@ -93,3 +99,36 @@ const getWalletAddressSecret = (mnemonic: string, idx: number = 0) => {
 
 const RootPathWithoutIndex = "m/44'/429'/0'/0";
 const calcPathFromIndex = (index: number) => `${RootPathWithoutIndex}/${index}`;
+
+export function reducedFromUnsignedTx(
+	unsignedTx: EIP12UnsignedTransaction,
+	context: ErgoStateContext
+): string {
+	const inputBoxes = ErgoBoxes.from_boxes_json(unsignedTx.inputs);
+	const dataBoxes = ErgoBoxes.from_boxes_json(unsignedTx.dataInputs);
+	const wasmUnsignedTx = UnsignedTransaction.from_json(JSON.stringify(unsignedTx));
+
+	const reduced = ReducedTransaction.from_unsigned_tx(
+		wasmUnsignedTx,
+		inputBoxes,
+		dataBoxes,
+		context
+	);
+
+	const rawBytes = reduced.sigma_serialize_bytes();
+	const base64 = uint8ArrayToBase64UrlSafe(rawBytes);
+	return base64;
+}
+
+// Standard base64, no replacements:
+function uint8ArrayToBase64UrlSafe(uint8Array: Uint8Array): string {
+	let base64 = btoa(String.fromCharCode(...uint8Array))
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_');
+
+	while (base64.length % 4 !== 0) {
+		base64 += '=';
+	}
+
+	return base64;
+}

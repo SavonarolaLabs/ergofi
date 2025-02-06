@@ -1,7 +1,6 @@
 // swap.types.ts
-import type { NodeBox, OracleData } from '$lib/stores/bank.types';
-import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
-import type { UnsignedTransaction } from '@fleet-sdk/common';
+import type { NodeBox } from '$lib/stores/bank.types';
+import type { ErgoStateContext } from 'ergo-lib-wasm-nodejs';
 
 export type ErgopayLinkParams = {
 	swapPair: string;
@@ -17,6 +16,7 @@ export type ErgopayPaySigmaUsdSwapParams = ErgopayLinkParams & {
 	oracleBox: NodeBox;
 	bankBox: NodeBox;
 	height: number;
+	context: ErgoStateContext;
 };
 
 export type CmdError = {

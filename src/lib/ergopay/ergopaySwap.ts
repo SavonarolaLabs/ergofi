@@ -23,6 +23,9 @@ import type {
 	ErgopayPayCmdResponse
 } from './ergopaySwap.types';
 import type { EIP12UnsignedTransaction, UnsignedTransaction } from '@fleet-sdk/common';
+import { reducedFromUnsignedTx } from '$lib/dexygold/signing';
+import { createContext } from '$lib/fakeContext';
+import type { ErgoStateContext } from 'ergo-lib-wasm-nodejs';
 
 function grepBestOracleBox(oracles: OracleData): NodeBox {
 	return oracles.confirmed_erg_usd[0];
@@ -55,10 +58,6 @@ function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EI
 	return unsignedTx;
 }
 
-function reduceUnsignedTx(_unsignedTx: UnsignedTransaction): string {
-	throw new Error('Function not implemented.');
-}
-
 export function parseCommandLineArgs(): ErgopayLinkParams {
 	const args = process.argv.slice(2);
 
@@ -78,9 +77,11 @@ function buildReducedSigmUsdSwapTransaction(
 ): ErgopayPayCmdResponse {
 	try {
 		let unsignedTx = buildSigmUsdSwapTransaction(params);
-		const reducedTx = reduceUnsignedTx(unsignedTx);
+		console.log(unsignedTx);
+		const reducedTx = reducedFromUnsignedTx(unsignedTx, params.context);
 		return { status: 'ok', reducedTx };
 	} catch (e) {
+		console.error(e);
 		return {
 			status: 'error',
 			error: {
@@ -96,9 +97,11 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 	const payerErgoTree = ErgoAddress.fromBase58(cmdParams.payerAddress).ergoTree;
 
 	// fetch chain context
+	const height = 1455595; // TODO: add fetch height
 	const payerUtxo = await fetchUtxosByErgoTree(payerErgoTree);
 	const oracleData = await fetchOracleData();
 	const bankTransactions = await fetchSigmaUsdBankTransactions();
+	const context = await createContext(height);
 
 	// select best boxes
 	const oracleBox = grepBestOracleBox(oracleData);
@@ -110,11 +113,11 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 		payerUtxo,
 		oracleBox,
 		bankBox,
-		height: 1453531 // TODO: add fetch height
+		height,
+		context
 	};
 
 	const txBuildAttempt: ErgopayPayCmdResponse = buildReducedSigmUsdSwapTransaction(swapParams);
 
-	console.log('TX READY:', txBuildAttempt);
 	return txBuildAttempt;
 }

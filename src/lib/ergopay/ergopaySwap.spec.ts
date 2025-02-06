@@ -21,9 +21,7 @@ const bankTransactions: MempoolSocketUpdate = {
 vi.mock('./ergopaySwap', async () => {
 	const actual = await vi.importActual<any>('./ergopaySwap');
 	return {
-		...actual,
-		// Provide a default mock for reduceUnsignedTx that returns a string
-		reduceUnsignedTx: vi.fn(() => 'mockedReducedTx')
+		...actual
 	};
 });
 

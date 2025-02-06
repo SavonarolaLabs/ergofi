@@ -25,7 +25,6 @@ import type {
 import type { EIP12UnsignedTransaction, UnsignedTransaction } from '@fleet-sdk/common';
 import { reducedFromUnsignedTx } from '$lib/dexygold/signing';
 import { createContext } from '$lib/fakeContext';
-import type { ErgoStateContext } from 'ergo-lib-wasm-nodejs';
 
 function grepBestOracleBox(oracles: OracleData): NodeBox {
 	return oracles.confirmed_erg_usd[0];
@@ -77,7 +76,7 @@ function buildReducedSigmUsdSwapTransaction(
 ): ErgopayPayCmdResponse {
 	try {
 		let unsignedTx = buildSigmUsdSwapTransaction(params);
-		console.log(unsignedTx);
+		console.dir(unsignedTx, { depth: null });
 		const reducedTx = reducedFromUnsignedTx(unsignedTx, params.context);
 		return { status: 'ok', reducedTx };
 	} catch (e) {

@@ -1,5 +1,11 @@
 import { directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
-import { applyFee, reverseFee } from '$lib/sigmausd/sigmaUSDAndDexy';
+import {
+	applyFee,
+	applyFeeSell,
+	reverseFee,
+	reverseFeeSell,
+	type Direction
+} from '$lib/sigmausd/sigmaUSDAndDexy';
 import type { NodeBox } from '$lib/stores/bank.types';
 import {
 	parseBankArbitrageMintBox,
@@ -7,7 +13,8 @@ import {
 	parseBankFreeMintBox,
 	parseBuybackBox,
 	parseDexyGoldOracleBox,
-	parseLpBox
+	parseLpBox,
+	parseLpSwapBox
 } from '$lib/stores/dexyGoldParser';
 import { ErgoUnsignedInput, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
 import { SInt, SLong } from '@fleet-sdk/serializer';
@@ -112,7 +119,6 @@ export function lpSwapInputDexy(
 
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
-
 export function calculateLpMintInputErg(
 	contractErg: bigint,
 	lpXIn: bigint,
@@ -179,6 +185,145 @@ export function calculateLpRedeemInputDexy(
 
 	contractLpTokens = contractLpTokens + 1n; // add after calc
 	return { contractDexy, contractErg, contractLpTokens };
+}
+
+// BUILD
+export function dexyGoldLpSwapInputErgTx(
+	inputErg: bigint,
+	direction: Direction,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	swapState: DexyGoldLpSwapInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const { dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(swapState.lpIn);
+
+	const userUtxos = utxos; //<== rename
+	const userAddress = userBase58PK; //<== rename
+	const userChangeAddress = userAddress; //<== delete after
+
+	//--------------- Calculations -------------
+
+	let uiSwapFee, contractErg;
+	// FEE PART:
+	if (direction == directionSell) {
+		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
+	} else {
+		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
+	}
+
+	let { amountDexy, amountErg, rate } = lpSwapInputErg(
+		direction,
+		contractErg,
+		lpXIn,
+		lpYIn,
+		feeNumLp,
+		feeDenomLp
+	);
+
+	const swapOutValue = swapInValue;
+	const lpXOut = lpXIn - direction * amountErg;
+	const lpYOut = lpYIn + direction * amountDexy;
+
+	// Build Tx
+	const unsignedTx = new TransactionBuilder(height)
+		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: dexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+				{ tokenId: lpSwapNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldLpSwapInputDexyTx(
+	inputDexy: bigint,
+	direction: Direction,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	swapState: DexyGoldLpSwapInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const { dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(swapState.lpIn);
+
+	const userUtxos = utxos; //<== rename
+	const userAddress = userBase58PK; //<== rename
+	const userChangeAddress = userAddress; //<== delete after
+
+	//--------------- Calculations -------------
+
+	let uiSwapFee, amountErg;
+
+	// lpSwapInputDexy
+	let {
+		amountDexy,
+		amountErg: contractERG,
+		rate
+	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
+
+	// FEE PART:
+	if (direction == directionSell) {
+		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining)); // Buy  ERG : Input Dexy
+	} else {
+		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining)); // Sell ERG : Input Dexy
+	}
+
+	// FEE PART:
+
+	// FEE PART:
+
+	const swapOutValue = swapInValue;
+	const lpXOut = lpXIn - direction * amountErg;
+	const lpYOut = lpYIn + direction * amountDexy;
+
+	// Build Tx
+	const unsignedTx = new TransactionBuilder(height)
+		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: dexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+				{ tokenId: lpSwapNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
 }
 
 //--------------Calc Bank--------------

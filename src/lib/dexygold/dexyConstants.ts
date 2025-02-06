@@ -269,7 +269,7 @@ export const dexyAddresses = {
 
 export const DEXY_GOLD = {
 	...mainnetTokenIds,
-	...contractConfig,
+	...scalaToJsNumbers(contractConfig),
 	...dexyAddresses,
 	...vitestErgoTrees
 };
@@ -294,6 +294,7 @@ export const vitestAddresses = dexyAddresses;
 
 export const contractCompileVariables = sortKeysByLength({
 	...convertHexToBase64(vitestTokenIds), //<== ENSURE TO CHANGE
+	...mainnetTokenIds,
 	...contractConfig
 });
 

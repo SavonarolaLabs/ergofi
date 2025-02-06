@@ -1,16 +1,25 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	import BigNumber from 'bignumber.js';
-
+	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
+	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { directionBuy, directionSell, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
+	import Gear from '../icons/Gear.svelte';
+	import Tint from '../icons/Tint.svelte';
+	import WalletBalance from '../icons/WalletBalance.svelte';
+	import { getWalletInstallLink } from '../installWallet';
+	import PrimaryButton from '../PrimaryButton.svelte';
+	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
+	import { calculateReserveRateAndBorders } from '../sigmausd/sigmaUSDBankWidget';
 	import {
-		centsToUsd,
-		ergStringToNanoErgBigInt,
-		isOwnTx,
-		nanoErgToErg,
-		usdStringToCentBigInt
-	} from './utils';
-
+		BASE_INPUT_AMOUNT_ERG,
+		calculateInputsRSVErgInErg,
+		calculateInputsRSVErgInRSV,
+		calculateInputsUsdErgInErg,
+		calculateInputsUsdErgInUsd
+	} from '../sigmausd/sigmaUSDInputRecalc';
+	import { parseErgUsdOracleBox, parseSigUsdBankBox } from '../sigmausd/sigmaUSDParser';
 	import {
 		bank_box,
 		bank_price_rsv_buy,
@@ -30,71 +39,39 @@
 		reserve_border_right_RSV,
 		reserve_border_right_USD,
 		reserve_rate
-	} from './stores/bank';
+	} from '../stores/bank';
+	import { ERGO_TOKEN_ID, SigRSV_TOKEN_ID, SigUSD_TOKEN_ID } from '../stores/ergoTokens';
+	import { confirmed_interactions, mempool_interactions } from '../stores/preparedInteractions';
+	import { headline } from '../stores/ui';
 	import {
 		web3wallet_available_wallets,
 		web3wallet_confirmedTokens,
 		web3wallet_wallet_used_addresses
-	} from './stores/web3wallet';
-	import { ERGO_TOKEN_ID, SigUSD_TOKEN_ID, SigRSV_TOKEN_ID } from './stores/ergoTokens';
-	import { confirmed_interactions, mempool_interactions } from './stores/preparedInteractions';
-	import SubNumber from './SubNumber.svelte';
-	import { ArrowDown, ArrowUpDown, Cog } from 'lucide-svelte';
-	import WalletBalance from './icons/WalletBalance.svelte';
-	import { getWalletInstallLink } from './installWallet';
-	import Gear from './icons/Gear.svelte';
-	import SwapWidgetTokenRow from './SwapWidgetTokenRow.svelte';
-	import { headline } from './stores/ui';
-	import { directionBuy, directionSell, SIGUSD_BANK_ADDRESS } from './api/ergoNode';
-	import Tint from './icons/Tint.svelte';
-	import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
-	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
-	import { buildSwapSigmaUsdTx } from './sigmausd/sigmaUSD';
-	import { calculateReserveRateAndBorders } from './sigmausd/sigmaUSDBankWidget';
+	} from '../stores/web3wallet';
+	import SubNumber from '../SubNumber.svelte';
+	import SwapWidgetTokenRow from '../SwapWidgetTokenRow.svelte';
 	import {
-		BASE_INPUT_AMOUNT_ERG,
-		calculateInputsRSVErgInErg,
-		calculateInputsUsdErgInErg,
-		calculateInputsUsdErgInUsd,
-		calculateInputsRSVErgInRSV
-	} from './sigmausd/sigmaUSDInputRecalc';
-	import { parseSigUsdBankBox, parseErgUsdOracleBox } from './sigmausd/sigmaUSDParser';
-	import PrimaryButton from './PrimaryButton.svelte';
-	import type { LastUserInput } from './stores/bank.types';
-
-	/* ---------------------------------------
-	 * Types & Constants
-	 * ------------------------------------- */
-	type Currency = {
-		tokens: string[]; // e.g. ["ERG"], ["SigUSD"], ["SigRSV"]
-		isToken?: boolean;
-		isLpToken?: boolean;
-		isLpPool?: boolean;
-	};
-
-	// We define some helpers for clarity:
-	const currencyERG: Currency = { tokens: ['ERG'], isToken: true };
-	const currencySigUSD: Currency = { tokens: ['SigUSD'], isToken: true };
-	const currencySigRSV: Currency = { tokens: ['SigRSV'], isToken: true };
-	const currencyDexyGold: Currency = { tokens: ['DexyGold'], isToken: true };
-	const currencyErgDexyGoldLpToken: Currency = { tokens: ['ERG', 'DexyGold'], isLpToken: true };
-	const currencyErgDexyGoldLpPool: Currency = { tokens: ['ERG', 'DexyGold'], isLpPool: true };
-
-	// All possible "from" currencies
-	const fromCurrencies: Currency[] = [
+		centsToUsd,
+		ergStringToNanoErgBigInt,
+		isOwnTx,
+		nanoErgToErg,
+		usdStringToCentBigInt
+	} from '../utils';
+	import {
 		currencyERG,
-		currencyDexyGold,
-		currencySigUSD,
-		currencySigRSV,
-		// currencyErgDexyGoldLpToken,
-		currencyErgDexyGoldLpPool
-	];
+		currencyErgDexyGoldLpPool,
+		currencyErgDexyGoldLpToken,
+		fromCurrencies,
+		getAllowedToCurrencies,
+		tokenColor
+	} from './Currency';
+	import type { Currency, LastUserInput } from './SwapWidget.types';
 
 	/* ---------------------------------------
 	 * Local variables
 	 * ------------------------------------- */
-	let fromCurrency: Currency = currencyErgDexyGoldLpToken; // default to ERG: { tokens: ['ERG'] }
-	let toCurrency: Currency = currencyErgDexyGoldLpPool; // default to SigRSV: { tokens: ['SigRSV'] }
+	let fromCurrency: Currency = currencyErgDexyGoldLpToken;
+	let toCurrency: Currency = currencyErgDexyGoldLpPool;
 	let fromAmount = '';
 	let fromAmount2 = '';
 	let toAmount = '';
@@ -109,29 +86,7 @@
 	let toDropdownOpen = false;
 	let currencySwapHovered = false;
 
-	// Utility: Allowed "to" currencies depends on "fromCurrency"
-	function getAllowedToCurrencies(fromC: Currency): Currency[] {
-		if (fromC.tokens[0] === 'ERG' && fromC.isToken) {
-			// If from == ERG, user can pick SigUSD or SigRSV
-			return [currencySigUSD, currencySigRSV, currencyDexyGold];
-		} else if (fromC.isLpPool) {
-			// If from == ERG, user can pick SigUSD or SigRSV
-			return [currencyErgDexyGoldLpToken];
-		} else {
-			// If from == SigUSD or SigRSV, forced to ERG
-			return [currencyERG];
-		}
-	}
-
 	//  Colors for the circles (helper)
-	function tokenColor(ticker: string) {
-		return {
-			ERG: 'bg-orange-500',
-			SigUSD: 'bg-green-500',
-			SigRSV: 'bg-[#4A90E2]',
-			DexyGold: 'bg-[yellow]'
-		}[ticker];
-	}
 
 	function saveFromToCurrencyToLocalStorage() {
 		localStorage.setItem('fromCurrency', JSON.stringify(fromCurrency));
@@ -152,6 +107,17 @@
 			updateTitle();
 		} catch (e) {
 			// Gotta catch 'em all.
+		}
+	}
+
+	function updateTitle() {
+		if (
+			(fromCurrency.isToken && ['SigUSD', 'SigRSV'].includes(fromCurrency.tokens[0])) ||
+			(toCurrency.isToken && ['SigUSD', 'SigRSV'].includes(toCurrency.tokens[0]))
+		) {
+			headline.set('SigmaUsd');
+		} else {
+			headline.set('DexyGold');
 		}
 	}
 
@@ -199,36 +165,6 @@
 			window.removeEventListener('keydown', handleGlobalKeydown);
 		};
 	});
-
-	/* ---------------------------------------
-	 * BankBox + Oracle helper
-	 * ------------------------------------- */
-	function updateBankStats() {
-		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
-			calculateReserveRateAndBorders(
-				$bankBoxInNanoErg,
-				$bankBoxInCircSigUsdInCent,
-				$oraclePriceSigUsd,
-				$bank_price_rsv_buy,
-				$bank_price_rsv_sell
-			);
-
-		reserve_rate.set(reserveRate);
-		reserve_border_left_USD.set(leftUSD);
-		reserve_border_left_ERG.set(leftERG);
-		reserve_border_right_USD.set(rightUSD);
-		reserve_border_right_ERG.set(rightERG);
-		reserve_border_left_RSV.set(leftRSV);
-		reserve_border_right_RSV.set(rightRSV);
-	}
-	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
-		const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
-		bankBoxInNanoErg.set(inErg);
-		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
-		bankBoxInCircSigRsv.set(inCircSigRSV);
-		oraclePriceSigUsd.set(oraclePrice);
-	}
 
 	function initialInputs(
 		bankBoxInNanoErg: bigint,
@@ -288,16 +224,34 @@
 		swapPrice = finalPriceBuy; // e.g. real rate
 	}
 
-	function updateTitle() {
-		console.log(fromCurrency.tokens[0], toCurrency.tokens[0]);
-		if (
-			(fromCurrency.isToken && ['SigUSD', 'SigRSV'].includes(fromCurrency.tokens[0])) ||
-			(toCurrency.isToken && ['SigUSD', 'SigRSV'].includes(toCurrency.tokens[0]))
-		) {
-			headline.set('SigmaUsd');
-		} else {
-			headline.set('DexyGold');
-		}
+	/* ---------------------------------------
+	 * BankBox + Oracle helper
+	 * ------------------------------------- */
+	function updateBankStats() {
+		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
+			calculateReserveRateAndBorders(
+				$bankBoxInNanoErg,
+				$bankBoxInCircSigUsdInCent,
+				$oraclePriceSigUsd,
+				$bank_price_rsv_buy,
+				$bank_price_rsv_sell
+			);
+
+		reserve_rate.set(reserveRate);
+		reserve_border_left_USD.set(leftUSD);
+		reserve_border_left_ERG.set(leftERG);
+		reserve_border_right_USD.set(rightUSD);
+		reserve_border_right_ERG.set(rightERG);
+		reserve_border_left_RSV.set(leftRSV);
+		reserve_border_right_RSV.set(rightRSV);
+	}
+	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
+		const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+		const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
+		bankBoxInNanoErg.set(inErg);
+		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
+		bankBoxInCircSigRsv.set(inCircSigRSV);
+		oraclePriceSigUsd.set(oraclePrice);
 	}
 
 	/* ---------------------------------------

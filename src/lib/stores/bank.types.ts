@@ -29,10 +29,3 @@ export type OracleData = {
 	confirmed_dexygold_lp: ConfirmedNodeBox[];
 	unconfirmed_dexygold_lp: UnconfirmedNodeBox[];
 };
-
-export type UiInputAsset = {
-	token: any;
-	amount: any;
-};
-
-export type LastUserInput = 'From' | 'To';

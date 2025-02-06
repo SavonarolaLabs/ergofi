@@ -1,5 +1,5 @@
 <script>
-	import SwapWidget from '$lib/SwapWidget.svelte';
+	import SwapWidget from '$lib/SwapWidget/SwapWidget.svelte';
 	import BankHistoryWidget from '$lib/BankHistoryWidget.svelte';
 	import Navbar from '$lib/Navbar.svelte';
 	import { onMount } from 'svelte';

@@ -49,17 +49,7 @@
 	import Tint from './icons/Tint.svelte';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from './asdf';
 	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
-	import {
-		buyUSDInputERGTx,
-		buyUSDInputUSDTx,
-		sellUSDInputERGTx,
-		sellUSDInputUSDTx,
-		buyRSVInputERGTx,
-		buyRSVInputRSVTx,
-		sellRSVInputERGTx,
-		sellRSVInputRSVTx,
-		buildSwapSigmaUsdTx
-	} from './sigmausd/sigmaUSD';
+	import { buildSwapSigmaUsdTx } from './sigmausd/sigmaUSD';
 	import { calculateReserveRateAndBorders } from './sigmausd/sigmaUSDBankWidget';
 	import {
 		BASE_INPUT_AMOUNT_ERG,
@@ -70,6 +60,7 @@
 	} from './sigmausd/sigmaUSDInputRecalc';
 	import { parseSigUsdBankBox, parseErgUsdOracleBox } from './sigmausd/sigmaUSDParser';
 	import PrimaryButton from './PrimaryButton.svelte';
+	import type { LastUserInput } from './stores/bank.types';
 
 	/* ---------------------------------------
 	 * Types & Constants
@@ -482,7 +473,9 @@
 		}
 	})();
 
-	// Dropdowns
+	/* ---------------------------------------
+	 * Dropdowns
+	 * ------------------------------------- */
 	window.addEventListener('click', handleGlobalClick);
 	window.addEventListener('keydown', handleGlobalKeydown);
 

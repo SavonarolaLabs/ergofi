@@ -201,7 +201,14 @@ export function dexyGoldLpSwapInputErgTx(
 
 	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
 
-	const { dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(swapState.lpIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
 
 	const userUtxos = utxos; //<== rename
 	const userAddress = userBase58PK; //<== rename
@@ -237,9 +244,9 @@ export function dexyGoldLpSwapInputErgTx(
 		})
 		.to(
 			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
-				{ tokenId: DEXY_GOLD.lpNFT, amount: 1n },
-				{ tokenId: DEXY_GOLD.lpTokenId, amount: lpTokensIn },
-				{ tokenId: DEXY_GOLD.dexyTokenId, amount: lpYOut }
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
 			])
 		)
 		.to(
@@ -268,7 +275,14 @@ export function dexyGoldLpSwapInputDexyTx(
 
 	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
 
-	const { dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(swapState.lpIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
 
 	const userUtxos = utxos; //<== rename
 	const userAddress = userBase58PK; //<== rename
@@ -307,9 +321,9 @@ export function dexyGoldLpSwapInputDexyTx(
 		})
 		.to(
 			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
-				{ tokenId: DEXY_GOLD.lpNFT, amount: 1n },
-				{ tokenId: DEXY_GOLD.lpTokenId, amount: lpTokensIn },
-				{ tokenId: DEXY_GOLD.dexyTokenId, amount: lpYOut }
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
 			])
 		)
 		.to(

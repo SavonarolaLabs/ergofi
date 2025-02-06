@@ -43,6 +43,8 @@ export type ParsedBuybackBox = {
 export type ParsedLpBox = {
 	value: bigint;
 	lpNFT: string;
+	lpTokenId: string;
+	lpDexyTokenId: string;
 	lpTokenAmount: bigint;
 	dexyAmount: bigint;
 };
@@ -137,7 +139,9 @@ export function parseLpBox(box: any): ParsedLpBox {
 	return {
 		value: asBigInt(box.value),
 		lpNFT: box.assets[0].tokenId,
+		lpTokenId: box.assets[1].tokenId,
 		lpTokenAmount: asBigInt(box.assets[1].amount),
+		lpDexyTokenId: box.assets[2].tokenId,
 		dexyAmount: asBigInt(box.assets[2].amount)
 	};
 }

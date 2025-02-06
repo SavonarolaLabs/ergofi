@@ -1,4 +1,9 @@
-import { SIGUSD_BANK_ADDRESS } from '$lib/api/ergoNode';
+import { SIGUSD_BANK_ADDRESS, SIGUSD_BANK_TREE, type MempoolTransaction } from '$lib/api/ergoNode';
+import {
+	fetchOracleData,
+	fetchSigmaUsdBankTransactions,
+	fetchUtxosByErgoTree
+} from '$lib/api/mempoolServer';
 import {
 	buyRSVInputERGTx,
 	buyRSVInputRSVTx,
@@ -10,6 +15,7 @@ import {
 	sellUSDInputUSDTx
 } from '$lib/sigmausd/sigmaUSD';
 import type { NodeBox, OracleData } from '$lib/stores/bank.types';
+import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,
@@ -20,12 +26,14 @@ import type {
 } from './ergopaySwap.types';
 import type { UnsignedTransaction } from '@fleet-sdk/common';
 
-function grepBestOracleBox(oracleCandidates: OracleData): NodeBox {
-	return oracleCandidates.confirmed_erg_usd[0];
+function grepBestOracleBox(oracles: OracleData): NodeBox {
+	return oracles.confirmed_erg_usd[0];
 }
 
-function grepBestSigmaUsdBankBox(bankCandidates: ErgoBoxCustom[]): ErgoBoxCustom {
-	return bankCandidates[0];
+function grepBestSigmaUsdBankBox(bankCandidates: MempoolSocketUpdate): NodeBox {
+	return bankCandidates.confirmed_transactions[0].outputs.find(
+		(o) => o.ergoTree == SIGUSD_BANK_TREE
+	)!;
 }
 
 function getSigmaUsdSwapParamValidationErrors(
@@ -40,10 +48,17 @@ function getSigmaUsdSwapParamValidationErrors(
 }
 
 function buildSigmUsdSwapTransaction(
-	{ swapPair, amount, ePayLinkId, lastInput, address, feeMining }: ErgopayPaySigmaUsdSwapParams,
+	{
+		swapPair,
+		amount,
+		ePayLinkId,
+		lastInput,
+		payerErgoTree,
+		feeMining
+	}: ErgopayPaySigmaUsdSwapParams,
 	utxo: NodeBox[],
 	oracleBox: NodeBox,
-	bankBox: ErgoBoxCustom
+	bankBox: NodeBox
 ): BuildSigmUsdSwapTransactionResponse {
 	let unsignedTx;
 
@@ -53,14 +68,14 @@ function buildSigmUsdSwapTransaction(
 	// prettier-ignore
 	switch (`${swapPair}_${lastInput}`) {
         // prettier-ignore
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
-        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), address, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(BigInt(amount), payerErgoTree, SIGUSD_BANK_ADDRESS, utxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         default:
             throw new Error(`Unsupported swapPair and lastInput combination: ${swapPair}, ${lastInput}`);
     }
@@ -96,9 +111,9 @@ function executeSigmaUsdSwap(params: ErgopayPaySigmaUsdSwapParams): ErgopayPayCm
 	}
 
 	const oracleBox = grepBestOracleBox(params.oracleData);
-	const bankBox = grepBestSigmaUsdBankBox(params.bankCandidates);
+	const bankBox = grepBestSigmaUsdBankBox(params.bankTransactions);
 
-	const buildTxResponse = buildSigmUsdSwapTransaction(params, params.utxo, oracleBox, bankBox);
+	const buildTxResponse = buildSigmUsdSwapTransaction(params, params.payerUtxo, oracleBox, bankBox);
 
 	if (buildTxResponse.unsignedTx) {
 		try {
@@ -118,27 +133,11 @@ function executeSigmaUsdSwap(params: ErgopayPaySigmaUsdSwapParams): ErgopayPayCm
 	}
 }
 
-export async function fetchUtxoByAddress(_address: string): Promise<ErgoBoxCustom[]> {
-	const response = await fetch('https://dummyapi.io/utxo');
-	return response.json();
-}
-
-export async function fetchOracleData(): Promise<ErgoBoxCustom[]> {
-	// TODO: same response as we get from oracle socket.
-	const response = await fetch('https://dummyapi.io/oracle');
-	return response.json();
-}
-
-export async function fetchSigmaUsdBankBoxCandidates(): Promise<ErgoBoxCustom[]> {
-	const response = await fetch('https://dummyapi.io/bank');
-	return response.json();
-}
-
 export async function run(): Promise<ErgopayPayCmdResponse> {
 	const cmdParams = parseCommandLineArgs();
-	const utxo = await fetchUtxoByAddress(cmdParams.address);
+	const utxo = await fetchUtxosByErgoTree(cmdParams.payerErgoTree);
 	const oracleData = await fetchOracleData();
-	const bankCandidates = await fetchSigmaUsdBankBoxCandidates();
+	const bankCandidates = await fetchSigmaUsdBankTransactions();
 
 	const swapParams = { ...cmdParams, utxo, oracleData, bankCandidates };
 	const swapResult = executeSigmaUsdSwap(swapParams);

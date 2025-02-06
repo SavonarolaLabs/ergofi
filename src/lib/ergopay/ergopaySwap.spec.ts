@@ -1,6 +1,5 @@
 // ergopaySwap.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as ergopaySwap from './ergopaySwap';
 import { run, parseCommandLineArgs } from './ergopaySwap';
 
 import type { ErgopayPayCmdResponse } from './ergopaySwap.types';

@@ -242,7 +242,7 @@
 	.sketch-font {
 		font-family: 'FreeSketch', sans-serif;
 		line-height: 0.6;
-		margin-top: 0.4em;
+		margin-top: 0.2em;
 		margin-left: 0.06em;
 	}
 

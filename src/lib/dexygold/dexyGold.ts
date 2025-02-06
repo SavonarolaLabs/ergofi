@@ -215,8 +215,28 @@ export function calculateBankMintInputErg(
 	return { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate };
 }
 
-// BUILD
+export function calculateResetAndAmountMint(
+	height: number,
+	resetHeight: bigint,
+	availableAmount: bigint,
+	dexyMinted: bigint,
+	maxAllowedIfReset: bigint,
+	tMint: bigint,
+	tBuffer: bigint
+) {
+	const isCounterReset = BigInt(height) > resetHeight;
 
+	if (isCounterReset) {
+		const resetHeightOut = height + Number(tMint + tBuffer - 1n);
+		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	} else {
+		const resetHeightOut = resetHeight;
+		const remainingDexyOut = availableAmount - dexyMinted;
+		return { isCounterReset, resetHeightOut, remainingDexyOut };
+	}
+}
+// BUILD
 export function dexyGoldBankArbitrageInputDexyTx(
 	inputDexy: bigint,
 	userBase58PK: string,
@@ -330,7 +350,6 @@ export function dexyGoldBankArbitrageInputDexyTx(
 
 	return unsignedTx;
 }
-
 export function dexyGoldBankArbitrageInputErgTx(
 	inputErg: bigint,
 	userBase58PK: string,
@@ -444,29 +463,6 @@ export function dexyGoldBankArbitrageInputErgTx(
 
 	return unsignedTx;
 }
-
-export function calculateResetAndAmountMint(
-	height: number,
-	resetHeight: bigint,
-	availableAmount: bigint,
-	dexyMinted: bigint,
-	maxAllowedIfReset: bigint,
-	tMint: bigint,
-	tBuffer: bigint
-) {
-	const isCounterReset = BigInt(height) > resetHeight;
-
-	if (isCounterReset) {
-		const resetHeightOut = height + Number(tMint + tBuffer - 1n);
-		const remainingDexyOut = maxAllowedIfReset - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	} else {
-		const resetHeightOut = resetHeight;
-		const remainingDexyOut = availableAmount - dexyMinted;
-		return { isCounterReset, resetHeightOut, remainingDexyOut };
-	}
-}
-
 export function dexyGoldBankFreeInputErgTx(
 	inputErg: bigint,
 	userBase58PK: string,
@@ -577,7 +573,6 @@ export function dexyGoldBankFreeInputErgTx(
 
 	return unsignedTx;
 }
-
 export function dexyGoldBankFreeInputDexyTx(
 	inputDexy: bigint,
 	userBase58PK: string,

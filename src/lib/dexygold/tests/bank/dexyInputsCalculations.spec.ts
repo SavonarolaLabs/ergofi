@@ -114,7 +114,7 @@ const { initialDexyTokens, initialLp, feeNumLp, feeDenomLp } = vitestContractCon
 // calculateResetAndAmountFreeMint
 // dexyGoldBankFreeInputDexyTx
 
-describe('Bank mint Not Reset', async () => {
+describe('Arb mint preparation', async () => {
 	//let height = 1449119 + 11;
 	let height = 1449119;
 
@@ -461,11 +461,303 @@ describe('Bank mint Not Reset', async () => {
 	});
 });
 
-describe('ARB mint Reset', async () => {
-	let height = 1449119 + 11;
+describe('ARB mint One function', async () => {
+	//MAIN DECLARATION:
+	let arbMintIn, arbMintXIn, arbMintXOut, arbitrageMintNFT, R4ResetHeight, R5AvailableAmount;
+	let bankIn, bankXIn, bankNFT, bankYIn;
+	let buybankIn, buybackXIn, buybackNFT, gortAmount;
+
+	let lpIn, lpYData, lpXData, lpTokenAmount;
+	let goldOracle, oraclePoolNFT, oracleRateData;
+
+	let tracking, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight;
+
+	let feeMining, userAddress, userChangeAddress;
+
+	let dataInputs;
+	let userUtxos;
+
+	let ergoInput, dexyInput;
+	let dexyMinted;
+
+	const T_arb = 30n,
+		T_free = 360n,
+		T_buffer = 5n;
+	const bankFeeNum = 3n,
+		buybackFeeNum = 2n,
+		feeDenom = 1000n;
+
+	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
+
+	const thresholdPercent = 101n;
+
+	let lpRate, oracleRate, oracleRateWithFee;
+
+	let contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate;
+	let maxAllowedIfReset, remainingDexyIn, remainingDexyOut;
+	let bankXOut, bankYOut, buybackXOut;
+	let isCounterReset;
+
+	let availableToMint;
+	let resetHeightIn;
+	let resetHeightOut;
+
+	let buybackBoxIn; //with Var[0]
+	let bankOut, freeMintOut, buybackOut;
+	// ------ MockChain DECLARATION ------
+	beforeAll(async () => {
+		await initTestBoxes();
+		//load boxes ARB mint:
+		{
+			arbMintIn = get(dexygold_bank_arbitrage_mint_box);
+			({
+				value: arbMintXIn,
+				arbitrageMintNFT,
+				R4ResetHeight,
+				R5AvailableAmount
+			} = parseBankArbitrageMintBox(arbMintIn));
+
+			bankIn = get(dexygold_bank_box);
+			({ value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn));
+
+			buybankIn = get(dexygold_buyback_box);
+			({ value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn));
+
+			lpIn = get(dexygold_lp_box);
+			({ dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn));
+
+			goldOracle = get(oracle_erg_xau_box);
+			({ oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle));
+
+			tracking = get(dexygold_tracking101_box);
+			({ trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } =
+				parseTrackingBox(tracking));
+
+			dataInputs = [goldOracle, lpIn, tracking];
+			userUtxos = [fakeUserWithDexyBox];
+
+			feeMining = RECOMMENDED_MIN_FEE_VALUE;
+			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		}
+		//calculate:
+		// add Variable to data input
+		buybackBoxIn = new ErgoUnsignedInput(buybankIn);
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+	});
 	//let height = 1449119;
+	it('Arbitrage With Fee oneFunction 	:Not	:Input Dexy', async () => {
+		let height = 1449119; //Reset
+		dexyInput = 3000n - 1n;
+		const unsignedTx = dexyGoldBankArbitrageInputDexyTx(
+			dexyInput,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ arbMintIn, bankIn, buybankIn, lpIn, goldOracle, tracking101: tracking }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+	it('Arbitrage With Fee oneFunction 	:Not	:Input Erg', async () => {
+		let height = 1449119; //Reset
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldBankArbitrageInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ arbMintIn, bankIn, buybankIn, lpIn, goldOracle, tracking101: tracking }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+
+	it('Arbitrage With Fee oneFunction 	:Reset	:Input Dexy', async () => {
+		let height = 1449119 + 11; //Reset
+		dexyInput = 3000n - 1n;
+		const unsignedTx = dexyGoldBankArbitrageInputDexyTx(
+			dexyInput,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ arbMintIn, bankIn, buybankIn, lpIn, goldOracle, tracking101: tracking }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+	it('Arbitrage With Fee oneFunction 	:Reset	:Input Erg', async () => {
+		let height = 1449119 + 11; //Reset
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldBankArbitrageInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ arbMintIn, bankIn, buybankIn, lpIn, goldOracle, tracking101: tracking }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+});
+
+describe('Free mint One function', async () => {
+	//MAIN DECLARATION:
+	let freeMintIn, freeMintXIn, freeMintXOut, freeMintNFT, R4ResetHeight, R5AvailableAmount;
+	let bankIn, bankXIn, bankNFT, bankYIn;
+	let buybankIn, buybackXIn, buybackNFT, gortAmount;
+
+	let lpIn, lpYData, lpXData, lpTokenAmount;
+	let goldOracle, oraclePoolNFT, oracleRateData;
+
+	let tracking, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight;
+
+	let feeMining, userAddress, userChangeAddress;
+
+	let dataInputs;
+	let userUtxos;
+
+	let ergoInput, dexyInput;
+	let dexyMinted;
+
+	const T_arb = 30n,
+		T_free = 360n,
+		T_buffer = 5n;
+	const bankFeeNum = 3n,
+		buybackFeeNum = 2n,
+		feeDenom = 1000n;
+
+	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
+
+	const thresholdPercent = 101n;
+
+	let lpRate, oracleRate, oracleRateWithFee;
+
+	let contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate;
+	let maxAllowedIfReset, remainingDexyIn, remainingDexyOut;
+	let bankXOut, bankYOut, buybackXOut;
+	let isCounterReset;
+
+	let availableToMint;
+	let resetHeightIn;
+	let resetHeightOut;
+
+	let buybackBoxIn; //with Var[0]
+	let bankOut, freeMintOut, buybackOut;
+	// ------ MockChain DECLARATION ------
+	beforeAll(async () => {
+		await initTestBoxes();
+
+		//------------------------------------------------------------
+		//load boxes ARB mint:
+		{
+			freeMintIn = get(dexygold_bank_free_mint_box);
+			({
+				value: freeMintXIn,
+				freeMintNFT,
+				R4ResetHeight,
+				R5AvailableAmount
+			} = parseBankFreeMintBox(freeMintIn));
+
+			bankIn = get(dexygold_bank_box);
+			({ value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn));
+
+			buybankIn = get(dexygold_buyback_box);
+			({ value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn));
+
+			lpIn = get(dexygold_lp_box);
+			({ dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn));
+
+			goldOracle = get(oracle_erg_xau_box);
+			({ oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle));
+
+			tracking = get(dexygold_tracking101_box);
+			({ trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } =
+				parseTrackingBox(tracking));
+
+			dataInputs = [goldOracle, lpIn, tracking];
+			userUtxos = [fakeUserWithDexyBox];
+
+			feeMining = RECOMMENDED_MIN_FEE_VALUE;
+			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		}
+		//load boxes FREE mint: {}
+
+		//calculate:
+		// add Variable to data input
+		buybackBoxIn = new ErgoUnsignedInput(buybankIn);
+		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+	});
+
+	it('Free With Fee oneFunction  	:Not	:Input Dexy', async () => {
+		let height = 1449119;
+		const inputDexy = 3_000n;
+		const unsignedTx = dexyGoldBankFreeInputDexyTx(
+			inputDexy,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+	it('Free With Fee oneFunction  	:Not	:Input Erg', async () => {
+		let height = 1449119;
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldBankFreeInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+	it('Free With Fee oneFunction  	:Reset	:Input Dexy', async () => {
+		let height = 1449119 + 11;
+		const inputDexy = 3_000n;
+		const unsignedTx = dexyGoldBankFreeInputDexyTx(
+			inputDexy,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+	it('Free With Fee oneFunction  	:Reset	:Input Erg', async () => {
+		let height = 1449119 + 11;
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldBankFreeInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+});
+
+describe('Lp Swap preparation', async () => {
+	//let height = 1449119 + 11;
+	let height = 1449119;
 
 	//MAIN DECLARATION:
+	//let freeMintIn,freeMintXIn,freeMintXOut, freeMintNFT, R4ResetHeight, R5AvailableAmount;
 	let arbMintIn, arbMintXIn, arbMintXOut, arbitrageMintNFT, R4ResetHeight, R5AvailableAmount;
 	let bankIn, bankXIn, bankNFT, bankYIn;
 	let buybankIn, buybackXIn, buybackNFT, gortAmount;
@@ -687,7 +979,7 @@ describe('ARB mint Reset', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it('Arbitrage With Fee	 	: Input Dexy', async () => {
+	it('Arbitrage With Fee		: Input Dexy', async () => {
 		//CALC
 		dexyInput = 3000n - 1n;
 
@@ -778,7 +1070,7 @@ describe('ARB mint Reset', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();
 	});
-	it('Arbitrage With Fee oneFunction  	: Input Dexy', async () => {
+	it('Arbitrage With Fee oneFunction 	: Input Dexy', async () => {
 		//CALC
 		dexyInput = 3000n - 1n;
 		const unsignedTx = dexyGoldBankArbitrageInputDexyTx(
@@ -792,7 +1084,7 @@ describe('ARB mint Reset', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();
 	});
-	it('Arbitrage With Fee oneFunction  	: Input Erg', async () => {
+	it('Arbitrage With Fee oneFunction 	: Input Erg', async () => {
 		const inputErg = 1_000_000_000n;
 		const unsignedTx = dexyGoldBankArbitrageInputErgTx(
 			inputErg,
@@ -801,244 +1093,6 @@ describe('ARB mint Reset', async () => {
 			feeMining,
 			[fakeUserWithDexyBox],
 			{ arbMintIn, bankIn, buybankIn, lpIn, goldOracle, tracking101: tracking }
-		);
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
-		expect(signedTx).toBeTruthy();
-	});
-});
-
-describe('Free mint Not Reset', async () => {
-	let height = 1449119;
-	//let height = 1449119;
-
-	//MAIN DECLARATION:
-	let freeMintIn, freeMintXIn, freeMintXOut, freeMintNFT, R4ResetHeight, R5AvailableAmount;
-	let bankIn, bankXIn, bankNFT, bankYIn;
-	let buybankIn, buybackXIn, buybackNFT, gortAmount;
-
-	let lpIn, lpYData, lpXData, lpTokenAmount;
-	let goldOracle, oraclePoolNFT, oracleRateData;
-
-	let tracking, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight;
-
-	let feeMining, userAddress, userChangeAddress;
-
-	let dataInputs;
-	let userUtxos;
-
-	let ergoInput, dexyInput;
-	let dexyMinted;
-
-	const T_arb = 30n,
-		T_free = 360n,
-		T_buffer = 5n;
-	const bankFeeNum = 3n,
-		buybackFeeNum = 2n,
-		feeDenom = 1000n;
-
-	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
-
-	const thresholdPercent = 101n;
-
-	let lpRate, oracleRate, oracleRateWithFee;
-
-	let contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate;
-	let maxAllowedIfReset, remainingDexyIn, remainingDexyOut;
-	let bankXOut, bankYOut, buybackXOut;
-	let isCounterReset;
-
-	let availableToMint;
-	let resetHeightIn;
-	let resetHeightOut;
-
-	let buybackBoxIn; //with Var[0]
-	let bankOut, freeMintOut, buybackOut;
-	// ------ MockChain DECLARATION ------
-	beforeAll(async () => {
-		await initTestBoxes();
-
-		//------------------------------------------------------------
-		//load boxes ARB mint:
-		{
-			freeMintIn = get(dexygold_bank_free_mint_box);
-			({
-				value: freeMintXIn,
-				freeMintNFT,
-				R4ResetHeight,
-				R5AvailableAmount
-			} = parseBankFreeMintBox(freeMintIn));
-
-			bankIn = get(dexygold_bank_box);
-			({ value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn));
-
-			buybankIn = get(dexygold_buyback_box);
-			({ value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn));
-
-			lpIn = get(dexygold_lp_box);
-			({ dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn));
-
-			goldOracle = get(oracle_erg_xau_box);
-			({ oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle));
-
-			tracking = get(dexygold_tracking101_box);
-			({ trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } =
-				parseTrackingBox(tracking));
-
-			dataInputs = [goldOracle, lpIn, tracking];
-			userUtxos = [fakeUserWithDexyBox];
-
-			feeMining = RECOMMENDED_MIN_FEE_VALUE;
-			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-		}
-		//load boxes FREE mint: {}
-
-		//calculate:
-		// add Variable to data input
-		buybackBoxIn = new ErgoUnsignedInput(buybankIn);
-		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
-	});
-	it('Free With Fee oneFunction  	: Input Erg', async () => {
-		const inputErg = 1_000_000_000n;
-		const unsignedTx = dexyGoldBankFreeInputErgTx(
-			inputErg,
-			userAddress,
-			height,
-			feeMining,
-			[fakeUserWithDexyBox],
-			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
-		);
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
-		expect(signedTx).toBeTruthy();
-	});
-	it('Free With Fee oneFunction  	: Input Dexy', async () => {
-		const inputDexy = 3_000n;
-		const unsignedTx = dexyGoldBankFreeInputDexyTx(
-			inputDexy,
-			userAddress,
-			height,
-			feeMining,
-			[fakeUserWithDexyBox],
-			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
-		);
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
-		expect(signedTx).toBeTruthy();
-	});
-});
-
-describe('Free mint Reset', async () => {
-	let height = 1449119 + 11;
-	//let height = 1449119;
-
-	//MAIN DECLARATION:
-	let freeMintIn, freeMintXIn, freeMintXOut, freeMintNFT, R4ResetHeight, R5AvailableAmount;
-	let bankIn, bankXIn, bankNFT, bankYIn;
-	let buybankIn, buybackXIn, buybackNFT, gortAmount;
-
-	let lpIn, lpYData, lpXData, lpTokenAmount;
-	let goldOracle, oraclePoolNFT, oracleRateData;
-
-	let tracking, trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight;
-
-	let feeMining, userAddress, userChangeAddress;
-
-	let dataInputs;
-	let userUtxos;
-
-	let ergoInput, dexyInput;
-	let dexyMinted;
-
-	const T_arb = 30n,
-		T_free = 360n,
-		T_buffer = 5n;
-	const bankFeeNum = 3n,
-		buybackFeeNum = 2n,
-		feeDenom = 1000n;
-
-	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
-
-	const thresholdPercent = 101n;
-
-	let lpRate, oracleRate, oracleRateWithFee;
-
-	let contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate;
-	let maxAllowedIfReset, remainingDexyIn, remainingDexyOut;
-	let bankXOut, bankYOut, buybackXOut;
-	let isCounterReset;
-
-	let availableToMint;
-	let resetHeightIn;
-	let resetHeightOut;
-
-	let buybackBoxIn; //with Var[0]
-	let bankOut, freeMintOut, buybackOut;
-	// ------ MockChain DECLARATION ------
-	beforeAll(async () => {
-		await initTestBoxes();
-
-		//------------------------------------------------------------
-		//load boxes ARB mint:
-		{
-			freeMintIn = get(dexygold_bank_free_mint_box);
-			({
-				value: freeMintXIn,
-				freeMintNFT,
-				R4ResetHeight,
-				R5AvailableAmount
-			} = parseBankFreeMintBox(freeMintIn));
-
-			bankIn = get(dexygold_bank_box);
-			({ value: bankXIn, bankNFT, dexyAmount: bankYIn } = parseBankBox(bankIn));
-
-			buybankIn = get(dexygold_buyback_box);
-			({ value: buybackXIn, buybackNFT, gortAmount } = parseBuybackBox(buybankIn));
-
-			lpIn = get(dexygold_lp_box);
-			({ dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(lpIn));
-
-			goldOracle = get(oracle_erg_xau_box);
-			({ oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(goldOracle));
-
-			tracking = get(dexygold_tracking101_box);
-			({ trackingNFT, R4Target, R5Denom, R6IsBelow, R7TriggeredHeight } =
-				parseTrackingBox(tracking));
-
-			dataInputs = [goldOracle, lpIn, tracking];
-			userUtxos = [fakeUserWithDexyBox];
-
-			feeMining = RECOMMENDED_MIN_FEE_VALUE;
-			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
-		}
-		//load boxes FREE mint: {}
-
-		//calculate:
-		// add Variable to data input
-		buybackBoxIn = new ErgoUnsignedInput(buybankIn);
-		buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
-	});
-	it('Free With Fee oneFunction  	: Input Erg', async () => {
-		const inputErg = 1_000_000_000n;
-		const unsignedTx = dexyGoldBankFreeInputErgTx(
-			inputErg,
-			userAddress,
-			height,
-			feeMining,
-			[fakeUserWithDexyBox],
-			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
-		);
-		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
-		expect(signedTx).toBeTruthy();
-	});
-	it('Free With Fee oneFunction  	: Input Dexy', async () => {
-		const inputDexy = 3_000n;
-		const unsignedTx = dexyGoldBankFreeInputDexyTx(
-			inputDexy,
-			userAddress,
-			height,
-			feeMining,
-			[fakeUserWithDexyBox],
-			{ freeMintIn, bankIn, buybankIn, lpIn, goldOracle }
 		);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();

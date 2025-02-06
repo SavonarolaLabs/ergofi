@@ -377,33 +377,6 @@
 	/* ---------------------------------------
 	 * Handlers
 	 * ------------------------------------- */
-	function handleFromCurrencyChange(event: Event) {
-		const newVal = event.target as HTMLSelectElement;
-		// In a real scenario, you'd match newVal.value to one of our Currency objects
-		// For demonstration, assume user picks among ["ERG","SigUSD","SigRSV"]:
-		const picked = newVal.value;
-		if (picked === 'ERG') fromCurrency = currencyERG;
-		else if (picked === 'SigUSD') fromCurrency = currencySigUSD;
-		else if (picked === 'SigRSV') fromCurrency = currencySigRSV;
-
-		const allowed = getAllowedToCurrencies(fromCurrency);
-		if (!allowed.find((c) => c.tokens[0] === toCurrency.tokens[0])) {
-			toCurrency = allowed[0];
-		}
-		saveFromToCurrencyToLocalStorage();
-		doRecalc($oracle_box, $bank_box);
-	}
-
-	function handleToCurrencyChange(event: Event) {
-		const newVal = event.target as HTMLSelectElement;
-		// Only relevant if fromCurrency is ERG
-		const picked = newVal.value;
-		if (picked === 'SigUSD') toCurrency = currencySigUSD;
-		else if (picked === 'SigRSV') toCurrency = currencySigRSV;
-		saveFromToCurrencyToLocalStorage();
-		doRecalc($oracle_box, $bank_box);
-	}
-
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
@@ -462,7 +435,6 @@
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
 		}
-		console.log(unsignedTx);
 		await createInteractionAndSubmitTx(unsignedTx, [me]);
 	}
 
@@ -521,9 +493,7 @@
 		}
 	})();
 
-	// e.g. "SigUSD mint prohibited..." (if needed)
-	let mintWarning = '';
-
+	// Dropdowns
 	window.addEventListener('click', handleGlobalClick);
 	window.addEventListener('keydown', handleGlobalKeydown);
 
@@ -552,25 +522,20 @@
 			}
 		}
 	}
-
 	function handleGlobalKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			fromDropdownOpen = false;
 			toDropdownOpen = false;
 		}
 	}
-
 	let fromBtnRect = { top: 0, left: 0, width: 0 };
 	let toBtnRect = { top: 0, left: 0, width: 0 };
-
 	function toggleFromDropdown(e) {
-		// measure the button so we can position the dropdown outside the clipped container
 		const rect = e.currentTarget.getBoundingClientRect();
 		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		fromDropdownOpen = !fromDropdownOpen;
 		toDropdownOpen = false;
 	}
-
 	function toggleToDropdown(e) {
 		const rect = e.currentTarget.getBoundingClientRect();
 		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
@@ -862,11 +827,6 @@
 		</div>
 
 		<!-- Fee Settings (Expert) -->
-		{#if mintWarning}
-			<div class="my-4 flex flex w-full justify-center text-red-500">
-				{mintWarning}
-			</div>
-		{/if}
 		<div
 			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
@@ -887,14 +847,7 @@
 			</div>
 		</div>
 		<!-- Swap Button -->
-		{#if mintWarning}
-			<button
-				on:click={handleSwapButton}
-				class="w-full rounded-lg bg-gray-600 py-3 font-medium text-white hover:bg-gray-500"
-			>
-				Swap
-			</button>
-		{:else if $web3wallet_available_wallets.length == 0}
+		{#if $web3wallet_available_wallets.length == 0}
 			<a
 				target="_blank"
 				href={getWalletInstallLink()}

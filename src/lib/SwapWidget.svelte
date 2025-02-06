@@ -292,7 +292,7 @@
 		bank_price_rsv_sell.set(finalPriceSellRSV);
 
 		// We'll just set some initial example input
-		fromAmount = BASE_INPUT_AMOUNT_ERG.toString(); // e.g. "0.1"
+		fromAmount = nanoErgToErg(BASE_INPUT_AMOUNT_ERG); // e.g. "0.1"
 		toAmount = totalSigUSDBuy; // e.g. "10"
 		swapPrice = finalPriceBuy; // e.g. real rate
 	}

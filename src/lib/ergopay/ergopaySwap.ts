@@ -76,7 +76,6 @@ function buildReducedSigmUsdSwapTransaction(
 ): ErgopayPayCmdResponse {
 	try {
 		let unsignedTx = buildSigmUsdSwapTransaction(params);
-		console.dir(unsignedTx, { depth: null });
 		const reducedTx = reducedFromUnsignedTx(unsignedTx, params.context);
 		return { status: 'ok', reducedTx };
 	} catch (e) {

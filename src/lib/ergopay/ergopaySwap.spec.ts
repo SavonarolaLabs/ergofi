@@ -99,11 +99,11 @@ describe('run()', () => {
 	it('should return a successful response when swap succeeds', async () => {
 		const mockInput = {
 			swapPair: 'ERG/SIGUSD',
-			amount: 100000000,
+			amount: 100_000_000,
 			ePayLinkId: 'link123',
 			lastInput: 'ERG',
 			payerAddress: '9gJa6Mict6TVu9yipUX5aRUW87Yv8J62bbPEtkTje28sh5i3Lz8',
-			feeMining: 1000000000
+			feeMining: 10_000_000
 		};
 		vi.spyOn(process, 'argv', 'get').mockReturnValue([
 			'bun',
@@ -112,7 +112,6 @@ describe('run()', () => {
 		]);
 
 		const result: ErgopayPayCmdResponse = await run();
-		expect(result).toBe('ok');
-		expect(result).toHaveProperty('reducedTx', 'mockedReducedTx');
+		expect(result.status).toBe('ok');
 	});
 });

@@ -13,6 +13,8 @@ import {
 	dexyGoldBankArbitrageInputErgTx,
 	dexyGoldBankFreeInputDexyTx,
 	dexyGoldBankFreeInputErgTx,
+	dexyGoldLpSwapInputDexyTx,
+	dexyGoldLpSwapInputErgTx,
 	lpSwapInputDexy,
 	lpSwapInputErg,
 	type DexyGoldArbitrageInputs,

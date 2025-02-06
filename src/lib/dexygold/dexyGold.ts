@@ -236,14 +236,14 @@ export function dexyGoldLpSwapInputErgTx(
 			ensureInclusion: true
 		})
 		.to(
-			new OutputBuilder(lpXOut, lpErgoTree).addTokens([
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpTokenId, amount: lpTokensIn },
-				{ tokenId: dexyTokenId, amount: lpYOut }
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: DEXY_GOLD.lpNFT, amount: 1n },
+				{ tokenId: DEXY_GOLD.lpTokenId, amount: lpTokensIn },
+				{ tokenId: DEXY_GOLD.dexyTokenId, amount: lpYOut }
 			])
 		)
 		.to(
-			new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
 				{ tokenId: lpSwapNFT, amount: 1n }
 			])
 		)
@@ -306,14 +306,14 @@ export function dexyGoldLpSwapInputDexyTx(
 			ensureInclusion: true
 		})
 		.to(
-			new OutputBuilder(lpXOut, lpErgoTree).addTokens([
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpTokenId, amount: lpTokensIn },
-				{ tokenId: dexyTokenId, amount: lpYOut }
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: DEXY_GOLD.lpNFT, amount: 1n },
+				{ tokenId: DEXY_GOLD.lpTokenId, amount: lpTokensIn },
+				{ tokenId: DEXY_GOLD.dexyTokenId, amount: lpYOut }
 			])
 		)
 		.to(
-			new OutputBuilder(swapOutValue, lpSwapErgoTree).addTokens([
+			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
 				{ tokenId: lpSwapNFT, amount: 1n }
 			])
 		)

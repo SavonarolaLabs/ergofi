@@ -20,6 +20,11 @@ export type LpDexySwapResult = {
 	rate: number;
 };
 
+export type DexyGoldLpSwapInputs = {
+	lpSwapIn: NodeBox;
+	lpIn: NodeBox;
+};
+
 export type DexyGoldArbitrageInputs = {
 	arbMintIn: NodeBox;
 	bankIn: NodeBox;

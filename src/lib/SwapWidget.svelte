@@ -57,7 +57,8 @@
 		buyRSVInputERGTx,
 		buyRSVInputRSVTx,
 		sellRSVInputERGTx,
-		sellRSVInputRSVTx
+		sellRSVInputRSVTx,
+		buildSwapSigmaUsdTx
 	} from './sigmausd/sigmaUSD';
 	import { calculateReserveRateAndBorders } from './sigmausd/sigmaUSDBankWidget';
 	import {
@@ -79,8 +80,6 @@
 		isLpToken?: boolean;
 		isLpPool?: boolean;
 	};
-
-	type LastUserInput = 'From' | 'To';
 
 	// We define some helpers for clarity:
 	const currencyERG: Currency = { tokens: ['ERG'], isToken: true };
@@ -404,37 +403,27 @@
 	/* prettier-ignore */
 	async function handleSwapButton() {
 		// Check direction based on the last typed field
-		const fromToken = fromCurrency.tokens[0];
-		const toToken = toCurrency.tokens[0];
+
+		let fromAmountX:bigint=0n;
+		let toAmountX:bigint=0n;
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG') 	  fromAmountX = ergStringToNanoErgBigInt(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigUSD') fromAmountX = usdStringToCentBigInt(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigRSV') fromAmountX = BigInt(fromAmount);
+		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'ERG') 	  toAmountX = ergStringToNanoErgBigInt(toAmount);
+		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigUSD')   toAmountX = usdStringToCentBigInt(toAmount);
+		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigRSV')   toAmountX = BigInt(toAmount);
+		const fromAsset = {
+			token: fromCurrency.tokens[0],
+			amount: fromAmountX
+		}
+		const toAsset = {
+			token: toCurrency.tokens[0],
+			amount: toAmountX
+		}
 
 		const { me, utxos, height } = await getWeb3WalletData();
+		const unsignedTx = buildSwapSigmaUsdTx(fromAsset, toAsset, lastInput, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining)
 
-		let swapPairLastInput = `${fromToken}/${toToken}_${lastInput == 'From' ? fromToken : toToken}`;
-
-		console.log({ swapPairLastInput, fromAmount });
-
-		let amount;
-		if (lastInput === 'From' && fromToken === 'ERG') 	amount = ergStringToNanoErgBigInt(fromAmount);
-		if (lastInput === 'From' && fromToken === 'SigUSD') amount = usdStringToCentBigInt(fromAmount);
-		if (lastInput === 'From' && fromToken === 'SigRSV') amount = BigInt(fromAmount);
-		if (lastInput === 'To'	 && fromToken === 'ERG') 	amount = ergStringToNanoErgBigInt(toAmount);
-		if (lastInput === 'To'	 && fromToken === 'SigUSD') amount = usdStringToCentBigInt(toAmount);
-		if (lastInput === 'To'	 && fromToken === 'SigRSV') amount = BigInt(toAmount);
-
-		let unsignedTx;
-
-		switch (swapPairLastInput.toLocaleUpperCase()) {
-			case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(amount!, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining); break;
-			default:
-				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
-		}
 		await createInteractionAndSubmitTx(unsignedTx, [me]);
 	}
 

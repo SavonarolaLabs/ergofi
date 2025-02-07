@@ -80,7 +80,7 @@
 	});
 </script>
 
-<div class="widget text-gray-500">
+<div class="widget pt-4 text-gray-500">
 	<div class="pl-2">
 		{#if $headline == 'DexyGold'}
 			<DexyGoldLpUTXO></DexyGoldLpUTXO>

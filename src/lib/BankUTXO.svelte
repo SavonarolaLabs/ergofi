@@ -58,13 +58,13 @@
 
 		<div class="items-left flex flex-col">
 			<div class="text-xs text-gray-600">Mintable Assets</div>
-			<div class="items-left flex">
+			<div class="flex justify-end">
 				<div>
 					{formatAmount($reserve_border_left_USD, false)}
 				</div>
 				<div class="currency">SigUSD</div>
 			</div>
-			<div class="items-left flex">
+			<div class="flex justify-end">
 				<div>
 					{formatAmount($reserve_border_right_RSV, false)}
 				</div>

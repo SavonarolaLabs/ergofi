@@ -44,21 +44,27 @@
 
 	<div class="mt-2 flex items-end justify-between">
 		<div class="items-left flex flex-col">
-			<div class="text-xs text-gray-600">Buy Price</div>
+			<div class="text-xs text-gray-600">Mint Price</div>
 			<span class="price-left items-left flex gap-1"> {$bank_price_usd_sell}</span>
 			<span class="price-left items-left flex gap-1">
 				<SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span
 			>
 		</div>
 		<div class="items-left flex flex-col">
-			<div class="text-xs text-gray-600">Sell Price</div>
-			<span class="price-left items-left flex gap-1"> {$bank_price_usd_buy}</span>
+			<div class="text-xs text-gray-600">Redeem Price</div>
+			<span class="price-left items-left flex gap-1">
+				{#if $reserve_border_left_USD > 0}
+					{$bank_price_usd_buy}
+				{:else}
+					-.--
+				{/if}
+			</span>
 			<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
 		</div>
 
 		<div class="items-left flex flex-col">
 			<div class="text-xs text-gray-600">Mintable Assets</div>
-			<div class="flex justify-end">
+			<div class="flex justify-end" class:text-red-500={$reserve_border_left_USD < 0}>
 				<div>
 					{formatAmount($reserve_border_left_USD, false)}
 				</div>

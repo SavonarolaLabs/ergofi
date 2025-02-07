@@ -1,4 +1,4 @@
-import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
+import { DIRECTION_BUY, DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import { debugArbmint, debugFreemint, debugRedeem } from '$lib/dexygold/debugContracts';
 import {
 	vitestTokenIds,
@@ -134,9 +134,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const ergInput = 1_000_000_000n;
-		const direction = directionSell;
+		const direction = DIRECTION_SELL;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
@@ -197,9 +197,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const inputErg = 1_000_000_000n;
-		const direction = directionSell;
+		const direction = DIRECTION_SELL;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		const uiFeeAddress = UI_FEE_ADDRESS;
@@ -269,9 +269,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const ergInput = 1_000_000_000n;
-		const direction = directionBuy; //<==
+		const direction = DIRECTION_BUY; //<==
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
@@ -333,7 +333,7 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const inputErg = 1_000_000_000n;
-		const direction = directionBuy; //<==
+		const direction = DIRECTION_BUY; //<==
 
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
@@ -403,9 +403,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const dexyInput = 100_000n;
-		const direction = directionSell;
+		const direction = DIRECTION_SELL;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
@@ -468,9 +468,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const dexyInput = 100_000n;
-		const direction = directionSell;
+		const direction = DIRECTION_SELL;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		const uiFeeAddress = UI_FEE_ADDRESS;
@@ -533,9 +533,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const dexyInput = 100_000n;
-		const direction = directionBuy;
+		const direction = DIRECTION_BUY;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 
@@ -598,9 +598,9 @@ describe('LP swap with any input should work', async () => {
 		//user Inputs
 		const height = 1449119;
 		const dexyInput = 100_000n;
-		const direction = directionBuy;
+		const direction = DIRECTION_BUY;
 
-		//const direction = directionBuy;
+		//const direction = DIRECTION_BUY;
 		const feeMining = RECOMMENDED_MIN_FEE_VALUE;
 		const userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		const uiFeeAddress = UI_FEE_ADDRESS;

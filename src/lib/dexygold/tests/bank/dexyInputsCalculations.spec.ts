@@ -1,4 +1,4 @@
-import { directionBuy, directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
+import { DIRECTION_BUY, DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	vitestTokenIds,
 	vitestErgoTrees,
@@ -802,7 +802,7 @@ describe('Lp Swap preparation', async () => {
 
 	it.only('With FEE 	: Sell ERG : Input ERG', async () => {
 		const height = 1449119;
-		const direction = directionSell;
+		const direction = DIRECTION_SELL;
 		const inputErg = 1_000_000_000n;
 
 		let uiSwapFee;
@@ -857,11 +857,11 @@ describe('Lp Swap preparation', async () => {
 
 	it.only('Lp Swap With Fee oneFunction  	:Buy	:Input Erg', async () => {
 		let height = 1449119;
-		let directionBuy = 1n;
+		let DIRECTION_BUY = 1n;
 		const inputErg = 1_000_000_000n;
 		const unsignedTx = dexyGoldLpSwapInputErgTx(
 			inputErg,
-			directionBuy,
+			DIRECTION_BUY,
 			userAddress,
 			height,
 			feeMining,
@@ -873,11 +873,11 @@ describe('Lp Swap preparation', async () => {
 	});
 	it.only('Lp Swap With Fee oneFunction  	:Sell	:Input Erg', async () => {
 		let height = 1449119;
-		let directionSell = -1n;
+		let DIRECTION_SELL = -1n;
 		const inputErg = 1_000_000_000n;
 		const unsignedTx = dexyGoldLpSwapInputErgTx(
 			inputErg,
-			directionSell,
+			DIRECTION_SELL,
 			userAddress,
 			height,
 			feeMining,
@@ -890,11 +890,11 @@ describe('Lp Swap preparation', async () => {
 
 	it.only('Lp Swap With Fee oneFunction  	:Buy	:Input Dexy', async () => {
 		let height = 1449119;
-		let directionBuy = 1n;
+		let DIRECTION_BUY = 1n;
 		const inputDexy = 20n;
 		const unsignedTx = dexyGoldLpSwapInputDexyTx(
 			inputDexy,
-			directionBuy,
+			DIRECTION_BUY,
 			userAddress,
 			height,
 			feeMining,
@@ -906,11 +906,11 @@ describe('Lp Swap preparation', async () => {
 	});
 	it.only('Lp Swap With Fee oneFunction  	:Sell	:Input Dexy', async () => {
 		let height = 1449119;
-		let directionSell = -1n;
+		let DIRECTION_SELL = -1n;
 		const inputDexy = 20n;
 		const unsignedTx = dexyGoldLpSwapInputDexyTx(
 			inputDexy,
-			directionSell,
+			DIRECTION_SELL,
 			userAddress,
 			height,
 			feeMining,

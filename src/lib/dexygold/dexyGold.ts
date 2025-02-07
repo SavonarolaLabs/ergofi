@@ -1,4 +1,4 @@
-import { directionSell, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
+import { DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	applyFee,
 	applyFeeSell,
@@ -62,7 +62,7 @@ export function lpSwapInputErg(
 	const rate = Number(reservesYIn) / Number(reservesXIn);
 	let amountDexy: bigint;
 
-	if (direction === directionSell) {
+	if (direction === DIRECTION_SELL) {
 		// OLD ONE
 		// amountDexy = BigInt(Math.floor((Number(amountErg) * rate * Number(feeNumLp)) / Number(feeDenomLp))); //Round Down //- 1n;
 
@@ -74,7 +74,7 @@ export function lpSwapInputErg(
 		// amountDexy = BigInt(
 		// 	Math.ceil((Number(amountErg + 100n) * (Number(feeDenomLp) * rate)) / Number(feeNumLp)) //Round UP
 		// );
-		//directionBuy
+		//DIRECTION_BUY
 		amountDexy =
 			(amountErg * reservesYIn * feeDenomLp) / (reservesXIn * feeNumLp - amountErg * feeNumLp) + 1n;
 	}
@@ -93,7 +93,7 @@ export function lpSwapInputDexy(
 	let amountErg;
 	// in case amountDexy is OUTPUT
 
-	if (direction == directionSell) {
+	if (direction == DIRECTION_SELL) {
 		//amountDexy = 1000n;
 		amountErg =
 			(amountDexy * reservesXIn * feeDenomLp) / (reservesYIn * feeNumLp - amountDexy * feeNumLp) +
@@ -105,7 +105,7 @@ export function lpSwapInputDexy(
 			1n; // cause <=
 	}
 
-	// if (direction == directionSell) {
+	// if (direction == DIRECTION_SELL) {
 	// 	console.log('we are here');
 	// 	amountErg = BigInt(
 	// 		Math.floor(Number((amountDexy + 1n) * feeDenomLp) / (rate * Number(feeNumLp)))
@@ -218,7 +218,7 @@ export function dexyGoldLpSwapInputErgTx(
 
 	let uiSwapFee, contractErg;
 	// FEE PART:
-	if (direction == directionSell) {
+	if (direction == DIRECTION_SELL) {
 		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
 	} else {
 		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
@@ -300,7 +300,7 @@ export function dexyGoldLpSwapInputDexyTx(
 	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
 
 	// FEE PART:
-	if (direction == directionSell) {
+	if (direction == DIRECTION_SELL) {
 		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining)); // Buy  ERG : Input Dexy
 	} else {
 		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining)); // Sell ERG : Input Dexy

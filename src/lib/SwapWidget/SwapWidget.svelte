@@ -3,7 +3,7 @@
 	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import { directionBuy, directionSell, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { DIRECTION_BUY, DIRECTION_SELL, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
@@ -14,6 +14,7 @@
 	import { calculateReserveRateAndBorders } from '../sigmausd/sigmaUSDBankWidget';
 	import {
 		BASE_INPUT_AMOUNT_ERG,
+		calculateAmountAndSwapPrice,
 		calculateInputsRSVErgInErg,
 		calculateInputsRSVErgInRSV,
 		calculateInputsUsdErgInErg,
@@ -175,7 +176,7 @@
 	) {
 		// Calculate initial SigUSD "buy" price for 0.1 ERG (BASE_INPUT_AMOUNT_ERG)
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
-			directionBuy,
+			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
@@ -186,7 +187,7 @@
 		bank_price_usd_buy.set(finalPriceBuy);
 
 		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
-			directionSell,
+			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
@@ -197,7 +198,7 @@
 
 		// Calculate initial SigRSV "buy" price for 0.1 ERG
 		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
-			directionBuy,
+			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
@@ -208,7 +209,7 @@
 		bank_price_rsv_buy.set(finalPriceBuyRSV);
 
 		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
-			directionSell,
+			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
@@ -257,39 +258,27 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	// prettier-ignore
-	function calculateAmountAndSwapPrice(lastInput:string, fromToken:string, toToken:string){
-		if (lastInput === 'From' && fromToken === 'ERG' && toToken === 'SigUSD') {
-			const { totalSigUSD, finalPrice } = calculateInputsUsdErgInErg(directionBuy, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
-			toAmount = totalSigUSD; swapPrice = finalPrice;
+
+	function recalcAmountAndPrice() {
+		const fromToken = fromCurrency.tokens[0];
+		const toToken = toCurrency.tokens[0];
+		const { from, to, price } = calculateAmountAndSwapPrice(
+			lastInput,
+			fromToken,
+			fromAmount,
+			toToken,
+			toAmount,
+			$bankBoxInNanoErg,
+			$bankBoxInCircSigUsdInCent,
+			$bankBoxInCircSigRsv,
+			$fee_mining
+		)!;
+		swapPrice = price;
+		if (from) {
+			fromAmount = from;
 		}
-		if (lastInput === 'From' && fromToken === 'ERG' && toToken === 'SigRSV') {
-			const { totalSigRSV,finalPrice } = calculateInputsRSVErgInErg(directionBuy, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
-			toAmount = totalSigRSV; swapPrice = finalPrice;
-		}
-		if (lastInput === 'From' && fromToken === 'SigUSD' && toToken === 'ERG') {
-			const { totalErg,finalPrice } = calculateInputsUsdErgInUsd(directionSell, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
-			toAmount = totalErg; swapPrice = finalPrice;
-		}
-		if (lastInput === 'From' && fromToken === 'SigRSV' && toToken === 'ERG') {
-			const { totalErg,finalPrice } = calculateInputsRSVErgInRSV(directionSell, fromAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
-			toAmount = totalErg; swapPrice = finalPrice;
-		}
-		if (lastInput === 'To' && fromToken === 'ERG' && toToken === 'SigUSD') {
-			const { totalErg,finalPrice } = calculateInputsUsdErgInUsd(directionBuy, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
-			fromAmount = totalErg; swapPrice = finalPrice;
-		}
-		if (lastInput === 'To' && fromToken === 'ERG' && toToken === 'SigRSV') {
-			const { totalErg,finalPrice } = calculateInputsRSVErgInRSV(directionBuy, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
-			fromAmount = totalErg; swapPrice = finalPrice;
-		}
-		if (lastInput === 'To' && fromToken === 'SigUSD' && toToken === 'ERG') {
-			const { totalSigUSD,finalPrice } = calculateInputsUsdErgInErg(directionSell, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $oraclePriceSigUsd, $fee_mining);
-			fromAmount = totalSigUSD; swapPrice = finalPrice;
-		}
-		if (lastInput === 'To' && fromToken === 'SigRSV' && toToken === 'ERG') {
-			const { totalSigRSV,finalPrice } = calculateInputsRSVErgInErg(directionSell, toAmount, $bankBoxInNanoErg, $bankBoxInCircSigUsdInCent, $bankBoxInCircSigRsv, $oraclePriceSigUsd, $fee_mining);
-			fromAmount = totalSigRSV; swapPrice = finalPrice;
+		if (to) {
+			toAmount = to;
 		}
 	}
 
@@ -307,15 +296,7 @@
 		}
 		updateBankStats();
 
-		// If both sides are empty, reset
-		if (!fromAmount && !toAmount) {
-			swapPrice = 0;
-			return;
-		}
-
-		const fromToken = fromCurrency.tokens[0];
-		const toToken = toCurrency.tokens[0];
-		calculateAmountAndSwapPrice(lastInput, fromToken, toToken);
+		recalcAmountAndPrice();
 	}
 
 	/* ---------------------------------------

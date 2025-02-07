@@ -168,19 +168,19 @@
 	});
 
 	function initialInputs(
-		bank_box_nano_erg: bigint,
-		bank_box_circulating_usd_cent: bigint,
-		bank_box_circulating_rsv: bigint,
-		oracle_price_sig_usd_cent: bigint,
+		bankBoxNanoErg: bigint,
+		bankBoxCicrulatingUsdCent: bigint,
+		bankBoxCirculatingRsv: bigint,
+		oraclePriceUsdCent: bigint,
 		feeMining: bigint
 	) {
 		// Calculate initial SigUSD "buy" price for 0.1 ERG (BASE_INPUT_AMOUNT_ERG)
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
 			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bank_box_nano_erg,
-			bank_box_circulating_usd_cent,
-			oracle_price_sig_usd_cent,
+			bankBoxNanoErg,
+			bankBoxCicrulatingUsdCent,
+			oraclePriceUsdCent,
 			feeMining
 		);
 
@@ -189,9 +189,9 @@
 		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
 			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bank_box_nano_erg,
-			bank_box_circulating_usd_cent,
-			oracle_price_sig_usd_cent,
+			bankBoxNanoErg,
+			bankBoxCicrulatingUsdCent,
+			oraclePriceUsdCent,
 			feeMining
 		);
 		bank_price_usd_sell.set(finalPriceSell);
@@ -200,10 +200,10 @@
 		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
 			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bank_box_nano_erg,
-			bank_box_circulating_usd_cent,
-			bank_box_circulating_rsv,
-			oracle_price_sig_usd_cent,
+			bankBoxNanoErg,
+			bankBoxCicrulatingUsdCent,
+			bankBoxCirculatingRsv,
+			oraclePriceUsdCent,
 			feeMining
 		);
 		bank_price_rsv_buy.set(finalPriceBuyRSV);
@@ -211,10 +211,10 @@
 		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
 			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bank_box_nano_erg,
-			bank_box_circulating_usd_cent,
-			bank_box_circulating_rsv,
-			oracle_price_sig_usd_cent,
+			bankBoxNanoErg,
+			bankBoxCicrulatingUsdCent,
+			bankBoxCirculatingRsv,
+			oraclePriceUsdCent,
 			feeMining
 		);
 		bank_price_rsv_sell.set(finalPriceSellRSV);
@@ -258,7 +258,6 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-
 	function recalcAmountAndPrice() {
 		const fromToken = fromCurrency.tokens[0];
 		const toToken = toCurrency.tokens[0];

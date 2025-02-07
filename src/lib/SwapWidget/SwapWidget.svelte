@@ -170,7 +170,7 @@
 	function initialInputs(
 		bankBoxInNanoErg: bigint,
 		bankBoxInCircSigUsdInCent: bigint,
-		bankBoxInCircSigRSV: bigint,
+		bankBoxInCircSigRsv: bigint,
 		oraclePriceSigUsd: bigint,
 		feeMining: bigint
 	) {
@@ -202,7 +202,7 @@
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
-			bankBoxInCircSigRSV,
+			bankBoxInCircSigRsv,
 			oraclePriceSigUsd,
 			feeMining
 		);
@@ -213,7 +213,7 @@
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
 			bankBoxInNanoErg,
 			bankBoxInCircSigUsdInCent,
-			bankBoxInCircSigRSV,
+			bankBoxInCircSigRsv,
 			oraclePriceSigUsd,
 			feeMining
 		);

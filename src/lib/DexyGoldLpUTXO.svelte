@@ -7,8 +7,8 @@
 		bank_price_rsv_sell,
 		bank_price_usd_buy,
 		bank_price_usd_sell,
-		bankBoxInNanoErg,
-		oraclePriceSigUsd,
+		bank_box_nano_erg,
+		oracle_price_sig_usd_cent,
 		reserve_border_left_USD,
 		reserve_border_right_RSV,
 		reserve_rate
@@ -35,7 +35,7 @@
 		</div>
 		<div class="flex items-center">
 			<div>
-				{nanoErgToErg($bankBoxInNanoErg, 0)}
+				{nanoErgToErg($bank_box_nano_erg, 0)}
 			</div>
 			<div class="currency">ERG</div>
 		</div>

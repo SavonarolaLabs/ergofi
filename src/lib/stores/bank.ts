@@ -11,10 +11,10 @@ export const reserve_border_right_USD = writable<number>(0);
 export const reserve_border_right_ERG = writable<number>(0);
 export const reserve_border_right_RSV = writable<number>(0);
 
-export const bankBoxInNanoErg = writable<bigint>(1653105734759386n);
-export const bankBoxInCircSigUsdInCent = writable<bigint>(46260638n);
-export const bankBoxInCircSigRsv = writable<bigint>(46260638n);
-export const oraclePriceSigUsd = writable<bigint>(5405405n);
+export const bank_box_nano_erg = writable<bigint>(1653105734759386n);
+export const bank_box_circulating_usd_cent = writable<bigint>(46260638n);
+export const bank_box_circulating_rsv = writable<bigint>(46260638n);
+export const oracle_price_sig_usd_cent = writable<bigint>(5405405n);
 export const bank_price_usd_buy = writable<number>(0);
 export const bank_price_usd_sell = writable<number>(0);
 export const bank_price_rsv_buy = writable<number>(0);

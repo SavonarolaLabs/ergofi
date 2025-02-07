@@ -27,12 +27,12 @@
 		bank_price_rsv_sell,
 		bank_price_usd_buy,
 		bank_price_usd_sell,
-		bankBoxInCircSigRsv,
-		bankBoxInCircSigUsdInCent,
-		bankBoxInNanoErg,
+		bank_box_circulating_rsv,
+		bank_box_circulating_usd_cent,
+		bank_box_nano_erg,
 		fee_mining,
 		oracle_box,
-		oraclePriceSigUsd,
+		oracle_price_sig_usd_cent,
 		reserve_border_left_ERG,
 		reserve_border_left_RSV,
 		reserve_border_left_USD,
@@ -168,19 +168,19 @@
 	});
 
 	function initialInputs(
-		bankBoxInNanoErg: bigint,
-		bankBoxInCircSigUsdInCent: bigint,
-		bankBoxInCircSigRsv: bigint,
-		oraclePriceSigUsd: bigint,
+		bank_box_nano_erg: bigint,
+		bank_box_circulating_usd_cent: bigint,
+		bank_box_circulating_rsv: bigint,
+		oracle_price_sig_usd_cent: bigint,
 		feeMining: bigint
 	) {
 		// Calculate initial SigUSD "buy" price for 0.1 ERG (BASE_INPUT_AMOUNT_ERG)
 		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
 			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			oraclePriceSigUsd,
+			bank_box_nano_erg,
+			bank_box_circulating_usd_cent,
+			oracle_price_sig_usd_cent,
 			feeMining
 		);
 
@@ -189,9 +189,9 @@
 		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
 			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			oraclePriceSigUsd,
+			bank_box_nano_erg,
+			bank_box_circulating_usd_cent,
+			oracle_price_sig_usd_cent,
 			feeMining
 		);
 		bank_price_usd_sell.set(finalPriceSell);
@@ -200,10 +200,10 @@
 		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
 			DIRECTION_BUY,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			bankBoxInCircSigRsv,
-			oraclePriceSigUsd,
+			bank_box_nano_erg,
+			bank_box_circulating_usd_cent,
+			bank_box_circulating_rsv,
+			oracle_price_sig_usd_cent,
 			feeMining
 		);
 		bank_price_rsv_buy.set(finalPriceBuyRSV);
@@ -211,10 +211,10 @@
 		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
 			DIRECTION_SELL,
 			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxInNanoErg,
-			bankBoxInCircSigUsdInCent,
-			bankBoxInCircSigRsv,
-			oraclePriceSigUsd,
+			bank_box_nano_erg,
+			bank_box_circulating_usd_cent,
+			bank_box_circulating_rsv,
+			oracle_price_sig_usd_cent,
 			feeMining
 		);
 		bank_price_rsv_sell.set(finalPriceSellRSV);
@@ -231,9 +231,9 @@
 	function updateBankStats() {
 		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
 			calculateReserveRateAndBorders(
-				$bankBoxInNanoErg,
-				$bankBoxInCircSigUsdInCent,
-				$oraclePriceSigUsd,
+				$bank_box_nano_erg,
+				$bank_box_circulating_usd_cent,
+				$oracle_price_sig_usd_cent,
 				$bank_price_rsv_buy,
 				$bank_price_rsv_sell
 			);
@@ -249,10 +249,10 @@
 	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
 		const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
 		const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
-		bankBoxInNanoErg.set(inErg);
-		bankBoxInCircSigUsdInCent.set(inCircSigUSD);
-		bankBoxInCircSigRsv.set(inCircSigRSV);
-		oraclePriceSigUsd.set(oraclePrice);
+		bank_box_nano_erg.set(inErg);
+		bank_box_circulating_usd_cent.set(inCircSigUSD);
+		bank_box_circulating_rsv.set(inCircSigRSV);
+		oracle_price_sig_usd_cent.set(oraclePrice);
 	}
 
 	/* ---------------------------------------
@@ -268,16 +268,17 @@
 			fromAmount,
 			toToken,
 			toAmount,
-			$bankBoxInNanoErg,
-			$bankBoxInCircSigUsdInCent,
-			$bankBoxInCircSigRsv,
+			$bank_box_nano_erg,
+			$bank_box_circulating_usd_cent,
+			$bank_box_circulating_rsv,
+			$oracle_price_sig_usd_cent,
 			$fee_mining
 		)!;
 		swapPrice = price;
-		if (from) {
+		if (from != undefined) {
 			fromAmount = from;
 		}
-		if (to) {
+		if (to != undefined) {
 			toAmount = to;
 		}
 	}
@@ -287,10 +288,10 @@
 		updateBankBoxAndOracle(oracleBox, bankBox);
 		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
 			initialInputs(
-				$bankBoxInNanoErg,
-				$bankBoxInCircSigUsdInCent,
-				$bankBoxInCircSigRsv,
-				$oraclePriceSigUsd,
+				$bank_box_nano_erg,
+				$bank_box_circulating_usd_cent,
+				$bank_box_circulating_rsv,
+				$oracle_price_sig_usd_cent,
 				$fee_mining
 			);
 		}

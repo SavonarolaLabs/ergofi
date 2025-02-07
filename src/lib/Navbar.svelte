@@ -9,11 +9,15 @@
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-6 py-3">
-	<div class="flex items-center text-gray-300">
-		<span class="text-xl font-medium">Ergfi</span>
+	<div class="flex items-start text-gray-300">
+		<span class="flex gap-1 text-xl font-medium">
+			{#each 'ERGFI' as letter}
+				<div class="square">{letter}</div>
+			{/each}
+		</span>
 		<!-- <span class="text-md mx-2">/</span>
 		<span class="text-md">SigmaUSD</span> -->
-		<sup class="ml-1 text-xs text-gray-500">alpha 14</sup>
+		<sup class="ml-1 mt-1 text-xs text-gray-500">alpha 14</sup>
 	</div>
 
 	<div class="flex gap-3" style="height:52px;">
@@ -71,7 +75,19 @@
 	</div>
 </nav>
 
-<style>
+<style lang>
+	.square {
+		background-color: rgb(31 41 55);
+		color: rgb(243 244 246);
+		color: rgb(177, 177, 177);
+		border-radius: 4px;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 38px;
+		width: 38px;
+	}
 	.brand {
 		font-family:
 			HelveticaNeue-CondensedBold,

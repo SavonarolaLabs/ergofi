@@ -25,6 +25,10 @@ export default ts.config(
 			parserOptions: {
 				parser: ts.parser
 			}
+		},
+
+		rules: {
+			'svelte/a11y-click-events-have-key-events': 'off'
 		}
 	},
 	{

@@ -4,19 +4,40 @@
 	import { web3wallet_confirmedTokens, web3wallet_connected } from './stores/web3wallet';
 	import ThemeToggle from './ThemeToggle.svelte';
 	import { centsToUsd, formatAmount, nanoErgToErg } from './utils';
+	import { onMount } from 'svelte';
 
 	let pending = true;
+	let letters = 'ERGFI'.split('');
+	let selectedColors: Record<string, boolean> = {};
+
+	onMount(() => {
+		const storedColors = localStorage.getItem('selectedColors');
+		if (storedColors) {
+			selectedColors = JSON.parse(storedColors);
+		}
+	});
+
+	function toggleColor(letter: string) {
+		selectedColors[letter] = !selectedColors[letter];
+		localStorage.setItem('selectedColors', JSON.stringify(selectedColors));
+	}
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-6 py-3">
 	<div class="flex items-start text-gray-300">
 		<span class="flex gap-1 text-xl font-medium">
-			{#each 'ERGFI' as letter}
-				<div class="square">{letter}</div>
+			{#each letters as letter}
+				<button
+					class="square"
+					on:click={() => toggleColor(letter)}
+					style="background-color: {selectedColors[letter]
+						? '#f77315'
+						: 'rgb(31 41 55)'}; color: {selectedColors[letter] ? 'white' : 'rgb(177, 177, 177)'}"
+				>
+					{letter}
+				</button>
 			{/each}
 		</span>
-		<!-- <span class="text-md mx-2">/</span>
-		<span class="text-md">SigmaUSD</span> -->
 		<sup class="ml-1 mt-1 text-xs text-gray-500">alpha 14</sup>
 	</div>
 
@@ -78,7 +99,6 @@
 <style lang>
 	.square {
 		background-color: rgb(31 41 55);
-		color: rgb(243 244 246);
 		color: rgb(177, 177, 177);
 		border-radius: 4px;
 
@@ -87,6 +107,15 @@
 		justify-content: center;
 		height: 38px;
 		width: 38px;
+		cursor: pointer;
+		user-select: none;
+		transition:
+			background-color 0.2s,
+			color 0.2s;
+	}
+	.square:hover {
+		background-color: #f77315;
+		color: white;
 	}
 	.brand {
 		font-family:

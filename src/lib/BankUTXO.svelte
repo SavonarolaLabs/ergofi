@@ -52,7 +52,7 @@
 					{#if $reserve_border_left_USD > 0}
 						{$bank_price_usd_sell}
 					{:else}
-						-.--
+						- --
 					{/if}</span
 				>
 				<span class="items-left flex gap-1">
@@ -67,7 +67,7 @@
 				{#if $reserve_border_left_USD > 0}
 					<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
 				{:else}
-					-.--
+					- --
 				{/if}
 			</div>
 		</div>

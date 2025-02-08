@@ -37,6 +37,7 @@
 	} from './Currency';
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
+	import SwapInputs from './SwapInputs.svelte';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -55,7 +56,6 @@
 
 	let fromDropdownOpen = false;
 	let toDropdownOpen = false;
-	let currencySwapHovered = false;
 
 	//  Colors for the circles (helper)
 
@@ -222,21 +222,13 @@
 		showFeeSlider = !showFeeSlider;
 	};
 
-	function handleSwapPair() {
+	function handleSwapInputs() {
 		const temp = fromCurrency;
 		fromCurrency = toCurrency;
 		toCurrency = temp;
 		selectContract();
 		saveFromToCurrencyToLocalStorage();
 		doRecalc();
-	}
-
-	function handleMouseEnter() {
-		currencySwapHovered = true;
-	}
-
-	function handleMouseLeave() {
-		currencySwapHovered = false;
 	}
 
 	/* ---------------------------------------
@@ -462,23 +454,7 @@
 				</div>
 
 				<!-- DIRECTION -->
-				<div class="relative" style="height:4px;">
-					<div class="absolute" style="z-index:5;margin-top:-18px; left:170px">
-						<button
-							on:mouseenter={handleMouseEnter}
-							on:mouseleave={handleMouseLeave}
-							on:click={handleSwapPair}
-							class="border-color flex items-center justify-center rounded-full border-4 bg-gray-800 px-1 py-1 text-gray-400 hover:text-white hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
-							style="width:42px;height:42px;"
-						>
-							{#if currencySwapHovered}
-								<ArrowUpDown size={20} />
-							{:else}
-								<ArrowDown />
-							{/if}
-						</button>
-					</div>
-				</div>
+				<SwapInputs on:swap={handleSwapInputs} />
 			</div>
 
 			<!-- TO SELECTION -->

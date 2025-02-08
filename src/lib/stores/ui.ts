@@ -1,3 +1,3 @@
 import { writable } from 'svelte/store';
 
-export const headline = writable('SigmaUsd');
+export const selected_contract = writable('SigmaUsd');

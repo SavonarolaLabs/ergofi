@@ -1,9 +1,7 @@
 <script lang="ts">
-	import BigNumber from 'bignumber.js';
-	import type { ErgoBox } from 'ergo-lib-wasm-nodejs';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import { DIRECTION_BUY, DIRECTION_SELL, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
@@ -11,39 +9,10 @@
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
 	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
-	import { calculateReserveRateAndBorders } from '../sigmausd/sigmaUSDBankWidget';
-	import {
-		BASE_INPUT_AMOUNT_ERG,
-		calculateAmountAndSwapPrice,
-		calculateInputsRSVErgInErg,
-		calculateInputsRSVErgInRSV,
-		calculateInputsUsdErgInErg,
-		calculateInputsUsdErgInUsd
-	} from '../sigmausd/sigmaUSDInputRecalc';
-	import { parseErgUsdOracleBox, parseSigUsdBankBox } from '../sigmausd/sigmaUSDParser';
-	import {
-		bank_box,
-		bank_price_rsv_buy,
-		bank_price_rsv_sell,
-		bank_price_usd_buy,
-		bank_price_usd_sell,
-		bank_box_circulating_rsv,
-		bank_box_circulating_usd_cent,
-		bank_box_nano_erg,
-		fee_mining,
-		oracle_box,
-		oracle_price_sig_usd_cent,
-		reserve_border_left_ERG,
-		reserve_border_left_RSV,
-		reserve_border_left_USD,
-		reserve_border_right_ERG,
-		reserve_border_right_RSV,
-		reserve_border_right_USD,
-		reserve_rate
-	} from '../stores/bank';
+	import { bank_box, fee_mining, oracle_box } from '../stores/bank';
 	import { ERGO_TOKEN_ID, SigRSV_TOKEN_ID, SigUSD_TOKEN_ID } from '../stores/ergoTokens';
 	import { confirmed_interactions, mempool_interactions } from '../stores/preparedInteractions';
-	import { headline } from '../stores/ui';
+	import { selected_contract } from '../stores/ui';
 	import {
 		web3wallet_available_wallets,
 		web3wallet_confirmedTokens,
@@ -67,6 +36,7 @@
 		tokenColor
 	} from './Currency';
 	import type { Currency, LastUserInput } from './SwapWidget.types';
+	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -105,20 +75,20 @@
 			if (savedToCurrency) {
 				toCurrency = JSON.parse(savedToCurrency);
 			}
-			updateTitle();
+			selectContract();
 		} catch (e) {
 			// Gotta catch 'em all.
 		}
 	}
 
-	function updateTitle() {
+	function selectContract() {
 		if (
 			(fromCurrency.isToken && ['SigUSD', 'SigRSV'].includes(fromCurrency.tokens[0])) ||
 			(toCurrency.isToken && ['SigUSD', 'SigRSV'].includes(toCurrency.tokens[0]))
 		) {
-			headline.set('SigmaUsd');
+			selected_contract.set('SigmaUsd');
 		} else {
-			headline.set('DexyGold');
+			selected_contract.set('DexyGold');
 		}
 	}
 
@@ -128,18 +98,13 @@
 	onMount(() => {
 		loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
-			doRecalc(oracleBox, $bank_box);
+			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
+			doRecalcSigUsdContract();
 		});
 
 		bank_box.subscribe((bankBox) => {
-			doRecalc($oracle_box, bankBox);
-		});
-
-		bank_price_usd_sell.subscribe((val) => {
-			window.document.title = `↑${val} ↓${$bank_price_usd_buy} | SigUSD`;
-		});
-		bank_price_usd_buy.subscribe((val) => {
-			window.document.title = `↑${$bank_price_usd_sell} ↓${val} | SigUSD`;
+			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
+			doRecalcSigUsdContract();
 		});
 
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
@@ -167,136 +132,20 @@
 		};
 	});
 
-	function initialInputs(
-		bankBoxNanoErg: bigint,
-		bankBoxCicrulatingUsdCent: bigint,
-		bankBoxCirculatingRsv: bigint,
-		oraclePriceUsdCent: bigint,
-		feeMining: bigint
-	) {
-		// Calculate initial SigUSD "buy" price for 0.1 ERG (BASE_INPUT_AMOUNT_ERG)
-		const { totalSigUSD: totalSigUSDBuy, finalPrice: finalPriceBuy } = calculateInputsUsdErgInErg(
-			DIRECTION_BUY,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxNanoErg,
-			bankBoxCicrulatingUsdCent,
-			oraclePriceUsdCent,
-			feeMining
-		);
-
-		bank_price_usd_buy.set(finalPriceBuy);
-
-		const { totalSigUSD: totalSigUSDSell, finalPrice: finalPriceSell } = calculateInputsUsdErgInErg(
-			DIRECTION_SELL,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxNanoErg,
-			bankBoxCicrulatingUsdCent,
-			oraclePriceUsdCent,
-			feeMining
-		);
-		bank_price_usd_sell.set(finalPriceSell);
-
-		// Calculate initial SigRSV "buy" price for 0.1 ERG
-		const { finalPrice: finalPriceBuyRSV } = calculateInputsRSVErgInErg(
-			DIRECTION_BUY,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxNanoErg,
-			bankBoxCicrulatingUsdCent,
-			bankBoxCirculatingRsv,
-			oraclePriceUsdCent,
-			feeMining
-		);
-		bank_price_rsv_buy.set(finalPriceBuyRSV);
-
-		const { finalPrice: finalPriceSellRSV } = calculateInputsRSVErgInErg(
-			DIRECTION_SELL,
-			new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
-			bankBoxNanoErg,
-			bankBoxCicrulatingUsdCent,
-			bankBoxCirculatingRsv,
-			oraclePriceUsdCent,
-			feeMining
-		);
-		bank_price_rsv_sell.set(finalPriceSellRSV);
-
-		// We'll just set some initial example input
-		fromAmount = nanoErgToErg(BASE_INPUT_AMOUNT_ERG); // e.g. "0.1"
-		toAmount = totalSigUSDBuy; // e.g. "10"
-		swapPrice = finalPriceBuy; // e.g. real rate
-	}
-
-	/* ---------------------------------------
-	 * BankBox + Oracle helper
-	 * ------------------------------------- */
-	function updateBankStats() {
-		const { reserveRate, leftUSD, rightUSD, leftERG, rightERG, leftRSV, rightRSV } =
-			calculateReserveRateAndBorders(
-				$bank_box_nano_erg,
-				$bank_box_circulating_usd_cent,
-				$oracle_price_sig_usd_cent,
-				$bank_price_rsv_buy,
-				$bank_price_rsv_sell
-			);
-
-		reserve_rate.set(reserveRate);
-		reserve_border_left_USD.set(leftUSD);
-		reserve_border_left_ERG.set(leftERG);
-		reserve_border_right_USD.set(rightUSD);
-		reserve_border_right_ERG.set(rightERG);
-		reserve_border_left_RSV.set(leftRSV);
-		reserve_border_right_RSV.set(rightRSV);
-	}
-	async function updateBankBoxAndOracle(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
-		const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
-		bank_box_nano_erg.set(inErg);
-		bank_box_circulating_usd_cent.set(inCircSigUSD);
-		bank_box_circulating_rsv.set(inCircSigRSV);
-		oracle_price_sig_usd_cent.set(oraclePrice);
-	}
-
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	function recalcAmountAndPrice() {
-		const fromToken = fromCurrency.tokens[0];
-		const toToken = toCurrency.tokens[0];
-		const { from, to, price } = calculateAmountAndSwapPrice(
-			lastInput,
-			fromToken,
-			fromAmount,
-			toToken,
-			toAmount,
-			$bank_box_nano_erg,
-			$bank_box_circulating_usd_cent,
-			$bank_box_circulating_rsv,
-			$oracle_price_sig_usd_cent,
-			$fee_mining
-		)!;
-		swapPrice = price;
-		if (from != undefined) {
-			fromAmount = from;
+	function doRecalcSigUsdContract() {
+		const recalc = recalcAmountAndPrice(fromCurrency, fromAmount, toCurrency, toAmount, lastInput);
+		if (recalc) {
+			swapPrice = recalc.price;
+			if (recalc.from != undefined) {
+				fromAmount = recalc.from;
+			}
+			if (recalc.to != undefined) {
+				toAmount = recalc.to;
+			}
 		}
-		if (to != undefined) {
-			toAmount = to;
-		}
-	}
-
-	function doRecalc(oracleBox: ErgoBox, bankBox: ErgoBox) {
-		if (!oracleBox || !bankBox) return;
-		updateBankBoxAndOracle(oracleBox, bankBox);
-		if (fromAmount == '' && toAmount == '' && swapPrice == 0.0) {
-			initialInputs(
-				$bank_box_nano_erg,
-				$bank_box_circulating_usd_cent,
-				$bank_box_circulating_rsv,
-				$oracle_price_sig_usd_cent,
-				$fee_mining
-			);
-		}
-		updateBankStats();
-
-		recalcAmountAndPrice();
 	}
 
 	/* ---------------------------------------
@@ -305,25 +154,25 @@
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	function handleFromAmount2Change(event: Event) {
 		fromAmount2 = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	function handleToAmountChange(event: Event) {
 		toAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	function handleToAmount2Change(event: Event) {
 		toAmount2 = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	/* prettier-ignore */
@@ -355,13 +204,13 @@
 
 	function handleFromBalanceClick() {
 		fromAmount = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9)); // e.g. 0.01 => 10^7 (1e7) nanoERG
-		doRecalc($oracle_box, $bank_box);
+		doRecalcSigUsdContract();
 	}
 
 	const toggleFeeSlider = () => {
@@ -373,8 +222,8 @@
 		fromCurrency = toCurrency;
 		toCurrency = temp;
 		saveFromToCurrencyToLocalStorage();
-		doRecalc($oracle_box, $bank_box);
-		updateTitle();
+		doRecalcSigUsdContract();
+		selectContract();
 	}
 
 	function handleMouseEnter() {
@@ -781,7 +630,8 @@
 				>
 					<Gear></Gear>
 				</button>
-				<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$headline}></PrimaryButton>
+				<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$selected_contract}
+				></PrimaryButton>
 			</div>
 		{/if}
 	</div>
@@ -806,8 +656,8 @@
 						const allowed = getAllowedToCurrencies(fromCurrency);
 						toCurrency = allowed[0];
 						saveFromToCurrencyToLocalStorage();
-						doRecalc($oracle_box, $bank_box);
-						updateTitle();
+						doRecalcSigUsdContract();
+						selectContract();
 					}}
 				>
 					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
@@ -837,8 +687,8 @@
 						toCurrency = c;
 						toDropdownOpen = false;
 						saveFromToCurrencyToLocalStorage();
-						doRecalc($oracle_box, $bank_box);
-						updateTitle();
+						doRecalcSigUsdContract();
+						selectContract();
 					}}
 				>
 					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>

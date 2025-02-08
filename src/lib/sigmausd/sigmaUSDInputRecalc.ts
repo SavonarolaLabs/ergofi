@@ -440,3 +440,48 @@ export function calculateAmountAndSwapPrice(lastInput:string, fromToken:string, 
 		return {from, price}
 	}
 }
+
+export function calculateBankPrices(
+	bankBoxNanoErg: bigint,
+	bankBoxCicrulatingUsdCent: bigint,
+	bankBoxCirculatingRsv: bigint,
+	oraclePriceUsdCent: bigint,
+	feeMining: bigint
+) {
+	const { finalPrice: bankPriceUsdBuy } = calculateInputsUsdErgInErg(
+		DIRECTION_BUY,
+		new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+		bankBoxNanoErg,
+		bankBoxCicrulatingUsdCent,
+		oraclePriceUsdCent,
+		feeMining
+	);
+	const { finalPrice: bankPriceUsdSell } = calculateInputsUsdErgInErg(
+		DIRECTION_SELL,
+		new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+		bankBoxNanoErg,
+		bankBoxCicrulatingUsdCent,
+		oraclePriceUsdCent,
+		feeMining
+	);
+
+	const { finalPrice: bankPriceRsvBuy } = calculateInputsRSVErgInErg(
+		DIRECTION_BUY,
+		new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+		bankBoxNanoErg,
+		bankBoxCicrulatingUsdCent,
+		bankBoxCirculatingRsv,
+		oraclePriceUsdCent,
+		feeMining
+	);
+	const { finalPrice: bankPriceRsvSell } = calculateInputsRSVErgInErg(
+		DIRECTION_SELL,
+		new BigNumber(BASE_INPUT_AMOUNT_ERG.toString()),
+		bankBoxNanoErg,
+		bankBoxCicrulatingUsdCent,
+		bankBoxCirculatingRsv,
+		oraclePriceUsdCent,
+		feeMining
+	);
+	return { bankPriceUsdBuy, bankPriceUsdSell, bankPriceRsvBuy, bankPriceRsvSell };
+}

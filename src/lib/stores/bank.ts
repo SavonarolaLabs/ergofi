@@ -2,6 +2,9 @@ import { get, writable } from 'svelte/store';
 import type { Interaction, MempoolSocketUpdate } from './preparedInteractions';
 import { getMaxFeeLeaf } from './bankBoxSelection';
 import type { NodeBox, OracleData } from './bank.types';
+import { calculateReserveRateAndBorders } from '$lib/sigmausd/sigmaUSDBankWidget';
+import { calculateBankPrices } from '$lib/sigmausd/sigmaUSDInputRecalc';
+import { parseErgUsdOracleBox, parseSigUsdBankBox } from '$lib/sigmausd/sigmaUSDParser';
 
 export const reserve_rate = writable<number>(0);
 export const reserve_border_left_USD = writable<number>(0);
@@ -94,4 +97,47 @@ export function updateBestBankBoxLocal(
 	if (bankBox && get(bank_box)?.boxId != bankBox.boxId) {
 		bank_box.set(bankBox);
 	}
+}
+
+// Used in SwapWidget.svelte
+
+export function updateBankBoxAndOracle(oracleBox: NodeBox, bankBox: NodeBox) {
+	const { inErg, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
+	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
+	bank_box_nano_erg.set(inErg);
+	bank_box_circulating_usd_cent.set(inCircSigUSD);
+	bank_box_circulating_rsv.set(inCircSigRSV);
+	oracle_price_sig_usd_cent.set(oraclePrice);
+}
+
+export function updateBankPrices() {
+	const calc = calculateBankPrices(
+		get(bank_box_nano_erg),
+		get(bank_box_circulating_usd_cent),
+		get(bank_box_circulating_rsv),
+		get(oracle_price_sig_usd_cent),
+		get(fee_mining)
+	);
+	bank_price_usd_buy.set(calc.bankPriceUsdBuy);
+	bank_price_usd_sell.set(calc.bankPriceUsdSell);
+	bank_price_rsv_buy.set(calc.bankPriceRsvBuy);
+	bank_price_rsv_sell.set(calc.bankPriceRsvSell);
+}
+
+export function updateBankStats() {
+	const calc = calculateReserveRateAndBorders(
+		get(bank_box_nano_erg),
+		get(bank_box_circulating_usd_cent),
+		get(oracle_price_sig_usd_cent),
+		get(bank_price_rsv_buy),
+		get(bank_price_rsv_sell)
+	);
+
+	reserve_rate.set(calc.reserveRate);
+	reserve_border_left_USD.set(calc.leftUSD);
+	reserve_border_left_ERG.set(calc.leftERG);
+	reserve_border_right_USD.set(calc.rightUSD);
+	reserve_border_right_ERG.set(calc.rightERG);
+	reserve_border_left_RSV.set(calc.leftRSV);
+	reserve_border_right_RSV.set(calc.rightRSV);
 }

@@ -235,7 +235,7 @@ export function dexyGoldLpSwapInputDexyPrice(
 	direction: Direction,
 	feeMining: bigint,
 	swapState: DexyGoldLpSwapInputs
-): EIP12UnsignedTransaction {
+) {
 	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
 
 	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
@@ -261,11 +261,13 @@ export function dexyGoldLpSwapInputDexyPrice(
 	// FEE PART:
 	if (direction == DIRECTION_SELL) {
 		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining)); // Buy  ERG : Input Dexy
+		//inputErg => how much needed
 	} else {
 		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining)); // Sell ERG : Input Dexy
+		//contractERG => how much needed
 	}
-
-	return unsignedTx;
+	const price = Number(amountErg) / Number(inputDexy);
+	return { amountErg, amountDexy: inputDexy, price };
 }
 
 export function dexyGoldLpSwapInputErgTx(

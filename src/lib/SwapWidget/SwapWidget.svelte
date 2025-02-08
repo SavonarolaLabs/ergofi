@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { dexyGoldLpSwapInputErgPrice, dexyGoldLpSwapInputErgTx } from '$lib/dexygold/dexyGold';
+	import {
+		dexyGoldLpSwapInputDexyPrice,
+		dexyGoldLpSwapInputErgPrice,
+		dexyGoldLpSwapInputErgTx
+	} from '$lib/dexygold/dexyGold';
 	import { dexygold_lp_box, dexygold_lp_swap_box } from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
@@ -157,28 +161,71 @@
 			}
 		}
 	}
+
 	async function doRecalcDexyGoldContract() {
-		console.log('doRecalcDexyGoldContract');
-		//asdf
 		const params = {
-			inputErg: fromAmount,
-			feeMining: $fee_mining,
 			swapState: {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpIn: $dexygold_lp_box
 			}
 		};
-
-		const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
-			ergStringToNanoErg(params.inputErg),
-			DIRECTION_SELL,
-			params.feeMining,
-			params.swapState
-		);
-		//fromAmount = recalc.from;
-		toAmount = amountDexy.toString();
-		swapPrice = price;
-		console.log({ amountErg, amountDexy, price });
+		if (
+			lastInput === 'From' &&
+			fromCurrency.tokens[0] === 'ERG' &&
+			toCurrency.tokens[0] === 'DexyGold'
+		) {
+			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
+				ergStringToNanoErg(fromAmount),
+				DIRECTION_SELL,
+				$fee_mining,
+				params.swapState
+			);
+			toAmount = amountDexy.toString();
+			swapPrice = price;
+		}
+		if (
+			lastInput === 'To' &&
+			fromCurrency.tokens[0] === 'DexyGold' &&
+			toCurrency.tokens[0] === 'ERG'
+		) {
+			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
+				ergStringToNanoErg(toAmount),
+				DIRECTION_BUY, //
+				$fee_mining,
+				params.swapState
+			);
+			fromAmount = amountDexy.toString();
+			swapPrice = price;
+		}
+		if (
+			lastInput === 'From' &&
+			fromCurrency.tokens[0] === 'DexyGold' &&
+			toCurrency.tokens[0] === 'ERG'
+		) {
+			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
+				BigInt(fromAmount),
+				DIRECTION_BUY,
+				$fee_mining,
+				params.swapState
+			);
+			toAmount = nanoErgToErg(amountErg);
+			swapPrice = price;
+		}
+		if (
+			lastInput === 'To' &&
+			fromCurrency.tokens[0] === 'ERG' &&
+			toCurrency.tokens[0] === 'DexyGold'
+		) {
+			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
+				BigInt(toAmount),
+				DIRECTION_SELL, //
+				$fee_mining,
+				params.swapState
+			);
+			//fromAmount = amountDexy.toString();
+			fromAmount = nanoErgToErg(amountErg);
+			swapPrice = price;
+		}
 	}
 
 	async function doRecalcDexyGoldContract_TX() {

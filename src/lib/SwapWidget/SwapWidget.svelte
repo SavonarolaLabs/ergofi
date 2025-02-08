@@ -135,6 +135,11 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
+	function doRecalc() {
+		if ($selected_contract == 'SigmaUsd') {
+			doRecalcSigUsdContract();
+		}
+	}
 	function doRecalcSigUsdContract() {
 		const recalc = recalcAmountAndPrice(fromCurrency, fromAmount, toCurrency, toAmount, lastInput);
 		if (recalc) {
@@ -154,25 +159,25 @@
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	function handleFromAmount2Change(event: Event) {
 		fromAmount2 = (event.target as HTMLInputElement).value;
 		lastInput = 'From';
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	function handleToAmountChange(event: Event) {
 		toAmount = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	function handleToAmount2Change(event: Event) {
 		toAmount2 = (event.target as HTMLInputElement).value;
 		lastInput = 'To';
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	/* prettier-ignore */
@@ -204,13 +209,13 @@
 
 	function handleFromBalanceClick() {
 		fromAmount = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9)); // e.g. 0.01 => 10^7 (1e7) nanoERG
-		doRecalcSigUsdContract();
+		doRecalc();
 	}
 
 	const toggleFeeSlider = () => {
@@ -221,9 +226,9 @@
 		const temp = fromCurrency;
 		fromCurrency = toCurrency;
 		toCurrency = temp;
-		saveFromToCurrencyToLocalStorage();
-		doRecalcSigUsdContract();
 		selectContract();
+		saveFromToCurrencyToLocalStorage();
+		doRecalc();
 	}
 
 	function handleMouseEnter() {
@@ -318,7 +323,6 @@
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
 		style="padding:8px"
 	>
-		<!-- FROM SELECTION -->
 		<div
 			class="flex flex-col transition-all"
 			class:justify-between={fromCurrency.isLpPool}
@@ -327,6 +331,7 @@
 				: 'min-height:200px'}
 		>
 			<div>
+				<!-- FROM SELECTION -->
 				<div class="rounded-md rounded-bl-none bg-gray-800">
 					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
 						<span class="text-sm"
@@ -655,9 +660,9 @@
 						fromDropdownOpen = false;
 						const allowed = getAllowedToCurrencies(fromCurrency);
 						toCurrency = allowed[0];
-						saveFromToCurrencyToLocalStorage();
-						doRecalcSigUsdContract();
 						selectContract();
+						saveFromToCurrencyToLocalStorage();
+						doRecalc();
 					}}
 				>
 					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
@@ -686,9 +691,9 @@
 					on:click={() => {
 						toCurrency = c;
 						toDropdownOpen = false;
-						saveFromToCurrencyToLocalStorage();
-						doRecalcSigUsdContract();
 						selectContract();
+						saveFromToCurrencyToLocalStorage();
+						doRecalc();
 					}}
 				>
 					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>

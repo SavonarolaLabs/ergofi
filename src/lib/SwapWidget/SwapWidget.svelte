@@ -673,8 +673,5 @@
 		border-right: 26px solid transparent;
 	}
 
-	.border-color {
-		border-color: #16151f;
-	}
 	/* https://img.goodfon.ru/wallpaper/nbig/4/f0/gold-texture-golden-zoloto-fon-4060.webp */
 </style>

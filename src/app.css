@@ -47,3 +47,7 @@ input[type='number'] {
 sub {
 	font-size: 80%;
 }
+
+.border-color {
+	border-color: #16151f;
+}

@@ -33,7 +33,4 @@ top:{toBtnRect.top - 4}px; border-right:none"
 </div>
 
 <style>
-	.border-color {
-		border-color: #16151f;
-	}
 </style>

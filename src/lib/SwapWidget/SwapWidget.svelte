@@ -707,5 +707,5 @@
 	.border-color {
 		border-color: #16151f;
 	}
-	/* https://yandex.ru/images/search?from=tabbar&img_url=https%3A%2F%2Fceles.club%2Fuploads%2Fposts%2F2022-10%2F1667213180_56-celes-club-p-zolotoi-fon-odnotonnii-oboi-56.jpg&lr=10410&p=1&pos=3&rpt=simage&text=gold%20texture */
+	/* https://img.goodfon.ru/wallpaper/nbig/4/f0/gold-texture-golden-zoloto-fon-4060.webp */
 </style>

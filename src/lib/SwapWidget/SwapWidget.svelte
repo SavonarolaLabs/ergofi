@@ -18,7 +18,6 @@
 		web3wallet_wallet_used_addresses
 	} from '../stores/web3wallet';
 	import SubNumber from '../SubNumber.svelte';
-	import SwapWidgetTokenRow from '../SwapWidgetTokenRow.svelte';
 	import {
 		centsToUsd,
 		ergStringToNanoErgBigInt,
@@ -57,8 +56,6 @@
 
 	let fromDropdownOpen = false;
 	let toDropdownOpen = false;
-
-	//  Colors for the circles (helper)
 
 	function saveFromToCurrencyToLocalStorage() {
 		localStorage.setItem('fromCurrency', JSON.stringify(fromCurrency));
@@ -155,7 +152,7 @@
 	}
 
 	/* ---------------------------------------
-	 * Handlers
+	 * Recalc Handlers
 	 * ------------------------------------- */
 	function handleFromAmountChange(event: Event) {
 		fromAmount = (event.target as HTMLInputElement).value;
@@ -213,22 +210,26 @@
 		doRecalc();
 	}
 
-	function handleFeeChange(event: Event) {
-		const val = (event.target as HTMLInputElement).value;
-		fee_mining.set(BigInt(Number(val) * 10 ** 9));
-		doRecalc();
-	}
-
-	const toggleFeeSlider = () => {
-		showFeeSlider = !showFeeSlider;
-	};
-
 	function handleSwapInputs() {
 		const temp = fromCurrency;
 		fromCurrency = toCurrency;
 		toCurrency = temp;
 		selectContract();
 		saveFromToCurrencyToLocalStorage();
+		doRecalc();
+	}
+
+	/* ---------------------------------------
+	 * Fee Change
+	 * ------------------------------------- */
+
+	const toggleFeeSlider = () => {
+		showFeeSlider = !showFeeSlider;
+	};
+
+	function handleFeeChange(event: Event) {
+		const val = (event.target as HTMLInputElement).value;
+		fee_mining.set(BigInt(Number(val) * 10 ** 9));
 		doRecalc();
 	}
 
@@ -258,9 +259,8 @@
 	/* ---------------------------------------
 	 * Dropdowns
 	 * ------------------------------------- */
-	window.addEventListener('click', handleGlobalClick);
-	window.addEventListener('keydown', handleGlobalKeydown);
 
+	// move to own logic file, use stores if needed
 	function handleGlobalClick(e: MouseEvent) {
 		const target = e.target as HTMLElement;
 

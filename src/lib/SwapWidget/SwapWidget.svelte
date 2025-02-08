@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';

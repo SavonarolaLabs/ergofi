@@ -49,6 +49,7 @@
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
+		"@esbuild-plugins/node-globals-polyfill": "^0.2.3",
 		"@fleet-sdk/compiler": "^0.8.1",
 		"@fleet-sdk/core": "^0.8.1",
 		"@fleet-sdk/mock-chain": "^0.8.1",
@@ -60,6 +61,7 @@
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.15",
 		"bignumber.js": "^9.1.2",
+		"buffer": "^6.0.3",
 		"date-fns": "^4.1.0",
 		"ergo-lib-wasm-nodejs": "^0.28.0",
 		"fs": "^0.0.1-security",

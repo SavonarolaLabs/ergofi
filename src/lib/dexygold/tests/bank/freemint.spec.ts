@@ -17,10 +17,9 @@ import {
 	dexygold_bank_free_mint_box,
 	dexygold_buyback_box,
 	dexygold_lp_box,
-	fakeUserWithDexyBox,
-	initTestBoxes,
 	oracle_erg_xau_box
 } from '$lib/stores/dexyGoldStore';
+import { fakeUserWithDexyBox, initTestBoxes } from '$lib/stores/dexyGoldStoreTestData';
 import {
 	ErgoUnsignedInput,
 	OutputBuilder,

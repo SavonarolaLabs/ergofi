@@ -5,7 +5,7 @@ import { ErgoAddress } from '@fleet-sdk/core';
 import { formatDistanceToNowStrict } from 'date-fns';
 import numeral from 'numeral';
 
-export function ergStringToNanoErgBigInt(erg: string): bigint {
+export function ergStringToNanoErg(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());
 }
 

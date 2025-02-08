@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { dexyGoldLpSwapInputErgTx } from '$lib/dexygold/dexyGold';
+	import { dexygold_lp_box, dexygold_lp_swap_box } from '$lib/stores/dexyGoldStore';
+	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
-	import { SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { DIRECTION_BUY, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
@@ -20,7 +23,7 @@
 	import SubNumber from '../SubNumber.svelte';
 	import {
 		centsToUsd,
-		ergStringToNanoErgBigInt,
+		ergStringToNanoErg,
 		isOwnTx,
 		nanoErgToErg,
 		usdStringToCentBigInt
@@ -33,12 +36,10 @@
 		getAllowedToCurrencies,
 		tokenColor
 	} from './currency';
+	import Dropdown from './Dropdown.svelte';
+	import SwapInputs from './SwapInputs.svelte';
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
-	import SwapInputs from './SwapInputs.svelte';
-	import FromDropdownMenu from './Dropdown.svelte';
-	import ToDropdownMenu from './DropdownTo.svelte';
-	import Dropdown from './Dropdown.svelte';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -95,6 +96,9 @@
 	 * onMount: load / subscribe / etc.
 	 * ------------------------------------- */
 	onMount(() => {
+		//TODO: remove
+		initJsonTestBoxes();
+
 		loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
@@ -125,10 +129,10 @@
 
 		window.addEventListener('click', handleGlobalClick);
 		window.addEventListener('keydown', handleGlobalKeydown);
-		return () => {
-			window.removeEventListener('click', handleGlobalClick);
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
+		//return () => {
+		//	window.removeEventListener('click', handleGlobalClick);
+		//	window.removeEventListener('keydown', handleGlobalKeydown);
+		//};
 	});
 
 	/* ---------------------------------------
@@ -137,6 +141,8 @@
 	function doRecalc() {
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
+		} else if ($selected_contract == 'DexyGold') {
+			doRecalcDexyGoldContract();
 		}
 	}
 	function doRecalcSigUsdContract() {
@@ -150,6 +156,33 @@
 				toAmount = recalc.to;
 			}
 		}
+	}
+
+	async function doRecalcDexyGoldContract() {
+		//asdf
+		const { me, utxos, height } = await getWeb3WalletData();
+		const params = {
+			inputErg: fromAmount,
+			direction: DIRECTION_BUY,
+			userBase58PK: me,
+			height,
+			feeMining: $fee_mining,
+			utxos,
+			swapState: {
+				lpSwapIn: $dexygold_lp_swap_box,
+				lpIn: $dexygold_lp_box
+			}
+		};
+
+		const unsignedTx = dexyGoldLpSwapInputErgTx(
+			ergStringToNanoErg(params.inputErg),
+			DIRECTION_BUY,
+			params.userBase58PK,
+			params.height,
+			params.feeMining,
+			params.utxos,
+			params.swapState
+		);
 	}
 
 	/* ---------------------------------------
@@ -185,10 +218,10 @@
 
 		let fromAmountX:bigint=0n;
 		let toAmountX:bigint=0n;
-		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG') 	  fromAmountX = ergStringToNanoErgBigInt(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG') 	  fromAmountX = ergStringToNanoErg(fromAmount);
 		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigUSD') fromAmountX = usdStringToCentBigInt(fromAmount);
 		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigRSV') fromAmountX = BigInt(fromAmount);
-		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'ERG') 	  toAmountX = ergStringToNanoErgBigInt(toAmount);
+		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'ERG') 	  toAmountX = ergStringToNanoErg(toAmount);
 		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigUSD')   toAmountX = usdStringToCentBigInt(toAmount);
 		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigRSV')   toAmountX = BigInt(toAmount);
 		const fromAsset = {

@@ -43,12 +43,14 @@ import {
 	dexygold_lp_redeem_box,
 	dexygold_lp_swap_box,
 	dexygold_tracking101_box,
+	oracle_erg_xau_box
+} from '$lib/stores/dexyGoldStore';
+import {
 	fakeUserBox,
 	fakeUserWithDexyBox,
 	initTestBoxes,
-	mintInitialOutputs,
-	oracle_erg_xau_box
-} from '$lib/stores/dexyGoldStore';
+	mintInitialOutputs
+} from '$lib/stores/dexyGoldStoreTestData';
 import { nanoErgToErg } from '$lib/TransactionUtils';
 import {
 	ErgoUnsignedInput,

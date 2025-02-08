@@ -1,10 +1,25 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-
-	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+	optimizeDeps: {
+		esbuildOptions: {
+			// Node.js global polyfills for browser
+			define: {
+				global: 'globalThis'
+			},
+			plugins: [
+				NodeGlobalsPolyfillPlugin({
+					buffer: true
+				})
+			]
+		}
+	},
+	resolve: {
+		alias: {
+			buffer: 'buffer/'
+		}
 	}
 });

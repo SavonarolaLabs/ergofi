@@ -22,7 +22,6 @@ import {
 	DEXY_LP_PROXY_SWAPSELLV1,
 	DEXY_TRACKING
 } from './dexyAddressConstants';
-import { compileContract } from './compile';
 
 export interface NetworkTokenIds {
 	lpNFT: string;
@@ -126,8 +125,8 @@ export const vitestErgoTrees = {
 	//:DEXY_GORT_DEV_EMISSION,
 	lpSwapBuyV1ErgoTree: DEXY_LP_PROXY_SWAPBUYV1_TREE,
 	lpSwapSellV1ErgoTree: DEXY_LP_PROXY_SWAPSELLV1_TREE,
-	oracleErgoTree: tree(compileContract('sigmaProp(true)')), //<-----
-	fakeScriptErgoTree: tree(compileContract('sigmaProp(true)'))
+	oracleErgoTree: 'FxyP1tYPbxZVwjCTB', //<----- // sigmaProp(true)
+	fakeScriptErgoTree: 'FxyP1tYPbxZVwjCTB' // sigmaProp(true)
 };
 
 //-----------------------------------

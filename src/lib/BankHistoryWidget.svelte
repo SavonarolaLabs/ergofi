@@ -80,7 +80,7 @@
 	});
 </script>
 
-<div class="widget pt-4 text-gray-500">
+<div class="widget pb-4 pt-4 text-gray-500">
 	<div class="pl-2">
 		{#if $selected_contract == 'DexyGold'}
 			<DexyGoldLpUTXO></DexyGoldLpUTXO>
@@ -229,7 +229,7 @@
 				</a>
 			{/each}
 		</div>
-		<h1 class="sketch-font hidden-below-800 mb-2 text-9xl text-gray-700">{$selected_contract}</h1>
+		<!-- <h1 class="sketch-font hidden-below-800 mb-2 text-9xl text-gray-700">{$selected_contract}</h1> -->
 	</div>
 </div>
 

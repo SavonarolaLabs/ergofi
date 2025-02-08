@@ -33,10 +33,12 @@
 		fromCurrencies,
 		getAllowedToCurrencies,
 		tokenColor
-	} from './Currency';
+	} from './currency';
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import SwapInputs from './SwapInputs.svelte';
+	import FromDropdownMenu from './FromDropdownMenu.svelte';
+	import ToDropdownMenu from './ToDropdownMenu.svelte';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -213,7 +215,7 @@
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
-		fee_mining.set(BigInt(Number(val) * 10 ** 9)); // e.g. 0.01 => 10^7 (1e7) nanoERG
+		fee_mining.set(BigInt(Number(val) * 10 ** 9));
 		doRecalc();
 	}
 
@@ -284,6 +286,7 @@
 			}
 		}
 	}
+
 	function handleGlobalKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			fromDropdownOpen = false;
@@ -303,6 +306,22 @@
 		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		toDropdownOpen = !toDropdownOpen;
 		fromDropdownOpen = false;
+	}
+	function handleSelectFromCurrency(c) {
+		fromCurrency = c;
+		fromDropdownOpen = false;
+		const allowed = getAllowedToCurrencies(fromCurrency);
+		toCurrency = allowed[0];
+		selectContract();
+		saveFromToCurrencyToLocalStorage();
+		doRecalc();
+	}
+	function handleSelectToCurrency(c) {
+		toCurrency = c;
+		toDropdownOpen = false;
+		selectContract();
+		saveFromToCurrencyToLocalStorage();
+		doRecalc();
 	}
 </script>
 
@@ -619,63 +638,14 @@
 
 <!-- Dropdown list -->
 {#if fromDropdownOpen}
-	<div
-		id="fromDropdownMenu"
-		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;left: {fromBtnRect.left}px;top:{fromBtnRect.top -
-			4}px; border-right:none"
-		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md rounded-br-none border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
-	>
-		<div>
-			{#each fromCurrencies as c, i}
-				<button
-					class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-					style="height:56px"
-					on:click={() => {
-						fromCurrency = c;
-						fromDropdownOpen = false;
-						const allowed = getAllowedToCurrencies(fromCurrency);
-						toCurrency = allowed[0];
-						selectContract();
-						saveFromToCurrencyToLocalStorage();
-						doRecalc();
-					}}
-				>
-					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
-				</button>
-				{#if i != fromCurrencies.length - 1}
-					<hr class="border-slate-800" />
-				{/if}
-			{/each}
-		</div>
-	</div>
+	<FromDropdownMenu {fromBtnRect} {fromCurrencies} onSelect={handleSelectFromCurrency} />
 {/if}
-
-<!-- Dropdown list -->
 {#if toDropdownOpen}
-	<div
-		id="toDropdownMenu"
-		style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;
-		left: {toBtnRect.left}px;
-		top:{toBtnRect.top - 4}px; border-right:none"
-		class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
-	>
-		<div class="py-1">
-			{#each getAllowedToCurrencies(currencyERG) as c}
-				<button
-					class="text-md block flex w-full gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
-					on:click={() => {
-						toCurrency = c;
-						toDropdownOpen = false;
-						selectContract();
-						saveFromToCurrencyToLocalStorage();
-						doRecalc();
-					}}
-				>
-					<SwapWidgetTokenRow {c}></SwapWidgetTokenRow>
-				</button>
-			{/each}
-		</div>
-	</div>
+	<ToDropdownMenu
+		{toBtnRect}
+		toCurrencies={getAllowedToCurrencies(currencyERG)}
+		onSelect={handleSelectToCurrency}
+	/>
 {/if}
 
 <style>

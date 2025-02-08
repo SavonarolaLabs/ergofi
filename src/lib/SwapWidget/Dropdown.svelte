@@ -2,8 +2,8 @@
 	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
 	import type { Currency } from './SwapWidget.types';
 
-	export let fromBtnRect: { top: number; left: number; width: number };
-	export let fromCurrencies: Currency[];
+	export let btnRect: { top: number; left: number; width: number };
+	export let currencies: Currency[];
 	export let onSelect: (currency: Currency) => void;
 </script>
 
@@ -14,13 +14,13 @@
 			width: 250px;
 			border-top-left-radius: 0;
 			border-top-right-radius: 0;
-			left: {fromBtnRect.left}px;
-			top: {fromBtnRect.top - 4}px;
+			left: {btnRect.left}px;
+			top: {btnRect.top - 4}px;
 			border-right: none;
 		"
 >
 	<div>
-		{#each fromCurrencies as c, i}
+		{#each currencies as c, i}
 			<button
 				class="text-md flex w-full items-center gap-3 px-3 py-2 text-left text-gray-300 hover:bg-gray-600 hover:text-white"
 				style="height:56px"
@@ -29,7 +29,7 @@
 				<SwapWidgetTokenRow {c} />
 			</button>
 
-			{#if i !== fromCurrencies.length - 1}
+			{#if i !== currencies.length - 1}
 				<hr class="border-slate-800" />
 			{/if}
 		{/each}

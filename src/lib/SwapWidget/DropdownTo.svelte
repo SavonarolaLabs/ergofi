@@ -1,6 +1,5 @@
 <script lang="ts">
 	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
-	import { currencyERG, getAllowedToCurrencies } from './currency';
 	import type { Currency } from './SwapWidget.types';
 
 	export let toBtnRect: { top: number; left: number; width: number };

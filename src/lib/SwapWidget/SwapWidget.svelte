@@ -36,8 +36,9 @@
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import SwapInputs from './SwapInputs.svelte';
-	import FromDropdownMenu from './FromDropdownMenu.svelte';
-	import ToDropdownMenu from './ToDropdownMenu.svelte';
+	import FromDropdownMenu from './Dropdown.svelte';
+	import ToDropdownMenu from './DropdownTo.svelte';
+	import Dropdown from './Dropdown.svelte';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -638,12 +639,12 @@
 
 <!-- Dropdown list -->
 {#if fromDropdownOpen}
-	<FromDropdownMenu {fromBtnRect} {fromCurrencies} onSelect={handleSelectFromCurrency} />
+	<Dropdown btnRect={fromBtnRect} currencies={fromCurrencies} onSelect={handleSelectFromCurrency} />
 {/if}
 {#if toDropdownOpen}
-	<ToDropdownMenu
-		{toBtnRect}
-		toCurrencies={getAllowedToCurrencies(currencyERG)}
+	<Dropdown
+		btnRect={toBtnRect}
+		currencies={getAllowedToCurrencies(currencyERG)}
 		onSelect={handleSelectToCurrency}
 	/>
 {/if}

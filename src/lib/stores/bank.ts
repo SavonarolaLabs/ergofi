@@ -67,8 +67,6 @@ export function updateBestBankBox(
 		.map((i) => i.tx);
 	const txList = [
 		...(payload.history?.[0] ? [payload.history[0]] : []),
-		//...(payload.history?.[0] ? [payload.history[0]] : []),
-		//...payload.history,
 		...(payload.confirmed_transactions?.[0] ? [payload.confirmed_transactions[0]] : []),
 		...payload.unconfirmed_transactions,
 		...preparedTxs

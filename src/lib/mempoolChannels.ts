@@ -34,7 +34,6 @@ export function initMempoolChannels() {
 	sigmausdChannel
 		.join()
 		.receive('ok', (resp) => {
-			// If desired, initialize local data
 			initHistory(resp.history, get(web3wallet_wallet_used_addresses));
 			handleMempoolSocketUpdate(resp, get(web3wallet_wallet_used_addresses));
 			updateBestBankBox(resp, get(prepared_interactions));

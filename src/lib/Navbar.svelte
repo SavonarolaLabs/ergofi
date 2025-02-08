@@ -53,7 +53,7 @@
 					<div></div>
 				</div>
 			{:else}
-				<div class="flex items-start gap-2 pt-2 leading-none">
+				<div class="flex items-center gap-2 leading-none">
 					<div class="flex items-end gap-1">
 						<div class="text-right">
 							<div class="text-xl text-gray-500">

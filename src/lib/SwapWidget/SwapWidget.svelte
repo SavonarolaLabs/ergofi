@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dexyGoldLpSwapInputErgTx } from '$lib/dexygold/dexyGold';
+	import { dexyGoldLpSwapInputErgPrice, dexyGoldLpSwapInputErgTx } from '$lib/dexygold/dexyGold';
 	import { dexygold_lp_box, dexygold_lp_swap_box } from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
@@ -157,8 +157,31 @@
 			}
 		}
 	}
-
 	async function doRecalcDexyGoldContract() {
+		console.log('doRecalcDexyGoldContract');
+		//asdf
+		const params = {
+			inputErg: fromAmount,
+			feeMining: $fee_mining,
+			swapState: {
+				lpSwapIn: $dexygold_lp_swap_box,
+				lpIn: $dexygold_lp_box
+			}
+		};
+
+		const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
+			ergStringToNanoErg(params.inputErg),
+			DIRECTION_SELL,
+			params.feeMining,
+			params.swapState
+		);
+		//fromAmount = recalc.from;
+		toAmount = amountDexy.toString();
+		swapPrice = price;
+		console.log({ amountErg, amountDexy, price });
+	}
+
+	async function doRecalcDexyGoldContract_TX() {
 		console.log('doRecalcDexyGoldContract');
 		//asdf
 		const { me, utxos, height } = await getWeb3WalletData();

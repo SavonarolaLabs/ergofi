@@ -188,6 +188,86 @@ export function calculateLpRedeemInputDexy(
 }
 
 // BUILD
+
+export function dexyGoldLpSwapInputErgPrice(
+	inputErg: bigint,
+	direction: Direction,
+	feeMining: bigint,
+	swapState: DexyGoldLpSwapInputs
+) {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	//--------------- Calculations -------------
+
+	let uiSwapFee, contractErg;
+	// FEE PART:
+	if (direction == DIRECTION_SELL) {
+		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
+	} else {
+		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
+	}
+
+	let { amountDexy, amountErg, rate } = lpSwapInputErg(
+		direction,
+		contractErg,
+		lpXIn,
+		lpYIn,
+		feeNumLp,
+		feeDenomLp
+	);
+
+	// inputErg => amountDexy
+	const price = Number(inputErg) / Number(amountDexy);
+	return { amountErg: inputErg, amountDexy, price };
+}
+export function dexyGoldLpSwapInputDexyPrice(
+	inputDexy: bigint,
+	direction: Direction,
+	feeMining: bigint,
+	swapState: DexyGoldLpSwapInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	let uiSwapFee, amountErg;
+
+	// lpSwapInputDexy
+	let {
+		amountDexy,
+		amountErg: contractERG,
+		rate
+	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
+
+	// FEE PART:
+	if (direction == DIRECTION_SELL) {
+		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining)); // Buy  ERG : Input Dexy
+	} else {
+		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining)); // Sell ERG : Input Dexy
+	}
+
+	return unsignedTx;
+}
+
 export function dexyGoldLpSwapInputErgTx(
 	inputErg: bigint,
 	direction: Direction,

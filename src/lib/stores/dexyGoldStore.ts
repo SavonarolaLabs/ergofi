@@ -47,6 +47,7 @@ export type DexyGoldWidgetNumbers = {
 	bankArbMintAvailableDexy: bigint;
 	bankArbMintResetDexy: bigint;
 	tracking101TriggerHeight: bigint;
+	isBankArbMintActivationHeightTriggered: boolean;
 	isBankArbMintActive: boolean;
 	isBankFreeMintActive: boolean;
 };
@@ -90,9 +91,11 @@ export function calculateDexyGoldWidgetNumbers() {
 	const isBankArbMintActivationRateTriggered = lpRateXy * 100n > 101n * oracleRateWithFee;
 	const isBankFreeMintActivationRateTriggered = lpRateXy * 100n > 98n * oracleRateXy;
 
-	const bankArbMintActivationHeight = height > BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
-
-	const isBankArbMintActive = isBankArbMintActivationRateTriggered && bankArbMintActivationHeight;
+	const bankArbMintActivationHeight = BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
+	const isBankArbMintActivationHeightTriggered =
+		height > BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
+	const isBankArbMintActive =
+		isBankArbMintActivationRateTriggered && isBankArbMintActivationHeightTriggered;
 	const isBankFreeMintActive = isBankFreeMintActivationRateTriggered;
 
 	const bankFreeMintExchangeRate = -666;
@@ -118,6 +121,7 @@ export function calculateDexyGoldWidgetNumbers() {
 		bankArbMintAvailableDexy,
 		bankArbMintResetDexy,
 		tracking101TriggerHeight,
+		isBankArbMintActivationHeightTriggered,
 		isBankArbMintActive,
 		isBankFreeMintActive
 	});

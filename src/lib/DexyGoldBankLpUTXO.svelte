@@ -12,11 +12,7 @@
 </script>
 
 <div class="text-sm">
-	{#if $dexygold_widget_numbers}
-		{#each Object.entries($dexygold_widget_numbers) as [o, e]}
-			<div>{e}:{o}</div>
-		{/each}
-	{/if}
+	{#if $dexygold_widget_numbers}{/if}
 </div>
 
 <style>

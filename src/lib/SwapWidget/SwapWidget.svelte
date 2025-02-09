@@ -673,6 +673,7 @@
 							type="button"
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+							disabled={getAllowedToCurrencies(fromCurrency).length < 2}
 							on:click={toggleToDropdown}
 						>
 							{#if toCurrency.isLpToken}
@@ -690,7 +691,7 @@
 									{toCurrency.tokens[0]}
 								</div>
 							{/if}
-							{#if toCurrency.isToken || toCurrency.isLpToken}
+							{#if getAllowedToCurrencies(fromCurrency).length > 1}
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
 									xmlns="http://www.w3.org/2000/svg"
@@ -806,7 +807,7 @@
 {#if toDropdownOpen}
 	<Dropdown
 		btnRect={toBtnRect}
-		currencies={getAllowedToCurrencies(currencyERG)}
+		currencies={getAllowedToCurrencies(fromCurrency)}
 		onSelect={handleSelectToCurrency}
 	/>
 {/if}

@@ -15,7 +15,7 @@
 	{#if $dexygold_widget_numbers}
 		<div>{$dexygold_widget_numbers.bankAvailableDexy} bankAvailableDexy</div>
 		<div>{$dexygold_widget_numbers.lpAvailabeDexy} lpAvailabeDexy</div>
-		<div>{$dexygold_widget_numbers.lpAvailabeErg} lpAvailabeErg</div>
+		<div>{$dexygold_widget_numbers.lpAvailabeErg / 10n ** 9n} lpAvailabeErg</div>
 		<div>{$dexygold_widget_numbers.lpRate} lpRate</div>
 		<div class="mb-1"></div>
 		<div>{$dexygold_widget_numbers.bankFreeMintActivationRate} bankFreeMintActivationRate</div>

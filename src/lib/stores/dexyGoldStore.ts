@@ -84,11 +84,11 @@ export function calculateDexyGoldWidgetNumbers() {
 	const bankArbMintResetDexy = (lpXIn - oracleRateWithFee * lpYIn) / oracleRateWithFee; //arb
 
 	const bankArbMintActivationRate = (101n * oracleRateWithFee) / 100n;
-	const bankFreeMintActivationRate = (oracleRate * 98n) / 100n;
+	const bankFreeMintActivationRate = (oracleRateXy * 98n) / 100n;
 
 	const lpRateXy = lpXIn / lpYIn;
 	const isBankArbMintActivationRateTriggered = lpRateXy * 100n > 101n * oracleRateWithFee;
-	const isBankFreeMintActivationRateTriggered = lpRateXy * 100n > oracleRate * 98n;
+	const isBankFreeMintActivationRateTriggered = lpRateXy * 100n > 98n * oracleRateXy;
 
 	const bankArbMintActivationHeight = height > BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
 

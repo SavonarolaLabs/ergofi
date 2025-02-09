@@ -15,7 +15,7 @@
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
 	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
-	import { bank_box, fee_mining, oracle_box } from '../stores/bank';
+	import { bank_box, fee_mining, oracle_box, reserve_border_left_USD } from '../stores/bank';
 	import { ERGO_TOKEN_ID, SigRSV_TOKEN_ID, SigUSD_TOKEN_ID } from '../stores/ergoTokens';
 	import { confirmed_interactions, mempool_interactions } from '../stores/preparedInteractions';
 	import { selected_contract } from '../stores/ui';
@@ -283,8 +283,16 @@
 		doRecalc();
 	}
 
+	let shake = false;
+
 	/* prettier-ignore */
 	async function handleSwapButton() {
+		if(isSwapDisabledCalc()){
+			setWidgetBorderError()
+			shake = true;
+			setTimeout(() => {shake = false; setWidgetBorderNormal()}, 300);
+			return;
+		}
 		// Check direction based on the last typed field
 
 		let fromAmountX:bigint=0n;
@@ -428,12 +436,56 @@
 		saveFromToCurrencyToLocalStorage();
 		doRecalc();
 	}
+
+	/* ---------------------------------------
+	 * Validation ERRORS
+	 * ------------------------------------- */
+
+	const setCustomProperty = (property: string, value: string): void => {
+		document.documentElement.style.setProperty(property, value);
+	};
+
+	function setWidgetBorderError() {
+		setCustomProperty('--widget-border-color', 'red');
+	}
+
+	function setWidgetBorderNormal() {
+		setCustomProperty('--widget-border-color', '#1F2937');
+	}
+
+	let isSwapDisabled = false;
+	function getLabelText(): string {
+		isSwapDisabled = isSwapDisabledCalc();
+		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
+			if (fromCurrency.tokens[0] == 'ERG' && toCurrency.tokens[0] == 'SigUSD') {
+				return 'Mint Unavailable';
+			} else if (fromCurrency.tokens[0] == 'SigRSV' && toCurrency.tokens[0] == 'ERG') {
+				return 'Redeem Unavailable';
+			}
+		}
+		if (toCurrency.isLpPool || toCurrency.isLpToken) {
+			return 'Get';
+		} else {
+			return 'To';
+		}
+	}
+
+	function isSwapDisabledCalc() {
+		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
+			if (fromCurrency.tokens[0] == 'ERG' && toCurrency.tokens[0] == 'SigUSD') {
+				return true;
+			} else if (fromCurrency.tokens[0] == 'SigRSV' && toCurrency.tokens[0] == 'ERG') {
+				return true;
+			}
+		}
+		return false;
+	}
 </script>
 
 <!-- UI Layout -->
-<div class="widget relative">
+<div class="widget relative" class:shake>
 	<div
-		class="clipped mx-auto w-full max-w-md rounded-xl rounded-br-none border border-gray-800"
+		class="clipped mx-auto w-full max-w-md rounded-xl rounded-br-none border border-[var(--widget-border-color)]"
 		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
 		style="padding:8px"
@@ -583,7 +635,9 @@
 			<!-- TO SELECTION -->
 			<div class="bg-gray-800">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
-					<span class="text-sm">{toCurrency.isLpPool || toCurrency.isLpToken ? 'Get' : 'To'}</span>
+					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabled}>
+						{getLabelText()}</span
+					>
 					<span class="text-sm"
 						>Price:
 						<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
@@ -778,7 +832,7 @@
 		width: 0;
 		height: 0;
 
-		border-bottom: 26px solid #1f2937;
+		border-bottom: 26px solid var(--widget-border-color);
 		border-right: 26px solid transparent;
 	}
 

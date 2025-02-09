@@ -24,16 +24,18 @@
 		<div class="flex items-end justify-between">
 			<div class="flex">
 				<div class="items-left flex flex-col" style="width:150px">
-					<div class="text-xs text-gray-600">Contract Address</div>
+					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+						Contract Address
+					</div>
 					<div>MUb...aXX</div>
 				</div>
 				<div class="items-left flex flex-col" style="margin-left:-20px">
-					<div class="text-xs text-gray-600">Reserve Rate</div>
+					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
 					<div>{$reserve_rate}%</div>
 				</div>
 			</div>
 			<div class="items-left flex flex-col">
-				<div class="text-xs text-gray-600">Bank Reserve</div>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>
 				<div class="items-left flex">
 					<div>
 						{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
@@ -47,33 +49,29 @@
 	<div class="mt-2 flex items-end justify-between">
 		<div class="flex">
 			<div class="items-left flex flex-col" style="width:131px">
-				<div class="text-xs text-gray-600">Mint Price</div>
-				<span class="items-left flex gap-1">
-					{#if $reserve_border_left_USD > 0}
-						{$bank_price_usd_sell}
-					{:else}
-						- --
-					{/if}</span
-				>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Mint Price</div>
+				<span class="items-left flex gap-1" class:text-gray-700={$reserve_border_left_USD < 0}>
+					{$bank_price_usd_sell}
+				</span>
 				<span class="items-left flex gap-1">
 					<SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span
 				>
 			</div>
 			<div class="items-left flex flex-col">
-				<div class="text-xs text-gray-600">Redeem Price</div>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Redeem Price</div>
 				<span class="items-left flex gap-1">
 					{$bank_price_usd_buy}
 				</span>
-				{#if $reserve_border_left_USD > 0}
+				<span class:text-gray-700={$reserve_border_left_USD < 0}>
 					<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
-				{:else}
-					- --
-				{/if}
+				</span>
 			</div>
 		</div>
 
 		<div class="items-left flex flex-col">
-			<div class="pr-5 text-right text-xs text-gray-600">Mintable Assets</div>
+			<div class="pr-5 text-right text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+				Mintable Amount
+			</div>
 			<div class="flex justify-end" class:text-red-500={$reserve_border_left_USD < 0}>
 				<div>
 					{formatAmount($reserve_border_left_USD, false)}

@@ -169,7 +169,7 @@ describe('Lp Swap preparation', async () => {
 		const {
 			amountErg: step1Erg,
 			amountDexy: step1Dexy,
-			contractErg
+			contractErg: step1ContractErg
 		} = dexyGoldLpSwapInputErgPrice(inputErg, DIRECTION_BUY, feeMining, { lpIn, lpSwapIn });
 
 		const { amountErg: step2Erg, amountDexy: step2Dexy } = dexyGoldLpSwapInputDexyPrice(

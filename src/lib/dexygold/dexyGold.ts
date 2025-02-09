@@ -208,7 +208,7 @@ export function dexyGoldLpSwapInputErgPrice(
 	} = parseLpBox(swapState.lpIn);
 
 	let uiSwapFee, contractErg;
-	if (direction == DIRECTION_SELL) {
+	if (direction != DIRECTION_SELL) {
 		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
 	} else {
 		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
@@ -222,6 +222,11 @@ export function dexyGoldLpSwapInputErgPrice(
 		feeNumLp,
 		feeDenomLp
 	);
+	console.log('-----INPUT ERG-----');
+	console.log(inputErg, 'inputErg');
+	console.log(contractErg, 'contractErg');
+	console.log(amountDexy, 'amountDexy');
+	console.log('-----INPUT ERG-----');
 
 	const price = Number(inputErg) / Number(amountDexy);
 
@@ -302,7 +307,6 @@ export function dexyGoldLpSwapInputDexyPrice(
 ) {
 	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
 	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -318,11 +322,17 @@ export function dexyGoldLpSwapInputDexyPrice(
 		amountErg: contractERG,
 		rate
 	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
+
 	if (direction == DIRECTION_SELL) {
 		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining));
 	} else {
 		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining));
 	}
+	console.log('-----INPUT DEXY-----');
+	console.log(inputDexy, 'inputDexy');
+	console.log(contractERG, 'contractERG');
+	console.log(amountErg, 'amountErg');
+	console.log('-----INPUT DEXY-----');
 	const price = Number(amountErg) / Number(inputDexy);
 	return { amountErg, amountDexy: inputDexy, price, uiSwapFee };
 }

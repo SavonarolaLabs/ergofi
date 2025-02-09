@@ -2,7 +2,7 @@
 	import Spinner from './Spinner.svelte';
 	import SpinnerBar from './SpinnerBar.svelte';
 	import BankUTXO from './BankUTXO.svelte';
-	import DexyGoldLpUTXO from './DexyGoldLpUTXO.svelte';
+	import DexyGoldLpUTXO from './DexyGoldBankLpUTXO.svelte';
 	import {
 		confirmed_interactions,
 		mempool_interactions,

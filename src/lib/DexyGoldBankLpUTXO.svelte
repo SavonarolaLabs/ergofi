@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Bank from './icons/Bank.svelte';
 	import Tint from './icons/Tint.svelte';
 	import Spinner from './Spinner.svelte';
@@ -15,16 +16,15 @@
 	} from './stores/bank';
 	import SubNumber from './SubNumber.svelte';
 	import { formatAmount, nanoErgToErg, oracleRateToUsd } from './utils';
+	import { calculateDexyGoldWidgetNumbers } from './stores/dexyGoldStore';
+	import { initJsonTestBoxes } from './stores/dexyGoldStoreJsonTestData';
 
 	export let confirmed = true;
 
-	const bank = {
-		type: 'UTxO',
-		price: 1.77,
-		reserveRatio: 551,
-		amount: 1230000,
-		ergAmount: 1647597
-	};
+	onMount(() => {
+		initJsonTestBoxes();
+		calculateDexyGoldWidgetNumbers();
+	});
 </script>
 
 <div class="row flex flex-col gap-1 text-gray-500">

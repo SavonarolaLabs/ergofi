@@ -1,4 +1,4 @@
-import { get, writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
 import {
 	parseBankArbitrageMintBox,
 	parseBankBox,
@@ -26,7 +26,7 @@ export const dexygold_lp_redeem_box = writable<any>();
 export const dexygold_lp_extract_box = writable<any>();
 export const dexygold_lp_swap_box = writable<any>();
 
-export const dexygold_widget_numbers = writable<DexyGoldWidgetNumbers>();
+export const dexygold_widget_numbers: Writable<DexyGoldWidgetNumbers> = writable();
 
 export type DexyGoldWidgetNumbers = {
 	bankAvailableDexy: bigint;

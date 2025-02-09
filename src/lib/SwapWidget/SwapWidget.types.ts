@@ -12,7 +12,7 @@ export type UiInputAsset = {
 	amount: string;
 };
 
-export type LastUserInput = 'From' | 'To';
+export type LastUserInput = 'From' | 'From2' | 'To' | 'To2';
 
 export type SwapOrderInput = {
 	fromCurrency: Currency;

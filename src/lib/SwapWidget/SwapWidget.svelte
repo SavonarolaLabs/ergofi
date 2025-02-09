@@ -163,12 +163,35 @@
 	}
 
 	async function doRecalcDexyGoldContract() {
+		// 4 from 10
 		const params = {
 			swapState: {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpIn: $dexygold_lp_box
 			}
 		};
+		if (
+			lastInput === 'From' &&
+			fromCurrency.tokens[0] === 'ERG' &&
+			fromCurrency.tokens[1] === 'DexyGold' &&
+			toCurrency.isLpToken
+		) {
+		}
+		if (
+			lastInput === 'From2' &&
+			fromCurrency.tokens[0] === 'ERG' &&
+			fromCurrency.tokens[1] === 'DexyGold' &&
+			toCurrency.isLpToken
+		) {
+		}
+		if (
+			lastInput === 'To' &&
+			fromCurrency.tokens[0] === 'ERG' &&
+			fromCurrency.tokens[1] === 'DexyGold' &&
+			toCurrency.isLpToken
+		) {
+		}
+
 		if (
 			lastInput === 'From' &&
 			fromCurrency.tokens[0] === 'ERG' &&
@@ -267,7 +290,7 @@
 
 	function handleFromAmount2Change(event: Event) {
 		fromAmount2 = (event.target as HTMLInputElement).value;
-		lastInput = 'From';
+		lastInput = 'From2';
 		doRecalc();
 	}
 
@@ -279,7 +302,7 @@
 
 	function handleToAmount2Change(event: Event) {
 		toAmount2 = (event.target as HTMLInputElement).value;
-		lastInput = 'To';
+		lastInput = 'To2';
 		doRecalc();
 	}
 

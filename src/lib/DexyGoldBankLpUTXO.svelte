@@ -16,8 +16,9 @@
 	} from './stores/bank';
 	import SubNumber from './SubNumber.svelte';
 	import { formatAmount, nanoErgToErg, oracleRateToUsd } from './utils';
-	import { calculateDexyGoldWidgetNumbers } from './stores/dexyGoldStore';
+	import { calculateDexyGoldWidgetNumbers, dexygold_widget_numbers } from './stores/dexyGoldStore';
 	import { initJsonTestBoxes } from './stores/dexyGoldStoreJsonTestData';
+	import { entries } from 'lodash-es';
 
 	export let confirmed = true;
 
@@ -68,7 +69,11 @@
 		</div>
 		<div class="flex items-center font-normal">
 			<div>
-				{formatAmount($reserve_border_left_USD, false)}
+				{#if $dexygold_widget_numbers}
+					{#each Object.entries($dexygold_widget_numbers) as [o, e]}
+						<div>{o}:{e}</div>
+					{/each}
+				{/if}
 			</div>
 			<div class="currency text-lg">SigUSD</div>
 		</div>

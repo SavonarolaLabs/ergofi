@@ -28,7 +28,7 @@ export const dexygold_lp_swap_box = writable<any>();
 
 export const dexygold_widget_numbers = writable<DexyGoldWidgetNumbers>();
 
-type DexyGoldWidgetNumbers = {
+export type DexyGoldWidgetNumbers = {
 	bankAvailableDexy: bigint;
 	lpAvailabeDexy: bigint;
 	lpAvailabeErg: bigint;

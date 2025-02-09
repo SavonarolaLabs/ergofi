@@ -729,20 +729,23 @@
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 								class="border-color flex w-full items-center justify-between bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
 								on:click={toggleToDropdown}
+								disabled={getAllowedToCurrencies(fromCurrency).length < 2}
 							>
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
 									<div class="h-5 w-5 {tokenColor(toCurrency.tokens[1])} rounded-full"></div>
 									{toCurrency.tokens[1]}
 								</div>
-								<svg
-									class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill={toCurrency.isToken ? 'currentColor' : 'gray'}
-								>
-									<path d="M12 15.5l-6-6h12l-6 6z" />
-								</svg>
+								{#if getAllowedToCurrencies(fromCurrency).length > 1}
+									<svg
+										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
+									>
+										<path d="M12 15.5l-6-6h12l-6 6z" />
+									</svg>
+								{/if}
 							</button>
 						</div>
 					{/if}

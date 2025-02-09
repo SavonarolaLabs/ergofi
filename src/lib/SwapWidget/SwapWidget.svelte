@@ -106,12 +106,12 @@
 		loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
-			doRecalcSigUsdContract();
+			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
 		});
 
 		bank_box.subscribe((bankBox) => {
 			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
-			doRecalcSigUsdContract();
+			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
 		});
 
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
@@ -734,7 +734,11 @@
 				>
 					<Gear></Gear>
 				</button>
-				<PrimaryButton onClick={handleSwapButton} text="Swap_" subtext={$selected_contract}
+				<PrimaryButton
+					onClick={handleSwapButton}
+					text="Swap_"
+					bgColor={$selected_contract == 'SigmaUsd' ? '#F87315' : '#ffea00'}
+					subtext={$selected_contract}
 				></PrimaryButton>
 			</div>
 		{/if}

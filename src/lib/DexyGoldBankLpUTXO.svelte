@@ -28,7 +28,7 @@
 	});
 </script>
 
-<div>
+<div class="text-sm">
 	{#if $dexygold_widget_numbers}
 		{#each Object.entries($dexygold_widget_numbers) as [o, e]}
 			<div>{e}:{o}</div>

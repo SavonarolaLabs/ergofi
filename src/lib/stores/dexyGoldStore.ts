@@ -8,6 +8,7 @@ import {
 	parseTrackingBox
 } from './dexyGoldParser';
 import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
+import { info } from './nodeInfo';
 
 export const dexygold_lp_box = writable<any>();
 export const oracle_erg_xau_box = writable<any>();
@@ -51,6 +52,7 @@ export type DexyGoldWidgetNumbers = {
 };
 
 export function calculateDexyGoldWidgetNumbers() {
+	const height = get(info).fullHeight;
 	const arbMintIn = get(dexygold_bank_arbitrage_mint_box);
 	const { R4ResetHeight: bankArbMintResetHeight, R5AvailableAmount: bankArbMintAvailableDexy } =
 		parseBankArbitrageMintBox(arbMintIn);
@@ -88,7 +90,7 @@ export function calculateDexyGoldWidgetNumbers() {
 	const isBankArbMintActivationRateTriggered = lpRateXy * 100n > 101n * oracleRateWithFee;
 	const isBankFreeMintActivationRateTriggered = lpRateXy * 100n > oracleRate * 98n;
 
-	const bankArbMintActivationHeight = BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
+	const bankArbMintActivationHeight = height > BigInt(tracking101TriggerHeight) + DEXY_GOLD.T_arb;
 
 	const isBankArbMintActive = isBankArbMintActivationRateTriggered && bankArbMintActivationHeight;
 	const isBankFreeMintActive = isBankFreeMintActivationRateTriggered;

@@ -32,7 +32,7 @@
 		position: relative;
 		font-size: 1rem;
 		text-transform: uppercase;
-		color: var(--white-color);
+		color: var(--black-color);
 		clip-path: polygon(100% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}
 

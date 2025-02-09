@@ -8,6 +8,7 @@ import {
 import {
 	calculateBankMintInputDexy,
 	calculateBankMintInputErg,
+	calculateLpMintInputErg,
 	calculateResetAndAmountMint,
 	dexyGoldBankArbitrageInputDexyTx,
 	dexyGoldBankArbitrageInputErgTx,
@@ -37,6 +38,7 @@ import {
 	parseBuybackBox,
 	parseDexyGoldOracleBox,
 	parseLpBox,
+	parseLpMintBox,
 	parseLpSwapBox,
 	parseTrackingBox
 } from '$lib/stores/dexyGoldParser';
@@ -46,6 +48,7 @@ import {
 	dexygold_bank_free_mint_box,
 	dexygold_buyback_box,
 	dexygold_lp_box,
+	dexygold_lp_mint_box,
 	dexygold_lp_swap_box,
 	dexygold_tracking101_box,
 	oracle_erg_xau_box
@@ -62,6 +65,7 @@ import {
 import { get } from 'svelte/store';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { EIP12UnsignedTransaction } from '@fleet-sdk/common';
+import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 
 // take input from
 
@@ -782,7 +786,7 @@ describe('Lp Swap preparation', async () => {
 
 	// ------ MockChain DECLARATION ------
 	beforeAll(async () => {
-		await initTestBoxes();
+		initJsonTestBoxes();
 
 		{
 			lpSwapIn = get(dexygold_lp_swap_box);
@@ -799,7 +803,7 @@ describe('Lp Swap preparation', async () => {
 		}
 	});
 
-	it.only('With FEE 	: Sell ERG : Input ERG', async () => {
+	it('With FEE 	: Sell ERG : Input ERG', async () => {
 		const height = 1449119;
 		const direction = DIRECTION_SELL;
 		const inputErg = 1_000_000_000n;
@@ -854,7 +858,7 @@ describe('Lp Swap preparation', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it.only('Lp Swap With Fee oneFunction  	:Buy	:Input Erg', async () => {
+	it('Lp Swap With Fee oneFunction  	:Buy	:Input Erg', async () => {
 		let height = 1449119;
 		let DIRECTION_BUY = 1n;
 		const inputErg = 1_000_000_000n;
@@ -870,7 +874,7 @@ describe('Lp Swap preparation', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Swap With Fee oneFunction  	:Sell	:Input Erg', async () => {
+	it('Lp Swap With Fee oneFunction  	:Sell	:Input Erg', async () => {
 		let height = 1449119;
 		let DIRECTION_SELL = -1n;
 		const inputErg = 1_000_000_000n;
@@ -887,7 +891,7 @@ describe('Lp Swap preparation', async () => {
 		expect(signedTx).toBeTruthy();
 	});
 
-	it.only('Lp Swap With Fee oneFunction  	:Buy	:Input Dexy', async () => {
+	it('Lp Swap With Fee oneFunction  	:Buy	:Input Dexy', async () => {
 		let height = 1449119;
 		let DIRECTION_BUY = 1n;
 		const inputDexy = 20n;
@@ -903,7 +907,7 @@ describe('Lp Swap preparation', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Swap With Fee oneFunction  	:Sell	:Input Dexy', async () => {
+	it('Lp Swap With Fee oneFunction  	:Sell	:Input Dexy', async () => {
 		let height = 1449119;
 		let DIRECTION_SELL = -1n;
 		const inputDexy = 20n;
@@ -917,6 +921,103 @@ describe('Lp Swap preparation', async () => {
 			{ lpIn, lpSwapIn }
 		);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC, height);
+		expect(signedTx).toBeTruthy();
+	});
+});
+
+describe('Lp Mint ', async () => {
+	//MAIN DECLARATION:
+
+	let lpIn, lpYIn, lpXIn, lpTokensIn;
+
+	let lpSwapIn, swapInValue, swapOutValue, lpSwapNFT;
+
+	let feeMining, userAddress, userChangeAddress;
+
+	let userUtxos;
+
+	let lpMintIn, lpMintInValue, lpMintNFT;
+
+	const feeNumLp = 997n;
+	const feeDenomLp = 1000n;
+
+	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
+
+	// ------ MockChain DECLARATION ------
+	beforeAll(async () => {
+		await initTestBoxes();
+
+		{
+			lpSwapIn = get(dexygold_lp_swap_box);
+			({ value: swapInValue, lpSwapNFT } = parseLpSwapBox(lpSwapIn));
+
+			lpMintIn = get(dexygold_lp_mint_box);
+			({ value: lpMintInValue, lpMintNFT } = parseLpMintBox(lpMintIn));
+
+			lpIn = get(dexygold_lp_box);
+			({ dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(lpIn));
+
+			userUtxos = [fakeUserWithDexyBox];
+
+			feeMining = RECOMMENDED_MIN_FEE_VALUE;
+			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		}
+	});
+
+	it('Lp Mint With Fee oneFunction :Input Erg', async () => {
+		const height = 1449119;
+		const direction = DIRECTION_SELL;
+		const ergoInput = 1_000_000_000n;
+
+		const supplyLpIn = initialLp - lpTokensIn; //initialLp
+		// CALCULATION GO GO
+		let { contractDexy: dexyInput, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
+			ergoInput,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		); //RETURN 0 dexy
+		//console.log('dexyInput', dexyInput);
+		//console.log('sharesUnlocked', sharesUnlocked);
+
+		const lpMintOutValue = lpMintInValue;
+		const lpXOut = lpXIn + ergoInput;
+		const lpYOut = lpYIn + dexyInput;
+
+		//const sharesUnlockedX = (ergoInput * supplyLpIn) / lpXIn;
+		//const sharesUnlockedY = (dexyInput * supplyLpIn) / lpYIn;
+		//const sharesUnlocked = sharesUnlockedX < sharesUnlockedY ? sharesUnlockedX : sharesUnlockedY;
+
+		//console.log(sharesUnlockedX, 'sharesUnlockedX |', 'ergoInput', ergoInput, ' lpXIn', lpXIn);
+		//console.log(sharesUnlockedY, 'sharesUnlockedY |', 'dexyInput', dexyInput, ' lpYIn', lpYIn);
+		//console.log(sharesUnlocked, ' sharesUnlocked');
+
+		const lpTokensOut = lpTokensIn - sharesUnlocked;
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpMintIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpMintOutValue, lpMintErgoTree).addTokens([
+					{ tokenId: lpMintNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
 });

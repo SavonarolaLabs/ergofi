@@ -115,7 +115,7 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 	payerUtxo.map((o) => console.log(o.boxId));
 	console.dir(
 		payerUtxo.find(
-			(o) => o.boxId == '88fe9faf8900efc67faca56dd38ec2471d7231e97fa982bfcfe59b0eca2ad525'
+			(o) => o.boxId == 'cd4e574494033a9a84c97a3e545b0de7f2c08fe2b45fea38dd4b3c64590d55da'
 		),
 		{ depth: null }
 	);

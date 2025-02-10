@@ -481,7 +481,7 @@ export function dexyGoldLpMintInputDexyPrice(
 	);
 	const { uiSwapFee, inputErg } = reverseFee(contractErg, feeMining, 2n);
 	const contractDexy = inputDexy;
-	const price = Number(sharesUnlocked) / Number(inputDexy);
+	const price = Number(sharesUnlocked) / Number(inputErg);
 	return { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price };
 }
 export function dexyGoldLpMintInputDexyTx(
@@ -677,7 +677,7 @@ export function dexyGoldLpRedeemInputSharesPrice(
 		supplyLpIn
 	);
 	const { uiSwapFee, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
-	const price = Number(userErg) / Number(inputShares);
+	const price = Number(inputShares) / Number(userErg);
 	return { uiSwapFee, userErg, contractErg, contractDexy, price };
 }
 export function dexyGoldLpRedeemInputSharesTx(
@@ -761,7 +761,7 @@ export function dexyGoldLpRedeemInputDexyPrice(
 		supplyLpIn
 	);
 	const { uiSwapFee, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
-	const price = Number(userErg) / Number(inputDexy);
+	const price = Number(sharesUnlocked) / Number(userErg);
 	return { uiSwapFee, userErg, contractErg, sharesUnlocked, price };
 }
 export function dexyGoldLpRedeemInputDexyTx(
@@ -846,7 +846,7 @@ export function dexyGoldLpRedeemInputErgPrice(
 		lpYIn,
 		supplyLpIn
 	);
-	const price = Number(contractDexy) / Number(inputErg);
+	const price = Number(sharesUnlocked) / Number(inputErg);
 	return { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price };
 }
 export function dexyGoldLpRedeemInputErgTx(

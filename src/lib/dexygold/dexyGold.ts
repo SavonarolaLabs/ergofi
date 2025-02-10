@@ -166,10 +166,9 @@ export function dexyGoldLpMintInputErgTx(
 	utxos: NodeBox[],
 	mintState: DexyGoldLpMintInputs
 ): EIP12UnsignedTransaction {
-	//const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
 	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
 
-	const initialLp = 100000000000n;
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,

@@ -16,7 +16,6 @@ import {
 } from '$lib/sigmausd/sigmaUSD';
 import type { NodeBox, OracleData } from '$lib/stores/bank.types';
 import type { MempoolSocketUpdate } from '$lib/stores/preparedInteractions';
-import { ErgoAddress } from '@fleet-sdk/core';
 import type {
 	ErgopayLinkParams,
 	ErgopayPaySigmaUsdSwapParams,

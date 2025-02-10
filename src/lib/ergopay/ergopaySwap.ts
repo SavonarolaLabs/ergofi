@@ -92,11 +92,10 @@ function buildReducedSigmUsdSwapTransaction(
 
 export async function run(): Promise<ErgopayPayCmdResponse> {
 	const cmdParams = parseCommandLineArgs();
-	const payerErgoTree = ErgoAddress.fromBase58(cmdParams.payerAddress).ergoTree;
 
 	// fetch chain context
 	const height = 1455595; // TODO: add fetch height
-	const payerUtxo = await fetchUtxosByErgoTree(payerErgoTree);
+	const payerUtxo = await fetchUtxosByErgoTree(cmdParams.payerAddress);
 	const oracleData = await fetchOracleData();
 	const bankTransactions = await fetchSigmaUsdBankTransactions();
 	const context = await createContext(height);

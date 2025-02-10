@@ -42,7 +42,7 @@ function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EI
 	console.log(params)
 	let unsignedTx;
 	switch (`${swapPair}_${lastInput}`) {
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(ergStringToNanoErg(amount)), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(ergStringToNanoErg(amount))); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(ergStringToNanoErg(amount)), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(ergStringToNanoErg(feeMining))); break;
         case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;

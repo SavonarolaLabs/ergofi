@@ -7,8 +7,7 @@ import { run } from './ergopaySwap';
 
 try {
 	const params = await run();
-	console.log('Parsed Parameters:', params);
+	console.log(JSON.stringify(params));
 } catch (err) {
 	console.error(err);
-	process.exit(1);
 }

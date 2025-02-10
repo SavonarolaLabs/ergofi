@@ -21,32 +21,42 @@ type ReverseFeeSellResult = {
 };
 
 // Functions
-export function applyFee(inputErg: bigint, feeMining: bigint): FeeResult {
-	const uiSwapFee = (inputErg * FEE_UI) / FEE_UI_DENOM;
-	const contractErg = inputErg - feeMining - uiSwapFee;
-	return { uiSwapFee, contractErg };
-}
-
-export function applyFeeM(inputErg: bigint, feeMining: bigint, multiplicator: bigint): FeeResult {
+export function applyFee(
+	inputErg: bigint,
+	feeMining: bigint,
+	multiplicator: bigint = 1n
+): FeeResult {
 	const uiSwapFee = (inputErg * FEE_UI * multiplicator) / FEE_UI_DENOM;
 	const contractErg = inputErg - feeMining - uiSwapFee;
 	return { uiSwapFee, contractErg };
 }
-
-export function reverseFee(contractErg: bigint, feeMining: bigint): ReverseFeeResult {
-	const uiSwapFee = (contractErg * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
+export function reverseFee(
+	contractErg: bigint,
+	feeMining: bigint,
+	multiplicator: bigint = 1n
+): ReverseFeeResult {
+	const uiSwapFee =
+		(contractErg * FEE_UI * multiplicator) / (FEE_UI_DENOM - FEE_UI * multiplicator);
 	const inputErg = contractErg + feeMining + uiSwapFee;
 	return { inputErg, uiSwapFee };
 }
 
-export function reverseFeeSell(contractErg: bigint, feeMining: bigint): ReverseFeeSellResult {
-	const uiSwapFee = (contractErg * FEE_UI) / FEE_UI_DENOM;
+export function reverseFeeSell(
+	contractErg: bigint,
+	feeMining: bigint,
+	multiplicator: bigint = 1n
+): ReverseFeeSellResult {
+	const uiSwapFee = (contractErg * FEE_UI * multiplicator) / FEE_UI_DENOM;
 	const userErg = contractErg - feeMining - uiSwapFee;
 	return { userErg, uiSwapFee };
 }
 
-export function applyFeeSell(inputErg: bigint, feeMining: bigint): FeeResult {
-	const uiSwapFee = (inputErg * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
+export function applyFeeSell(
+	inputErg: bigint,
+	feeMining: bigint,
+	multiplicator: bigint = 1n
+): FeeResult {
+	const uiSwapFee = (inputErg * FEE_UI * multiplicator) / (FEE_UI_DENOM - FEE_UI * multiplicator);
 	const contractErg = inputErg + feeMining + uiSwapFee;
 	return { uiSwapFee, contractErg };
 }

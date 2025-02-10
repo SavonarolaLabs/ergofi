@@ -5,12 +5,10 @@
 
 import { run } from './ergopaySwap';
 
-(async function main() {
-	try {
-		const params = await run();
-		console.log('Parsed Parameters:', params);
-	} catch (err) {
-		console.error(err);
-		process.exit(1);
-	}
-})();
+try {
+	const params = await run();
+	console.log('Parsed Parameters:', params);
+} catch (err) {
+	console.error(err);
+	process.exit(1);
+}

@@ -1,6 +1,7 @@
 import { DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	applyFee,
+	applyFeeM,
 	applyFeeSell,
 	reverseFee,
 	reverseFeeSell,
@@ -14,6 +15,7 @@ import {
 	parseBuybackBox,
 	parseDexyGoldOracleBox,
 	parseLpBox,
+	parseLpMintBox,
 	parseLpSwapBox
 } from '$lib/stores/dexyGoldParser';
 import { ErgoUnsignedInput, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
@@ -29,6 +31,11 @@ export type LpDexySwapResult = {
 
 export type DexyGoldLpSwapInputs = {
 	lpSwapIn: NodeBox;
+	lpIn: NodeBox;
+};
+
+export type DexyGoldLpMintInputs = {
+	lpMintIn: NodeBox;
 	lpIn: NodeBox;
 };
 
@@ -150,6 +157,84 @@ export function calculateLpMintInputSharesUnlocked(
 	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
 	return { contractDexy, contractErg, contractLpTokens };
 }
+// BUILD Mint
+export function dexyGoldLpMintInputErgTx(
+	inputErg: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	mintState: DexyGoldLpMintInputs
+): EIP12UnsignedTransaction {
+	//const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+
+	const initialLp = 100000000000n;
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn; //initialLp
+
+	let uiSwapFee;
+
+	// FEE PART:
+	const { uiSwapFee: abc, contractErg } = applyFeeM(inputErg, feeMining, 2n);
+	uiSwapFee = abc;
+	console.log(uiSwapFee, 'uiSwapFee');
+
+	// CALCULATION GO GO
+	let { contractDexy, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
+		contractErg,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	console.log('inputErg', inputErg);
+	console.log('contractErg', contractErg);
+	console.log('contractDexy', contractDexy);
+	console.log('sharesUnlocked', sharesUnlocked);
+
+	const lpMintOutValue = lpMintInValue;
+	const lpXOut = lpXIn + contractErg;
+	const lpYOut = lpYIn + contractDexy;
+
+	const lpTokensOut = lpTokensIn - sharesUnlocked;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([mintState.lpIn, mintState.lpMintIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpMintOutValue, DEXY_GOLD.lpMintErgoTree).addTokens([
+				{ tokenId: lpMintNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+	//console.log(unsignedTx);
+	return unsignedTx;
+}
 
 export function calculateLpRedeemInputSharesUnlocked(
 	contractLpTokens: bigint,
@@ -188,7 +273,6 @@ export function calculateLpRedeemInputDexy(
 }
 
 // BUILD
-
 export function dexyGoldLpSwapInputErgPrice(
 	inputErg: bigint,
 	direction: Direction,

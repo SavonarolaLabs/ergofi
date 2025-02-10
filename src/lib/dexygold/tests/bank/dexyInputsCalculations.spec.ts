@@ -14,6 +14,7 @@ import {
 	dexyGoldBankArbitrageInputErgTx,
 	dexyGoldBankFreeInputDexyTx,
 	dexyGoldBankFreeInputErgTx,
+	dexyGoldLpMintInputErgTx,
 	dexyGoldLpSwapInputDexyTx,
 	dexyGoldLpSwapInputErgTx,
 	lpSwapInputDexy,
@@ -25,6 +26,7 @@ import { signTx } from '$lib/dexygold/signing';
 import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import {
 	applyFee,
+	applyFeeM,
 	applyFeeSell,
 	reverseFee,
 	reverseFeeSell,
@@ -945,12 +947,9 @@ describe('Lp Mint ', async () => {
 
 	// ------ MockChain DECLARATION ------
 	beforeAll(async () => {
-		await initTestBoxes();
+		await initJsonTestBoxes();
 
 		{
-			lpSwapIn = get(dexygold_lp_swap_box);
-			({ value: swapInValue, lpSwapNFT } = parseLpSwapBox(lpSwapIn));
-
 			lpMintIn = get(dexygold_lp_mint_box);
 			({ value: lpMintInValue, lpMintNFT } = parseLpMintBox(lpMintIn));
 
@@ -964,13 +963,14 @@ describe('Lp Mint ', async () => {
 			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		}
 	});
-
-	it('Lp Mint With Fee oneFunction :Input Erg', async () => {
+	it.only('Lp Mint :Input Erg', async () => {
 		const height = 1449119;
 		const direction = DIRECTION_SELL;
 		const ergoInput = 1_000_000_000n;
 
 		const supplyLpIn = initialLp - lpTokensIn; //initialLp
+		//Apply Fee
+
 		// CALCULATION GO GO
 		let { contractDexy: dexyInput, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
 			ergoInput,
@@ -1017,6 +1017,73 @@ describe('Lp Mint ', async () => {
 			.toEIP12Object();
 
 		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it.only('Lp Mint With Fee: Input Erg', async () => {
+		const height = 1449119;
+		const ergoInput = 1_000_000_000n;
+
+		const supplyLpIn = initialLp - lpTokensIn; //initialLp
+		//Apply Fee
+
+		let uiSwapFee;
+
+		// FEE PART:
+		const { uiSwapFee: abc, contractErg } = applyFeeM(ergoInput, feeMining, 2n);
+		uiSwapFee = abc;
+		console.log(uiSwapFee, 'uiSwapFee');
+
+		// CALCULATION GO GO
+		let { contractDexy, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
+			contractErg,
+			lpXIn,
+			lpYIn,
+			supplyLpIn
+		); //RETURN 0 dexy
+
+		const lpMintOutValue = lpMintInValue;
+		const lpXOut = lpXIn + contractErg;
+		const lpYOut = lpYIn + contractDexy;
+
+		const lpTokensOut = lpTokensIn - sharesUnlocked;
+
+		const unsignedTx = new TransactionBuilder(height)
+			.from([lpIn, lpMintIn, ...userUtxos], {
+				ensureInclusion: true
+			})
+			.to(
+				new OutputBuilder(lpXOut, lpErgoTree).addTokens([
+					{ tokenId: lpNFT, amount: 1n },
+					{ tokenId: lpTokenId, amount: lpTokensOut },
+					{ tokenId: dexyTokenId, amount: lpYOut }
+				])
+			)
+			.to(
+				new OutputBuilder(lpMintOutValue, lpMintErgoTree).addTokens([
+					{ tokenId: lpMintNFT, amount: 1n }
+				])
+			)
+			.payFee(feeMining)
+			.sendChangeTo(userChangeAddress)
+			.build()
+			.toEIP12Object();
+
+		//console.dir(unsignedTx, { depth: null });
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it.only('Lp Mint With Fee One Function: Input Erg', async () => {
+		let height = 1449119;
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldLpMintInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ lpMintIn, lpIn }
+		);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});

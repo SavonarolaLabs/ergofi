@@ -162,6 +162,7 @@
 		}
 	}
 
+	//prettier-ignore
 	async function doRecalcDexyGoldContract() {
 		// 4 from 10
 		const params = {
@@ -170,32 +171,32 @@
 				lpIn: $dexygold_lp_box
 			}
 		};
-		if (
-			lastInput === 'From' &&
-			fromCurrency.tokens[0] === 'ERG' &&
-			fromCurrency.tokens[1] === 'DexyGold' &&
-			toCurrency.isLpToken
+		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
+			//Mint LP
 		}
-		if (
-			lastInput === 'From2' &&
-			fromCurrency.tokens[0] === 'ERG' &&
-			fromCurrency.tokens[1] === 'DexyGold' &&
-			toCurrency.isLpToken
+		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
+			//Mint LP
 		}
-		if (
-			lastInput === 'To' &&
-			fromCurrency.tokens[0] === 'ERG' &&
-			fromCurrency.tokens[1] === 'DexyGold' &&
-			toCurrency.isLpToken
+		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
+			//Mint LP
+		}
+		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
+		) {
+			//Redeem LP
+		}
+		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
+		) {
+			//Redeem LP
+		}
+		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
+		) {
+			//Redeem LP
 		}
 
-		if (
-			lastInput === 'From' &&
-			fromCurrency.tokens[0] === 'ERG' &&
-			toCurrency.tokens[0] === 'DexyGold'
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
 				ergStringToNanoErg(fromAmount),
@@ -206,10 +207,7 @@
 			toAmount = amountDexy.toString();
 			swapPrice = price;
 		}
-		if (
-			lastInput === 'To' &&
-			fromCurrency.tokens[0] === 'DexyGold' &&
-			toCurrency.tokens[0] === 'ERG'
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
 		) {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
 				ergStringToNanoErg(toAmount),
@@ -220,10 +218,7 @@
 			fromAmount = amountDexy.toString();
 			swapPrice = price;
 		}
-		if (
-			lastInput === 'From' &&
-			fromCurrency.tokens[0] === 'DexyGold' &&
-			toCurrency.tokens[0] === 'ERG'
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
 		) {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
 				BigInt(fromAmount),
@@ -234,10 +229,7 @@
 			toAmount = nanoErgToErg(amountErg);
 			swapPrice = price;
 		}
-		if (
-			lastInput === 'To' &&
-			fromCurrency.tokens[0] === 'ERG' &&
-			toCurrency.tokens[0] === 'DexyGold'
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
 				BigInt(toAmount),

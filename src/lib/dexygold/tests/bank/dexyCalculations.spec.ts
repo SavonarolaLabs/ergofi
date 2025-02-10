@@ -942,7 +942,7 @@ describe('LP Redeem with any input should work', async () => {
 		initTestBoxes();
 	});
 
-	it('			: Redeem LP : Input only Shares', async () => {
+	it(': Redeem LP : Input only Shares', async () => {
 		//input BOXES
 		const lpIn = get(dexygold_lp_box); // Mint Less in pool and Check
 		const { value: lpXIn, lpTokenAmount: lpTokensIn, dexyAmount: lpYIn } = parseLpBox(lpIn);

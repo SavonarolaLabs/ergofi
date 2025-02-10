@@ -27,6 +27,12 @@ export function applyFee(inputErg: bigint, feeMining: bigint): FeeResult {
 	return { uiSwapFee, contractErg };
 }
 
+export function applyFeeM(inputErg: bigint, feeMining: bigint, multiplicator: bigint): FeeResult {
+	const uiSwapFee = (inputErg * FEE_UI * multiplicator) / FEE_UI_DENOM;
+	const contractErg = inputErg - feeMining - uiSwapFee;
+	return { uiSwapFee, contractErg };
+}
+
 export function reverseFee(contractErg: bigint, feeMining: bigint): ReverseFeeResult {
 	const uiSwapFee = (contractErg * FEE_UI) / (FEE_UI_DENOM - FEE_UI);
 	const inputErg = contractErg + feeMining + uiSwapFee;

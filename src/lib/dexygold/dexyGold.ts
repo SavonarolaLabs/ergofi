@@ -15,6 +15,7 @@ import {
 	parseDexyGoldOracleBox,
 	parseLpBox,
 	parseLpMintBox,
+	parseLpRedeemBox,
 	parseLpSwapBox
 } from '$lib/stores/dexyGoldParser';
 import { ErgoUnsignedInput, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
@@ -36,6 +37,12 @@ export type DexyGoldLpSwapInputs = {
 export type DexyGoldLpMintInputs = {
 	lpMintIn: NodeBox;
 	lpIn: NodeBox;
+};
+
+export type DexyGoldLpRedeemInputs = {
+	lpRedeemIn: NodeBox;
+	lpIn: NodeBox;
+	goldOracle: NodeBox;
 };
 
 export type DexyGoldArbitrageInputs = {
@@ -125,6 +132,7 @@ export function lpSwapInputDexy(
 
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
+// CALC Mint
 export function calculateLpMintInputErg(
 	contractErg: bigint,
 	lpXIn: bigint,
@@ -156,7 +164,7 @@ export function calculateLpMintInputSharesUnlocked(
 	const contractErg = (contractLpTokens * lpXIn) / supplyLpIn + 1n; // change to +1n //<==== NEED TO ROUND UP BigNumber.js?
 	return { contractDexy, contractErg, contractLpTokens };
 }
-// BUILD Mint
+// BUILD
 export function dexyGoldLpMintInputErgTx(
 	inputErg: bigint,
 	userBase58PK: string,
@@ -226,7 +234,6 @@ export function dexyGoldLpMintInputErgTx(
 		.toEIP12Object();
 	return unsignedTx;
 }
-
 export function dexyGoldLpMintInputDexyTx(
 	inputDexy: bigint,
 	userBase58PK: string,
@@ -296,7 +303,6 @@ export function dexyGoldLpMintInputDexyTx(
 	//console.log(unsignedTx);
 	return unsignedTx;
 }
-
 export function dexyGoldLpMintInputSharesTx(
 	inputShares: bigint,
 	userBase58PK: string,
@@ -367,6 +373,7 @@ export function dexyGoldLpMintInputSharesTx(
 	return unsignedTx;
 }
 
+// CALC Redeem
 export function calculateLpRedeemInputSharesUnlocked(
 	contractLpTokens: bigint,
 	lpXIn: bigint,
@@ -401,6 +408,237 @@ export function calculateLpRedeemInputDexy(
 
 	contractLpTokens = contractLpTokens + 1n; // add after calc
 	return { contractDexy, contractErg, contractLpTokens };
+}
+
+// BUILD
+export function dexyGoldLpRedeemInputSharesTx(
+	inputShares: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	redeemState: DexyGoldLpRedeemInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn;
+
+	let { contractErg, contractDexy } = calculateLpRedeemInputSharesUnlocked(
+		inputShares,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	let uiSwapFee;
+	const { uiSwapFee: abc, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
+	uiSwapFee = abc;
+
+	// console.log(inputErg, 'inputErg');
+	// console.log(contractErg, 'contractErg');
+	// console.log(
+	// 	userErg == contractErg - uiSwapFee - feeMining,
+	// 	'userErg == contractErg - uiSwapFee - feeMining'
+	// );
+
+	const lpRedeemOutValue = lpRedeemInValue;
+
+	const lpXOut = lpXIn - contractErg;
+	const lpYOut = lpYIn - contractDexy;
+	const lpTokensOut = lpTokensIn + inputShares;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([redeemState.lpIn, redeemState.lpRedeemIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.withDataFrom([redeemState.goldOracle])
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpRedeemOutValue, DEXY_GOLD.lpRedeemErgoTree).addTokens([
+				{ tokenId: lpRedeemNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldLpRedeemInputDexyTx(
+	inputDexy: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	redeemState: DexyGoldLpRedeemInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn;
+
+	let { contractLpTokens: sharesUnlocked, contractErg } = calculateLpRedeemInputDexy(
+		inputDexy,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	let uiSwapFee;
+	const { uiSwapFee: abc, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
+	uiSwapFee = abc;
+
+	// console.log(inputErg, 'inputErg');
+	// console.log(contractErg, 'contractErg');
+	// console.log(
+	// 	userErg == contractErg - uiSwapFee - feeMining,
+	// 	'userErg == contractErg - uiSwapFee - feeMining'
+	// );
+
+	const lpRedeemOutValue = lpRedeemInValue;
+
+	const lpXOut = lpXIn - contractErg;
+	const lpYOut = lpYIn - inputDexy;
+	const lpTokensOut = lpTokensIn + sharesUnlocked;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([redeemState.lpIn, redeemState.lpRedeemIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.withDataFrom([redeemState.goldOracle])
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpRedeemOutValue, DEXY_GOLD.lpRedeemErgoTree).addTokens([
+				{ tokenId: lpRedeemNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldLpRedeemInputErgTx(
+	inputErg: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	redeemState: DexyGoldLpRedeemInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn;
+
+	let uiSwapFee;
+	// FEE PART:
+	const { uiSwapFee: abc, contractErg } = applyFeeSell(inputErg, feeMining, 2n);
+	uiSwapFee = abc;
+
+	let { contractLpTokens: sharesUnlocked, contractDexy: dexyInput } = calculateLpRedeemInputErg(
+		contractErg,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	// console.log(inputErg, 'inputErg');
+	// console.log(contractErg, 'contractErg');
+	// console.log(
+	// 	inputErg == contractErg - uiSwapFee - feeMining,
+	// 	'inputErg == contractErg - uiSwapFee - feeMining'
+	// );
+
+	const lpRedeemOutValue = lpRedeemInValue;
+
+	const lpXOut = lpXIn - contractErg;
+	const lpYOut = lpYIn - dexyInput;
+	const lpTokensOut = lpTokensIn + sharesUnlocked;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([redeemState.lpIn, redeemState.lpRedeemIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.withDataFrom([redeemState.goldOracle])
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpRedeemOutValue, DEXY_GOLD.lpRedeemErgoTree).addTokens([
+				{ tokenId: lpRedeemNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
 }
 
 // BUILD

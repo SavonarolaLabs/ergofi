@@ -17,6 +17,9 @@ import {
 	dexyGoldLpMintInputDexyTx,
 	dexyGoldLpMintInputErgTx,
 	dexyGoldLpMintInputSharesTx,
+	dexyGoldLpRedeemInputDexyTx,
+	dexyGoldLpRedeemInputErgTx,
+	dexyGoldLpRedeemInputSharesTx,
 	dexyGoldLpSwapInputDexyTx,
 	dexyGoldLpSwapInputErgTx,
 	lpSwapInputDexy,
@@ -42,6 +45,7 @@ import {
 	parseDexyGoldOracleBox,
 	parseLpBox,
 	parseLpMintBox,
+	parseLpRedeemBox,
 	parseLpSwapBox,
 	parseTrackingBox
 } from '$lib/stores/dexyGoldParser';
@@ -52,6 +56,7 @@ import {
 	dexygold_buyback_box,
 	dexygold_lp_box,
 	dexygold_lp_mint_box,
+	dexygold_lp_redeem_box,
 	dexygold_lp_swap_box,
 	dexygold_tracking101_box,
 	oracle_erg_xau_box
@@ -1002,6 +1007,88 @@ describe('Lp Mint ', async () => {
 			feeMining,
 			[fakeUserWithDexyBox],
 			{ lpMintIn, lpIn }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+});
+
+describe('Lp Redeem ', async () => {
+	//MAIN DECLARATION:
+
+	let lpIn, lpYIn, lpXIn, lpTokensIn;
+
+	let feeMining, userAddress, userChangeAddress;
+
+	let userUtxos;
+
+	let goldOracle;
+
+	let lpRedeemIn, lpRedeemInValue, lpRedeemNFT;
+
+	const feeNumLp = 997n;
+	const feeDenomLp = 1000n;
+
+	let uiFeeAddress = '9eaX1P6KkckoZa2cc8Cn2iL3tjsUL5MN9CQCTPCE1GbcaZwcqns';
+
+	// ------ MockChain DECLARATION ------
+	beforeAll(async () => {
+		await initJsonTestBoxes();
+
+		{
+			lpRedeemIn = get(dexygold_lp_redeem_box);
+			({ value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(lpRedeemIn));
+
+			goldOracle = get(oracle_erg_xau_box);
+
+			lpIn = get(dexygold_lp_box);
+			({ dexyAmount: lpYIn, value: lpXIn, lpTokenAmount: lpTokensIn } = parseLpBox(lpIn));
+
+			userUtxos = [fakeUserWithDexyBox];
+
+			feeMining = RECOMMENDED_MIN_FEE_VALUE;
+			userAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
+		}
+	});
+	it.only('Lp Redeem With Fee One Function: Input Erg', async () => {
+		let height = 1449119;
+		const inputErg = 1_000_000_000n;
+		const unsignedTx = dexyGoldLpRedeemInputErgTx(
+			inputErg,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ lpRedeemIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it.only('Lp Redeem With Fee One Function: Input Dexy', async () => {
+		let height = 1449119;
+		const inputDexy = 24n;
+		const unsignedTx = dexyGoldLpRedeemInputDexyTx(
+			inputDexy,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ lpRedeemIn, lpIn, goldOracle }
+		);
+		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
+		expect(signedTx).toBeTruthy();
+	});
+	it.only('Lp Redeem With Fee One Function: Input Dexy', async () => {
+		let height = 1449119;
+		const inputShares = 147605n;
+		const unsignedTx = dexyGoldLpRedeemInputSharesTx(
+			inputShares,
+			userAddress,
+			height,
+			feeMining,
+			[fakeUserWithDexyBox],
+			{ lpRedeemIn, lpIn, goldOracle }
 		);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();

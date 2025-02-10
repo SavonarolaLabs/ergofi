@@ -1,7 +1,6 @@
 import { DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	applyFee,
-	applyFeeM,
 	applyFeeSell,
 	reverseFee,
 	reverseFeeSell,
@@ -183,9 +182,8 @@ export function dexyGoldLpMintInputErgTx(
 	let uiSwapFee;
 
 	// FEE PART:
-	const { uiSwapFee: abc, contractErg } = applyFeeM(inputErg, feeMining, 2n);
+	const { uiSwapFee: abc, contractErg } = applyFee(inputErg, feeMining, 2n);
 	uiSwapFee = abc;
-	console.log(uiSwapFee, 'uiSwapFee');
 
 	// CALCULATION GO GO
 	let { contractDexy, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
@@ -195,10 +193,144 @@ export function dexyGoldLpMintInputErgTx(
 		supplyLpIn
 	);
 
-	console.log('inputErg', inputErg);
-	console.log('contractErg', contractErg);
-	console.log('contractDexy', contractDexy);
-	console.log('sharesUnlocked', sharesUnlocked);
+	const lpMintOutValue = lpMintInValue;
+	const lpXOut = lpXIn + contractErg;
+	const lpYOut = lpYIn + contractDexy;
+
+	const lpTokensOut = lpTokensIn - sharesUnlocked;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([mintState.lpIn, mintState.lpMintIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpMintOutValue, DEXY_GOLD.lpMintErgoTree).addTokens([
+				{ tokenId: lpMintNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+	return unsignedTx;
+}
+
+export function dexyGoldLpMintInputDexyTx(
+	inputDexy: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	mintState: DexyGoldLpMintInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn; //initialLp
+
+	let { contractErg, contractLpTokens: sharesUnlocked } = calculateLpMintInputDexy(
+		inputDexy,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	let uiSwapFee;
+	const { uiSwapFee: abc, inputErg } = reverseFee(contractErg, feeMining, 2n);
+	uiSwapFee = abc;
+
+	const contractDexy = inputDexy;
+
+	const lpMintOutValue = lpMintInValue;
+	const lpXOut = lpXIn + contractErg;
+	const lpYOut = lpYIn + contractDexy;
+
+	const lpTokensOut = lpTokensIn - sharesUnlocked;
+
+	const userUtxos = utxos; //
+	const userAddress = userBase58PK; //
+	const userChangeAddress = userAddress;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([mintState.lpIn, mintState.lpMintIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensOut },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(lpMintOutValue, DEXY_GOLD.lpMintErgoTree).addTokens([
+				{ tokenId: lpMintNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+	//console.log(unsignedTx);
+	return unsignedTx;
+}
+
+export function dexyGoldLpMintInputSharesTx(
+	inputShares: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	mintState: DexyGoldLpMintInputs
+): EIP12UnsignedTransaction {
+	const sharesUnlocked = inputShares;
+
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+
+	const supplyLpIn = initialLp - lpTokensIn;
+
+	let { contractErg, contractDexy } = calculateLpMintInputSharesUnlocked(
+		sharesUnlocked,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+
+	let uiSwapFee;
+	const { uiSwapFee: abc, inputErg } = reverseFee(contractErg, feeMining, 2n);
+	uiSwapFee = abc;
 
 	const lpMintOutValue = lpMintInValue;
 	const lpXOut = lpXIn + contractErg;

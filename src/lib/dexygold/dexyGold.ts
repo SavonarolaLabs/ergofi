@@ -62,8 +62,8 @@ export type DexyGoldFreeInputs = {
 	goldOracle: NodeBox;
 };
 
-// CALC
-//--------------Calc LP--------------
+//-------------- LP Swap --------------
+// Calc
 export function lpSwapInputErg(
 	direction: bigint,
 	amountErg: bigint,
@@ -132,7 +132,214 @@ export function lpSwapInputDexy(
 
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
-// CALC Mint
+// Price and BUILD
+export function dexyGoldLpSwapInputErgPrice(
+	inputErg: bigint,
+	direction: Direction,
+	feeMining: bigint,
+	swapState: DexyGoldLpSwapInputs
+) {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	let uiSwapFee, contractErg;
+	if (direction != DIRECTION_SELL) {
+		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
+	} else {
+		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
+	}
+
+	let { amountDexy, amountErg, rate } = lpSwapInputErg(
+		direction,
+		contractErg,
+		lpXIn,
+		lpYIn,
+		feeNumLp,
+		feeDenomLp
+	);
+	console.log('-----INPUT ERG-----');
+	console.log(inputErg, 'inputErg');
+	console.log(contractErg, 'contractErg');
+	console.log(amountDexy, 'amountDexy');
+	console.log('-----INPUT ERG-----');
+
+	const price = Number(inputErg) / Number(amountDexy);
+
+	return {
+		amountErg,
+		amountDexy,
+		price,
+		uiSwapFee,
+		contractErg
+	};
+}
+export function dexyGoldLpSwapInputErgTx(
+	inputErg: bigint,
+	direction: Direction,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	swapState: DexyGoldLpSwapInputs
+): EIP12UnsignedTransaction {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	const { amountErg, amountDexy, uiSwapFee, contractErg } = dexyGoldLpSwapInputErgPrice(
+		inputErg,
+		direction,
+		feeMining,
+		swapState
+	);
+
+	const userUtxos = utxos; // Можем переименовать по необходимости
+	const userAddress = userBase58PK; // Аналогично
+	const userChangeAddress = userAddress;
+
+	const swapOutValue = swapInValue;
+	const lpXOut = lpXIn - direction * amountErg;
+	const lpYOut = lpYIn + direction * amountDexy;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
+				{ tokenId: lpSwapNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldLpSwapInputDexyPrice(
+	inputDexy: bigint,
+	direction: Direction,
+	feeMining: bigint,
+	swapState: DexyGoldLpSwapInputs
+) {
+	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	let uiSwapFee, amountErg;
+	const {
+		amountDexy,
+		amountErg: contractERG,
+		rate
+	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
+
+	if (direction == DIRECTION_SELL) {
+		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining));
+	} else {
+		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining));
+	}
+	console.log('-----INPUT DEXY-----');
+	console.log(inputDexy, 'inputDexy');
+	console.log(contractERG, 'contractERG');
+	console.log(amountErg, 'amountErg');
+	console.log('-----INPUT DEXY-----');
+	const price = Number(amountErg) / Number(inputDexy);
+	return { amountErg, amountDexy: inputDexy, price, uiSwapFee };
+}
+export function dexyGoldLpSwapInputDexyTx(
+	inputDexy: bigint,
+	direction: Direction,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	swapState: DexyGoldLpSwapInputs
+): EIP12UnsignedTransaction {
+	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(swapState.lpIn);
+
+	const { amountErg, amountDexy, uiSwapFee } = dexyGoldLpSwapInputDexyPrice(
+		inputDexy,
+		direction,
+		feeMining,
+		swapState
+	);
+
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
+	const userChangeAddress = userAddress;
+
+	const swapOutValue = swapInValue;
+	const lpXOut = lpXIn - direction * amountErg;
+	const lpYOut = lpYIn + direction * amountDexy;
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.to(
+			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
+				{ tokenId: lpNFT, amount: 1n },
+				{ tokenId: lpTokenId, amount: lpTokensIn },
+				{ tokenId: lpDexyTokenId, amount: lpYOut }
+			])
+		)
+		.to(
+			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
+				{ tokenId: lpSwapNFT, amount: 1n }
+			])
+		)
+		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+
+//-------------- LP Mint --------------
+// Calc
 export function calculateLpMintInputErg(
 	contractErg: bigint,
 	lpXIn: bigint,
@@ -165,6 +372,33 @@ export function calculateLpMintInputSharesUnlocked(
 	return { contractDexy, contractErg, contractLpTokens };
 }
 // BUILD
+
+export function dexyGoldLpMintInputErgPrice(
+	inputErg: bigint,
+	feeMining: bigint,
+	mintState: DexyGoldLpMintInputs
+) {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+	const supplyLpIn = initialLp - lpTokensIn;
+	const { uiSwapFee, contractErg } = applyFee(inputErg, feeMining, 2n);
+	const { contractDexy, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
+		contractErg,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+	const price = Number(sharesUnlocked) / Number(inputErg);
+	return { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price };
+}
 export function dexyGoldLpMintInputErgTx(
 	inputErg: bigint,
 	userBase58PK: string,
@@ -173,9 +407,7 @@ export function dexyGoldLpMintInputErgTx(
 	utxos: NodeBox[],
 	mintState: DexyGoldLpMintInputs
 ): EIP12UnsignedTransaction {
-	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
 	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -185,30 +417,19 @@ export function dexyGoldLpMintInputErgTx(
 		lpDexyTokenId
 	} = parseLpBox(mintState.lpIn);
 
-	const supplyLpIn = initialLp - lpTokensIn; //initialLp
-
-	let uiSwapFee;
-
-	// FEE PART:
-	const { uiSwapFee: abc, contractErg } = applyFee(inputErg, feeMining, 2n);
-	uiSwapFee = abc;
-
-	// CALCULATION GO GO
-	let { contractDexy, contractLpTokens: sharesUnlocked } = calculateLpMintInputErg(
-		contractErg,
-		lpXIn,
-		lpYIn,
-		supplyLpIn
+	const { uiSwapFee, contractErg, contractDexy, sharesUnlocked } = dexyGoldLpMintInputErgPrice(
+		inputErg,
+		feeMining,
+		mintState
 	);
 
 	const lpMintOutValue = lpMintInValue;
 	const lpXOut = lpXIn + contractErg;
 	const lpYOut = lpYIn + contractDexy;
-
 	const lpTokensOut = lpTokensIn - sharesUnlocked;
 
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
 
 	const unsignedTx = new TransactionBuilder(height)
@@ -232,7 +453,36 @@ export function dexyGoldLpMintInputErgTx(
 		.sendChangeTo(userChangeAddress)
 		.build()
 		.toEIP12Object();
+
 	return unsignedTx;
+}
+
+export function dexyGoldLpMintInputDexyPrice(
+	inputDexy: bigint,
+	feeMining: bigint,
+	mintState: DexyGoldLpMintInputs
+) {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+	const supplyLpIn = initialLp - lpTokensIn;
+	const { contractErg, contractLpTokens: sharesUnlocked } = calculateLpMintInputDexy(
+		inputDexy,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+	const { uiSwapFee, inputErg } = reverseFee(contractErg, feeMining, 2n);
+	const contractDexy = inputDexy;
+	const price = Number(sharesUnlocked) / Number(inputDexy);
+	return { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price };
 }
 export function dexyGoldLpMintInputDexyTx(
 	inputDexy: bigint,
@@ -242,9 +492,7 @@ export function dexyGoldLpMintInputDexyTx(
 	utxos: NodeBox[],
 	mintState: DexyGoldLpMintInputs
 ): EIP12UnsignedTransaction {
-	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
 	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -253,32 +501,15 @@ export function dexyGoldLpMintInputDexyTx(
 		lpTokenId,
 		lpDexyTokenId
 	} = parseLpBox(mintState.lpIn);
-
-	const supplyLpIn = initialLp - lpTokensIn; //initialLp
-
-	let { contractErg, contractLpTokens: sharesUnlocked } = calculateLpMintInputDexy(
-		inputDexy,
-		lpXIn,
-		lpYIn,
-		supplyLpIn
-	);
-
-	let uiSwapFee;
-	const { uiSwapFee: abc, inputErg } = reverseFee(contractErg, feeMining, 2n);
-	uiSwapFee = abc;
-
-	const contractDexy = inputDexy;
-
+	const { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked } =
+		dexyGoldLpMintInputDexyPrice(inputDexy, feeMining, mintState);
 	const lpMintOutValue = lpMintInValue;
 	const lpXOut = lpXIn + contractErg;
 	const lpYOut = lpYIn + contractDexy;
-
 	const lpTokensOut = lpTokensIn - sharesUnlocked;
-
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
-
 	const unsignedTx = new TransactionBuilder(height)
 		.from([mintState.lpIn, mintState.lpMintIn, ...userUtxos], {
 			ensureInclusion: true
@@ -300,8 +531,35 @@ export function dexyGoldLpMintInputDexyTx(
 		.sendChangeTo(userChangeAddress)
 		.build()
 		.toEIP12Object();
-	//console.log(unsignedTx);
 	return unsignedTx;
+}
+
+export function dexyGoldLpMintInputSharesPrice(
+	inputShares: bigint,
+	feeMining: bigint,
+	mintState: DexyGoldLpMintInputs
+) {
+	const sharesUnlocked = inputShares;
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(mintState.lpIn);
+	const supplyLpIn = initialLp - lpTokensIn;
+	const { contractErg, contractDexy } = calculateLpMintInputSharesUnlocked(
+		sharesUnlocked,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+	const { uiSwapFee, inputErg } = reverseFee(contractErg, feeMining, 2n);
+	const price = Number(sharesUnlocked) / Number(inputErg);
+	return { uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price };
 }
 export function dexyGoldLpMintInputSharesTx(
 	inputShares: bigint,
@@ -311,11 +569,7 @@ export function dexyGoldLpMintInputSharesTx(
 	utxos: NodeBox[],
 	mintState: DexyGoldLpMintInputs
 ): EIP12UnsignedTransaction {
-	const sharesUnlocked = inputShares;
-
-	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
 	const { value: lpMintInValue, lpMintNFT } = parseLpMintBox(mintState.lpMintIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -324,28 +578,16 @@ export function dexyGoldLpMintInputSharesTx(
 		lpTokenId,
 		lpDexyTokenId
 	} = parseLpBox(mintState.lpIn);
-
-	const supplyLpIn = initialLp - lpTokensIn;
-
-	let { contractErg, contractDexy } = calculateLpMintInputSharesUnlocked(
-		sharesUnlocked,
-		lpXIn,
-		lpYIn,
-		supplyLpIn
-	);
-
-	let uiSwapFee;
-	const { uiSwapFee: abc, inputErg } = reverseFee(contractErg, feeMining, 2n);
-	uiSwapFee = abc;
+	const { uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked } =
+		dexyGoldLpMintInputSharesPrice(inputShares, feeMining, mintState);
 
 	const lpMintOutValue = lpMintInValue;
 	const lpXOut = lpXIn + contractErg;
 	const lpYOut = lpYIn + contractDexy;
-
 	const lpTokensOut = lpTokensIn - sharesUnlocked;
 
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
 
 	const unsignedTx = new TransactionBuilder(height)
@@ -369,11 +611,12 @@ export function dexyGoldLpMintInputSharesTx(
 		.sendChangeTo(userChangeAddress)
 		.build()
 		.toEIP12Object();
-	//console.log(unsignedTx);
+
 	return unsignedTx;
 }
 
-// CALC Redeem
+//-------------- LP Redeem --------------
+// Calc
 export function calculateLpRedeemInputSharesUnlocked(
 	contractLpTokens: bigint,
 	lpXIn: bigint,
@@ -630,213 +873,6 @@ export function dexyGoldLpRedeemInputErgTx(
 		.to(
 			new OutputBuilder(lpRedeemOutValue, DEXY_GOLD.lpRedeemErgoTree).addTokens([
 				{ tokenId: lpRedeemNFT, amount: 1n }
-			])
-		)
-		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
-		.payFee(feeMining)
-		.sendChangeTo(userChangeAddress)
-		.build()
-		.toEIP12Object();
-
-	return unsignedTx;
-}
-
-// BUILD
-export function dexyGoldLpSwapInputErgPrice(
-	inputErg: bigint,
-	direction: Direction,
-	feeMining: bigint,
-	swapState: DexyGoldLpSwapInputs
-) {
-	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
-	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
-
-	const {
-		dexyAmount: lpYIn,
-		value: lpXIn,
-		lpTokenAmount: lpTokensIn,
-		lpNFT,
-		lpTokenId,
-		lpDexyTokenId
-	} = parseLpBox(swapState.lpIn);
-
-	let uiSwapFee, contractErg;
-	if (direction != DIRECTION_SELL) {
-		({ uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining));
-	} else {
-		({ uiSwapFee, contractErg } = applyFee(inputErg, feeMining));
-	}
-
-	let { amountDexy, amountErg, rate } = lpSwapInputErg(
-		direction,
-		contractErg,
-		lpXIn,
-		lpYIn,
-		feeNumLp,
-		feeDenomLp
-	);
-	console.log('-----INPUT ERG-----');
-	console.log(inputErg, 'inputErg');
-	console.log(contractErg, 'contractErg');
-	console.log(amountDexy, 'amountDexy');
-	console.log('-----INPUT ERG-----');
-
-	const price = Number(inputErg) / Number(amountDexy);
-
-	return {
-		amountErg,
-		amountDexy,
-		price,
-		uiSwapFee,
-		contractErg
-	};
-}
-export function dexyGoldLpSwapInputErgTx(
-	inputErg: bigint,
-	direction: Direction,
-	userBase58PK: string,
-	height: number,
-	feeMining: bigint,
-	utxos: NodeBox[],
-	swapState: DexyGoldLpSwapInputs
-): EIP12UnsignedTransaction {
-	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
-	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
-
-	const {
-		dexyAmount: lpYIn,
-		value: lpXIn,
-		lpTokenAmount: lpTokensIn,
-		lpNFT,
-		lpTokenId,
-		lpDexyTokenId
-	} = parseLpBox(swapState.lpIn);
-
-	const { amountErg, amountDexy, uiSwapFee, contractErg } = dexyGoldLpSwapInputErgPrice(
-		inputErg,
-		direction,
-		feeMining,
-		swapState
-	);
-
-	const userUtxos = utxos; // Можем переименовать по необходимости
-	const userAddress = userBase58PK; // Аналогично
-	const userChangeAddress = userAddress;
-
-	const swapOutValue = swapInValue;
-	const lpXOut = lpXIn - direction * amountErg;
-	const lpYOut = lpYIn + direction * amountDexy;
-
-	const unsignedTx = new TransactionBuilder(height)
-		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
-			ensureInclusion: true
-		})
-		.to(
-			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpTokenId, amount: lpTokensIn },
-				{ tokenId: lpDexyTokenId, amount: lpYOut }
-			])
-		)
-		.to(
-			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
-				{ tokenId: lpSwapNFT, amount: 1n }
-			])
-		)
-		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))
-		.payFee(feeMining)
-		.sendChangeTo(userChangeAddress)
-		.build()
-		.toEIP12Object();
-
-	return unsignedTx;
-}
-
-export function dexyGoldLpSwapInputDexyPrice(
-	inputDexy: bigint,
-	direction: Direction,
-	feeMining: bigint,
-	swapState: DexyGoldLpSwapInputs
-) {
-	const { feeNumLp, feeDenomLp } = DEXY_GOLD;
-	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
-	const {
-		dexyAmount: lpYIn,
-		value: lpXIn,
-		lpTokenAmount: lpTokensIn,
-		lpNFT,
-		lpTokenId,
-		lpDexyTokenId
-	} = parseLpBox(swapState.lpIn);
-
-	let uiSwapFee, amountErg;
-	const {
-		amountDexy,
-		amountErg: contractERG,
-		rate
-	} = lpSwapInputDexy(direction, inputDexy, lpXIn, lpYIn, feeNumLp, feeDenomLp);
-
-	if (direction == DIRECTION_SELL) {
-		({ inputErg: amountErg, uiSwapFee } = reverseFee(contractERG, feeMining));
-	} else {
-		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining));
-	}
-	console.log('-----INPUT DEXY-----');
-	console.log(inputDexy, 'inputDexy');
-	console.log(contractERG, 'contractERG');
-	console.log(amountErg, 'amountErg');
-	console.log('-----INPUT DEXY-----');
-	const price = Number(amountErg) / Number(inputDexy);
-	return { amountErg, amountDexy: inputDexy, price, uiSwapFee };
-}
-export function dexyGoldLpSwapInputDexyTx(
-	inputDexy: bigint,
-	direction: Direction,
-	userBase58PK: string,
-	height: number,
-	feeMining: bigint,
-	utxos: NodeBox[],
-	swapState: DexyGoldLpSwapInputs
-): EIP12UnsignedTransaction {
-	const { value: swapInValue, lpSwapNFT } = parseLpSwapBox(swapState.lpSwapIn);
-	const {
-		dexyAmount: lpYIn,
-		value: lpXIn,
-		lpTokenAmount: lpTokensIn,
-		lpNFT,
-		lpTokenId,
-		lpDexyTokenId
-	} = parseLpBox(swapState.lpIn);
-
-	const { amountErg, amountDexy, uiSwapFee } = dexyGoldLpSwapInputDexyPrice(
-		inputDexy,
-		direction,
-		feeMining,
-		swapState
-	);
-
-	const userUtxos = utxos;
-	const userAddress = userBase58PK;
-	const userChangeAddress = userAddress;
-
-	const swapOutValue = swapInValue;
-	const lpXOut = lpXIn - direction * amountErg;
-	const lpYOut = lpYIn + direction * amountDexy;
-
-	const unsignedTx = new TransactionBuilder(height)
-		.from([swapState.lpIn, swapState.lpSwapIn, ...userUtxos], {
-			ensureInclusion: true
-		})
-		.to(
-			new OutputBuilder(lpXOut, DEXY_GOLD.lpErgoTree).addTokens([
-				{ tokenId: lpNFT, amount: 1n },
-				{ tokenId: lpTokenId, amount: lpTokensIn },
-				{ tokenId: lpDexyTokenId, amount: lpYOut }
-			])
-		)
-		.to(
-			new OutputBuilder(swapOutValue, DEXY_GOLD.swapErgoTree).addTokens([
-				{ tokenId: lpSwapNFT, amount: 1n }
 			])
 		)
 		.to(new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS))

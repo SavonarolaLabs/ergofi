@@ -24,6 +24,7 @@ import type {
 import type { EIP12UnsignedTransaction, UnsignedTransaction } from '@fleet-sdk/common';
 import { reducedFromUnsignedTx } from '$lib/dexygold/signing';
 import { createContext } from '$lib/fakeContext';
+import { ergStringToNanoErg } from '$lib/utils';
 
 function grepBestOracleBox(oracles: OracleData): NodeBox {
 	return oracles.confirmed_erg_usd[0];
@@ -41,7 +42,7 @@ function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EI
 
 	let unsignedTx;
 	switch (`${swapPair}_${lastInput}`) {
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(ergStringToNanoErg(amount)), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;

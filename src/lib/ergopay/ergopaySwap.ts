@@ -39,11 +39,6 @@ function grepBestSigmaUsdBankBox(bankCandidates: MempoolSocketUpdate): NodeBox {
 // prettier-ignore
 function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EIP12UnsignedTransaction {
 	const { swapPair, amount, lastInput, payerAddress, feeMining, payerUtxo, oracleBox, bankBox, height } = params;
-	//console.dir(params,{depth:null})
-	console.log(amount,'amount')
-	console.log(BigInt(ergStringToNanoErg(amount)),':BigInt(ergStringToNanoErg(amount)')
-	console.log(feeMining,'feeMining')
-	console.log(BigInt(ergStringToNanoErg(feeMining)),'BigInt(ergStringToNanoErg(feeMining))')
 
 	let unsignedTx;
 	switch (`${swapPair}_${lastInput}`) {
@@ -80,8 +75,8 @@ function buildReducedSigmUsdSwapTransaction(
 	params: ErgopayPaySigmaUsdSwapParams
 ): ErgopayPayCmdResponse {
 	try {
+		console.log('REDUCE PROBLEM?');
 		let unsignedTx = buildSigmUsdSwapTransaction(params);
-		console.log('BUILDED BOM BOM');
 		const reducedTx = reducedFromUnsignedTx(unsignedTx, params.context);
 		return { status: 'ok', reducedTx };
 	} catch (e) {
@@ -97,7 +92,14 @@ function buildReducedSigmUsdSwapTransaction(
 }
 
 export async function run(): Promise<ErgopayPayCmdResponse> {
-	const cmdParams = parseCommandLineArgs();
+	const cmdParams = {
+		swapPair: 'ERG/SIGUSD',
+		amount: 1.1,
+		ePayLinkId: 'abcd1234',
+		lastInput: 'ERG',
+		payerAddress: '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU',
+		feeMining: 0.1
+	}; //parseCommandLineArgs();
 
 	// fetch chain context
 	const height = 1458647; // TODO: add fetch height
@@ -111,6 +113,12 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 	console.log('GET UTXOS:');
 	console.log('lenght:', payerUtxo.length);
 	payerUtxo.map((o) => console.log(o.boxId));
+	console.dir(
+		payerUtxo.find(
+			(o) => o.boxId == '88fe9faf8900efc67faca56dd38ec2471d7231e97fa982bfcfe59b0eca2ad525'
+		),
+		{ depth: null }
+	);
 	console.log('lenght:', payerUtxo.length);
 
 	// select best boxes
@@ -131,3 +139,6 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 
 	return txBuildAttempt;
 }
+
+const x = await run();
+console.log(x);

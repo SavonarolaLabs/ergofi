@@ -88,7 +88,7 @@ export function buyUSDInputERGTx(
 
 	let { uiSwapFee, contractErg } = applyFee(inputErg, feeMining);
 
-	console.dir(utxos, { depth: null });
+	//console.dir(utxos, { depth: null });
 
 	//Part 1 - Get Oracle
 	const { inErg, inSigUSD, inSigRSV, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);

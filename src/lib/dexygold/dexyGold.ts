@@ -654,18 +654,13 @@ export function calculateLpRedeemInputDexy(
 }
 
 // BUILD
-export function dexyGoldLpRedeemInputSharesTx(
+export function dexyGoldLpRedeemInputSharesPrice(
 	inputShares: bigint,
-	userBase58PK: string,
-	height: number,
 	feeMining: bigint,
-	utxos: NodeBox[],
 	redeemState: DexyGoldLpRedeemInputs
-): EIP12UnsignedTransaction {
+) {
 	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
-
 	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -674,35 +669,47 @@ export function dexyGoldLpRedeemInputSharesTx(
 		lpTokenId,
 		lpDexyTokenId
 	} = parseLpBox(redeemState.lpIn);
-
 	const supplyLpIn = initialLp - lpTokensIn;
-
-	let { contractErg, contractDexy } = calculateLpRedeemInputSharesUnlocked(
+	const { contractErg, contractDexy } = calculateLpRedeemInputSharesUnlocked(
 		inputShares,
 		lpXIn,
 		lpYIn,
 		supplyLpIn
 	);
-
-	let uiSwapFee;
-	const { uiSwapFee: abc, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
-	uiSwapFee = abc;
-
-	// console.log(inputErg, 'inputErg');
-	// console.log(contractErg, 'contractErg');
-	// console.log(
-	// 	userErg == contractErg - uiSwapFee - feeMining,
-	// 	'userErg == contractErg - uiSwapFee - feeMining'
-	// );
+	const { uiSwapFee, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
+	const price = Number(userErg) / Number(inputShares);
+	return { uiSwapFee, userErg, contractErg, contractDexy, price };
+}
+export function dexyGoldLpRedeemInputSharesTx(
+	inputShares: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	redeemState: DexyGoldLpRedeemInputs
+): EIP12UnsignedTransaction {
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+	const { uiSwapFee, userErg, contractErg, contractDexy } = dexyGoldLpRedeemInputSharesPrice(
+		inputShares,
+		feeMining,
+		redeemState
+	);
 
 	const lpRedeemOutValue = lpRedeemInValue;
-
 	const lpXOut = lpXIn - contractErg;
 	const lpYOut = lpYIn - contractDexy;
 	const lpTokensOut = lpTokensIn + inputShares;
 
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
 
 	const unsignedTx = new TransactionBuilder(height)
@@ -729,6 +736,33 @@ export function dexyGoldLpRedeemInputSharesTx(
 		.toEIP12Object();
 
 	return unsignedTx;
+}
+
+export function dexyGoldLpRedeemInputDexyPrice(
+	inputDexy: bigint,
+	feeMining: bigint,
+	redeemState: DexyGoldLpRedeemInputs
+) {
+	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+	const supplyLpIn = initialLp - lpTokensIn;
+	const { contractLpTokens: sharesUnlocked, contractErg } = calculateLpRedeemInputDexy(
+		inputDexy,
+		lpXIn,
+		lpYIn,
+		supplyLpIn
+	);
+	const { uiSwapFee, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
+	const price = Number(userErg) / Number(inputDexy);
+	return { uiSwapFee, userErg, contractErg, sharesUnlocked, price };
 }
 export function dexyGoldLpRedeemInputDexyTx(
 	inputDexy: bigint,
@@ -738,10 +772,7 @@ export function dexyGoldLpRedeemInputDexyTx(
 	utxos: NodeBox[],
 	redeemState: DexyGoldLpRedeemInputs
 ): EIP12UnsignedTransaction {
-	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
-
 	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -751,34 +782,19 @@ export function dexyGoldLpRedeemInputDexyTx(
 		lpDexyTokenId
 	} = parseLpBox(redeemState.lpIn);
 
-	const supplyLpIn = initialLp - lpTokensIn;
-
-	let { contractLpTokens: sharesUnlocked, contractErg } = calculateLpRedeemInputDexy(
+	const { uiSwapFee, userErg, contractErg, sharesUnlocked } = dexyGoldLpRedeemInputDexyPrice(
 		inputDexy,
-		lpXIn,
-		lpYIn,
-		supplyLpIn
+		feeMining,
+		redeemState
 	);
 
-	let uiSwapFee;
-	const { uiSwapFee: abc, userErg } = reverseFeeSell(contractErg, feeMining, 2n);
-	uiSwapFee = abc;
-
-	// console.log(inputErg, 'inputErg');
-	// console.log(contractErg, 'contractErg');
-	// console.log(
-	// 	userErg == contractErg - uiSwapFee - feeMining,
-	// 	'userErg == contractErg - uiSwapFee - feeMining'
-	// );
-
 	const lpRedeemOutValue = lpRedeemInValue;
-
 	const lpXOut = lpXIn - contractErg;
 	const lpYOut = lpYIn - inputDexy;
 	const lpTokensOut = lpTokensIn + sharesUnlocked;
 
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
 
 	const unsignedTx = new TransactionBuilder(height)
@@ -806,18 +822,14 @@ export function dexyGoldLpRedeemInputDexyTx(
 
 	return unsignedTx;
 }
-export function dexyGoldLpRedeemInputErgTx(
+
+export function dexyGoldLpRedeemInputErgPrice(
 	inputErg: bigint,
-	userBase58PK: string,
-	height: number,
 	feeMining: bigint,
-	utxos: NodeBox[],
 	redeemState: DexyGoldLpRedeemInputs
-): EIP12UnsignedTransaction {
+) {
 	const { feeNumLp, feeDenomLp, initialLp } = DEXY_GOLD;
-
 	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
-
 	const {
 		dexyAmount: lpYIn,
 		value: lpXIn,
@@ -826,36 +838,47 @@ export function dexyGoldLpRedeemInputErgTx(
 		lpTokenId,
 		lpDexyTokenId
 	} = parseLpBox(redeemState.lpIn);
-
 	const supplyLpIn = initialLp - lpTokensIn;
-
-	let uiSwapFee;
-	// FEE PART:
-	const { uiSwapFee: abc, contractErg } = applyFeeSell(inputErg, feeMining, 2n);
-	uiSwapFee = abc;
-
-	let { contractLpTokens: sharesUnlocked, contractDexy: dexyInput } = calculateLpRedeemInputErg(
+	const { uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining, 2n);
+	const { contractLpTokens: sharesUnlocked, contractDexy: dexyInput } = calculateLpRedeemInputErg(
 		contractErg,
 		lpXIn,
 		lpYIn,
 		supplyLpIn
 	);
-
-	// console.log(inputErg, 'inputErg');
-	// console.log(contractErg, 'contractErg');
-	// console.log(
-	// 	inputErg == contractErg - uiSwapFee - feeMining,
-	// 	'inputErg == contractErg - uiSwapFee - feeMining'
-	// );
+	const price = Number(dexyInput) / Number(inputErg);
+	return { uiSwapFee, contractErg, dexyInput, sharesUnlocked, price };
+}
+export function dexyGoldLpRedeemInputErgTx(
+	inputErg: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	redeemState: DexyGoldLpRedeemInputs
+): EIP12UnsignedTransaction {
+	const { value: lpRedeemInValue, lpRedeemNFT } = parseLpRedeemBox(redeemState.lpRedeemIn);
+	const {
+		dexyAmount: lpYIn,
+		value: lpXIn,
+		lpTokenAmount: lpTokensIn,
+		lpNFT,
+		lpTokenId,
+		lpDexyTokenId
+	} = parseLpBox(redeemState.lpIn);
+	const { uiSwapFee, contractErg, dexyInput, sharesUnlocked } = dexyGoldLpRedeemInputErgPrice(
+		inputErg,
+		feeMining,
+		redeemState
+	);
 
 	const lpRedeemOutValue = lpRedeemInValue;
-
 	const lpXOut = lpXIn - contractErg;
 	const lpYOut = lpYIn - dexyInput;
 	const lpTokensOut = lpTokensIn + sharesUnlocked;
 
-	const userUtxos = utxos; //
-	const userAddress = userBase58PK; //
+	const userUtxos = utxos;
+	const userAddress = userBase58PK;
 	const userChangeAddress = userAddress;
 
 	const unsignedTx = new TransactionBuilder(height)

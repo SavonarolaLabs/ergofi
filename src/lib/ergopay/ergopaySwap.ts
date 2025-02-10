@@ -39,7 +39,7 @@ function grepBestSigmaUsdBankBox(bankCandidates: MempoolSocketUpdate): NodeBox {
 // prettier-ignore
 function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EIP12UnsignedTransaction {
 	const { swapPair, amount, lastInput, payerAddress, feeMining, payerUtxo, oracleBox, bankBox, height } = params;
-
+	console.log(params)
 	let unsignedTx;
 	switch (`${swapPair}_${lastInput}`) {
         case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(ergStringToNanoErg(amount)), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(ergStringToNanoErg(amount))); break;

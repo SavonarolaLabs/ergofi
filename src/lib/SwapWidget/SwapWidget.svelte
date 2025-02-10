@@ -212,7 +212,7 @@
 				$fee_mining,
 				params.mintState
 			)
-			fromAmount = inputErg.toString();
+			fromAmount = nanoErgToErg(inputErg);
 			toAmount = sharesUnlocked.toString();
 			swapPrice = price;
 		}
@@ -223,7 +223,7 @@
 				$fee_mining,
 				params.mintState
 			)
-			fromAmount = inputErg.toString();
+			fromAmount = nanoErgToErg(inputErg);
 			fromAmount2 = contractDexy.toString();
 			swapPrice = price;
 		}
@@ -234,7 +234,7 @@
 				$fee_mining,
 				params.redeemState
 			)
-			toAmount = userErg.toString();
+			toAmount = nanoErgToErg(userErg);
 			toAmount2 = contractDexy.toString();
 			swapPrice = price;
 		}
@@ -257,7 +257,7 @@
 				params.redeemState
 			)
 			fromAmount = sharesUnlocked.toString();
-			toAmount = userErg.toString();
+			toAmount = nanoErgToErg(userErg);
 			swapPrice = price;
 		}
 

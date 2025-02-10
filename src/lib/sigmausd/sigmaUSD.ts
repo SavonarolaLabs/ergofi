@@ -86,6 +86,10 @@ export function buyUSDInputERGTx(
 	//Part 0 - use Fee
 	const direction: Direction = 1n;
 
+	console.dir(bankBox, { depth: null });
+	console.log('----------');
+	console.dir(oracleBox, { depth: null });
+
 	let { uiSwapFee, contractErg } = applyFee(inputErg, feeMining);
 
 	//Part 1 - Get Oracle

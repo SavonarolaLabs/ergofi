@@ -91,10 +91,10 @@ export function buildTx_SIGUSD_ERG_USD(
 	const uiFeeBox = new OutputBuilder(uiSwapFee, uiAddr);
 
 	console.log('receiptBox');
-	console.dir(receiptBox, { depth: null });
+	console.dir(receiptBox.value, { depth: null });
 
 	console.log('uiFeeBox');
-	console.dir(uiFeeBox, { depth: null });
+	console.dir(uiFeeBox.value, { depth: null });
 
 	const unsignedMintTransaction = new TransactionBuilder(height)
 		.from([bankBox, ...utxos])

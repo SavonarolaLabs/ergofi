@@ -106,6 +106,11 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 	const bankTransactions = await fetchSigmaUsdBankTransactions();
 	const context = await createContext(height);
 
+	console.log('GET UTXOS:');
+	console.log('lenght:', payerUtxo.length);
+	console.dir(payerUtxo, { depth: null });
+	console.log('lenght:', payerUtxo.length);
+
 	// select best boxes
 	const oracleBox = grepBestOracleBox(oracleData);
 	const bankBox = grepBestSigmaUsdBankBox(bankTransactions);

@@ -208,7 +208,7 @@
 		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
 			const{ uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =dexyGoldLpMintInputDexyPrice(
-				BigInt(fromAmount),
+				BigInt(fromAmount2),
 				$fee_mining,
 				params.mintState
 			)

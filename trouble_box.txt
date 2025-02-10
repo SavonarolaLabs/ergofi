@@ -1,0 +1,90 @@
+{
+  additionalRegisters: {},
+  address: "9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU",
+  assets: [
+    {
+      amount: 1015,
+      tokenId: "03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04",
+    },
+    {
+      amount: 2200,
+      tokenId: "003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0",
+    },
+    {
+      amount: 1,
+      tokenId: "5f2d7a3eebbcfa1d74d558489aca5485bc83f1adbcf59c89145450bfae10774a",
+    },
+    {
+      amount: 1,
+      tokenId: "74648d5d515e37fd578e3fbe7aa0764f5edd27e0c311d82ffcd5596934daf431",
+    },
+    {
+      amount: 50000000000,
+      tokenId: "f60bff91f7ae3f3a5f0c2d35b46ef8991f213a61d7f7e453d344fa52a42d9f9a",
+    },
+    {
+      amount: 1000000000000,
+      tokenId: "fffe6122886e3b0ab9b72b401b39bf8d3f13580c1335a41d91d19deb8038ccd4",
+    },
+    {
+      amount: 1,
+      tokenId: "471eec389bebd266b5be1163451775d15c22df12af911e8ff0b919b60c862bae",
+    },
+    {
+      amount: 47997989999998290,
+      tokenId: "69feaac1e621c76d0f45057191ba740c2b4aa1ca28aff58fd889d071a0d795b8",
+    },
+    {
+      amount: 1,
+      tokenId: "61e8c9d9cb5975fb4f54eec7d62286febcd58aba97cf6798691e3acc728cf3d1",
+    },
+    {
+      amount: 1000,
+      tokenId: "bd0c25c373ad606d78412ae1198133f4573b4e4c2d4ed3fc4c2a4547c6c6e12e",
+    },
+    {
+      amount: 49000000000000000,
+      tokenId: "d2d0deb3b0b2c511e523fd43ae838ba7b89e4583f165169b90215ff11d942c1f",
+    },
+    {
+      amount: 1,
+      tokenId: "3f61f140d3fe334a845df647245a9e534337458f976a9d2a32ce4a7a3ee89232",
+    },
+    {
+      amount: 1999999899970000,
+      tokenId: "5bf691fbf0c4b17f8f8cece83fa947f62f480bfbd242bd58946f85535125db4d",
+    },
+    {
+      amount: 1,
+      tokenId: "2b4e0c286b470a9403c10fe557c58c1b5b678a2078b50d28baad0629e237e69c",
+    },
+    {
+      amount: 1,
+      tokenId: "2b1d40e38098e666740177c9f296a6ec8898c9a28c645576cca37e0449402a09",
+    }
+  ],
+  boxId: "88fe9faf8900efc67faca56dd38ec2471d7231e97fa982bfcfe59b0eca2ad525",
+  creationHeight: 1454272,
+  ergoTree: "0008cd0233e9a9935c8bbb8ae09b2c944c1d060492a8832252665e043b0732bdf593bf2c",
+  globalIndex: 46107755,
+  inclusionHeight: 1454274,
+  index: 4,
+  spentTransactionId: null,
+  transactionId: "17f59646be397213c036a888141d6ffbdc4d1464360944ac04ef7364f5276de2",
+  value: 9603357753,
+}
+lenght: 5
+REDUCE PROBLEM?
+279 | };
+280 | 
+281 | // src/errors/invalidInput.ts
+282 | var InvalidInput = class extends Error {
+283 |   constructor(boxId) {
+284 |     super(`Invalid input: ${boxId}`);
+          ^
+error: Invalid input: 88fe9faf8900efc67faca56dd38ec2471d7231e97fa982bfcfe59b0eca2ad525
+      at new InvalidInput (/Users/aleksei.barysnikov/repos/ergofi/node_modules/@fleet-sdk/core/dist/index.mjs:284:5)
+      at build (/Users/aleksei.barysnikov/repos/ergofi/node_modules/@fleet-sdk/core/dist/index.mjs:1528:35)
+      at buildTx_SIGUSD_ERG_USD (/Users/aleksei.barysnikov/repos/ergofi/src/lib/sigmausd/sigmaUSDBuilder.ts:99:4)
+      at buildSigmUsdSwapTransaction (/Users/aleksei.barysnikov/repos/ergofi/src/lib/ergopay/ergopaySwap.ts:45:50)
+      at buildReducedSigmUsdSwapTransaction (/Users/aleksei.barysnikov/repos/ergofi/src/lib/ergopay/ergopaySwap.ts:79:20)

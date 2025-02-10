@@ -1,10 +1,23 @@
 <script lang="ts">
 	import {
+		dexyGoldLpMintInputDexyPrice,
+		dexyGoldLpMintInputErgPrice,
+		dexyGoldLpMintInputSharesPrice,
+		dexyGoldLpMintInputSharesTx,
+		dexyGoldLpRedeemInputDexyPrice,
+		dexyGoldLpRedeemInputErgPrice,
+		dexyGoldLpRedeemInputSharesPrice,
 		dexyGoldLpSwapInputDexyPrice,
 		dexyGoldLpSwapInputErgPrice,
 		dexyGoldLpSwapInputErgTx
 	} from '$lib/dexygold/dexyGold';
-	import { dexygold_lp_box, dexygold_lp_swap_box } from '$lib/stores/dexyGoldStore';
+	import {
+		dexygold_lp_box,
+		dexygold_lp_mint_box,
+		dexygold_lp_redeem_box,
+		dexygold_lp_swap_box,
+		oracle_erg_xau_box
+	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
 	import { DIRECTION_BUY, DIRECTION_SELL, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
@@ -169,31 +182,83 @@
 			swapState: {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpIn: $dexygold_lp_box
+			},
+			mintState:{
+				lpMintIn: $dexygold_lp_mint_box,
+				lpIn: $dexygold_lp_box
+			},
+			redeemState:{
+				lpRedeemIn: $dexygold_lp_redeem_box,
+				lpIn: $dexygold_lp_box,
+				goldOracle: $oracle_erg_xau_box
 			}
 		};
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
-			//Mint LP
+			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =dexyGoldLpMintInputErgPrice(
+				ergStringToNanoErg(fromAmount),
+				$fee_mining,
+				params.mintState
+			)
+			fromAmount2 = contractDexy.toString();
+			toAmount = sharesUnlocked.toString();
+			swapPrice = price;
+
 		}
 		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
-			//Mint LP
+			const{ uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =dexyGoldLpMintInputDexyPrice(
+				BigInt(fromAmount),
+				$fee_mining,
+				params.mintState
+			)
+			fromAmount = inputErg.toString();
+			toAmount = sharesUnlocked.toString();
+			swapPrice = price;
 		}
 		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
-			//Mint LP
+			const{ uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpMintInputSharesPrice(
+				BigInt(toAmount),
+				$fee_mining,
+				params.mintState
+			)
+			fromAmount = inputErg.toString();
+			fromAmount2 = contractDexy.toString();
+			swapPrice = price;
 		}
 		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
 		) {
-			//Redeem LP
+			const{ uiSwapFee, userErg, contractErg, contractDexy, price }=dexyGoldLpRedeemInputSharesPrice(
+				BigInt(fromAmount),
+				$fee_mining,
+				params.redeemState
+			)
+			toAmount = userErg.toString();
+			toAmount2 = contractDexy.toString();
+			swapPrice = price;
 		}
 		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
 		) {
-			//Redeem LP
+			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpRedeemInputErgPrice(
+				ergStringToNanoErg(toAmount),
+				$fee_mining,
+				params.redeemState
+			)
+			fromAmount = sharesUnlocked.toString();
+			toAmount2 = contractDexy.toString();
+			swapPrice = price;
 		}
 		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
 		) {
-			//Redeem LP
+			const{ uiSwapFee, userErg, contractErg, sharesUnlocked, price }=dexyGoldLpRedeemInputDexyPrice(
+				BigInt(toAmount2),
+				$fee_mining,
+				params.redeemState
+			)
+			fromAmount = sharesUnlocked.toString();
+			toAmount = userErg.toString();
+			swapPrice = price;
 		}
 
 		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'

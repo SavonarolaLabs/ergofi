@@ -840,14 +840,14 @@ export function dexyGoldLpRedeemInputErgPrice(
 	} = parseLpBox(redeemState.lpIn);
 	const supplyLpIn = initialLp - lpTokensIn;
 	const { uiSwapFee, contractErg } = applyFeeSell(inputErg, feeMining, 2n);
-	const { contractLpTokens: sharesUnlocked, contractDexy: dexyInput } = calculateLpRedeemInputErg(
+	const { contractLpTokens: sharesUnlocked, contractDexy } = calculateLpRedeemInputErg(
 		contractErg,
 		lpXIn,
 		lpYIn,
 		supplyLpIn
 	);
-	const price = Number(dexyInput) / Number(inputErg);
-	return { uiSwapFee, contractErg, dexyInput, sharesUnlocked, price };
+	const price = Number(contractDexy) / Number(inputErg);
+	return { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price };
 }
 export function dexyGoldLpRedeemInputErgTx(
 	inputErg: bigint,

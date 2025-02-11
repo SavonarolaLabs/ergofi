@@ -423,15 +423,15 @@
 		}
 		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromAmountX = BigInt(fromAmount);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:$oracle_erg_xau_box}
 		}
 		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			toAmountX = BigInt(toAmount);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:$oracle_erg_xau_box}
 		}
 		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			toAmount2X = BigInt(toAmount2);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:$oracle_erg_xau_box}
 		}
 		
 		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){

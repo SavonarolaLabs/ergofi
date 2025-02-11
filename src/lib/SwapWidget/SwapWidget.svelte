@@ -65,6 +65,7 @@
 	import SwapInputs from './SwapInputs.svelte';
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
+	import { info } from '$lib/stores/nodeInfo';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -300,7 +301,7 @@
 			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
 			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
 
-			let height = 1_400_000n
+			let height = $info.fullHeight 
 
 			const bankFreeAmount = $dexygold_widget_numbers.bankFreeMintResetHeight>height? $dexygold_widget_numbers.bankFreeMintAvailableDexy : $dexygold_widget_numbers.bankFreeMintResetDexy ;
 			const bankArbAmount	 = $dexygold_widget_numbers.bankArbMintResetHeight>height? $dexygold_widget_numbers.bankArbMintAvailableDexy: $dexygold_widget_numbers.bankArbMintResetDexy;

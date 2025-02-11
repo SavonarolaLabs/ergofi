@@ -45,7 +45,7 @@ export type DexyGoldLpRedeemInputs = {
 	goldOracle: NodeBox;
 };
 
-export type DexyGoldArbitrageInputs = {
+export type DexyGoldBankArbitrageInputs = {
 	arbMintIn: NodeBox;
 	bankIn: NodeBox;
 	buybankIn: NodeBox;
@@ -54,13 +54,20 @@ export type DexyGoldArbitrageInputs = {
 	tracking101: NodeBox;
 };
 
-export type DexyGoldFreeInputs = {
+export type DexyGoldBankFreeInputs = {
 	freeMintIn: NodeBox;
 	bankIn: NodeBox;
 	buybankIn: NodeBox;
 	lpIn: NodeBox;
 	goldOracle: NodeBox;
 };
+
+export type DexyGoldState =
+	| DexyGoldBankFreeInputs
+	| DexyGoldBankArbitrageInputs
+	| DexyGoldLpSwapInputs
+	| DexyGoldLpMintInputs
+	| DexyGoldLpRedeemInputs;
 
 //-------------- LP Swap --------------
 // Calc
@@ -974,7 +981,7 @@ export function dexyGoldBankArbitrageInputDexyTx(
 	height: number,
 	feeMining: bigint,
 	utxos: NodeBox[],
-	arbState: DexyGoldArbitrageInputs
+	arbState: DexyGoldBankArbitrageInputs
 ): EIP12UnsignedTransaction {
 	const { T_arb, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
@@ -1087,7 +1094,7 @@ export function dexyGoldBankArbitrageInputErgTx(
 	height: number,
 	feeMining: bigint,
 	utxos: NodeBox[],
-	arbState: DexyGoldArbitrageInputs
+	arbState: DexyGoldBankArbitrageInputs
 ): EIP12UnsignedTransaction {
 	const { T_arb, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
@@ -1200,7 +1207,7 @@ export function dexyGoldBankFreeInputErgTx(
 	height: number,
 	feeMining: bigint,
 	utxos: NodeBox[],
-	freeState: DexyGoldFreeInputs
+	freeState: DexyGoldBankFreeInputs
 ): EIP12UnsignedTransaction {
 	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
@@ -1310,7 +1317,7 @@ export function dexyGoldBankFreeInputDexyTx(
 	height: number,
 	feeMining: bigint,
 	utxos: NodeBox[],
-	freeState: DexyGoldFreeInputs
+	freeState: DexyGoldBankFreeInputs
 ): EIP12UnsignedTransaction {
 	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
 
@@ -1417,3 +1424,17 @@ export function dexyGoldBankFreeInputDexyTx(
 
 	return unsignedTx;
 }
+
+// ui
+//prettier-ignore
+export function buildSwapDexyGoldTx(input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldState){
+		//lastInput:LastUserInput
+		let unsignedTx;
+		let swapPairLastInput = 'ABCDEF'
+		switch (swapPairLastInput.toLocaleUpperCase()) {
+			case 'ABCDEF':      unsignedTx = dexyGoldLpMintInputErgTx (input,me,height,feeMining,utxos,state); break;
+			default:
+				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
+		}
+		return unsignedTx;
+	}

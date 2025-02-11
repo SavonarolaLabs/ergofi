@@ -24,7 +24,7 @@ import {
 	dexyGoldLpSwapInputErgTx,
 	lpSwapInputDexy,
 	lpSwapInputErg,
-	type DexyGoldArbitrageInputs,
+	type DexyGoldBankArbitrageInputs,
 	type DexyGoldLpSwapInputs
 } from '$lib/dexygold/dexyGold';
 import { signTx } from '$lib/dexygold/signing';

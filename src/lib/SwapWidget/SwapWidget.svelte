@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		buildSwapDexyGoldTx,
 		dexyGoldLpMintInputDexyPrice,
 		dexyGoldLpMintInputErgPrice,
 		dexyGoldLpMintInputSharesPrice,
@@ -193,6 +194,11 @@
 				goldOracle: $oracle_erg_xau_box
 			}
 		};
+
+
+
+
+
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
 			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =dexyGoldLpMintInputErgPrice(
@@ -366,34 +372,172 @@
 	let shake = false;
 
 	/* prettier-ignore */
-	async function handleSwapButton() {
-		if(isSwapDisabledCalc()){
-			setWidgetBorderError()
+	async function handleSwapButton(){
+	if ($selected_contract == 'SigmaUsd') {
+		handleSwapButtonSigUsd();
+		} else if ($selected_contract == 'DexyGold') {
+		handleSwapButtonDexyGold();
+		}
+	}
+
+	/* prettier-ignore */
+	async function handleSwapButtonDexyGold() {
+		if (isSwapDisabledCalc()) {
+			setWidgetBorderError();
 			shake = true;
-			setTimeout(() => {shake = false; setWidgetBorderNormal()}, 300);
+			setTimeout(() => {
+				shake = false;
+				setWidgetBorderNormal();
+			}, 300);
 			return;
 		}
 		// Check direction based on the last typed field
+		let fromAmountX: bigint = 0n;
+		let fromAmount2X: bigint = 0n;
+		let toAmountX: bigint = 0n;
+		let toAmount2X: bigint = 0n;
+		let state 
 
-		let fromAmountX:bigint=0n;
-		let toAmountX:bigint=0n;
-		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG') 	  fromAmountX = ergStringToNanoErg(fromAmount);
-		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigUSD') fromAmountX = usdStringToCentBigInt(fromAmount);
-		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigRSV') fromAmountX = BigInt(fromAmount);
-		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'ERG') 	  toAmountX = ergStringToNanoErg(toAmount);
-		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigUSD')   toAmountX = usdStringToCentBigInt(toAmount);
-		if (lastInput === 'To'	 && toCurrency.tokens[0] === 'SigRSV')   toAmountX = BigInt(toAmount);
+		//if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
+		//if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
+		//if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
+		//if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
+		//if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
+		//if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
+		//if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold')
+		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG')
+		//if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG')
+		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold')
+
+		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			fromAmountX = ergStringToNanoErg(fromAmount);
+			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
+		}
+		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			fromAmount2X = BigInt(fromAmount2);
+			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
+		}
+		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			toAmountX = BigInt(toAmount);
+			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
+		}
+		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			fromAmountX = BigInt(fromAmount);
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+		}
+		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			toAmountX = BigInt(toAmount);
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+		}
+		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			toAmount2X = BigInt(toAmount2);
+			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, $goldOracle:oracle_erg_xau_box}
+		}
+		
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
+			fromAmountX = ergStringToNanoErg(fromAmount);
+		}
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
+			toAmountX = ergStringToNanoErg(toAmount);
+		}
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
+			fromAmountX = BigInt(fromAmount);
+		}
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
+			toAmountX = BigInt(toAmount);
+		}
+		const fromAssets = [{
+			token: fromCurrency.tokens[0], // 'ERG' // 'DexyGold' // 'DexyLP'
+			amount: fromAmountX
+		},{
+			token: fromCurrency.tokens[1],
+			amount: fromAmount2X
+		} ];
+		const toAssets = [{
+			token: toCurrency.tokens[0],
+			amount: toAmountX
+		},{
+			token: toCurrency.tokens[1],
+			amount: toAmount2X
+		} ];
+			
+		const { me, utxos, height } = await getWeb3WalletData();
+
+		const input = 1_000_000_000n
+		const lpIn = ($dexygold_lp_box);
+		const lpRedeemIn =($dexygold_lp_redeem_box);
+		//lpRedeemIn: NodeBox;
+	//lpIn: NodeBox;
+	//goldOracle: NodeBox;
+
+		const unsignedTx = buildSwapDexyGoldTx(input,me,height,$fee_mining,utxos,state)
+			console.log({unsignedTx})
+		
+		await createInteractionAndSubmitTx(unsignedTx, [me]);
+
+		
+		// buildSwapSigmaUsdTx(
+		// 	fromAssets,
+		// 	toAssets,
+		// 	lastInput,
+		// 	me,
+		// 	SIGUSD_BANK_ADDRESS,
+		// 	utxos,
+		// 	height,
+		// 	$bank_box,
+		// 	$oracle_box,
+		// 	$fee_mining
+		// );
+
+
+	}
+
+	async function handleSwapButtonSigUsd() {
+		if (isSwapDisabledCalc()) {
+			setWidgetBorderError();
+			shake = true;
+			setTimeout(() => {
+				shake = false;
+				setWidgetBorderNormal();
+			}, 300);
+			return;
+		}
+		// Check direction based on the last typed field
+		let fromAmountX: bigint = 0n;
+		let toAmountX: bigint = 0n;
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG')
+			fromAmountX = ergStringToNanoErg(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigUSD')
+			fromAmountX = usdStringToCentBigInt(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigRSV')
+			fromAmountX = BigInt(fromAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'ERG')
+			toAmountX = ergStringToNanoErg(toAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'SigUSD')
+			toAmountX = usdStringToCentBigInt(toAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'SigRSV') toAmountX = BigInt(toAmount);
 		const fromAsset = {
 			token: fromCurrency.tokens[0],
 			amount: fromAmountX
-		}
+		};
 		const toAsset = {
 			token: toCurrency.tokens[0],
 			amount: toAmountX
-		}
+		};
 
 		const { me, utxos, height } = await getWeb3WalletData();
-		const unsignedTx = buildSwapSigmaUsdTx(fromAsset, toAsset, lastInput, me, SIGUSD_BANK_ADDRESS, utxos, height, $bank_box, $oracle_box, $fee_mining)
+		const unsignedTx = buildSwapSigmaUsdTx(
+			fromAsset,
+			toAsset,
+			lastInput,
+			me,
+			SIGUSD_BANK_ADDRESS,
+			utxos,
+			height,
+			$bank_box,
+			$oracle_box,
+			$fee_mining
+		);
 
 		await createInteractionAndSubmitTx(unsignedTx, [me]);
 	}

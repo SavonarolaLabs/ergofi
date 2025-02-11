@@ -56,7 +56,18 @@ export type ErgoNodeInfo = {
 	lastSeenMessageTime: number;
 	eip27Supported: boolean;
 	headersScore: number;
-	parameters: NetworkParameters;
+	parameters: {
+		outputCost: number;
+		tokenAccessCost: number;
+		maxBlockCost: number;
+		height: number;
+		maxBlockSize: number;
+		dataInputCost: number;
+		blockVersion: number;
+		inputCost: number;
+		storageFeeFactor: number;
+		minValuePerByte: number;
+	};
 	isMining: boolean;
 };
 

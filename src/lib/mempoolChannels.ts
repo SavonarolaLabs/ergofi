@@ -9,9 +9,11 @@ import {
 } from './stores/preparedInteractions';
 import { handleOracleBoxesUpdate, updateBestBankBox } from './stores/bank';
 import { web3wallet_wallet_used_addresses } from './stores/web3wallet';
+import { info } from './stores/nodeInfo';
 
 // We store references to the Socket and the channels so we can reference them later.
 export const socketStore = writable<Socket | null>(null);
+export const infoChannelStore = writable<any>(null);
 export const sigmausdChannelStore = writable<any>(null);
 export const dexygoldChannelStore = writable<any>(null);
 export const oracleBoxesChannelStore = writable<any>(null);
@@ -25,6 +27,23 @@ export function initMempoolChannels() {
 	const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
 	socket.connect();
 	socketStore.set(socket);
+
+	// info channel
+	const infoChannelTopic = 'info';
+	const infoChannelName = `mempool:${infoChannelTopic}`;
+	const infoChannel = socket.channel(infoChannelName, {});
+	infoChannel
+		.join()
+		.receive('ok', (resp) => {
+			info.set(resp);
+		})
+		.receive('error', (resp) => {
+			console.error('Unable to join info channel:', resp);
+		});
+	infoChannel.on('node_info', (payload) => {
+		info.set(payload);
+	});
+	infoChannelStore.set(infoChannel);
 
 	// 2) Join the "mempool:sigmausd_transactions" channel
 	const sigmausdChannelTopic = 'sigmausd_transactions';

@@ -721,7 +721,10 @@
 					<span class="text-sm"
 						>Price:
 						<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
-						{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
+
+						{#if fromCurrency.isLpPool || toCurrency.isLpPool}
+							<SubNumber value={swapPrice}></SubNumber>
+						{:else if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
 							<SubNumber value={1 / swapPrice}></SubNumber>
 						{:else}
 							{swapPrice}

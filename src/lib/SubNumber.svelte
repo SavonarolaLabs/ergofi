@@ -14,7 +14,7 @@
 	}
 </script>
 
-{#if typeof Number(value) != 'number' || value <= 0}
+{#if typeof value !== 'number' || !isFinite(value) || isNaN(value) || value <= 0}
 	0.0
 {:else if value < 0.01}
 	<span>

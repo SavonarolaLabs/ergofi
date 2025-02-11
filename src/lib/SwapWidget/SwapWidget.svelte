@@ -777,15 +777,20 @@
 						>
 							<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
 							{#if fromCurrency.isLpPool}
-								{fromBalance} {fromCurrency.tokens[0]} {fromBalance} {fromCurrency.tokens[1]}
+								<!-- <span><WalletBalance /></span> -->
+								<span class="font-normal">{fromBalance}</span>
+								<span class="font-thin">{fromCurrency.tokens[0]}</span>
+								<span class="font-normal">{fromBalance}</span>
+								<span class="font-thin">{fromCurrency.tokens[1]}</span>
 							{:else if typeof fromBalance === 'number'}
 								{fromBalance.toLocaleString('en-US', {
 									minimumFractionDigits: 0,
 									maximumFractionDigits: 2
 								})}
 							{:else}
-								<WalletBalance />
-								{fromBalance}
+								<!-- <WalletBalance /> -->
+								<span class="font-normal">{fromBalance}</span>
+								<span class="font-thin">{fromCurrency.tokens[0]}</span>
 							{/if}
 						</button>
 					</div>
@@ -901,16 +906,19 @@
 					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabled}>
 						{getLabelText()}</span
 					>
-					<span class="text-sm"
-						>Price:
+					<span class="text-sm">
 						<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
 
-						{#if fromCurrency.isLpPool || toCurrency.isLpPool}
-							<SubNumber value={swapPrice}></SubNumber>
-						{:else if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
+						{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
 							<SubNumber value={1 / swapPrice}></SubNumber>
+						{:else if fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'}
+							1 {fromCurrency.tokens[0]} ≈ <SubNumber value={10 ** 9 / swapPrice}></SubNumber>
+							{toCurrency.tokens[0]}
+						{:else if fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'}
+							1 {fromCurrency.tokens[0]} ≈ <SubNumber value={swapPrice / 10 ** 9}></SubNumber>
+							{toCurrency.tokens[0]}
 						{:else}
-							{swapPrice}
+							<SubNumber value={swapPrice}></SubNumber>
 						{/if}
 					</span>
 				</div>

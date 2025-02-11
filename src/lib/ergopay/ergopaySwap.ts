@@ -42,7 +42,7 @@ function buildSigmUsdSwapTransaction( params: ErgopayPaySigmaUsdSwapParams ): EI
 
 	let unsignedTx;
 	switch (`${swapPair}_${lastInput}`) {
-        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(ergStringToNanoErg(amount)), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(ergStringToNanoErg(feeMining))); break;
+        case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
         case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(BigInt(amount), payerAddress, SIGUSD_BANK_ADDRESS, payerUtxo, height, bankBox, oracleBox, BigInt(feeMining)); break;
@@ -75,7 +75,6 @@ function buildReducedSigmUsdSwapTransaction(
 	params: ErgopayPaySigmaUsdSwapParams
 ): ErgopayPayCmdResponse {
 	try {
-		console.log('REDUCE PROBLEM?');
 		let unsignedTx = buildSigmUsdSwapTransaction(params);
 		const reducedTx = reducedFromUnsignedTx(unsignedTx, params.context);
 		return { status: 'ok', reducedTx };
@@ -92,14 +91,7 @@ function buildReducedSigmUsdSwapTransaction(
 }
 
 export async function run(): Promise<ErgopayPayCmdResponse> {
-	const cmdParams = {
-		swapPair: 'ERG/SIGUSD',
-		amount: 1.1,
-		ePayLinkId: 'abcd1234',
-		lastInput: 'ERG',
-		payerAddress: '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU',
-		feeMining: 0.1
-	}; //parseCommandLineArgs();
+	const cmdParams = parseCommandLineArgs();
 
 	// fetch chain context
 	const height = 1458647; // TODO: add fetch height
@@ -107,8 +99,6 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 	const oracleData = await fetchOracleData();
 	const bankTransactions = await fetchSigmaUsdBankTransactions();
 	const context = await createContext(height);
-
-	console.log(cmdParams);
 
 	// select best boxes
 	const oracleBox = grepBestOracleBox(oracleData);
@@ -128,6 +118,3 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 
 	return txBuildAttempt;
 }
-
-const x = await run();
-console.log(x);

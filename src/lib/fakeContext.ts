@@ -5,6 +5,7 @@ import {
 	Parameters,
 	PreHeader
 } from 'ergo-lib-wasm-nodejs';
+import { jsonParseBigInt } from './api/ergoNode';
 
 const dummyHeaders = [
 	{
@@ -272,8 +273,8 @@ async function fakeContext() {
 async function fetchChainSlice(fromHeight: number, toHeight: number) {
 	const url = `https://ergfi.xyz:9443/blocks/chainSlice?fromHeight=${fromHeight}&toHeight=${toHeight}`;
 	const response = await fetch(url, { headers: { accept: 'application/json' } });
-	const res = await response.json();
-	return res;
+	const text = await response.text();
+	return jsonParseBigInt(text);
 }
 
 async function realContext(height: number) {

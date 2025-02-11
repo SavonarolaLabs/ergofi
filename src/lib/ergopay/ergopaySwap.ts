@@ -110,17 +110,6 @@ export async function run(): Promise<ErgopayPayCmdResponse> {
 
 	console.log(cmdParams);
 
-	console.log('GET UTXOS:');
-	console.log('lenght:', payerUtxo.length);
-	payerUtxo.map((o) => console.log(o.boxId));
-	console.dir(
-		payerUtxo.find(
-			(o) => o.boxId == 'cd4e574494033a9a84c97a3e545b0de7f2c08fe2b45fea38dd4b3c64590d55da'
-		),
-		{ depth: null }
-	);
-	console.log('lenght:', payerUtxo.length);
-
 	// select best boxes
 	const oracleBox = grepBestOracleBox(oracleData);
 	const bankBox = grepBestSigmaUsdBankBox(bankTransactions);

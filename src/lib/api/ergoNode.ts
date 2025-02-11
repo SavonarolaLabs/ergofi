@@ -99,3 +99,12 @@ export type MempoolTransaction = {
 	outputs: Output[];
 	size: number;
 };
+
+export function jsonParseBigInt(text: string) {
+	return JSON.parse(text, (key, value) => {
+		if (key === 'value' || key === 'amount') {
+			return '' + value;
+		}
+		return value;
+	});
+}

@@ -1,4 +1,4 @@
-import { DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
+import { DIRECTION_BUY, DIRECTION_SELL, UI_FEE_ADDRESS } from '$lib/api/ergoNode';
 import {
 	applyFee,
 	applyFeeSell,
@@ -1427,12 +1427,54 @@ export function dexyGoldBankFreeInputDexyTx(
 
 // ui
 //prettier-ignore
-export function buildSwapDexyGoldTx(input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldState){
-		//lastInput:LastUserInput
+export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldState){
+		
+		let from = fromAssets[1].token? fromAssets[0].token + '+' + fromAssets[1].token : fromAssets[0].token 
+		let to = toAssets[1].token? toAssets[0].token + '+' + toAssets[1].token : toAssets[0].token 
+		from = fromAssets.find((o)=>o.amount) ? from +"_"+fromAssets.find((o)=>o.amount).token : from 
+		to = toAssets.find((o)=>o.amount) ? to +"_"+toAssets.find((o)=>o.amount).token : to 
+		let swapPairLastInput = from + '/' +to
+
+		const amount = [...fromAssets,...toAssets].find((o)=>o.amount).amount
+
+		console.log('swapPairLastInputTest:', swapPairLastInput)
+
+		//let swapPairLastInput = `${fromAssets[0].token}/${toAsset.token}_${lastInput == 'From' ? fromAsset.token : toAsset.token}`;
+		//const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
+		//console.log('',fromAssets[0].isLpToken)
 		let unsignedTx;
-		let swapPairLastInput = 'ABCDEF'
-		switch (swapPairLastInput.toLocaleUpperCase()) {
-			case 'ABCDEF':      unsignedTx = dexyGoldLpMintInputErgTx (input,me,height,feeMining,utxos,state); break;
+		switch (swapPairLastInput.toUpperCase()) {
+			case 'ERG+DEXYGOLD_ERG/DEXYLP':      
+				unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, state); 
+				break;
+			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP': 
+				unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, state); 
+				break;
+			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP': 
+				unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, state); 
+				break;
+			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD': 
+				unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, state); 
+				break;
+			case 'DEXYLP/ERG+DEXYGOLD_ERG': 
+				unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, state); 
+				break;
+			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD': 
+				unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); 
+				break;
+
+			case 'ERG_ERG/DEXYGOLD': 
+				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+				break;
+			case 'ERG/DEXYGOLD_DEXYGOLD': 
+				unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+				break;
+			case 'DEXYGOLD_DEXYGOLD/ERG':
+				unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); 
+				break;
+			case 'DEXYGOLD/ERG_ERG':
+				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); 
+				break;
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
 		}

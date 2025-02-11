@@ -877,7 +877,7 @@
 				</div>
 
 				<div
-					class="relative flex flex-col rounded-lg rounded-bl-none bg-gray-800 transition-all focus-within:ring-1 focus-within:ring-blue-500"
+					class="relative flex flex-col rounded-lg rounded-bl-none bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
 						? '58px'
 						: '116px'}; "

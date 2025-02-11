@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		buildSwapDexyGoldTx,
+		dexyGoldBankArbitrageInputErgPrice,
 		dexyGoldLpMintInputDexyPrice,
 		dexyGoldLpMintInputErgPrice,
 		dexyGoldLpMintInputSharesPrice,
@@ -22,6 +23,7 @@
 		dexygold_lp_redeem_box,
 		dexygold_lp_swap_box,
 		dexygold_tracking101_box,
+		dexygold_widget_numbers,
 		oracle_erg_xau_box
 	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
@@ -197,11 +199,24 @@
 				lpRedeemIn: $dexygold_lp_redeem_box,
 				lpIn: $dexygold_lp_box,
 				goldOracle: $oracle_erg_xau_box
-			}
+			},
+			bankFreeMintState:{
+				freeMintIn:$dexygold_bank_free_mint_box,
+				bankIn: $dexygold_bank_box,
+				buybankIn: $dexygold_buyback_box,
+				lpIn: $dexygold_lp_box,
+				goldOracle: $oracle_erg_xau_box,
+			},
+			bankArbMintState:{
+				arbMintIn:$dexygold_bank_arbitrage_mint_box,
+				bankIn: $dexygold_bank_box,
+				buybankIn: $dexygold_buyback_box,
+				lpIn: $dexygold_lp_box,
+				goldOracle: $oracle_erg_xau_box,
+				tracking101: $dexygold_tracking101_box,
+			},
+
 		};
-
-
-
 
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
@@ -273,14 +288,57 @@
 
 		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
+			//Check LP SWAP
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
 				ergStringToNanoErg(fromAmount),
 				DIRECTION_SELL,
 				$fee_mining,
 				params.swapState
 			);
-			toAmount = amountDexy.toString();
-			swapPrice = price;
+
+			//Check Bank Availability and Prices
+			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
+			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
+
+			let height = 1_400_000n
+
+			const bankFreeAmount = $dexygold_widget_numbers.bankFreeMintResetHeight>height? $dexygold_widget_numbers.bankFreeMintAvailableDexy : $dexygold_widget_numbers.bankFreeMintResetDexy ;
+			const bankArbAmount	 = $dexygold_widget_numbers.bankArbMintResetHeight>height? $dexygold_widget_numbers.bankArbMintAvailableDexy: $dexygold_widget_numbers.bankArbMintResetDexy;
+
+			let bankArbPrice, bankArbDexy, bankArbOk
+			let bankFreePrice, bankFreeDexy, bankFreeOk
+
+
+			if(($dexygold_widget_numbers.isBankArbMintActive)	&&
+			(price>oracleWithFees)			&&
+			(bankArbAmount>=userApproxDexyRequest))
+			{	
+				 ({amountDexy:bankArbDexy,price:bankArbPrice} = dexyGoldBankArbitrageInputErgPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankArbMintState))	
+				 bankArbOk = true
+			}
+			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
+			(price>oracleWithFees)			&&
+			(bankFreeAmount>=userApproxDexyRequest)) {
+
+				//Use Function To Calculate Price and Amount
+			}
+			if (bankArbOk){
+				toAmount = bankArbDexy.toString();
+				swapPrice = bankArbPrice;
+				console.log('USED ARB MINT')
+				console.log('LP SWAP: Dexy:',amountDexy, ' Price:',price )
+				console.log('LP BANK: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
+			}
+			else if (bankFreeOk){
+				console.log('USED FREE MINT')
+			}
+			else 
+			{	
+				console.log('USED LP SWAP')
+				toAmount = amountDexy.toString();
+				swapPrice = price;
+			}
+
 		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
 		) {

@@ -1095,6 +1095,59 @@ export function dexyGoldBankArbitrageInputDexyTx(
 
 	return unsignedTx;
 }
+export function dexyGoldBankArbitrageInputDexyPrice(
+	inputDexy: bigint,
+	feeMining: bigint,
+	arbState: DexyGoldBankArbitrageInputs
+) {
+	const { T_arb, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+
+	const { R5AvailableAmount } = parseBankArbitrageMintBox(arbState.arbMintIn);
+	const {
+		value: bankXIn,
+		bankNFT,
+		dexyAmount: bankYIn,
+		dexyTokenId
+	} = parseBankBox(arbState.bankIn);
+
+	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(arbState.lpIn);
+	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(arbState.goldOracle);
+
+	//data process:
+	const oracleRate = oracleRateData / 1_000_000n;
+
+	const contractDexy = inputDexy;
+
+	const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+		calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractDexy);
+
+	const oracleRateWithFee = bankRate + buybackRate;
+
+	// FEE  ------------------------------
+	//Part 0 - use Fee Reversed
+	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
+
+	const maxAllowedIfReset = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee; //arb
+
+	console.log('-----INPUT ERG-----');
+	console.log(inputErg, 'inputErg');
+	console.log(contractErg, 'contractErg');
+	console.log(contractDexy, 'contractDexy');
+	console.log('-----INPUT ERG-----');
+
+	const price = Number(inputErg) / Number(contractDexy);
+
+	return {
+		amountErg: inputErg,
+		amountDexy: contractDexy,
+		price,
+		uiSwapFee,
+		contractErg,
+		maxAllowedIfReset,
+		maxAvailableAmount: R5AvailableAmount,
+		bankDexy: bankYIn
+	};
+}
 
 export function dexyGoldBankFreeInputErgTx(
 	inputErg: bigint,

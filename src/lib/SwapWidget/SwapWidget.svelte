@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		buildSwapDexyGoldTx,
+		dexyGoldBankArbitrageInputDexyPrice,
 		dexyGoldBankArbitrageInputErgPrice,
 		dexyGoldLpMintInputDexyPrice,
 		dexyGoldLpMintInputErgPrice,
@@ -320,9 +321,9 @@
 			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
 			(price>oracleWithFees)			&&
 			(bankFreeAmount>=userApproxDexyRequest)) {
-
 				//Use Function To Calculate Price and Amount
 			}
+
 			if (bankArbOk){
 				toAmount = bankArbDexy.toString();
 				swapPrice = bankArbPrice;
@@ -343,6 +344,7 @@
 		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
 		) {
+
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
 				ergStringToNanoErg(toAmount),
 				DIRECTION_BUY, //
@@ -365,15 +367,57 @@
 		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
+			//Check LP SWAP
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
 				BigInt(toAmount),
 				DIRECTION_SELL, //
 				$fee_mining,
 				params.swapState
 			);
-			//fromAmount = amountDexy.toString();
-			fromAmount = nanoErgToErg(amountErg);
-			swapPrice = price;
+
+			//Check Bank
+			//Check Bank Availability and Prices
+			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
+			const userDexyRequest = BigInt(toAmount)
+
+			let height = $info.fullHeight 
+
+			const bankFreeAmount = $dexygold_widget_numbers.bankFreeMintResetHeight>height? $dexygold_widget_numbers.bankFreeMintAvailableDexy : $dexygold_widget_numbers.bankFreeMintResetDexy ;
+			const bankArbAmount	 = $dexygold_widget_numbers.bankArbMintResetHeight>height? $dexygold_widget_numbers.bankArbMintAvailableDexy: $dexygold_widget_numbers.bankArbMintResetDexy;
+
+			let bankArbPrice, bankArbErg, bankArbOk
+			let bankFreePrice, bankFreeErg, bankFreeOk
+
+			if(($dexygold_widget_numbers.isBankArbMintActive)	&&
+			(price>oracleWithFees)			&&
+			(bankArbAmount>=userDexyRequest))
+			{	
+				 ({amountErg:bankArbErg,price:bankArbPrice} = dexyGoldBankArbitrageInputDexyPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankArbMintState))	
+				 bankArbOk = true
+			}
+
+			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
+			(price>oracleWithFees)			&&
+			(bankFreeAmount>=userDexyRequest)) {
+				//Use Function To Calculate Price and Amount
+			}
+
+			if (bankArbOk){
+				console.log('USED ARB MINT')
+				console.log('LP SWAP: Erg:',amountErg, ' Price:',price )
+				console.log('LP BANK: Erg:',bankArbDexy, ' Price:',bankArbPrice )
+				fromAmount = nanoErgToErg(bankArbErg);
+				swapPrice = bankArbPrice;
+			}
+			else if (bankFreeOk){
+				console.log('USED FREE MINT')
+			}
+			else 
+			{	
+				console.log('USED LP SWAP')
+				fromAmount = nanoErgToErg(amountErg);
+				swapPrice = price;
+			}
 		}
 	}
 

@@ -1162,7 +1162,7 @@
 				<PrimaryButton
 					onClick={handleSwapButton}
 					text="Swap_"
-					bgColor={$selected_contract == 'SigmaUsd' ? '#F87315' : '#ffea00'}
+					bgColor={'#F87315'}
 					subtext={$selected_contract}
 				></PrimaryButton>
 			</div>

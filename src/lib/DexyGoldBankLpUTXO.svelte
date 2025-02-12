@@ -46,7 +46,7 @@
 					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
 						XAU/USD Oracle
 					</div>
-					<div>{(10 ** 7 / Number($oracle_price_sig_usd_cent)).toFixed(2)} ERG</div>
+					<div>{77.98} ERG/g</div>
 				</div>
 			</a>
 

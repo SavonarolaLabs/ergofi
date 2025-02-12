@@ -981,6 +981,341 @@ export function calculateResetAndAmountMint(
 	}
 }
 // BUILD
+
+export function dexyGoldBankFreeInputErgTx(
+	inputErg: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	freeState: DexyGoldBankFreeInputs
+): EIP12UnsignedTransaction {
+	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+
+	const {
+		value: freeMintXIn,
+		freeMintNFT,
+		R4ResetHeight,
+		R5AvailableAmount
+	} = parseBankFreeMintBox(freeState.freeMintIn);
+
+	const {
+		value: bankXIn,
+		bankNFT,
+		dexyAmount: bankYIn,
+		dexyTokenId
+	} = parseBankBox(freeState.bankIn);
+	const {
+		value: buybackXIn,
+		buybackNFT,
+		gortAmount,
+		gortTokenId
+	} = parseBuybackBox(freeState.buybankIn);
+	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
+	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
+
+	const dataInputs = [freeState.goldOracle, freeState.lpIn];
+	const userUtxos = utxos; //<== rename
+
+	const userAddress = userBase58PK; //<== rename
+	const userChangeAddress = userAddress; //<== delete after
+
+	let buybackBoxIn = new ErgoUnsignedInput(freeState.buybankIn);
+	buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+	//--------------- Calculations -------------
+
+	//data process:
+	const lpRate = lpXData / lpYData; //<===
+	const oracleRate = oracleRateData / 1_000_000n;
+
+	// FEE ------------------------------
+	const { contractErg, uiSwapFee } = applyFee(inputErg, feeMining);
+
+	const { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+		calculateBankMintInputErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
+
+	const oracleRateWithFee = bankRate + buybackRate;
+
+	const maxAllowedIfReset = lpYData / 100n; //free
+
+	const bankXOut = bankXIn + bankErgsAdded;
+	const bankYOut = bankYIn - contractDexy;
+	const buybackXOut = buybackXIn + buybackErgsAdded;
+
+	const freeMintXOut = freeMintXIn;
+	//const arbMintXOut = arbMintXIn;
+
+	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountMint(
+		height,
+		R4ResetHeight,
+		R5AvailableAmount,
+		contractDexy,
+		maxAllowedIfReset,
+		T_free,
+		T_buffer
+	);
+
+	//------------------------------
+	const bankOut = new OutputBuilder(bankXOut, DEXY_GOLD.bankErgoTree).addTokens([
+		{ tokenId: bankNFT, amount: 1n },
+		{ tokenId: dexyTokenId, amount: bankYOut }
+	]);
+
+	const arbMintOut = new OutputBuilder(freeMintXOut, DEXY_GOLD.freeMintErgoTree)
+		.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+		.setAdditionalRegisters({
+			R4: SInt(Number(resetHeightOut)).toHex(),
+			R5: SLong(BigInt(remainingDexyOut)).toHex()
+		});
+
+	const buybackOut = new OutputBuilder(buybackXOut, DEXY_GOLD.buybackErgoTree).addTokens([
+		{ tokenId: buybackNFT, amount: 1n },
+		{ tokenId: gortTokenId, amount: gortAmount }
+	]);
+
+	const swapFeeBox = new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS);
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([freeState.freeMintIn, freeState.bankIn, buybackBoxIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.withDataFrom(dataInputs)
+		.to(arbMintOut)
+		.to(bankOut)
+		.to(buybackOut)
+		.to(swapFeeBox)
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldBankFreeInputErgPrice(
+	inputErg: bigint,
+	feeMining: bigint,
+	freeState: DexyGoldBankFreeInputs
+) {
+	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+
+	const {
+		value: freeMintXIn,
+		freeMintNFT,
+		R4ResetHeight,
+		R5AvailableAmount
+	} = parseBankFreeMintBox(freeState.freeMintIn);
+
+	const {
+		value: bankXIn,
+		bankNFT,
+		dexyAmount: bankYIn,
+		dexyTokenId
+	} = parseBankBox(freeState.bankIn);
+
+	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
+	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
+
+	//data process:
+	const oracleRate = oracleRateData / 1_000_000n;
+
+	const { contractErg, uiSwapFee } = applyFee(inputErg, feeMining);
+
+	const { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+		calculateBankMintInputErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
+
+	const maxAllowedIfReset = lpYData / 100n; //free
+
+	console.log('-----INPUT ERG-----');
+	console.log(inputErg, 'inputErg');
+	console.log(contractErg, 'contractErg');
+	console.log(contractDexy, 'contractDexy');
+	console.log('-----INPUT ERG-----');
+
+	const price = Number(inputErg) / Number(contractDexy);
+
+	return {
+		amountErg: inputErg,
+		amountDexy: contractDexy,
+		price,
+		uiSwapFee,
+		contractErg,
+		maxAllowedIfReset,
+		maxAvailableAmount: R5AvailableAmount,
+		bankDexy: bankYIn
+	};
+}
+
+export function dexyGoldBankFreeInputDexyTx(
+	inputDexy: bigint,
+	userBase58PK: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	freeState: DexyGoldBankFreeInputs
+): EIP12UnsignedTransaction {
+	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+
+	const {
+		value: freeMintXIn,
+		freeMintNFT,
+		R4ResetHeight,
+		R5AvailableAmount
+	} = parseBankFreeMintBox(freeState.freeMintIn);
+
+	const {
+		value: bankXIn,
+		bankNFT,
+		dexyAmount: bankYIn,
+		dexyTokenId
+	} = parseBankBox(freeState.bankIn);
+	const {
+		value: buybackXIn,
+		buybackNFT,
+		gortAmount,
+		gortTokenId
+	} = parseBuybackBox(freeState.buybankIn);
+	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
+	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
+
+	const dataInputs = [freeState.goldOracle, freeState.lpIn];
+	const userUtxos = utxos; //<== rename
+
+	const userAddress = userBase58PK; //<== rename
+	const userChangeAddress = userAddress; //<== delete after
+
+	let buybackBoxIn = new ErgoUnsignedInput(freeState.buybankIn);
+	buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
+
+	//--------------- Calculations -------------
+
+	//data process:
+	const lpRate = lpXData / lpYData; //<===
+	const oracleRate = oracleRateData / 1_000_000n;
+
+	// FEE ------------------------------
+	const contractDexy = inputDexy; //<===
+
+	const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+		calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractDexy);
+	const oracleRateWithFee = bankRate + buybackRate;
+
+	// FEE  ------------------------------
+	//Part 0 - use Fee Reversed
+	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
+
+	const maxAllowedIfReset = lpYData / 100n;
+
+	const bankXOut = bankXIn + bankErgsAdded;
+	const bankYOut = bankYIn - contractDexy;
+	const buybackXOut = buybackXIn + buybackErgsAdded;
+
+	const freeMintXOut = freeMintXIn;
+	//const arbMintXOut = arbMintXIn;
+
+	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountMint(
+		height,
+		R4ResetHeight,
+		R5AvailableAmount,
+		contractDexy,
+		maxAllowedIfReset,
+		T_free,
+		T_buffer
+	);
+
+	//------------------------------
+	const bankOut = new OutputBuilder(bankXOut, DEXY_GOLD.bankErgoTree).addTokens([
+		{ tokenId: bankNFT, amount: 1n },
+		{ tokenId: dexyTokenId, amount: bankYOut }
+	]);
+
+	const arbMintOut = new OutputBuilder(freeMintXOut, DEXY_GOLD.freeMintErgoTree)
+		.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
+		.setAdditionalRegisters({
+			R4: SInt(Number(resetHeightOut)).toHex(),
+			R5: SLong(BigInt(remainingDexyOut)).toHex()
+		});
+
+	const buybackOut = new OutputBuilder(buybackXOut, DEXY_GOLD.buybackErgoTree).addTokens([
+		{ tokenId: buybackNFT, amount: 1n },
+		{ tokenId: gortTokenId, amount: gortAmount }
+	]);
+
+	const swapFeeBox = new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS);
+
+	const unsignedTx = new TransactionBuilder(height)
+		.from([freeState.freeMintIn, freeState.bankIn, buybackBoxIn, ...userUtxos], {
+			ensureInclusion: true
+		})
+		.withDataFrom(dataInputs)
+		.to(arbMintOut)
+		.to(bankOut)
+		.to(buybackOut)
+		.to(swapFeeBox)
+		.payFee(feeMining)
+		.sendChangeTo(userChangeAddress)
+		.build()
+		.toEIP12Object();
+
+	return unsignedTx;
+}
+export function dexyGoldBankFreeInputDexyPrice(
+	inputDexy: bigint,
+	feeMining: bigint,
+	freeState: DexyGoldBankFreeInputs
+) {
+	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
+
+	const {
+		value: freeMintXIn,
+		freeMintNFT,
+		R4ResetHeight,
+		R5AvailableAmount
+	} = parseBankFreeMintBox(freeState.freeMintIn);
+
+	const {
+		value: bankXIn,
+		bankNFT,
+		dexyAmount: bankYIn,
+		dexyTokenId
+	} = parseBankBox(freeState.bankIn);
+
+	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
+	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
+
+	//data process:
+	const oracleRate = oracleRateData / 1_000_000n;
+
+	const contractDexy = inputDexy; //<===
+
+	const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
+		calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractDexy);
+
+	// FEE  ------------------------------
+	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
+
+	const maxAllowedIfReset = lpYData / 100n;
+
+	console.log('-----INPUT ERG-----');
+	console.log(inputErg, 'inputErg');
+	console.log(contractErg, 'contractErg');
+	console.log(contractDexy, 'contractDexy');
+	console.log('-----INPUT ERG-----');
+
+	const price = Number(inputErg) / Number(contractDexy);
+
+	return {
+		amountErg: inputErg,
+		amountDexy: contractDexy,
+		price,
+		uiSwapFee,
+		contractErg,
+		maxAllowedIfReset,
+		maxAvailableAmount: R5AvailableAmount,
+		bankDexy: bankYIn
+	};
+}
+
 export function dexyGoldBankArbitrageInputDexyTx(
 	inputDexy: bigint,
 	userBase58PK: string,
@@ -1147,230 +1482,6 @@ export function dexyGoldBankArbitrageInputDexyPrice(
 		maxAvailableAmount: R5AvailableAmount,
 		bankDexy: bankYIn
 	};
-}
-
-export function dexyGoldBankFreeInputErgTx(
-	inputErg: bigint,
-	userBase58PK: string,
-	height: number,
-	feeMining: bigint,
-	utxos: NodeBox[],
-	freeState: DexyGoldBankFreeInputs
-): EIP12UnsignedTransaction {
-	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
-
-	const {
-		value: freeMintXIn,
-		freeMintNFT,
-		R4ResetHeight,
-		R5AvailableAmount
-	} = parseBankFreeMintBox(freeState.freeMintIn);
-
-	const {
-		value: bankXIn,
-		bankNFT,
-		dexyAmount: bankYIn,
-		dexyTokenId
-	} = parseBankBox(freeState.bankIn);
-	const {
-		value: buybackXIn,
-		buybackNFT,
-		gortAmount,
-		gortTokenId
-	} = parseBuybackBox(freeState.buybankIn);
-	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
-	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
-
-	const dataInputs = [freeState.goldOracle, freeState.lpIn];
-	const userUtxos = utxos; //<== rename
-
-	const userAddress = userBase58PK; //<== rename
-	const userChangeAddress = userAddress; //<== delete after
-
-	let buybackBoxIn = new ErgoUnsignedInput(freeState.buybankIn);
-	buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
-
-	//--------------- Calculations -------------
-
-	//data process:
-	const lpRate = lpXData / lpYData; //<===
-	const oracleRate = oracleRateData / 1_000_000n;
-
-	// FEE ------------------------------
-	const { contractErg, uiSwapFee } = applyFee(inputErg, feeMining);
-
-	const { contractDexy, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
-		calculateBankMintInputErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
-
-	const oracleRateWithFee = bankRate + buybackRate;
-
-	const maxAllowedIfReset = lpYData / 100n; //free
-
-	const bankXOut = bankXIn + bankErgsAdded;
-	const bankYOut = bankYIn - contractDexy;
-	const buybackXOut = buybackXIn + buybackErgsAdded;
-
-	const freeMintXOut = freeMintXIn;
-	//const arbMintXOut = arbMintXIn;
-
-	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountMint(
-		height,
-		R4ResetHeight,
-		R5AvailableAmount,
-		contractDexy,
-		maxAllowedIfReset,
-		T_free,
-		T_buffer
-	);
-
-	//------------------------------
-	const bankOut = new OutputBuilder(bankXOut, DEXY_GOLD.bankErgoTree).addTokens([
-		{ tokenId: bankNFT, amount: 1n },
-		{ tokenId: dexyTokenId, amount: bankYOut }
-	]);
-
-	const arbMintOut = new OutputBuilder(freeMintXOut, DEXY_GOLD.freeMintErgoTree)
-		.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
-		.setAdditionalRegisters({
-			R4: SInt(Number(resetHeightOut)).toHex(),
-			R5: SLong(BigInt(remainingDexyOut)).toHex()
-		});
-
-	const buybackOut = new OutputBuilder(buybackXOut, DEXY_GOLD.buybackErgoTree).addTokens([
-		{ tokenId: buybackNFT, amount: 1n },
-		{ tokenId: gortTokenId, amount: gortAmount }
-	]);
-
-	const swapFeeBox = new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS);
-
-	const unsignedTx = new TransactionBuilder(height)
-		.from([freeState.freeMintIn, freeState.bankIn, buybackBoxIn, ...userUtxos], {
-			ensureInclusion: true
-		})
-		.withDataFrom(dataInputs)
-		.to(arbMintOut)
-		.to(bankOut)
-		.to(buybackOut)
-		.to(swapFeeBox)
-		.payFee(feeMining)
-		.sendChangeTo(userChangeAddress)
-		.build()
-		.toEIP12Object();
-
-	return unsignedTx;
-}
-export function dexyGoldBankFreeInputDexyTx(
-	inputDexy: bigint,
-	userBase58PK: string,
-	height: number,
-	feeMining: bigint,
-	utxos: NodeBox[],
-	freeState: DexyGoldBankFreeInputs
-): EIP12UnsignedTransaction {
-	const { T_free, T_buffer_5: T_buffer, bankFeeNum, buybackFeeNum, feeDenom } = DEXY_GOLD;
-
-	const {
-		value: freeMintXIn,
-		freeMintNFT,
-		R4ResetHeight,
-		R5AvailableAmount
-	} = parseBankFreeMintBox(freeState.freeMintIn);
-
-	const {
-		value: bankXIn,
-		bankNFT,
-		dexyAmount: bankYIn,
-		dexyTokenId
-	} = parseBankBox(freeState.bankIn);
-	const {
-		value: buybackXIn,
-		buybackNFT,
-		gortAmount,
-		gortTokenId
-	} = parseBuybackBox(freeState.buybankIn);
-	const { dexyAmount: lpYData, value: lpXData, lpTokenAmount } = parseLpBox(freeState.lpIn);
-	const { oraclePoolNFT, R4Rate: oracleRateData } = parseDexyGoldOracleBox(freeState.goldOracle);
-
-	const dataInputs = [freeState.goldOracle, freeState.lpIn];
-	const userUtxos = utxos; //<== rename
-
-	const userAddress = userBase58PK; //<== rename
-	const userChangeAddress = userAddress; //<== delete after
-
-	let buybackBoxIn = new ErgoUnsignedInput(freeState.buybankIn);
-	buybackBoxIn.setContextExtension({ 0: SInt(1).toHex() });
-
-	//--------------- Calculations -------------
-
-	//data process:
-	const lpRate = lpXData / lpYData; //<===
-	const oracleRate = oracleRateData / 1_000_000n;
-
-	// FEE ------------------------------
-	const contractDexy = inputDexy; //<===
-
-	const { contractErg, bankErgsAdded, buybackErgsAdded, bankRate, buybackRate } =
-		calculateBankMintInputDexy(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractDexy);
-	const oracleRateWithFee = bankRate + buybackRate;
-
-	// FEE  ------------------------------
-	//Part 0 - use Fee Reversed
-	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
-
-	const maxAllowedIfReset = lpYData / 100n;
-
-	const bankXOut = bankXIn + bankErgsAdded;
-	const bankYOut = bankYIn - contractDexy;
-	const buybackXOut = buybackXIn + buybackErgsAdded;
-
-	const freeMintXOut = freeMintXIn;
-	//const arbMintXOut = arbMintXIn;
-
-	const { resetHeightOut, remainingDexyOut } = calculateResetAndAmountMint(
-		height,
-		R4ResetHeight,
-		R5AvailableAmount,
-		contractDexy,
-		maxAllowedIfReset,
-		T_free,
-		T_buffer
-	);
-
-	//------------------------------
-	const bankOut = new OutputBuilder(bankXOut, DEXY_GOLD.bankErgoTree).addTokens([
-		{ tokenId: bankNFT, amount: 1n },
-		{ tokenId: dexyTokenId, amount: bankYOut }
-	]);
-
-	const arbMintOut = new OutputBuilder(freeMintXOut, DEXY_GOLD.freeMintErgoTree)
-		.addTokens([{ tokenId: freeMintNFT, amount: 1n }])
-		.setAdditionalRegisters({
-			R4: SInt(Number(resetHeightOut)).toHex(),
-			R5: SLong(BigInt(remainingDexyOut)).toHex()
-		});
-
-	const buybackOut = new OutputBuilder(buybackXOut, DEXY_GOLD.buybackErgoTree).addTokens([
-		{ tokenId: buybackNFT, amount: 1n },
-		{ tokenId: gortTokenId, amount: gortAmount }
-	]);
-
-	const swapFeeBox = new OutputBuilder(uiSwapFee, UI_FEE_ADDRESS);
-
-	const unsignedTx = new TransactionBuilder(height)
-		.from([freeState.freeMintIn, freeState.bankIn, buybackBoxIn, ...userUtxos], {
-			ensureInclusion: true
-		})
-		.withDataFrom(dataInputs)
-		.to(arbMintOut)
-		.to(bankOut)
-		.to(buybackOut)
-		.to(swapFeeBox)
-		.payFee(feeMining)
-		.sendChangeTo(userChangeAddress)
-		.build()
-		.toEIP12Object();
-
-	return unsignedTx;
 }
 
 export function dexyGoldBankArbitrageInputErgTx(
@@ -1557,37 +1668,17 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 		//console.log('',fromAssets[0].isLpToken)
 		let unsignedTx;
 		switch (swapPairLastInput.toUpperCase()) {
-			case 'ERG+DEXYGOLD_ERG/DEXYLP':      
-				unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, state); 
-				break;
-			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP': 
-				unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, state); 
-				break;
-			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP': 
-				unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, state); 
-				break;
-			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD': 
-				unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, state); 
-				break;
-			case 'DEXYLP/ERG+DEXYGOLD_ERG': 
-				unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, state); 
-				break;
-			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD': 
-				unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); 
-				break;
+			case 'ERG+DEXYGOLD_ERG/DEXYLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, state); break;
+			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, state); break;
+			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, state); break;
+			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, state); break;
+			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, state); break;
+			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); break;
 
-			case 'ERG_ERG/DEXYGOLD': 
-				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
-				break;
-			case 'ERG/DEXYGOLD_DEXYGOLD': 
-				unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
-				break;
-			case 'DEXYGOLD_DEXYGOLD/ERG':
-				unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); 
-				break;
-			case 'DEXYGOLD/ERG_ERG':
-				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); 
-				break;
+			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break;
+			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break;
+			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); break;
+			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); break;
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
 		}

@@ -419,6 +419,7 @@
 				swapPrice = price;
 			}
 		}
+		
 	}
 	/* ---------------------------------------
 	 * Recalc Handlers

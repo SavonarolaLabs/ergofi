@@ -420,35 +420,6 @@
 			}
 		}
 	}
-
-	async function doRecalcDexyGoldContract_TX() {
-		console.log('doRecalcDexyGoldContract');
-		//asdf
-		const { me, utxos, height } = await getWeb3WalletData();
-		const params = {
-			inputErg: fromAmount,
-			userBase58PK: me,
-			height,
-			feeMining: $fee_mining,
-			utxos,
-			swapState: {
-				lpSwapIn: $dexygold_lp_swap_box,
-				lpIn: $dexygold_lp_box
-			}
-		};
-
-		const unsignedTx = dexyGoldLpSwapInputErgTx(
-			ergStringToNanoErg(params.inputErg),
-			DIRECTION_SELL,
-			params.userBase58PK,
-			params.height,
-			params.feeMining,
-			params.utxos,
-			params.swapState
-		);
-		console.log({ unsignedTx });
-	}
-
 	/* ---------------------------------------
 	 * Recalc Handlers
 	 * ------------------------------------- */

@@ -16,35 +16,49 @@
 	export let confirmed = true;
 </script>
 
-<div class="row flex flex-col gap-1 text-gray-500" style="font-variant-numeric: tabular-nums;">
+<div
+	class="row flex flex-col gap-1 rounded-md p-4 pt-3 text-gray-500"
+	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
+>
 	<a
 		href="https://sigmaspace.io/en/address/MUbV38YgqHy7XbsoXWF5z7EZm524Ybdwe5p9WDrbhruZRtehkRPT92imXer2eTkjwPDfboa1pR3zb3deVKVq3H7Xt98qcTqLuSBSbHb7izzo5jphEpcnqyKJ2xhmpNPVvmtbdJNdvdopPrHHDBbAGGeW7XYTQwEeoRfosXzcDtiGgw97b2aqjTsNFmZk7khBEQywjYfmoDc9nUCJMZ3vbSspnYo3LarLe55mh2Np8MNJqUN9APA6XkhZCrTTDRZb1B4krgFY1sVMswg2ceqguZRvC9pqt3tUUxmSnB24N6dowfVJKhLXwHPbrkHViBv1AKAJTmEaQW2DN1fRmD9ypXxZk8GXmYtxTtrj3BiunQ4qzUCu1eGzxSREjpkFSi2ATLSSDqUwxtRz639sHM6Lav4axoJNPCHbY8pvuBKUxgnGRex8LEGM8DeEJwaJCaoy8dBw9Lz49nq5mSsXLeoC4xpTUmp47Bh7GAZtwkaNreCu74m9rcZ8Di4w1cmdsiK1NWuDh9pJ2Bv7u3EfcurHFVqCkT3P86JUbKnXeNxCypfrWsFuYNKYqmjsix82g9vWcGMmAcu5nagxD4iET86iE2tMMfZZ5vqZNvntQswJyQqv2Wc6MTh4jQx1q2qJZCQe4QdEK63meTGbZNNKMctHQbp3gRkZYNrBtxQyVtNLR8xEY8zGp85GeQKbb37vqLXxRpGiigAdMe3XZA4hhYPmAAU5hpSMYaRAjtvvMT3bNiHRACGrfjvSsEG9G2zY5in2YWz5X9zXQLGTYRsQ4uNFkYoQRCBdjNxGv6R58Xq74zCgt19TxYZ87gPWxkXpWwTaHogG1eps8WXt8QzwJ9rVx6Vu9a5GjtcGsQxHovWmYixgBU8X9fPNJ9UQhYyAWbjtRSuVBtDAmoV1gCBEPwnYVP5GCGhCocbwoYhZkZjFZy6ws4uxVLid3FxuvhWvQrVEDYp7WRvGXbNdCbcSXnbeTrPMey1WPaXX"
 		target="_blank"
 	>
-		<div class="flex items-end justify-between">
-			<div class="flex">
-				<div class="items-left flex flex-col" style="width:150px">
-					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-						Contract Address
-					</div>
-					<div>MUb...aXX</div>
-				</div>
-				<div class="items-left flex flex-col" style="margin-left:-20px">
-					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
-					<div>{$reserve_rate}%</div>
-				</div>
-			</div>
-			<div class="items-left flex flex-col">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>
-				<div class="items-left flex">
-					<div>
-						{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
-					</div>
-					<div class="currency">ERG</div>
-				</div>
-			</div>
+		<div class="mb-2 font-mono text-xs font-bold text-yellow-600 hover:text-yellow-300">
+			SigmaUSD Bank :: MUbV38YgqHy7XbsoX...nbeTrPMey1WPaXX
 		</div>
 	</a>
+
+	<div class="flex items-end justify-between">
+		<div class="flex">
+			<a
+				class="hover:text-yellow-300"
+				href="https://explorer.ergoplatform.com/en/oracle-pool-state/ergusd"
+				target="_blank"
+			>
+				<div class="items-left flex flex-col" style="width:150px">
+					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+						ERG/USD Oracle
+					</div>
+					<div>${(10 ** 7 / Number($oracle_price_sig_usd_cent)).toFixed(2)}</div>
+				</div>
+			</a>
+
+			<div class="items-left flex flex-col" style="margin-left:-20px">
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
+				<div>{$reserve_rate}%</div>
+			</div>
+		</div>
+		<div class="items-left flex flex-col">
+			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>
+			<div class="items-left flex">
+				<div>
+					{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
+				</div>
+				<div class="currency">ERG</div>
+			</div>
+		</div>
+	</div>
 
 	<div class="mt-2 flex items-end justify-between">
 		<div class="flex">
@@ -72,7 +86,7 @@
 			<div class="pr-5 text-right text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
 				Mintable Amount
 			</div>
-			<div class="flex justify-end" class:text-red-500={$reserve_border_left_USD < 0}>
+			<div class="flex justify-end" class:text-red-600={$reserve_border_left_USD < 0}>
 				<div>
 					{formatAmount($reserve_border_left_USD, false)}
 				</div>

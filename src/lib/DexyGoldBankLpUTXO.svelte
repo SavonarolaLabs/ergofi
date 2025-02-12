@@ -44,24 +44,25 @@
 			>
 				<div class="items-left flex flex-col" style="width:150px">
 					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-						XAU/USD Oracle
+						ERG/XAU Oracle
 					</div>
-					<div>{77.98} ERG/g</div>
+					<div>{77.98} <span class="text-xs">ERG/gram</span></div>
 				</div>
 			</a>
-
-			<div class="items-left flex flex-col" style="margin-left:-20px">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
-				<div>{$reserve_rate}%</div>
-			</div>
+		</div>
+		<div class="items-left flex flex-col" style="">
+			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>LP/Oracle</div>
+			<div>99%</div>
 		</div>
 		<div class="items-left flex flex-col">
-			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>
+			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+				Total Bank Assets
+			</div>
 			<div class="items-left flex">
 				<div>
 					{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
 				</div>
-				<div class="currency">ERG</div>
+				<div class="currency">DexyGold</div>
 			</div>
 		</div>
 	</div>
@@ -69,22 +70,16 @@
 	<div class="mt-2 flex items-end justify-between">
 		<div class="flex">
 			<div class="items-left flex flex-col" style="width:131px">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Mint Price</div>
-				<span class="items-left flex gap-1" class:text-gray-700={$reserve_border_left_USD < 0}>
-					{$bank_price_usd_sell}
-				</span>
-				<span class="items-left flex gap-1">
-					<SubNumber value={1 / $bank_price_rsv_buy}></SubNumber></span
-				>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Action</div>
+				<span class="items-left flex gap-1"> Freemint </span>
+				<span class="items-left flex gap-1 text-gray-700"> Arbmint </span>
 			</div>
 			<div class="items-left flex flex-col">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Redeem Price</div>
-				<span class="items-left flex gap-1">
-					{$bank_price_usd_buy}
-				</span>
-				<span class:text-gray-700={$reserve_border_left_USD < 0}>
-					<SubNumber value={1 / $bank_price_rsv_sell}></SubNumber>
-				</span>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+					Blocks Cooldown
+				</div>
+				<span class="items-left flex gap-1">30 ≈ 15min</span>
+				<span class:text-gray-700={$reserve_border_left_USD < 0}> 360 </span>
 			</div>
 		</div>
 
@@ -92,17 +87,15 @@
 			<div class="pr-5 text-right text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
 				Mintable Amount
 			</div>
-			<div class="flex justify-end" class:text-red-600={$reserve_border_left_USD < 0}>
-				<div>
-					{formatAmount($reserve_border_left_USD, false)}
-				</div>
-				<div class="currency">SigUSD</div>
+			<div class="flex justify-end">
+				<div>2k/10k</div>
+				<div class="currency">DexyGold</div>
 			</div>
 			<div class="flex justify-end">
 				<div>
 					{formatAmount($reserve_border_right_RSV, false)}
 				</div>
-				<div class="currency">SigRSV</div>
+				<div class="currency">DexyGold</div>
 			</div>
 		</div>
 	</div>
@@ -112,7 +105,7 @@
 
 <div
 	class="row flex flex-col gap-1 rounded-md p-4 pt-3 text-gray-500"
-	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
+	style="font-variant-numeric: tabular-nums; background:#f0f8ff03; display:none;"
 >
 	<a href="https://sigmaspace.io/en/address/{DEXY_LP_POOL_MAIN}" target="_blank">
 		<div class="mb-2 font-mono text-xs font-bold text-yellow-600 hover:text-yellow-300">
@@ -127,18 +120,13 @@
 				href="https://explorer.ergoplatform.com/en/oracle-pool-state/xauerg"
 				target="_blank"
 			>
-				<div class="items-left flex flex-col" style="width:150px">
-					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-						XAU/USD Oracle
-					</div>
-					<div>{(10 ** 7 / Number($oracle_price_sig_usd_cent)).toFixed(2)} ERG</div>
-				</div>
+				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>ERG/XAU Rate</div>
+				<div>{77.98} <span class="text-xs">ERG/gram</span></div>
 			</a>
-
-			<div class="items-left flex flex-col" style="margin-left:-20px">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
-				<div>{$reserve_rate}%</div>
-			</div>
+		</div>
+		<div class="items-left flex flex-col" style="">
+			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
+			<div>{$reserve_rate}%</div>
 		</div>
 		<div class="items-left flex flex-col">
 			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>

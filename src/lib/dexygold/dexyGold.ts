@@ -1317,7 +1317,7 @@ export function dexyGoldBankFreeInputDexyTx(
 	//Part 0 - use Fee Reversed
 	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
 
-	const maxAllowedIfReset = lpYData / 100n; //free
+	const maxAllowedIfReset = lpYData / 100n;
 
 	const bankXOut = bankXIn + bankErgsAdded;
 	const bankYOut = bankYIn - contractDexy;

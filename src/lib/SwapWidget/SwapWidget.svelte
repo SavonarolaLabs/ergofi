@@ -392,7 +392,7 @@
 			(price>oracleWithFees)			&&
 			(bankArbAmount>=userDexyRequest))
 			{	
-				 ({amountErg:bankArbErg,price:bankArbPrice} = dexyGoldBankArbitrageInputDexyPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankArbMintState))	
+				 ({amountErg:bankArbErg,price:bankArbPrice} = dexyGoldBankArbitrageInputDexyPrice(userDexyRequest,$fee_mining,params.bankArbMintState))	
 				 bankArbOk = true
 			}
 
@@ -405,7 +405,7 @@
 			if (bankArbOk){
 				console.log('USED ARB MINT')
 				console.log('LP SWAP: Erg:',amountErg, ' Price:',price )
-				console.log('LP BANK: Erg:',bankArbDexy, ' Price:',bankArbPrice )
+				console.log('LP BANK: Erg:',bankArbErg, ' Price:',bankArbPrice )
 				fromAmount = nanoErgToErg(bankArbErg);
 				swapPrice = bankArbPrice;
 			}

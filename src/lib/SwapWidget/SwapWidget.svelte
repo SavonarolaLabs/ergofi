@@ -3,6 +3,8 @@
 		buildSwapDexyGoldTx,
 		dexyGoldBankArbitrageInputDexyPrice,
 		dexyGoldBankArbitrageInputErgPrice,
+		dexyGoldBankFreeInputDexyPrice,
+		dexyGoldBankFreeInputErgPrice,
 		dexyGoldLpMintInputDexyPrice,
 		dexyGoldLpMintInputErgPrice,
 		dexyGoldLpMintInputSharesPrice,
@@ -321,18 +323,26 @@
 			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
 			(price>oracleWithFees)			&&
 			(bankFreeAmount>=userApproxDexyRequest)) {
-				//Use Function To Calculate Price and Amount
+
+				({amountDexy:bankFreeDexy,price:bankFreePrice} = dexyGoldBankFreeInputErgPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankFreeMintState))	
+				 bankFreeOk = true
 			}
 
 			if (bankArbOk){
+				console.log('USED ARB MINT')
+				console.log('LP SWAP: 	   Dexy:',amountDexy, ' Price:',price )
+				console.log('LP BANK Arb : Dexy:',bankArbDexy, ' Price:',bankArbPrice )
+				console.log('LP BANK Free: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
 				toAmount = bankArbDexy.toString();
 				swapPrice = bankArbPrice;
-				console.log('USED ARB MINT')
-				console.log('LP SWAP: Dexy:',amountDexy, ' Price:',price )
-				console.log('LP BANK: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
+
 			}
 			else if (bankFreeOk){
 				console.log('USED FREE MINT')
+				console.log('LP SWAP: 	   Dexy:',amountDexy, ' Price:',price )
+				console.log('LP BANK Free: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
+				toAmount = bankFreeDexy.toString();
+				swapPrice = bankFreePrice;
 			}
 			else 
 			{	
@@ -399,18 +409,26 @@
 			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
 			(price>oracleWithFees)			&&
 			(bankFreeAmount>=userDexyRequest)) {
+				({amountErg:bankFreeErg,price:bankFreePrice} = dexyGoldBankFreeInputDexyPrice(userDexyRequest,$fee_mining,params.bankFreeMintState))	
+				bankFreeOk = true
 				//Use Function To Calculate Price and Amount
 			}
 
 			if (bankArbOk){
 				console.log('USED ARB MINT')
-				console.log('LP SWAP: Erg:',amountErg, ' Price:',price )
-				console.log('LP BANK: Erg:',bankArbErg, ' Price:',bankArbPrice )
+				console.log('LP SWAP: 	   Erg:',amountErg, ' Price:',price )
+				console.log('LP BANK Arb:  Erg:',bankArbErg, ' Price:',bankArbPrice )
+				console.log('LP BANK Free: Erg:',bankFreeErg, ' Price:',bankFreePrice )
+
 				fromAmount = nanoErgToErg(bankArbErg);
 				swapPrice = bankArbPrice;
 			}
 			else if (bankFreeOk){
 				console.log('USED FREE MINT')
+				console.log('LP SWAP: 	   Erg:',amountErg, ' Price:',price )
+				console.log('LP BANK Free: Erg:',bankFreeErg, ' Price:',bankFreePrice )
+				fromAmount = nanoErgToErg(bankFreeErg);
+				swapPrice = bankFreePrice;
 			}
 			else 
 			{	
@@ -419,7 +437,7 @@
 				swapPrice = price;
 			}
 		}
-		
+
 	}
 	/* ---------------------------------------
 	 * Recalc Handlers

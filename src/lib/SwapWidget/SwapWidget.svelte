@@ -190,36 +190,18 @@
 	//prettier-ignore
 	async function doRecalcDexyGoldContract() {
 		// 4 from 10
-		const params = {
-			swapState: {
+		let state = {
 				lpSwapIn: $dexygold_lp_swap_box,
-				lpIn: $dexygold_lp_box
-			},
-			mintState:{
 				lpMintIn: $dexygold_lp_mint_box,
-				lpIn: $dexygold_lp_box
-			},
-			redeemState:{
 				lpRedeemIn: $dexygold_lp_redeem_box,
-				lpIn: $dexygold_lp_box,
-				goldOracle: $oracle_erg_xau_box
-			},
-			bankFreeMintState:{
 				freeMintIn:$dexygold_bank_free_mint_box,
 				bankIn: $dexygold_bank_box,
 				buybankIn: $dexygold_buyback_box,
-				lpIn: $dexygold_lp_box,
-				goldOracle: $oracle_erg_xau_box,
-			},
-			bankArbMintState:{
 				arbMintIn:$dexygold_bank_arbitrage_mint_box,
-				bankIn: $dexygold_bank_box,
-				buybankIn: $dexygold_buyback_box,
 				lpIn: $dexygold_lp_box,
 				goldOracle: $oracle_erg_xau_box,
 				tracking101: $dexygold_tracking101_box,
-			},
-		};
+			}
 
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
@@ -227,7 +209,7 @@
 			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =dexyGoldLpMintInputErgPrice(
 				ergStringToNanoErg(fromAmount),
 				$fee_mining,
-				params.mintState
+				state
 			)
 			fromAmount2 = contractDexy.toString();
 			toAmount = sharesUnlocked.toString();
@@ -238,7 +220,7 @@
 			const{ uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =dexyGoldLpMintInputDexyPrice(
 				BigInt(fromAmount2),
 				$fee_mining,
-				params.mintState
+				state
 			)
 			fromAmount = nanoErgToErg(inputErg);
 			toAmount = sharesUnlocked.toString();
@@ -249,7 +231,7 @@
 			const{ uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpMintInputSharesPrice(
 				BigInt(toAmount),
 				$fee_mining,
-				params.mintState
+				state
 			)
 			fromAmount = nanoErgToErg(inputErg);
 			fromAmount2 = contractDexy.toString();
@@ -260,7 +242,7 @@
 			const{ uiSwapFee, userErg, contractErg, contractDexy, price }=dexyGoldLpRedeemInputSharesPrice(
 				BigInt(fromAmount),
 				$fee_mining,
-				params.redeemState
+				state
 			)
 			toAmount = nanoErgToErg(userErg);
 			toAmount2 = contractDexy.toString();
@@ -271,7 +253,7 @@
 			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpRedeemInputErgPrice(
 				ergStringToNanoErg(toAmount),
 				$fee_mining,
-				params.redeemState
+				state
 			)
 			fromAmount = sharesUnlocked.toString();
 			toAmount2 = contractDexy.toString();
@@ -282,7 +264,7 @@
 			const{ uiSwapFee, userErg, contractErg, sharesUnlocked, price }=dexyGoldLpRedeemInputDexyPrice(
 				BigInt(toAmount2),
 				$fee_mining,
-				params.redeemState
+				state
 			)
 			fromAmount = sharesUnlocked.toString();
 			toAmount = nanoErgToErg(userErg);
@@ -297,7 +279,7 @@
 				ergStringToNanoErg(toAmount),
 				DIRECTION_BUY, //
 				$fee_mining,
-				params.swapState
+				state
 			);
 			fromAmount = amountDexy.toString();
 			swapPrice = price;
@@ -308,14 +290,14 @@
 				BigInt(fromAmount),
 				DIRECTION_BUY,
 				$fee_mining,
-				params.swapState
+				state
 			);
 			toAmount = nanoErgToErg(amountErg);
 			swapPrice = price;
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, params);
+			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, state);
 
 			swapPrice = bestPrice
 			if(lastInput == 'From'){
@@ -371,7 +353,7 @@
 		return { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp };
 	}
 
-	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, params) {
+	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, state) {
 		const {
 			amountErg,
 			amountDexy: lpSwapAmount,
@@ -380,7 +362,7 @@
 			ergStringToNanoErg(amountErgUserInput),
 			DIRECTION_SELL,
 			$fee_mining,
-			params.swapState
+			state
 		);
 		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithBankAndUiFees;
 		const userApproxDexyRequest = ergStringToNanoErg(fromAmount) / oracleWithFees;
@@ -399,7 +381,7 @@
 			({ amountDexy: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputErgPrice(
 				ergStringToNanoErg(amountErgUserInput),
 				$fee_mining,
-				params.bankArbMintState
+				state
 			));
 			bankArbBetterThanLp = true;
 		}
@@ -411,7 +393,7 @@
 			({ amountDexy: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputErgPrice(
 				ergStringToNanoErg(amountErgUserInput),
 				$fee_mining,
-				params.bankFreeMintState
+				state
 			));
 			bankFreeBetterThanLp = true;
 		}
@@ -430,7 +412,7 @@
 		};
 	}
 
-	function bestOptionErgToDexyGoldInputDexy(amountDexyUserInput, params) {
+	function bestOptionErgToDexyGoldInputDexy(amountDexyUserInput, state) {
 		const userDexyRequest = BigInt(amountDexyUserInput);
 		const {
 			amountErg: lpSwapAmount,
@@ -440,7 +422,7 @@
 			userDexyRequest,
 			DIRECTION_SELL, //
 			$fee_mining,
-			params.swapState
+			state
 		);
 
 		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithBankAndUiFees;
@@ -458,7 +440,7 @@
 			({ amountErg: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputDexyPrice(
 				userDexyRequest,
 				$fee_mining,
-				params.bankArbMintState
+				state
 			));
 			bankArbBetterThanLp = true;
 		}
@@ -471,7 +453,7 @@
 			({ amountErg: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputDexyPrice(
 				userDexyRequest,
 				$fee_mining,
-				params.bankFreeMintState
+				state
 			));
 			bankFreeBetterThanLp = true;
 			//Use Function To Calculate Price and Amount

@@ -312,7 +312,7 @@
 		}
 	}
 
-	function bestOptionErgToDexyGold(
+	export function bestOptionErgToDexyGold(
 		lastInput: string,
 		fromAmount: string,
 		toAmount: string,
@@ -356,10 +356,10 @@
 		console.log('LP SWAP: 	   Erg:', lpSwapAmount, ' Price:', lpSwapPrice);
 		console.log('');
 
-		return { bestAmount, bestPrice };
+		return { bestAmount, bestPrice }; // { bestAmount, bestPrice , bankArbBetterThanLp , bankFreeBetterThanLp};
 	}
 
-	function bestOptionErgToDexyGoldInputErg(
+	export function bestOptionErgToDexyGoldInputErg(
 		amountErgUserInput: string,
 		dexyGoldUtxo: DexyGoldUtxo,
 		dexyGoldNumbers: DexyGoldNumbers,
@@ -423,7 +423,7 @@
 		};
 	}
 
-	function bestOptionErgToDexyGoldInputDexy(
+	export function bestOptionErgToDexyGoldInputDexy(
 		amountDexyUserInput: string,
 		dexyGoldUtxo: DexyGoldUtxo,
 		dexyGoldNumbers: DexyGoldNumbers,

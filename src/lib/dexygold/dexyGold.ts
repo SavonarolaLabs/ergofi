@@ -1672,12 +1672,11 @@ export function bestOptionErgToDexyGoldInputErg(
 }
 
 export function bestOptionErgToDexyGoldInputDexy(
-	amountDexyUserInput: string,
+	userDexyRequest: bigint,
 	dexyGoldUtxo: DexyGoldUtxo,
 	dexyGoldNumbers: DexyGoldNumbers,
 	feeMining: bigint
 ): ErgToDexyGoldOptions {
-	const userDexyRequest = BigInt(amountDexyUserInput);
 	const {
 		amountErg: lpSwapAmount,
 		amountDexy,
@@ -1740,7 +1739,7 @@ export function bestOptionErgToDexyGoldInputDexy(
 export function bestOptionErgToDexyGold(
 	lastInput: string,
 	fromAmount: bigint,
-	toAmount: string,
+	toAmount: bigint,
 	dexyGoldUtxo: DexyGoldUtxo,
 	dexyGoldNumbers: DexyGoldNumbers,
 	feeMining: bigint

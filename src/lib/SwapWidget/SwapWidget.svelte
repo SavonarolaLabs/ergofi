@@ -303,8 +303,9 @@
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
 
-			const nanoAmount = ergStringToNanoErg(fromAmount)
-			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, nanoAmount, toAmount, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
+			const nanoAmount = fromAmount? ergStringToNanoErg(fromAmount):0n
+			const toAmountBigInt =toAmount? BigInt(toAmount): 0n
+			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, nanoAmount, toAmountBigInt, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
 
 			swapPrice = bestPrice
 			if(lastInput == 'From'){

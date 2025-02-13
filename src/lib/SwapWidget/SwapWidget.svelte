@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		bestOptionErgToDexyGold,
 		buildSwapDexyGoldTx,
 		dexyGoldBankArbitrageInputDexyPrice,
 		dexyGoldBankArbitrageInputErgPrice,
@@ -301,7 +302,9 @@
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
+
+			const nanoAmount = ergStringToNanoErg(fromAmount)
+			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, nanoAmount, toAmount, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
 
 			swapPrice = bestPrice
 			if(lastInput == 'From'){
@@ -312,182 +315,6 @@
 		}
 	}
 
-	export function bestOptionErgToDexyGold(
-		lastInput: string,
-		fromAmount: string,
-		toAmount: string,
-		dexyGoldUtxo: DexyGoldUtxo,
-		dexyGoldNumbers: DexyGoldNumbers,
-		feeMining: bigint
-	): ErgToDexyGoldBestOption {
-		const {
-			lpSwapPrice,
-			lpSwapAmount,
-
-			bankArbBetterThanLp,
-			bankArbPrice,
-			bankArbAmount,
-
-			bankFreeBetterThanLp,
-			bankFreePrice,
-			bankFreeAmount
-		} =
-			lastInput === 'From'
-				? bestOptionErgToDexyGoldInputErg(fromAmount, dexyGoldUtxo, dexyGoldNumbers, feeMining)
-				: bestOptionErgToDexyGoldInputDexy(toAmount, dexyGoldUtxo, dexyGoldNumbers, feeMining);
-
-		let bestAmount = bankArbBetterThanLp
-			? bankArbAmount
-			: bankFreeBetterThanLp
-				? bankFreeAmount
-				: lpSwapAmount;
-		let bestPrice = bankArbBetterThanLp
-			? bankArbPrice
-			: bankFreeBetterThanLp
-				? bankFreePrice
-				: lpSwapPrice;
-
-		bankArbBetterThanLp
-			? console.log('LP BANK Arb:  Erg:', bankArbAmount, ' Price:', bankArbPrice)
-			: '';
-		bankFreeBetterThanLp
-			? console.log('LP BANK Free: Erg:', bankFreeAmount, ' Price:', bankFreePrice)
-			: '';
-		console.log('LP SWAP: 	   Erg:', lpSwapAmount, ' Price:', lpSwapPrice);
-		console.log('');
-
-		return { bestAmount, bestPrice }; // { bestAmount, bestPrice , bankArbBetterThanLp , bankFreeBetterThanLp};
-	}
-
-	export function bestOptionErgToDexyGoldInputErg(
-		amountErgUserInput: string,
-		dexyGoldUtxo: DexyGoldUtxo,
-		dexyGoldNumbers: DexyGoldNumbers,
-		feeMining: bigint
-	): ErgToDexyGoldOptions {
-		const {
-			amountErg,
-			amountDexy: lpSwapAmount,
-			price: lpSwapPrice
-		} = dexyGoldLpSwapInputErgPrice(
-			ergStringToNanoErg(amountErgUserInput),
-			DIRECTION_SELL,
-			feeMining,
-			dexyGoldUtxo
-		);
-		const oracleWithFees = dexyGoldNumbers.oracleRateWithBankAndUiFees;
-		const userApproxDexyRequest = ergStringToNanoErg(fromAmount) / oracleWithFees;
-
-		const bankFreeAmountAvailable = dexyGoldNumbers.bankFreeMintAvailableDexy;
-		const bankArbAmountAvailable = dexyGoldNumbers.bankArbMintAvailableDexy;
-
-		let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
-		let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
-
-		if (
-			dexyGoldNumbers.isBankArbMintActive &&
-			lpSwapPrice > oracleWithFees &&
-			bankArbAmountAvailable >= userApproxDexyRequest
-		) {
-			({ amountDexy: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputErgPrice(
-				ergStringToNanoErg(amountErgUserInput),
-				feeMining,
-				dexyGoldUtxo
-			));
-			bankArbBetterThanLp = true;
-		}
-		if (
-			dexyGoldNumbers.isBankFreeMintActive &&
-			lpSwapPrice > oracleWithFees &&
-			bankFreeAmountAvailable >= userApproxDexyRequest
-		) {
-			({ amountDexy: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputErgPrice(
-				ergStringToNanoErg(amountErgUserInput),
-				feeMining,
-				dexyGoldUtxo
-			));
-			bankFreeBetterThanLp = true;
-		}
-
-		return {
-			lpSwapPrice,
-			lpSwapAmount,
-
-			bankArbBetterThanLp,
-			bankArbPrice,
-			bankArbAmount,
-
-			bankFreeBetterThanLp,
-			bankFreePrice,
-			bankFreeAmount
-		};
-	}
-
-	export function bestOptionErgToDexyGoldInputDexy(
-		amountDexyUserInput: string,
-		dexyGoldUtxo: DexyGoldUtxo,
-		dexyGoldNumbers: DexyGoldNumbers,
-		feeMining: bigint
-	): ErgToDexyGoldOptions {
-		const userDexyRequest = BigInt(amountDexyUserInput);
-		const {
-			amountErg: lpSwapAmount,
-			amountDexy,
-			price: lpSwapPrice
-		} = dexyGoldLpSwapInputDexyPrice(
-			userDexyRequest,
-			DIRECTION_SELL, //
-			feeMining,
-			dexyGoldUtxo
-		);
-
-		const oracleWithFees = dexyGoldNumbers.oracleRateWithBankAndUiFees;
-		const bankFreeAmountAvailable = dexyGoldNumbers.bankFreeMintAvailableDexy;
-		const bankArbAmountAvailable = dexyGoldNumbers.bankArbMintAvailableDexy;
-
-		let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
-		let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
-
-		if (
-			dexyGoldNumbers.isBankArbMintActive &&
-			lpSwapPrice > oracleWithFees &&
-			bankArbAmountAvailable >= userDexyRequest
-		) {
-			({ amountErg: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputDexyPrice(
-				userDexyRequest,
-				feeMining,
-				dexyGoldUtxo
-			));
-			bankArbBetterThanLp = true;
-		}
-
-		if (
-			dexyGoldNumbers.isBankFreeMintActive &&
-			lpSwapPrice > oracleWithFees &&
-			bankFreeAmountAvailable >= userDexyRequest
-		) {
-			({ amountErg: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputDexyPrice(
-				userDexyRequest,
-				feeMining,
-				dexyGoldUtxo
-			));
-			bankFreeBetterThanLp = true;
-			//Use Function To Calculate Price and Amount
-		}
-
-		return {
-			lpSwapPrice,
-			lpSwapAmount,
-
-			bankArbBetterThanLp,
-			bankArbPrice,
-			bankArbAmount,
-
-			bankFreeBetterThanLp,
-			bankFreePrice,
-			bankFreeAmount
-		};
-	}
 	/* ---------------------------------------
 	 * Recalc Handlers
 	 * ------------------------------------- */
@@ -634,7 +461,7 @@
 
 		const input = 1_000_000_000n
 
-		const unsignedTx = buildSwapDexyGoldTx(fromAssets,toAssets,input,me,height,$fee_mining,utxos,dexyGoldUtxo)
+		const unsignedTx = buildSwapDexyGoldTx(fromAssets,toAssets,input,me,height,$fee_mining,utxos,dexyGoldUtxo,$dexygold_widget_numbers)
 		
 		await createInteractionAndSubmitTx(unsignedTx, [me]);
 	}

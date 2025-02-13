@@ -22,6 +22,8 @@ import { ErgoUnsignedInput, OutputBuilder, TransactionBuilder } from '@fleet-sdk
 import { SInt, SLong } from '@fleet-sdk/serializer';
 import { DEXY_GOLD } from './dexyConstants';
 import type { EIP12UnsignedTransaction } from '@fleet-sdk/common';
+import type { DexyGoldNumbers } from '$lib/stores/dexyGoldStore';
+import { ergStringToNanoErg } from '$lib/utils';
 
 export type LpDexySwapResult = {
 	amountErg: bigint;
@@ -1548,7 +1550,7 @@ export function dexyGoldBankArbitrageInputErgTx(
 
 // ui
 //prettier-ignore
-export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldUtxo){
+export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], dexyGoldUtxo: DexyGoldUtxo, dexyGoldNumbers: DexyGoldNumbers){
 		
 		let from = fromAssets[1].token? fromAssets[0].token + '+' + fromAssets[1].token : fromAssets[0].token 
 		let to = toAssets[1].token? toAssets[0].token + '+' + toAssets[1].token : toAssets[0].token 
@@ -1566,44 +1568,218 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 		let unsignedTx;
 		let bankArbBetterThanLp,bankFreeBetterThanLp
 		switch (swapPairLastInput.toUpperCase()) {
-			case 'ERG+DEXYGOLD_ERG/DEXYLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, state); break;
-			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, state); break;
-			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, state); break;
-			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, state); break;
-			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, state); break;
-			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); break;
+			case 'ERG+DEXYGOLD_ERG/DEXYLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 
-			case 'ERG_ERG/DEXYGOLD': bankArbBetterThanLp=false; bankFreeBetterThanLp = false	//const { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, state);	
+			case 'ERG_ERG/DEXYGOLD': ({bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGoldInputErg(amount, dexyGoldUtxo, dexyGoldNumbers, feeMining));	
+			console.log('ERG_ERG, bankArbBetterThanLp ',bankArbBetterThanLp ,'bankFreeBetterThanLp ',bankFreeBetterThanLp)
+			
 			if(bankArbBetterThanLp){
-				unsignedTx =  dexyGoldBankArbitrageInputErgTx(amount, me, height, feeMining, utxos, state)
+				unsignedTx =  dexyGoldBankArbitrageInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo)
 			}
 			else if (bankFreeBetterThanLp)
 			{
-				unsignedTx =  dexyGoldBankFreeInputErgTx (amount, me, height, feeMining, utxos, state)
+				unsignedTx =  dexyGoldBankFreeInputErgTx (amount, me, height, feeMining, utxos, dexyGoldUtxo)
 			}else
 			{	
-				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, dexyGoldUtxo); 
 			}
 			break; 			
-			case 'ERG/DEXYGOLD_DEXYGOLD': bankArbBetterThanLp=false; bankFreeBetterThanLp = true	//const { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, state);	
+			case 'ERG/DEXYGOLD_DEXYGOLD': ({bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGoldInputDexy(amount, dexyGoldUtxo, dexyGoldNumbers, feeMining));	
 				if(bankArbBetterThanLp){
 					console.log('ARB')
-					unsignedTx =  dexyGoldBankArbitrageInputDexyTx(amount, me, height, feeMining, utxos, state)
+					unsignedTx =  dexyGoldBankArbitrageInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo)
 				}
 				else if (bankFreeBetterThanLp)
 				{
 					console.log('Free')
-					unsignedTx =  dexyGoldBankFreeInputDexyTx (amount, me, height, feeMining, utxos, state)
+					unsignedTx =  dexyGoldBankFreeInputDexyTx (amount, me, height, feeMining, utxos, dexyGoldUtxo)
 				}else
 				{	
 					console.log('SWAP')
-					unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+					unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, dexyGoldUtxo); 
 				}
 			break;
-			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); break;
-			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); break;
+			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); break;
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
 		}
 		return unsignedTx;
 	}
+
+export function bestOptionErgToDexyGoldInputErg(
+	nanoErgAmount: bigint,
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers,
+	feeMining: bigint
+): ErgToDexyGoldOptions {
+	const {
+		amountErg,
+		amountDexy: lpSwapAmount,
+		price: lpSwapPrice
+	} = dexyGoldLpSwapInputErgPrice(nanoErgAmount, DIRECTION_SELL, feeMining, dexyGoldUtxo);
+	const oracleWithFees = dexyGoldNumbers.oracleRateWithBankAndUiFees;
+	const userApproxDexyRequest = nanoErgAmount / oracleWithFees;
+
+	const bankFreeAmountAvailable = dexyGoldNumbers.bankFreeMintAvailableDexy;
+	const bankArbAmountAvailable = dexyGoldNumbers.bankArbMintAvailableDexy;
+
+	let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
+	let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
+
+	if (
+		dexyGoldNumbers.isBankArbMintActive &&
+		lpSwapPrice > oracleWithFees &&
+		bankArbAmountAvailable >= userApproxDexyRequest
+	) {
+		({ amountDexy: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputErgPrice(
+			nanoErgAmount,
+			feeMining,
+			dexyGoldUtxo
+		));
+		bankArbBetterThanLp = true;
+	}
+	if (
+		dexyGoldNumbers.isBankFreeMintActive &&
+		lpSwapPrice > oracleWithFees &&
+		bankFreeAmountAvailable >= userApproxDexyRequest
+	) {
+		({ amountDexy: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputErgPrice(
+			nanoErgAmount,
+			feeMining,
+			dexyGoldUtxo
+		));
+		bankFreeBetterThanLp = true;
+	}
+
+	return {
+		lpSwapPrice,
+		lpSwapAmount,
+
+		bankArbBetterThanLp,
+		bankArbPrice,
+		bankArbAmount,
+
+		bankFreeBetterThanLp,
+		bankFreePrice,
+		bankFreeAmount
+	};
+}
+
+export function bestOptionErgToDexyGoldInputDexy(
+	amountDexyUserInput: string,
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers,
+	feeMining: bigint
+): ErgToDexyGoldOptions {
+	const userDexyRequest = BigInt(amountDexyUserInput);
+	const {
+		amountErg: lpSwapAmount,
+		amountDexy,
+		price: lpSwapPrice
+	} = dexyGoldLpSwapInputDexyPrice(
+		userDexyRequest,
+		DIRECTION_SELL, //
+		feeMining,
+		dexyGoldUtxo
+	);
+
+	const oracleWithFees = dexyGoldNumbers.oracleRateWithBankAndUiFees;
+	const bankFreeAmountAvailable = dexyGoldNumbers.bankFreeMintAvailableDexy;
+	const bankArbAmountAvailable = dexyGoldNumbers.bankArbMintAvailableDexy;
+
+	let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
+	let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
+
+	if (
+		dexyGoldNumbers.isBankArbMintActive &&
+		lpSwapPrice > oracleWithFees &&
+		bankArbAmountAvailable >= userDexyRequest
+	) {
+		({ amountErg: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputDexyPrice(
+			userDexyRequest,
+			feeMining,
+			dexyGoldUtxo
+		));
+		bankArbBetterThanLp = true;
+	}
+
+	if (
+		dexyGoldNumbers.isBankFreeMintActive &&
+		lpSwapPrice > oracleWithFees &&
+		bankFreeAmountAvailable >= userDexyRequest
+	) {
+		({ amountErg: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputDexyPrice(
+			userDexyRequest,
+			feeMining,
+			dexyGoldUtxo
+		));
+		bankFreeBetterThanLp = true;
+		//Use Function To Calculate Price and Amount
+	}
+
+	return {
+		lpSwapPrice,
+		lpSwapAmount,
+
+		bankArbBetterThanLp,
+		bankArbPrice,
+		bankArbAmount,
+
+		bankFreeBetterThanLp,
+		bankFreePrice,
+		bankFreeAmount
+	};
+}
+
+export function bestOptionErgToDexyGold(
+	lastInput: string,
+	fromAmount: bigint,
+	toAmount: string,
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers,
+	feeMining: bigint
+): ErgToDexyGoldBestOption {
+	const {
+		lpSwapPrice,
+		lpSwapAmount,
+
+		bankArbBetterThanLp,
+		bankArbPrice,
+		bankArbAmount,
+
+		bankFreeBetterThanLp,
+		bankFreePrice,
+		bankFreeAmount
+	} =
+		lastInput === 'From'
+			? bestOptionErgToDexyGoldInputErg(fromAmount, dexyGoldUtxo, dexyGoldNumbers, feeMining)
+			: bestOptionErgToDexyGoldInputDexy(toAmount, dexyGoldUtxo, dexyGoldNumbers, feeMining);
+
+	let bestAmount = bankArbBetterThanLp
+		? bankArbAmount
+		: bankFreeBetterThanLp
+			? bankFreeAmount
+			: lpSwapAmount;
+	let bestPrice = bankArbBetterThanLp
+		? bankArbPrice
+		: bankFreeBetterThanLp
+			? bankFreePrice
+			: lpSwapPrice;
+
+	bankArbBetterThanLp
+		? console.log('LP BANK Arb:  Erg:', bankArbAmount, ' Price:', bankArbPrice)
+		: '';
+	bankFreeBetterThanLp
+		? console.log('LP BANK Free: Erg:', bankFreeAmount, ' Price:', bankFreePrice)
+		: '';
+	console.log('LP SWAP: 	   Erg:', lpSwapAmount, ' Price:', lpSwapPrice);
+	console.log('');
+
+	return { bestAmount, bestPrice }; // { bestAmount, bestPrice , bankArbBetterThanLp , bankFreeBetterThanLp};
+}

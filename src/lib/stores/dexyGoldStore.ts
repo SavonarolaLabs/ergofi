@@ -9,6 +9,7 @@ import {
 } from './dexyGoldParser';
 import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 import { info } from './nodeInfo';
+import { FEE_UI, FEE_UI_DENOM } from '$lib/sigmausd/sigmaUSDAndDexy';
 
 export const dexygold_lp_box = writable<any>();
 export const oracle_erg_xau_box = writable<any>();
@@ -104,7 +105,11 @@ export function calculateDexyGoldWidgetNumbers() {
 	const bankFreeMintExchangeRate = -666;
 	const bankArbMintExchangeRate = -666;
 
-	const oracleRateWithBankAndUiFees = (oracleRateXy * (1000n + 2n + 3n + 1n)) / 1000n;
+	//const oracleRateWithBankAndUiFees = (oracleRateXy * (1000n + 2n + 3n + 1n)) / 1000n;
+	const oracleRateBankFees =
+		(oracleRateXy * (DEXY_GOLD.feeDenom + DEXY_GOLD.bankFeeNum + DEXY_GOLD.buybackFeeNum)) /
+		DEXY_GOLD.feeDenom;
+	const oracleRateWithBankAndUiFees = ((FEE_UI_DENOM + FEE_UI) * oracleRateBankFees) / FEE_UI_DENOM;
 
 	const bankFreeMintAvailableDexy =
 		bankFreeMintResetHeight > height ? bankFreeMintR5RemainingDexy : bankFreeMintResetDexy;

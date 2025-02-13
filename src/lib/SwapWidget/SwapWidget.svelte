@@ -301,7 +301,7 @@
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, dexyGoldUtxo, $fee_mining);
+			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
 
 			swapPrice = bestPrice
 			if(lastInput == 'From'){

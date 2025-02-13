@@ -554,71 +554,64 @@
 		let toAmountX: bigint = 0n;
 		let toAmount2X: bigint = 0n;
 
-		let state 
-
+		let state = {
+				lpSwapIn: $dexygold_lp_swap_box,
+				lpMintIn: $dexygold_lp_mint_box,
+				lpRedeemIn: $dexygold_lp_redeem_box,
+				freeMintIn:$dexygold_bank_free_mint_box,
+				bankIn: $dexygold_bank_box,
+				buybankIn: $dexygold_buyback_box,
+				arbMintIn:$dexygold_bank_arbitrage_mint_box,
+				lpIn: $dexygold_lp_box,
+				goldOracle: $oracle_erg_xau_box,
+				tracking101: $dexygold_tracking101_box,
+			}
+			 
 		let lpTokenName = 'DexyLp'
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
 			
 			toToken = lpTokenName
 			toToken2 = undefined
-
 			fromAmountX = ergStringToNanoErg(fromAmount);
-			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
 		}
 		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
 			toToken = lpTokenName
 			toToken2 = undefined
-
 			fromAmount2X = BigInt(fromAmount2);
-			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
 		}
 		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
 			toToken = lpTokenName
 			toToken2 = undefined
-
 			toAmountX = BigInt(toAmount);
-			state = { lpMintIn:$dexygold_lp_mint_box, lpIn:$dexygold_lp_box }
 		}
 		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromToken = lpTokenName
 			fromToken2 = undefined
-
 			fromAmountX = BigInt(fromAmount);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, goldOracle:$oracle_erg_xau_box}
 		}
 		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromToken = lpTokenName
 			fromToken2 = undefined
-
 			toAmountX = BigInt(toAmount);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, goldOracle:$oracle_erg_xau_box}
 		}
 		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromToken = lpTokenName
 			fromToken2 = undefined
-
 			toAmount2X = BigInt(toAmount2);
-			state = { lpRedeemIn:$dexygold_lp_redeem_box, lpIn:$dexygold_lp_box, goldOracle:$oracle_erg_xau_box}
 		}
 		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
 			fromAmountX = ergStringToNanoErg(fromAmount); // SKIP
-			state = { lpSwapIn:$dexygold_lp_swap_box, lpIn:$dexygold_lp_box} //Lp Swap State
-			// state = { freeMintIn:$dexygold_bank_free_mint_box, bankIn:$dexygold_bank_box,buybankIn:$dexygold_buyback_box, lpIn:$dexygold_lp_box, goldOracle:$oracle_erg_xau_box} //Bank Free State
-			// state = { arbMintIn:$dexygold_bank_arbitrage_mint_box, bankIn:$dexygold_bank_box,buybankIn:$dexygold_buyback_box, lpIn:$dexygold_lp_box, goldOracle:$oracle_erg_xau_box,tracking101:$dexygold_tracking101_box} //Bank Arb State
 
 		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
 			toAmountX = ergStringToNanoErg(toAmount); 
-			state = { lpSwapIn:$dexygold_lp_swap_box, lpIn:$dexygold_lp_box}
 		}
 		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
 			fromAmountX = BigInt(fromAmount);
-			state = { lpSwapIn:$dexygold_lp_swap_box, lpIn:$dexygold_lp_box}
 		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
 			toAmountX = BigInt(toAmount);
-			state = { lpSwapIn:$dexygold_lp_swap_box, lpIn:$dexygold_lp_box}
 		}
 		const fromAssets = [{
 			token: fromToken, // 'ERG' // 'DexyGold' // 'DexyLP'

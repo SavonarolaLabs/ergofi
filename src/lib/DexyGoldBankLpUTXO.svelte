@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { calculateDexyGoldWidgetNumbers, dexygold_widget_numbers } from './stores/dexyGoldStore';
+	import { calculateDexyGoldNumbers, dexygold_widget_numbers } from './stores/dexyGoldStore';
 	import { initJsonTestBoxes } from './stores/dexyGoldStoreJsonTestData';
 	import { formatAmount } from './utils';
 	import {
@@ -21,7 +21,7 @@
 
 	onMount(() => {
 		initJsonTestBoxes();
-		calculateDexyGoldWidgetNumbers();
+		calculateDexyGoldNumbers();
 	});
 </script>
 

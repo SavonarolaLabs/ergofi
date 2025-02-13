@@ -73,11 +73,29 @@ export type DexyGoldExtendedSwapInputs = {
 	tracking101: NodeBox;
 };
 
-export type DexyGoldState = DexyGoldBankFreeInputs &
+export type DexyGoldUtxo = DexyGoldBankFreeInputs &
 	DexyGoldBankArbitrageInputs &
 	DexyGoldLpSwapInputs &
 	DexyGoldLpMintInputs &
 	DexyGoldLpRedeemInputs;
+
+export type ErgToDexyGoldOptions = {
+	lpSwapPrice: number;
+	lpSwapAmount: bigint;
+
+	bankArbBetterThanLp: boolean;
+	bankArbPrice: number;
+	bankArbAmount: bigint;
+
+	bankFreeBetterThanLp: boolean;
+	bankFreePrice: number;
+	bankFreeAmount: bigint;
+};
+
+export type ErgToDexyGoldBestOption = {
+	bestAmount: bigint;
+	bestPrice: number;
+};
 
 //-------------- LP Swap --------------
 // Calc
@@ -1530,7 +1548,7 @@ export function dexyGoldBankArbitrageInputErgTx(
 
 // ui
 //prettier-ignore
-export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldState){
+export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], state: DexyGoldUtxo){
 		
 		let from = fromAssets[1].token? fromAssets[0].token + '+' + fromAssets[1].token : fromAssets[0].token 
 		let to = toAssets[1].token? toAssets[0].token + '+' + toAssets[1].token : toAssets[0].token 

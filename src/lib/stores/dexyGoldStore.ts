@@ -28,9 +28,9 @@ export const dexygold_lp_redeem_box = writable<any>();
 export const dexygold_lp_extract_box = writable<any>();
 export const dexygold_lp_swap_box = writable<any>();
 
-export const dexygold_widget_numbers: Writable<DexyGoldWidgetNumbers> = writable();
+export const dexygold_widget_numbers: Writable<DexyGoldNumbers> = writable();
 
-export type DexyGoldWidgetNumbers = {
+export type DexyGoldNumbers = {
 	bankAvailableDexy: bigint;
 	lpAvailabeDexy: bigint;
 	lpAvailabeErg: bigint;
@@ -56,7 +56,7 @@ export type DexyGoldWidgetNumbers = {
 	isBankFreeMintActive: boolean;
 };
 
-export function calculateDexyGoldWidgetNumbers() {
+export function calculateDexyGoldNumbers() {
 	const height = get(info).fullHeight;
 	const arbMintIn = get(dexygold_bank_arbitrage_mint_box);
 	const { R4ResetHeight: bankArbMintResetHeight, R5AvailableAmount: bankArbMintR5RemainingDexy } =

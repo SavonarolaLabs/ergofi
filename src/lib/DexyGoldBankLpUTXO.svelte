@@ -16,6 +16,9 @@
 	} from './stores/bank';
 	import SubNumber from './SubNumber.svelte';
 	import { DEXY_BANK_BANK, DEXY_LP_POOL_MAIN } from './dexygold/dexyAddressConstants';
+	import { floor } from 'lodash-es';
+	import { info } from './stores/nodeInfo';
+	import { DEXY_GOLD } from './dexygold/dexyConstants';
 
 	export let confirmed = true;
 
@@ -183,24 +186,56 @@
 
 <div class="text-sm">
 	{#if $dexygold_widget_numbers}
-		<div>{$dexygold_widget_numbers.bankAvailableDexy} bankAvailableDexy</div>
+		<div>ERG/XAU Oracle: {$dexygold_widget_numbers.lpRate}</div>
+		<div>
+			LP/Oracle Rate: {Math.floor(
+				100 *
+					(Number($dexygold_widget_numbers.lpRate) / Number($dexygold_widget_numbers.oracleRate))
+			)}%
+		</div>
+		<div>Total Bank Assets: {$dexygold_widget_numbers.bankAvailableDexy}</div>
+
+		<div>98%</div>
+		<div>101,505%</div>
+
+		{#if $dexygold_widget_numbers.tracking101TriggerHeight + BigInt(DEXY_GOLD.T_arb) > BigInt($info.fullHeight)}
+			<div>
+				PRICE ACTIVATION HEIGHT:{$dexygold_widget_numbers.tracking101TriggerHeight +
+					BigInt(DEXY_GOLD.T_arb) -
+					BigInt($info.fullHeight)}
+			</div>
+		{/if}
+
+		<div>FREE NEW DEXY:{$dexygold_widget_numbers.bankFreeMintResetDexy}</div>
+		<div>ARB NEW DEXY:{$dexygold_widget_numbers.bankArbMintResetDexy}</div>
+
+		{#if $dexygold_widget_numbers.bankFreeMintResetHeight > $info.fullHeight}
+			<div>
+				FREE NEW DEXY LOADER BLOCKS:{$dexygold_widget_numbers.bankFreeMintResetHeight -
+					BigInt($info.fullHeight)}
+			</div>
+		{/if}
+
+		{#if $dexygold_widget_numbers.bankArbMintResetHeight > $info.fullHeight}
+			<div>
+				ARB NEW DEXY LOADER BLOCKS:{$dexygold_widget_numbers.bankArbMintResetHeight -
+					BigInt($info.fullHeight)}
+			</div>
+		{/if}
+
+		<div>FREE Mintable:{$dexygold_widget_numbers.bankFreeMintAvailableDexy}</div>
+		<div>ARB Mintable:{$dexygold_widget_numbers.bankArbMintAvailableDexy}</div>
+
 		<div>{$dexygold_widget_numbers.lpAvailabeDexy} lpAvailabeDexy</div>
 		<div>{$dexygold_widget_numbers.lpAvailabeErg / 10n ** 9n} lpAvailabeErg</div>
-		<div>{$dexygold_widget_numbers.lpRate} lpRate</div>
 		<div class="mb-1"></div>
 		<div>{$dexygold_widget_numbers.bankFreeMintActivationRate} bankFreeMintActivationRate</div>
 		<div>{$dexygold_widget_numbers.oracleRate} oracleRate</div>
 		<div>{$dexygold_widget_numbers.bankArbMintActivationRate} bankArbMintActivationRate</div>
 		<div class="mb-1"></div>
 		<div>{$dexygold_widget_numbers.bankFreeMintExchangeRate} bankFreeMintExchangeRate</div>
-		<div>{$dexygold_widget_numbers.bankFreeMintResetHeight} bankFreeMintResetHeight</div>
-		<div>{$dexygold_widget_numbers.bankFreeMintAvailableDexy} bankFreeMintAvailableDexy</div>
-		<div>{$dexygold_widget_numbers.bankFreeMintResetDexy} bankFreeMintResetDexy</div>
 		<div>{$dexygold_widget_numbers.bankArbMintExchangeRate} bankArbMintExchangeRate</div>
-		<div>{$dexygold_widget_numbers.bankArbMintResetHeight} bankArbMintResetHeight</div>
 		<div>{$dexygold_widget_numbers.bankArbMintActivationHeight} bankArbMintActivationHeight</div>
-		<div>{$dexygold_widget_numbers.bankArbMintAvailableDexy} bankArbMintAvailableDexy</div>
-		<div>{$dexygold_widget_numbers.bankArbMintResetDexy} bankArbMintResetDexy</div>
 		<div>{$dexygold_widget_numbers.tracking101TriggerHeight} tracking101TriggerHeight</div>
 		<div>
 			{$dexygold_widget_numbers.isBankArbMintActivationHeightTriggered} isBankArbMintActivationHeightTriggered

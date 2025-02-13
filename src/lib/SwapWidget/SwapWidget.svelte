@@ -570,7 +570,7 @@
 		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromToken = lpTokenName
 			fromToken2 = undefined
-			toAmountX = BigInt(toAmount);
+			toAmountX = ergStringToNanoErg(toAmount);
 		}
 		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
 			fromToken = lpTokenName

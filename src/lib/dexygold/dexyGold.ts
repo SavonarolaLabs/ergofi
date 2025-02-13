@@ -135,18 +135,6 @@ export function lpSwapInputDexy(
 			1n; // cause <=
 	}
 
-	// if (direction == DIRECTION_SELL) {
-	// 	console.log('we are here');
-	// 	amountErg = BigInt(
-	// 		Math.floor(Number((amountDexy + 1n) * feeDenomLp) / (rate * Number(feeNumLp)))
-	// 	); //- 100n; //- 1n; //Rounded but need to check -1n <==
-	// } else {
-	// 	//
-	// 	amountErg = BigInt(
-	// 		Math.ceil((Number(amountDexy) * Number(feeNumLp)) / (Number(feeDenomLp) * rate))
-	// 	); //+100n; //Rounded but need to check +1n <==
-	// }
-
 	return { amountErg, amountDexy, rate }; // as result amountErg, amountDexy
 }
 // Price and BUILD
@@ -283,11 +271,7 @@ export function dexyGoldLpSwapInputDexyPrice(
 	} else {
 		({ userErg: amountErg, uiSwapFee } = reverseFeeSell(contractERG, feeMining));
 	}
-	console.log('-----INPUT DEXY-----');
-	console.log(inputDexy, 'inputDexy');
-	console.log(contractERG, 'contractERG');
-	console.log(amountErg, 'amountErg');
-	console.log('-----INPUT DEXY-----');
+
 	const price = Number(amountErg) / Number(inputDexy);
 	return { amountErg, amountDexy: inputDexy, price, uiSwapFee };
 }
@@ -884,11 +868,6 @@ export function dexyGoldLpRedeemInputErgTx(
 		redeemState
 	);
 
-	console.log(lpXIn, 'lpXIn ');
-	console.log(lpYIn, 'lpYIn ');
-	console.log(contractErg, 'contractErg ');
-	console.log(contractDexy, 'contractDexy ');
-
 	const lpRedeemOutValue = lpRedeemInValue;
 	const lpXOut = lpXIn - contractErg;
 	const lpYOut = lpYIn - contractDexy;
@@ -1432,12 +1411,6 @@ export function dexyGoldBankArbitrageInputErgPrice(
 		calculateBankMintInputErg(oracleRate, 1n, bankFeeNum, buybackFeeNum, feeDenom, contractErg);
 	const oracleRateWithFee = bankRate + buybackRate;
 	const maxAllowedIfReset = (lpXData - oracleRateWithFee * lpYData) / oracleRateWithFee;
-
-	console.log('-----INPUT ERG-----');
-	console.log(inputErg, 'inputErg');
-	console.log(contractErg, 'contractErg');
-	console.log(contractDexy, 'contractDexy');
-	console.log('-----INPUT ERG-----');
 
 	const price = Number(inputErg) / Number(contractDexy);
 

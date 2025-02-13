@@ -556,17 +556,6 @@
 
 		let state 
 
-		//if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
-		//if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
-		//if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken)
-		//if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
-		//if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
-		//if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold')
-		//if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold')
-		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG')
-		//if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG')
-		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold')
-
 		let lpTokenName = 'DexyLp'
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
@@ -657,22 +646,6 @@
 		const unsignedTx = buildSwapDexyGoldTx(fromAssets,toAssets,input,me,height,$fee_mining,utxos,state)
 		
 		await createInteractionAndSubmitTx(unsignedTx, [me]);
-
-		
-		// buildSwapSigmaUsdTx(
-		// 	fromAssets,
-		// 	toAssets,
-		// 	lastInput,
-		// 	me,
-		// 	SIGUSD_BANK_ADDRESS,
-		// 	utxos,
-		// 	height,
-		// 	$bank_box,
-		// 	$oracle_box,
-		// 	$fee_mining
-		// );
-
-
 	}
 
 	async function handleSwapButtonSigUsd() {

@@ -105,7 +105,6 @@ export function calculateDexyGoldWidgetNumbers() {
 	const bankFreeMintExchangeRate = -666;
 	const bankArbMintExchangeRate = -666;
 
-	//const oracleRateWithBankAndUiFees = (oracleRateXy * (1000n + 2n + 3n + 1n)) / 1000n;
 	const oracleRateBankFees =
 		(oracleRateXy * (DEXY_GOLD.feeDenom + DEXY_GOLD.bankFeeNum + DEXY_GOLD.buybackFeeNum)) /
 		DEXY_GOLD.feeDenom;

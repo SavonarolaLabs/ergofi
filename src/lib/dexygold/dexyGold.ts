@@ -1575,35 +1575,8 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 
-			case 'ERG_ERG/DEXYGOLD': ({bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGoldInputErg(amount, dexyGoldUtxo, dexyGoldNumbers, feeMining));	
-			console.log('ERG_ERG, bankArbBetterThanLp ',bankArbBetterThanLp ,'bankFreeBetterThanLp ',bankFreeBetterThanLp)
-			
-			if(bankArbBetterThanLp){
-				unsignedTx =  dexyGoldBankArbitrageInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo)
-			}
-			else if (bankFreeBetterThanLp)
-			{
-				unsignedTx =  dexyGoldBankFreeInputErgTx (amount, me, height, feeMining, utxos, dexyGoldUtxo)
-			}else
-			{	
-				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, dexyGoldUtxo); 
-			}
-			break; 			
-			case 'ERG/DEXYGOLD_DEXYGOLD': ({bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGoldInputDexy(amount, dexyGoldUtxo, dexyGoldNumbers, feeMining));	
-				if(bankArbBetterThanLp){
-					console.log('ARB')
-					unsignedTx =  dexyGoldBankArbitrageInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo)
-				}
-				else if (bankFreeBetterThanLp)
-				{
-					console.log('Free')
-					unsignedTx =  dexyGoldBankFreeInputDexyTx (amount, me, height, feeMining, utxos, dexyGoldUtxo)
-				}else
-				{	
-					console.log('SWAP')
-					unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, dexyGoldUtxo); 
-				}
-			break;
+			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldBestBuyDexyGoldInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;			
+			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldBestBuyDexyGoldInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;
 			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); break;
 			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); break;
 			default:
@@ -1612,6 +1585,89 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 		return unsignedTx;
 	}
 
+function dexyGoldBestBuyDexyGoldInputErgTx(
+	amount: bigint,
+	me: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers
+) {
+	let unsignedTx;
+	const { bankArbBetterThanLp, bankFreeBetterThanLp } = bestOptionErgToDexyGoldInputErg(
+		amount,
+		dexyGoldUtxo,
+		dexyGoldNumbers,
+		feeMining
+	);
+
+	if (bankArbBetterThanLp) {
+		unsignedTx = dexyGoldBankArbitrageInputErgTx(
+			amount,
+			me,
+			height,
+			feeMining,
+			utxos,
+			dexyGoldUtxo
+		);
+	} else if (bankFreeBetterThanLp) {
+		unsignedTx = dexyGoldBankFreeInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo);
+	} else {
+		unsignedTx = dexyGoldLpSwapInputErgTx(
+			amount,
+			DIRECTION_SELL,
+			me,
+			height,
+			feeMining,
+			utxos,
+			dexyGoldUtxo
+		);
+	}
+	return unsignedTx;
+}
+
+function dexyGoldBestBuyDexyGoldInputDexyTx(
+	amount: bigint,
+	me: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers
+) {
+	let unsignedTx;
+	const { bankArbBetterThanLp, bankFreeBetterThanLp } = bestOptionErgToDexyGoldInputDexy(
+		amount,
+		dexyGoldUtxo,
+		dexyGoldNumbers,
+		feeMining
+	);
+
+	if (bankArbBetterThanLp) {
+		unsignedTx = dexyGoldBankArbitrageInputDexyTx(
+			amount,
+			me,
+			height,
+			feeMining,
+			utxos,
+			dexyGoldUtxo
+		);
+	} else if (bankFreeBetterThanLp) {
+		unsignedTx = dexyGoldBankFreeInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo);
+	} else {
+		unsignedTx = dexyGoldLpSwapInputDexyTx(
+			amount,
+			DIRECTION_SELL,
+			me,
+			height,
+			feeMining,
+			utxos,
+			dexyGoldUtxo
+		);
+	}
+	return unsignedTx;
+}
 export function bestOptionErgToDexyGoldInputErg(
 	nanoErgAmount: bigint,
 	dexyGoldUtxo: DexyGoldUtxo,
@@ -1670,7 +1726,6 @@ export function bestOptionErgToDexyGoldInputErg(
 		bankFreeAmount
 	};
 }
-
 export function bestOptionErgToDexyGoldInputDexy(
 	userDexyRequest: bigint,
 	dexyGoldUtxo: DexyGoldUtxo,
@@ -1735,7 +1790,6 @@ export function bestOptionErgToDexyGoldInputDexy(
 		bankFreeAmount
 	};
 }
-
 export function bestOptionErgToDexyGold(
 	lastInput: string,
 	fromAmount: bigint,

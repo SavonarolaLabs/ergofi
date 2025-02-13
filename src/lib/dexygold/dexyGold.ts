@@ -879,15 +879,20 @@ export function dexyGoldLpRedeemInputErgTx(
 		lpTokenId,
 		lpDexyTokenId
 	} = parseLpBox(redeemState.lpIn);
-	const { uiSwapFee, contractErg, dexyInput, sharesUnlocked } = dexyGoldLpRedeemInputErgPrice(
+	const { uiSwapFee, contractErg, contractDexy, sharesUnlocked } = dexyGoldLpRedeemInputErgPrice(
 		inputErg,
 		feeMining,
 		redeemState
 	);
 
+	console.log(lpXIn, 'lpXIn ');
+	console.log(lpYIn, 'lpYIn ');
+	console.log(contractErg, 'contractErg ');
+	console.log(contractDexy, 'contractDexy ');
+
 	const lpRedeemOutValue = lpRedeemInValue;
 	const lpXOut = lpXIn - contractErg;
-	const lpYOut = lpYIn - dexyInput;
+	const lpYOut = lpYIn - contractDexy;
 	const lpTokensOut = lpTokensIn + sharesUnlocked;
 
 	const userUtxos = utxos;
@@ -1126,12 +1131,6 @@ export function dexyGoldBankFreeInputErgPrice(
 
 	const maxAllowedIfReset = lpYData / 100n; //free
 
-	console.log('-----INPUT ERG-----');
-	console.log(inputErg, 'inputErg');
-	console.log(contractErg, 'contractErg');
-	console.log(contractDexy, 'contractDexy');
-	console.log('-----INPUT ERG-----');
-
 	const price = Number(inputErg) / Number(contractDexy);
 
 	return {
@@ -1295,12 +1294,6 @@ export function dexyGoldBankFreeInputDexyPrice(
 	const { inputErg, uiSwapFee } = reverseFee(contractErg, feeMining);
 
 	const maxAllowedIfReset = lpYData / 100n;
-
-	console.log('-----INPUT ERG-----');
-	console.log(inputErg, 'inputErg');
-	console.log(contractErg, 'contractErg');
-	console.log(contractDexy, 'contractDexy');
-	console.log('-----INPUT ERG-----');
 
 	const price = Number(inputErg) / Number(contractDexy);
 
@@ -1676,7 +1669,9 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); break;
 
 			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break; //
+			//ifPrice?
 			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break;
+			//ifPrice?
 			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); break;
 			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); break;
 			default:

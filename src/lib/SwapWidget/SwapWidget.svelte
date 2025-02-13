@@ -308,12 +308,7 @@
 		}
 	}
 
-	function bestOptionErgToDexyGold(
-		lastInput: string,
-		fromAmount: string,
-		toAmount: string,
-		params
-	) {
+	function bestOptionErgToDexyGold(lastInput: string, fromAmount: string, toAmount: string, state) {
 		const {
 			lpSwapPrice,
 			lpSwapAmount,
@@ -327,8 +322,8 @@
 			bankFreeAmount
 		} =
 			lastInput === 'From'
-				? bestOptionErgToDexyGoldInputErg(fromAmount, params)
-				: bestOptionErgToDexyGoldInputDexy(BigInt(toAmount), params);
+				? bestOptionErgToDexyGoldInputErg(fromAmount, state)
+				: bestOptionErgToDexyGoldInputDexy(BigInt(toAmount), state);
 
 		let bestAmount = bankArbBetterThanLp
 			? bankArbAmount

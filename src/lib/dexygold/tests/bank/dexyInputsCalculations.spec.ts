@@ -969,7 +969,7 @@ describe('Lp Mint ', async () => {
 			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		}
 	});
-	it.only('Lp Mint With Fee One Function: Input Erg', async () => {
+	it('Lp Mint With Fee One Function: Input Erg', async () => {
 		let height = 1449119;
 		const inputErg = 1_000_000_000n;
 		const unsignedTx = dexyGoldLpMintInputErgTx(
@@ -983,7 +983,7 @@ describe('Lp Mint ', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Mint With Fee One Function: Input Dexy', async () => {
+	it('Lp Mint With Fee One Function: Input Dexy', async () => {
 		let height = 1449119;
 		const inputDexy = 24n;
 		const unsignedTx = dexyGoldLpMintInputDexyTx(
@@ -997,7 +997,7 @@ describe('Lp Mint ', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Mint With Fee One Function: Input Shares', async () => {
+	it('Lp Mint With Fee One Function: Input Shares', async () => {
 		let height = 1449119;
 		const inputShares = 147605n;
 		const unsignedTx = dexyGoldLpMintInputSharesTx(
@@ -1051,7 +1051,7 @@ describe('Lp Redeem ', async () => {
 			userChangeAddress = '9euvZDx78vhK5k1wBXsNvVFGc5cnoSasnXCzANpaawQveDCHLbU';
 		}
 	});
-	it.only('Lp Redeem With Fee One Function: Input Erg', async () => {
+	it('Lp Redeem With Fee One Function: Input Erg', async () => {
 		let height = 1449119;
 		const inputErg = 1_000_000_000n;
 		const unsignedTx = dexyGoldLpRedeemInputErgTx(
@@ -1065,7 +1065,7 @@ describe('Lp Redeem ', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Redeem With Fee One Function: Input Dexy', async () => {
+	it('Lp Redeem With Fee One Function: Input Dexy', async () => {
 		let height = 1449119;
 		const inputDexy = 24n;
 		const unsignedTx = dexyGoldLpRedeemInputDexyTx(
@@ -1079,7 +1079,7 @@ describe('Lp Redeem ', async () => {
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
 	});
-	it.only('Lp Redeem With Fee One Function: Input Dexy', async () => {
+	it('Lp Redeem With Fee One Function: Input Dexy', async () => {
 		let height = 1449119;
 		const inputShares = 147605n;
 		const unsignedTx = dexyGoldLpRedeemInputSharesTx(

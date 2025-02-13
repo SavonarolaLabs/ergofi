@@ -1546,6 +1546,7 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 		//const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
 		//console.log('',fromAssets[0].isLpToken)
 		let unsignedTx;
+		let bankArbBetterThanLp,bankFreeBetterThanLp
 		switch (swapPairLastInput.toUpperCase()) {
 			case 'ERG+DEXYGOLD_ERG/DEXYLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, state); break;
 			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, state); break;
@@ -1554,10 +1555,33 @@ export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  m
 			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, state); break;
 			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, state); break;
 
-			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break; //
-			//ifPrice? 
-			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); break;
-			//ifPrice?
+			case 'ERG_ERG/DEXYGOLD': bankArbBetterThanLp=false; bankFreeBetterThanLp = false	//const { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, state);	
+			if(bankArbBetterThanLp){
+				unsignedTx =  dexyGoldBankArbitrageInputErgTx(amount, me, height, feeMining, utxos, state)
+			}
+			else if (bankFreeBetterThanLp)
+			{
+				unsignedTx =  dexyGoldBankFreeInputErgTx (amount, me, height, feeMining, utxos, state)
+			}else
+			{	
+				unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+			}
+			break; 			
+			case 'ERG/DEXYGOLD_DEXYGOLD': bankArbBetterThanLp=false; bankFreeBetterThanLp = true	//const { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp  } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, state);	
+				if(bankArbBetterThanLp){
+					console.log('ARB')
+					unsignedTx =  dexyGoldBankArbitrageInputDexyTx(amount, me, height, feeMining, utxos, state)
+				}
+				else if (bankFreeBetterThanLp)
+				{
+					console.log('Free')
+					unsignedTx =  dexyGoldBankFreeInputDexyTx (amount, me, height, feeMining, utxos, state)
+				}else
+				{	
+					console.log('SWAP')
+					unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_SELL, me, height, feeMining, utxos, state); 
+				}
+			break;
 			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, state); break;
 			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, state); break;
 			default:

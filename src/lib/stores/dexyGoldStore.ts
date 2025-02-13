@@ -39,12 +39,14 @@ export type DexyGoldWidgetNumbers = {
 	bankFreeMintActivationRate: bigint;
 	bankFreeMintResetHeight: bigint;
 	bankFreeMintAvailableDexy: bigint;
+	bankFreeMintR5RemainingDexy: bigint;
 	bankFreeMintResetDexy: bigint;
 	bankArbMintExchangeRate: number;
 	bankArbMintActivationRate: bigint;
 	bankArbMintResetHeight: bigint;
 	bankArbMintActivationHeight: bigint; //Tracking 101 height + T_arb
 	bankArbMintAvailableDexy: bigint;
+	bankArbMintR5RemainingDexy: bigint;
 	bankArbMintResetDexy: bigint;
 	tracking101TriggerHeight: bigint;
 	isBankArbMintActivationHeightTriggered: boolean;
@@ -55,11 +57,11 @@ export type DexyGoldWidgetNumbers = {
 export function calculateDexyGoldWidgetNumbers() {
 	const height = get(info).fullHeight;
 	const arbMintIn = get(dexygold_bank_arbitrage_mint_box);
-	const { R4ResetHeight: bankArbMintResetHeight, R5AvailableAmount: bankArbMintAvailableDexy } =
+	const { R4ResetHeight: bankArbMintResetHeight, R5AvailableAmount: bankArbMintR5RemainingDexy } =
 		parseBankArbitrageMintBox(arbMintIn);
 
 	const freeMintIn = get(dexygold_bank_free_mint_box);
-	const { R4ResetHeight: bankFreeMintResetHeight, R5AvailableAmount: bankFreeMintAvailableDexy } =
+	const { R4ResetHeight: bankFreeMintResetHeight, R5AvailableAmount: bankFreeMintR5RemainingDexy } =
 		parseBankFreeMintBox(freeMintIn);
 
 	const bankIn = get(dexygold_bank_box);
@@ -103,6 +105,9 @@ export function calculateDexyGoldWidgetNumbers() {
 
 	// oracleRate <=
 
+	const bankFreeMintAvailableDexy = 1n;
+	const bankArbMintAvailableDexy = 1n;
+
 	dexygold_widget_numbers.set({
 		bankAvailableDexy,
 		lpAvailabeDexy: lpYIn,
@@ -113,12 +118,14 @@ export function calculateDexyGoldWidgetNumbers() {
 		bankFreeMintActivationRate,
 		bankFreeMintResetHeight,
 		bankFreeMintAvailableDexy,
+		bankFreeMintR5RemainingDexy,
 		bankFreeMintResetDexy,
 		bankArbMintExchangeRate,
 		bankArbMintActivationRate,
 		bankArbMintResetHeight,
 		bankArbMintActivationHeight,
 		bankArbMintAvailableDexy,
+		bankArbMintR5RemainingDexy,
 		bankArbMintResetDexy,
 		tracking101TriggerHeight,
 		isBankArbMintActivationHeightTriggered,

@@ -290,68 +290,7 @@
 			swapPrice = price;
 		}
 
-		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
-		) {
-			//Check LP SWAP
-			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
-				ergStringToNanoErg(fromAmount),
-				DIRECTION_SELL,
-				$fee_mining,
-				params.swapState
-			);
 
-			//Check Bank Availability and Prices
-			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
-			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
-
-			let height = $info.fullHeight 
-
-			const bankFreeAmount = $dexygold_widget_numbers.bankFreeMintResetHeight>height? $dexygold_widget_numbers.bankFreeMintAvailableDexy : $dexygold_widget_numbers.bankFreeMintResetDexy ;
-			const bankArbAmount	 = $dexygold_widget_numbers.bankArbMintResetHeight>height? $dexygold_widget_numbers.bankArbMintAvailableDexy: $dexygold_widget_numbers.bankArbMintResetDexy;
-
-			let bankArbPrice, bankArbDexy, bankArbOk
-			let bankFreePrice, bankFreeDexy, bankFreeOk
-
-
-			if(($dexygold_widget_numbers.isBankArbMintActive)	&&
-			(price>oracleWithFees)			&&
-			(bankArbAmount>=userApproxDexyRequest))
-			{	
-				 ({amountDexy:bankArbDexy,price:bankArbPrice} = dexyGoldBankArbitrageInputErgPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankArbMintState))	
-				 bankArbOk = true
-			}
-			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
-			(price>oracleWithFees)			&&
-			(bankFreeAmount>=userApproxDexyRequest)) {
-
-				({amountDexy:bankFreeDexy,price:bankFreePrice} = dexyGoldBankFreeInputErgPrice(ergStringToNanoErg(fromAmount),$fee_mining,params.bankFreeMintState))	
-				 bankFreeOk = true
-			}
-
-			if (bankArbOk){
-				console.log('USED ARB MINT')
-				console.log('LP SWAP: 	   Dexy:',amountDexy, ' Price:',price )
-				console.log('LP BANK Arb : Dexy:',bankArbDexy, ' Price:',bankArbPrice )
-				console.log('LP BANK Free: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
-				toAmount = bankArbDexy.toString();
-				swapPrice = bankArbPrice;
-
-			}
-			else if (bankFreeOk){
-				console.log('USED FREE MINT')
-				console.log('LP SWAP: 	   Dexy:',amountDexy, ' Price:',price )
-				console.log('LP BANK Free: Dexy:',bankArbDexy, ' Price:',bankArbPrice )
-				toAmount = bankFreeDexy.toString();
-				swapPrice = bankFreePrice;
-			}
-			else 
-			{	
-				console.log('USED LP SWAP')
-				toAmount = amountDexy.toString();
-				swapPrice = price;
-			}
-
-		}
 		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
 		) {
 
@@ -375,69 +314,164 @@
 			toAmount = nanoErgToErg(amountErg);
 			swapPrice = price;
 		}
-		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
+		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			//Check LP SWAP
-			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
-				BigInt(toAmount),
-				DIRECTION_SELL, //
-				$fee_mining,
-				params.swapState
-			);
-
-			//Check Bank
-			//Check Bank Availability and Prices
 			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
+			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
 			const userDexyRequest = BigInt(toAmount)
 
-			let height = $info.fullHeight 
+			const {
+				lpSwapPrice,
+				lpSwapAmount,
 
-			const bankFreeAmount = $dexygold_widget_numbers.bankFreeMintResetHeight>height? $dexygold_widget_numbers.bankFreeMintAvailableDexy : $dexygold_widget_numbers.bankFreeMintResetDexy ;
-			const bankArbAmount	 = $dexygold_widget_numbers.bankArbMintResetHeight>height? $dexygold_widget_numbers.bankArbMintAvailableDexy: $dexygold_widget_numbers.bankArbMintResetDexy;
+				bankArbBetterThanLp,
+				bankArbPrice,
+				bankArbAmount,
 
-			let bankArbPrice, bankArbErg, bankArbOk
-			let bankFreePrice, bankFreeErg, bankFreeOk
+				bankFreeBetterThanLp,
+				bankFreePrice,
+				bankFreeAmount,
+			} = lastInput === 'From' ? bestOptionErgToDexyGoldInputErg(fromAmount, params, oracleWithFees, userApproxDexyRequest)
+				: bestOptionErgToDexyGoldInputDexy(userDexyRequest, params, oracleWithFees)
 
-			if(($dexygold_widget_numbers.isBankArbMintActive)	&&
-			(price>oracleWithFees)			&&
-			(bankArbAmount>=userDexyRequest))
-			{	
-				 ({amountErg:bankArbErg,price:bankArbPrice} = dexyGoldBankArbitrageInputDexyPrice(userDexyRequest,$fee_mining,params.bankArbMintState))	
-				 bankArbOk = true
-			}
 
-			if(($dexygold_widget_numbers.isBankFreeMintActive)	&&
-			(price>oracleWithFees)			&&
-			(bankFreeAmount>=userDexyRequest)) {
-				({amountErg:bankFreeErg,price:bankFreePrice} = dexyGoldBankFreeInputDexyPrice(userDexyRequest,$fee_mining,params.bankFreeMintState))	
-				bankFreeOk = true
-				//Use Function To Calculate Price and Amount
-			}
+			let bestAmount = bankArbBetterThanLp? bankArbAmount : bankFreeBetterThanLp? bankFreeAmount : lpSwapAmount;
+			let bestPrice = bankArbBetterThanLp? bankArbPrice : bankFreeBetterThanLp? bankFreePrice : lpSwapPrice;
 
-			if (bankArbOk){
-				console.log('USED ARB MINT')
-				console.log('LP SWAP: 	   Erg:',amountErg, ' Price:',price )
-				console.log('LP BANK Arb:  Erg:',bankArbErg, ' Price:',bankArbPrice )
-				console.log('LP BANK Free: Erg:',bankFreeErg, ' Price:',bankFreePrice )
+			bankArbBetterThanLp?console.log('LP BANK Arb:  Erg:',bankArbAmount, ' Price:',bankArbPrice ):'';
+			bankFreeBetterThanLp?console.log('LP BANK Free: Erg:',bankFreeAmount, ' Price:',bankFreePrice):'';
+			console.log('LP SWAP: 	   Erg:',lpSwapAmount, ' Price:',lpSwapPrice )
+			console.log('')
 
-				fromAmount = nanoErgToErg(bankArbErg);
-				swapPrice = bankArbPrice;
-			}
-			else if (bankFreeOk){
-				console.log('USED FREE MINT')
-				console.log('LP SWAP: 	   Erg:',amountErg, ' Price:',price )
-				console.log('LP BANK Free: Erg:',bankFreeErg, ' Price:',bankFreePrice )
-				fromAmount = nanoErgToErg(bankFreeErg);
-				swapPrice = bankFreePrice;
-			}
-			else 
-			{	
-				console.log('USED LP SWAP')
-				fromAmount = nanoErgToErg(amountErg);
-				swapPrice = price;
+			swapPrice = bestPrice
+			if(lastInput == 'From'){
+				toAmount = bestAmount.toString();
+			}else{
+				fromAmount = nanoErgToErg(bestAmount);
 			}
 		}
+	}
 
+	function bestOptionErgToDexyGoldInputErg(
+		amountErgUserInput,
+		params,
+		oracleWithFees,
+		userApproxDexyRequest
+	) {
+		const {
+			amountErg,
+			amountDexy: lpSwapAmount,
+			price: lpSwapPrice
+		} = dexyGoldLpSwapInputErgPrice(
+			ergStringToNanoErg(amountErgUserInput),
+			DIRECTION_SELL,
+			$fee_mining,
+			params.swapState
+		);
+
+		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
+		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
+
+		let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
+		let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
+
+		if (
+			$dexygold_widget_numbers.isBankArbMintActive &&
+			lpSwapPrice > oracleWithFees &&
+			bankArbAmountAvailable >= userApproxDexyRequest
+		) {
+			({ amountDexy: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputErgPrice(
+				ergStringToNanoErg(amountErgUserInput),
+				$fee_mining,
+				params.bankArbMintState
+			));
+			bankArbBetterThanLp = true;
+		}
+		if (
+			$dexygold_widget_numbers.isBankFreeMintActive &&
+			lpSwapPrice > oracleWithFees &&
+			bankFreeAmountAvailable >= userApproxDexyRequest
+		) {
+			({ amountDexy: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputErgPrice(
+				ergStringToNanoErg(amountErgUserInput),
+				$fee_mining,
+				params.bankFreeMintState
+			));
+			bankFreeBetterThanLp = true;
+		}
+
+		return {
+			lpSwapPrice,
+			lpSwapAmount,
+
+			bankArbBetterThanLp,
+			bankArbPrice,
+			bankArbAmount,
+
+			bankFreeBetterThanLp,
+			bankFreePrice,
+			bankFreeAmount
+		};
+	}
+
+	function bestOptionErgToDexyGoldInputDexy(amountDexyUserInput, params, oracleWithFees) {
+		const userDexyRequest = BigInt(amountDexyUserInput);
+		const {
+			amountErg: lpSwapAmount,
+			amountDexy,
+			price: lpSwapPrice
+		} = dexyGoldLpSwapInputDexyPrice(
+			userDexyRequest,
+			DIRECTION_SELL, //
+			$fee_mining,
+			params.swapState
+		);
+
+		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
+		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
+
+		let bankArbPrice, bankArbAmount, bankArbBetterThanLp;
+		let bankFreePrice, bankFreeAmount, bankFreeBetterThanLp;
+
+		if (
+			$dexygold_widget_numbers.isBankArbMintActive &&
+			lpSwapPrice > oracleWithFees &&
+			bankArbAmountAvailable >= userDexyRequest
+		) {
+			({ amountErg: bankArbAmount, price: bankArbPrice } = dexyGoldBankArbitrageInputDexyPrice(
+				userDexyRequest,
+				$fee_mining,
+				params.bankArbMintState
+			));
+			bankArbBetterThanLp = true;
+		}
+
+		if (
+			$dexygold_widget_numbers.isBankFreeMintActive &&
+			lpSwapPrice > oracleWithFees &&
+			bankFreeAmountAvailable >= userDexyRequest
+		) {
+			({ amountErg: bankFreeAmount, price: bankFreePrice } = dexyGoldBankFreeInputDexyPrice(
+				userDexyRequest,
+				$fee_mining,
+				params.bankFreeMintState
+			));
+			bankFreeBetterThanLp = true;
+			//Use Function To Calculate Price and Amount
+		}
+
+		return {
+			lpSwapPrice,
+			lpSwapAmount,
+
+			bankArbBetterThanLp,
+			bankArbPrice,
+			bankArbAmount,
+
+			bankFreeBetterThanLp,
+			bankFreePrice,
+			bankFreeAmount
+		};
 	}
 	/* ---------------------------------------
 	 * Recalc Handlers

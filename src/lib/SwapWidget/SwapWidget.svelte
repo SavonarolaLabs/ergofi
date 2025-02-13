@@ -219,7 +219,6 @@
 				goldOracle: $oracle_erg_xau_box,
 				tracking101: $dexygold_tracking101_box,
 			},
-
 		};
 
 
@@ -316,10 +315,6 @@
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
-			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
-			const userDexyRequest = BigInt(toAmount)
-
 			const {
 				lpSwapPrice,
 				lpSwapAmount,
@@ -331,9 +326,7 @@
 				bankFreeBetterThanLp,
 				bankFreePrice,
 				bankFreeAmount,
-			} = lastInput === 'From' ? bestOptionErgToDexyGoldInputErg(fromAmount,userApproxDexyRequest, params)
-				: bestOptionErgToDexyGoldInputDexy(userDexyRequest, params)
-
+			} = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, params);
 
 			let bestAmount = bankArbBetterThanLp? bankArbAmount : bankFreeBetterThanLp? bankFreeAmount : lpSwapAmount;
 			let bestPrice = bankArbBetterThanLp? bankArbPrice : bankFreeBetterThanLp? bankFreePrice : lpSwapPrice;
@@ -352,7 +345,18 @@
 		}
 	}
 
-	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, userApproxDexyRequest, params) {
+	function bestOptionErgToDexyGold(
+		lastInput: string,
+		fromAmount: string,
+		toAmount: string,
+		params
+	) {
+		return lastInput === 'From'
+			? bestOptionErgToDexyGoldInputErg(fromAmount, params)
+			: bestOptionErgToDexyGoldInputDexy(BigInt(toAmount), params);
+	}
+
+	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, params) {
 		const {
 			amountErg,
 			amountDexy: lpSwapAmount,
@@ -363,8 +367,9 @@
 			$fee_mining,
 			params.swapState
 		);
-
 		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
+		const userApproxDexyRequest = ergStringToNanoErg(fromAmount) / oracleWithFees;
+
 		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
 		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
 

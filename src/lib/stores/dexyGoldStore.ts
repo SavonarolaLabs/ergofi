@@ -104,8 +104,7 @@ export function calculateDexyGoldWidgetNumbers() {
 	const bankFreeMintExchangeRate = -666;
 	const bankArbMintExchangeRate = -666;
 
-	// oracleRate <=
-	const oracleWithFees = (oracleRate * (1000n + 2n + 3n + 1n)) / 1000n;
+	const oracleRateWithFees = (oracleRate * (1000n + 2n + 3n + 1n)) / 1000n;
 
 	const bankFreeMintAvailableDexy =
 		bankFreeMintResetHeight > height ? bankFreeMintR5RemainingDexy : bankFreeMintResetDexy;

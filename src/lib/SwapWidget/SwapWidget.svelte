@@ -315,26 +315,7 @@
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const {
-				lpSwapPrice,
-				lpSwapAmount,
-
-				bankArbBetterThanLp,
-				bankArbPrice,
-				bankArbAmount,
-
-				bankFreeBetterThanLp,
-				bankFreePrice,
-				bankFreeAmount,
-			} = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, params);
-
-			let bestAmount = bankArbBetterThanLp? bankArbAmount : bankFreeBetterThanLp? bankFreeAmount : lpSwapAmount;
-			let bestPrice = bankArbBetterThanLp? bankArbPrice : bankFreeBetterThanLp? bankFreePrice : lpSwapPrice;
-
-			bankArbBetterThanLp?console.log('LP BANK Arb:  Erg:',bankArbAmount, ' Price:',bankArbPrice ):'';
-			bankFreeBetterThanLp?console.log('LP BANK Free: Erg:',bankFreeAmount, ' Price:',bankFreePrice):'';
-			console.log('LP SWAP: 	   Erg:',lpSwapAmount, ' Price:',lpSwapPrice )
-			console.log('')
+			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, fromAmount, toAmount, params);
 
 			swapPrice = bestPrice
 			if(lastInput == 'From'){
@@ -351,9 +332,43 @@
 		toAmount: string,
 		params
 	) {
-		return lastInput === 'From'
-			? bestOptionErgToDexyGoldInputErg(fromAmount, params)
-			: bestOptionErgToDexyGoldInputDexy(BigInt(toAmount), params);
+		const {
+			lpSwapPrice,
+			lpSwapAmount,
+
+			bankArbBetterThanLp,
+			bankArbPrice,
+			bankArbAmount,
+
+			bankFreeBetterThanLp,
+			bankFreePrice,
+			bankFreeAmount
+		} =
+			lastInput === 'From'
+				? bestOptionErgToDexyGoldInputErg(fromAmount, params)
+				: bestOptionErgToDexyGoldInputDexy(BigInt(toAmount), params);
+
+		let bestAmount = bankArbBetterThanLp
+			? bankArbAmount
+			: bankFreeBetterThanLp
+				? bankFreeAmount
+				: lpSwapAmount;
+		let bestPrice = bankArbBetterThanLp
+			? bankArbPrice
+			: bankFreeBetterThanLp
+				? bankFreePrice
+				: lpSwapPrice;
+
+		bankArbBetterThanLp
+			? console.log('LP BANK Arb:  Erg:', bankArbAmount, ' Price:', bankArbPrice)
+			: '';
+		bankFreeBetterThanLp
+			? console.log('LP BANK Free: Erg:', bankFreeAmount, ' Price:', bankFreePrice)
+			: '';
+		console.log('LP SWAP: 	   Erg:', lpSwapAmount, ' Price:', lpSwapPrice);
+		console.log('');
+
+		return { bestAmount, bestPrice, bankArbBetterThanLp, bankFreeBetterThanLp };
 	}
 
 	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, params) {

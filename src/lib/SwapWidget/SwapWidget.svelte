@@ -382,7 +382,7 @@
 			$fee_mining,
 			params.swapState
 		);
-		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
+		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithBankAndUiFees;
 		const userApproxDexyRequest = ergStringToNanoErg(fromAmount) / oracleWithFees;
 
 		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
@@ -443,7 +443,7 @@
 			params.swapState
 		);
 
-		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
+		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithBankAndUiFees;
 		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
 		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
 

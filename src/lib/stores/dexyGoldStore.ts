@@ -35,6 +35,7 @@ export type DexyGoldWidgetNumbers = {
 	lpAvailabeErg: bigint;
 	lpRate: bigint;
 	oracleRate: bigint;
+	oracleRateWithFees: bigint;
 	bankFreeMintExchangeRate: number;
 	bankFreeMintActivationRate: bigint;
 	bankFreeMintResetHeight: bigint;
@@ -104,9 +105,12 @@ export function calculateDexyGoldWidgetNumbers() {
 	const bankArbMintExchangeRate = -666;
 
 	// oracleRate <=
+	const oracleWithFees = (oracleRate * (1000n + 2n + 3n + 1n)) / 1000n;
 
-	const bankFreeMintAvailableDexy = 1n;
-	const bankArbMintAvailableDexy = 1n;
+	const bankFreeMintAvailableDexy =
+		bankFreeMintResetHeight > height ? bankFreeMintR5RemainingDexy : bankFreeMintResetDexy;
+	const bankArbMintAvailableDexy =
+		bankArbMintResetHeight > height ? bankArbMintR5RemainingDexy : bankArbMintResetDexy;
 
 	dexygold_widget_numbers.set({
 		bankAvailableDexy,
@@ -114,6 +118,7 @@ export function calculateDexyGoldWidgetNumbers() {
 		lpAvailabeErg: lpXIn,
 		lpRate: lpRateXy,
 		oracleRate: oracleRateXy,
+		oracleRateWithFees,
 		bankFreeMintExchangeRate,
 		bankFreeMintActivationRate,
 		bankFreeMintResetHeight,

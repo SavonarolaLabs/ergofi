@@ -316,7 +316,7 @@
 		}
 		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
 		) {
-			const oracleWithFees = $dexygold_widget_numbers.oracleRate * (1000n+2n+3n+1n)/1000n //<== ORACLE WITH FEE (APPROX)
+			const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
 			const userApproxDexyRequest = ergStringToNanoErg(fromAmount) /oracleWithFees  //<== ORACLE WITH FEE (APPROX)
 			const userDexyRequest = BigInt(toAmount)
 
@@ -331,8 +331,8 @@
 				bankFreeBetterThanLp,
 				bankFreePrice,
 				bankFreeAmount,
-			} = lastInput === 'From' ? bestOptionErgToDexyGoldInputErg(fromAmount, params, oracleWithFees, userApproxDexyRequest)
-				: bestOptionErgToDexyGoldInputDexy(userDexyRequest, params, oracleWithFees)
+			} = lastInput === 'From' ? bestOptionErgToDexyGoldInputErg(fromAmount,userApproxDexyRequest, params)
+				: bestOptionErgToDexyGoldInputDexy(userDexyRequest, params)
 
 
 			let bestAmount = bankArbBetterThanLp? bankArbAmount : bankFreeBetterThanLp? bankFreeAmount : lpSwapAmount;
@@ -352,12 +352,7 @@
 		}
 	}
 
-	function bestOptionErgToDexyGoldInputErg(
-		amountErgUserInput,
-		params,
-		oracleWithFees,
-		userApproxDexyRequest
-	) {
+	function bestOptionErgToDexyGoldInputErg(amountErgUserInput, userApproxDexyRequest, params) {
 		const {
 			amountErg,
 			amountDexy: lpSwapAmount,
@@ -369,6 +364,7 @@
 			params.swapState
 		);
 
+		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
 		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
 		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
 
@@ -414,7 +410,7 @@
 		};
 	}
 
-	function bestOptionErgToDexyGoldInputDexy(amountDexyUserInput, params, oracleWithFees) {
+	function bestOptionErgToDexyGoldInputDexy(amountDexyUserInput, params) {
 		const userDexyRequest = BigInt(amountDexyUserInput);
 		const {
 			amountErg: lpSwapAmount,
@@ -427,6 +423,7 @@
 			params.swapState
 		);
 
+		const oracleWithFees = $dexygold_widget_numbers.oracleRateWithFees;
 		const bankFreeAmountAvailable = $dexygold_widget_numbers.bankFreeMintAvailableDexy;
 		const bankArbAmountAvailable = $dexygold_widget_numbers.bankArbMintAvailableDexy;
 

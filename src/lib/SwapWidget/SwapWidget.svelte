@@ -74,6 +74,16 @@
 	import type { Currency, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import { info } from '$lib/stores/nodeInfo';
+	import {
+		anchor,
+		anchorSide,
+		getSwapTag,
+		inputTokenIds,
+		outputTokenIds,
+		type SwapIntention,
+		type SwapPreview
+	} from './swapIntention';
+	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -207,7 +217,19 @@
 				goldOracle: $oracle_erg_xau_box,
 				tracking101: $dexygold_tracking101_box,
 			}
+		
+		const inputTokenId = ERGO_TOKEN_ID
+		const outputTokenId =DEXY_GOLD.dexyTokenId
 
+		const swapIntent:SwapIntention= [{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, ticker:'DexyGold'}]
+			
+
+		const swapPreview:SwapPreview = {
+			calculatedIntent:[{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'DexyGold'}],
+			price: 123123.124312
+		}
+
+		//TO UI
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
 		) {
@@ -275,11 +297,11 @@
 			toAmount = nanoErgToErg(userErg);
 			swapPrice = price;
 		}
+		if (swapIntent.length==2 && 'output' === anchorSide(swapIntent) && inputTokenIds(swapIntent).includes(DEXY_GOLD.dexyTokenId) && outputTokenIds(swapIntent).includes(ERGO_TOKEN_ID) 
+		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
+		) {	
 
-
-		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
-		) {
-
+			console.log(getSwapTag(swapIntent))
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
 				ergStringToNanoErg(toAmount),
 				DIRECTION_BUY, //

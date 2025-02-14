@@ -1,4 +1,3 @@
-// mempoolChannels.ts
 import { writable, get } from 'svelte/store';
 import { Socket } from 'phoenix';
 import {
@@ -12,23 +11,57 @@ import { web3wallet_wallet_used_addresses } from './stores/web3wallet';
 import { info } from './stores/nodeInfo';
 import { jsonParseBigInt } from './api/ergoNode';
 
-// We store references to the Socket and the channels so we can reference them later.
 export const socketStore = writable<Socket | null>(null);
 export const infoChannelStore = writable<any>(null);
 export const sigmausdChannelStore = writable<any>(null);
 export const dexygoldChannelStore = writable<any>(null);
 export const oracleBoxesChannelStore = writable<any>(null);
 
-/**
- * Initialize and join all needed channels.
- * Return a cleanup function to be called when your component unmounts.
- */
+function convertBigInts(obj: any): any {
+	if (Array.isArray(obj)) {
+		return obj.map(convertBigInts);
+	} else if (obj && typeof obj === 'object') {
+		const copy: any = {};
+		for (const [k, v] of Object.entries(obj)) {
+			if (k === 'value' || k === 'amount') {
+				copy[k] = String(v);
+			} else {
+				copy[k] = convertBigInts(v);
+			}
+		}
+		return copy;
+	}
+	return obj;
+}
+
 export function initMempoolChannels() {
-	// 1) Create and connect the socket
+	// Create and connect the socket with proper Phoenix message handling
 	const socket = new Socket('wss://ergfi.xyz:4004/socket', {
-		decode: (rawPayload: string, callback: (decoded: any) => void) => {
-			const decoded = jsonParseBigInt(rawPayload);
-			callback(decoded);
+		decode: (rawPayload, callback) => {
+			try {
+				// Handle binary messages
+				if (rawPayload.constructor === ArrayBuffer) {
+					return callback(rawPayload); // Let Phoenix handle binary messages
+				}
+
+				// Parse the JSON string into array
+				const [join_ref, ref, topic, event, payload] = JSON.parse(rawPayload);
+
+				// Convert any BigInts in the payload
+				const convertedPayload = convertBigInts(payload);
+
+				// Return the properly structured Phoenix message
+				return callback({
+					join_ref,
+					ref,
+					topic,
+					event,
+					payload: convertedPayload
+				});
+			} catch (error) {
+				console.error('Error decoding Phoenix message:', error);
+				return callback(null);
+			}
 		}
 	});
 	socket.connect();
@@ -51,7 +84,7 @@ export function initMempoolChannels() {
 	});
 	infoChannelStore.set(infoChannel);
 
-	// 2) Join the "mempool:sigmausd_transactions" channel
+	// sigmausd transactions channel
 	const sigmausdChannelTopic = 'sigmausd_transactions';
 	const sigmausdChannelName = `mempool:${sigmausdChannelTopic}`;
 	const sigmausdChannel = socket.channel(sigmausdChannelName, {});
@@ -74,7 +107,7 @@ export function initMempoolChannels() {
 
 	sigmausdChannelStore.set(sigmausdChannel);
 
-	// 3) Join the "mempool:oracle_boxes" channel
+	// oracle boxes channel
 	const oracleBoxesChannelTopic = 'oracle_boxes';
 	const oracleBoxesChannelName = `mempool:${oracleBoxesChannelTopic}`;
 	const oracleBoxesChannel = socket.channel(oracleBoxesChannelName, {});
@@ -94,7 +127,7 @@ export function initMempoolChannels() {
 
 	oracleBoxesChannelStore.set(oracleBoxesChannel);
 
-	// 4) Join the "mempool:dexygold_transactions" channel
+	// dexygold transactions channel
 	const dexygoldChannelTopic = 'dexygold_transactions';
 	const dexygoldChannelName = `mempool:${dexygoldChannelTopic}`;
 	const dexygoldChannel = socket.channel(dexygoldChannelName, {});
@@ -102,13 +135,15 @@ export function initMempoolChannels() {
 	dexygoldChannel
 		.join()
 		.receive('ok', (resp) => {
-			//console.log('dexygoldChannel history:');
-			//console.log(resp.history);
+			// Handle initial response if needed
 		})
 		.receive('error', (resp) => {
 			console.error('Unable to join dexygold_transactions:', resp);
 		});
 
+	dexygoldChannelStore.set(dexygoldChannel);
+
+	// Return cleanup function
 	return () => {
 		sigmausdChannel.leave();
 		oracleBoxesChannel.leave();
@@ -116,11 +151,6 @@ export function initMempoolChannels() {
 		socket.disconnect();
 	};
 }
-
-/**
- * Push a "submit_tx" event to the sigmausd_channel,
- * which the server handles in `handle_in("submit_tx", ...)`.
- */
 
 export function submitTx(transactionData: any, interactionId: string) {
 	const sigmausdChannel = get(sigmausdChannelStore);
@@ -134,11 +164,9 @@ export function submitTx(transactionData: any, interactionId: string) {
 		.push('submit_tx', { transaction: transactionData })
 		.receive('ok', (resp) => {
 			console.log('TX Success:', resp);
-			// Handle success in your UI, e.g. show a success toast, update state, etc.
 		})
 		.receive('error', (resp) => {
 			cancelPreparedInteractionById(interactionId);
 			console.error('TX Error:', resp);
-			// Handle error in your UI, e.g. show an error message
 		});
 }

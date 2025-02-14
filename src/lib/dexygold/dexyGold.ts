@@ -24,6 +24,7 @@ import { DEXY_GOLD } from './dexyConstants';
 import type { EIP12UnsignedTransaction } from '@fleet-sdk/common';
 import type { DexyGoldNumbers } from '$lib/stores/dexyGoldStore';
 import { ergStringToNanoErg } from '$lib/utils';
+import type { SwapIntention } from '$lib/SwapWidget/swapIntention';
 
 export type LpDexySwapResult = {
 	amountErg: bigint;
@@ -413,6 +414,7 @@ export function dexyGoldLpMintInputErgPrice(
 		supplyLpIn
 	);
 	const price = Number(sharesUnlocked) / Number(inputErg);
+
 	return { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price };
 }
 export function dexyGoldLpMintInputErgTx(

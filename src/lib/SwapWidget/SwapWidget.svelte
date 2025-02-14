@@ -81,6 +81,8 @@
 		getSwapTag,
 		inputTokenIds,
 		outputTokenIds,
+		setAmount,
+		swapAmount,
 		type SwapIntention,
 		type SwapPreview
 	} from './swapIntention';
@@ -187,8 +189,21 @@
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
-			//-----
-			doRecalcDexyGoldContract();
+			//----------------------------
+			const inputTokenId = ERGO_TOKEN_ID;
+			const outputTokenId = DEXY_GOLD.dexyTokenId;
+			const output2TokenId = DEXY_GOLD.lpTokenId;
+
+			const swapIntent: SwapIntention = [
+				{ side: 'input', tokenId: inputTokenId, ticker: 'ERG' },
+				//{ side: 'input', tokenId: inputTokenId, value: '1.1', ticker: 'ERG' },
+				{ side: 'input', tokenId: outputTokenId, value: '50', amount: 50n, ticker: 'DexyGold' },
+				{ side: 'output', tokenId: output2TokenId, ticker: 'DexyLP' }
+			];
+			//swapIntent[0].amount = valueToAmount(swapIntent[0]);
+			//swapIntent[1].amount = valueToAmount(swapIntent[1]);
+			//----------------------------
+			const swapPreview = doRecalcDexyGoldContract(swapIntent);
 		}
 	}
 	function doRecalcSigUsdContract() {
@@ -204,144 +219,53 @@
 		}
 	}
 
-	//prettier-ignore
-	async function doRecalcDexyGoldContract() {
+	function doRecalcDexyGoldContract(swapIntent: SwapIntention): SwapPreview {
 		let dexyGoldUtxo = {
-				lpSwapIn: $dexygold_lp_swap_box,
-				lpMintIn: $dexygold_lp_mint_box,
-				lpRedeemIn: $dexygold_lp_redeem_box,
-				freeMintIn:$dexygold_bank_free_mint_box,
-				bankIn: $dexygold_bank_box,
-				buybankIn: $dexygold_buyback_box,
-				arbMintIn:$dexygold_bank_arbitrage_mint_box,
-				lpIn: $dexygold_lp_box,
-				goldOracle: $oracle_erg_xau_box,
-				tracking101: $dexygold_tracking101_box,
-			}
-		
-		const inputTokenId = ERGO_TOKEN_ID
-		const outputTokenId =DEXY_GOLD.dexyTokenId 
-		//const outputTokenId =SigUSD_TOKEN_ID 
+			lpSwapIn: $dexygold_lp_swap_box,
+			lpMintIn: $dexygold_lp_mint_box,
+			lpRedeemIn: $dexygold_lp_redeem_box,
+			freeMintIn: $dexygold_bank_free_mint_box,
+			bankIn: $dexygold_bank_box,
+			buybankIn: $dexygold_buyback_box,
+			arbMintIn: $dexygold_bank_arbitrage_mint_box,
+			lpIn: $dexygold_lp_box,
+			goldOracle: $oracle_erg_xau_box,
+			tracking101: $dexygold_tracking101_box
+		};
 
+		console.log({ swapIntent });
+		const swapTag = getSwapTag(swapIntent);
+		const a = anchor(swapIntent);
 
+		let calculatedIntent = structuredClone(swapIntent);
+		let swapPreview: SwapPreview;
+		if (swapTag == 'ERG+DEXYGOLD_ERG/DEXYLP') {
+			const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
+				dexyGoldLpMintInputErgPrice(swapAmount(swapIntent), $fee_mining, dexyGoldUtxo);
+			setAmount(calculatedIntent, 'input', DEXY_GOLD.dexyTokenId, contractDexy);
+			setAmount(calculatedIntent, 'output', DEXY_GOLD.lpTokenId, sharesUnlocked);
+			swapPreview = { calculatedIntent, price };
+		}
 
-		//1_100_000_000n
-		const swapIntent:SwapIntention= [{side:'output',tokenId:inputTokenId, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, ticker:'DexyGold', value:'2',}]
-		swapIntent[0].amount = valueToAmount(swapIntent[0])
-		swapIntent[1].amount = valueToAmount(swapIntent[1])
-		console.log(swapIntent)
+		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP') {
+			const { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =
+				dexyGoldLpMintInputDexyPrice(BigInt(fromAmount2), $fee_mining, dexyGoldUtxo);
 
-		const swapPreview:SwapPreview = {
-			calculatedIntent:[{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'DexyGold'}],
-			price: 123123.124312
+			setAmount(calculatedIntent, 'input', ERGO_TOKEN_ID, contractErg);
+			setAmount(calculatedIntent, 'output', DEXY_GOLD.lpTokenId, sharesUnlocked);
+			swapPreview = { calculatedIntent, price };
+			console.log({ swapPreview });
 		}
-		//TO UI
-
-		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
-		) {
-			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =dexyGoldLpMintInputErgPrice(
-				ergStringToNanoErg(fromAmount),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			fromAmount2 = contractDexy.toString();
-			toAmount = sharesUnlocked.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
-		) {
-			const{ uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =dexyGoldLpMintInputDexyPrice(
-				BigInt(fromAmount2),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			fromAmount = nanoErgToErg(inputErg);
-			toAmount = sharesUnlocked.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken
-		) {
-			const{ uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpMintInputSharesPrice(
-				BigInt(toAmount),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			fromAmount = nanoErgToErg(inputErg);
-			fromAmount2 = contractDexy.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
-		) {
-			const{ uiSwapFee, userErg, contractErg, contractDexy, price }=dexyGoldLpRedeemInputSharesPrice(
-				BigInt(fromAmount),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			toAmount = nanoErgToErg(userErg);
-			toAmount2 = contractDexy.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
-		) {
-			const{ uiSwapFee, contractErg, contractDexy, sharesUnlocked, price }=dexyGoldLpRedeemInputErgPrice(
-				ergStringToNanoErg(toAmount),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			fromAmount = sharesUnlocked.toString();
-			toAmount2 = contractDexy.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'
-		) {
-			const{ uiSwapFee, userErg, contractErg, sharesUnlocked, price }=dexyGoldLpRedeemInputDexyPrice(
-				BigInt(toAmount2),
-				$fee_mining,
-				dexyGoldUtxo
-			)
-			fromAmount = sharesUnlocked.toString();
-			toAmount = nanoErgToErg(userErg);
-			swapPrice = price;
-		}
-		if (swapIntent.length==2 && 'output' === anchorSide(swapIntent) && inputTokenIds(swapIntent).includes(DEXY_GOLD.dexyTokenId) && outputTokenIds(swapIntent).includes(ERGO_TOKEN_ID) 
-		//if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
-		) {	
-
-			console.log(getSwapTag(swapIntent))
-			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
-				ergStringToNanoErg(toAmount),
-				DIRECTION_BUY, //
-				$fee_mining,
-				dexyGoldUtxo
-			);
-			fromAmount = amountDexy.toString();
-			swapPrice = price;
-		}
-		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'
-		) {
-			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
-				BigInt(fromAmount),
-				DIRECTION_BUY,
-				$fee_mining,
-				dexyGoldUtxo
-			);
-			toAmount = nanoErgToErg(amountErg);
-			swapPrice = price;
-		}
-		if ( fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'
-		) {
-
-			const nanoAmount = fromAmount? ergStringToNanoErg(fromAmount):0n
-			const toAmountBigInt =toAmount? BigInt(toAmount): 0n
-			const { bestAmount, bestPrice } = bestOptionErgToDexyGold(lastInput, nanoAmount, toAmountBigInt, dexyGoldUtxo, $dexygold_widget_numbers, $fee_mining);
-
-			swapPrice = bestPrice
-			if(lastInput == 'From'){
-				toAmount = bestAmount.toString();
-			}else{
-				fromAmount = nanoErgToErg(bestAmount);
-			}
-		}
+		//if(swapTag== 'ERG+DEXYGOLD_DEXYLP_DEXYLP'){	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); }
+		//if(swapTag== 'DEXYLP_DEXYLP/ERG+DEXYGOLD'){	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); }
+		//if(swapTag== 'DEXYLP/ERG+DEXYGOLD_ERG'){ 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); }
+		//if(swapTag== 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD'){unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); }
+		//
+		//if(swapTag== 'ERG_ERG/DEXYGOLD'){ 			unsignedTx = dexyGoldBestBuyDexyGoldInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); }
+		//if(swapTag== 'ERG/DEXYGOLD_DEXYGOLD'){ 		unsignedTx = dexyGoldBestBuyDexyGoldInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); }
+		//if(swapTag== 'DEXYGOLD_DEXYGOLD/ERG'){		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); }
+		//if(swapTag== 'DEXYGOLD/ERG_ERG'){			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); }
+		return swapPreview;
 	}
 
 	/* ---------------------------------------

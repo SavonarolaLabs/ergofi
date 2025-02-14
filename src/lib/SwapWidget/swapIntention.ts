@@ -56,3 +56,12 @@ export function getSwapTag(swapIntent: SwapIntention): string {
 	}
 	return (inputStr + '/' + outputStr).toUpperCase();
 }
+
+export function setAmount(
+	swapIntention: SwapIntention,
+	side: SwapSide,
+	tokenId: string,
+	amount: bigint
+) {
+	swapIntention.find((i) => i.tokenId == tokenId && i.side == side)!.amount = amount;
+}

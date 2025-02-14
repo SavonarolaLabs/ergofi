@@ -50,10 +50,12 @@ sub {
 
 :root {
 	--widget-border-color: #1f2937;
+	--text-color: #1f2937;
+	--widget-bg-color: #f5f2a8ed;
 }
 
 .border-color {
-	border-color: #16151f;
+	border-color: var(--widget-border-color);
 }
 .shake {
 	animation: shake 0.3s;

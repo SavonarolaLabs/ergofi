@@ -11,8 +11,8 @@
 	id="toDropdownMenu"
 	style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;
 left: {toBtnRect.left}px;
-top:{toBtnRect.top - 4}px; border-right:none"
-	class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-gray-800 shadow-md ring-1 ring-black ring-opacity-5"
+top:{toBtnRect.top - 4}px;"
+	class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-[var(--widget-bg-color)] shadow-md ring-1 ring-black ring-opacity-5"
 >
 	<div>
 		{#each toCurrencies as c, i}

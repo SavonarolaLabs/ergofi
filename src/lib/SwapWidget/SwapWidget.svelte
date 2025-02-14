@@ -682,15 +682,14 @@
 </script>
 
 <!-- UI Layout -->
-<div class="widget relative" class:shake>
+<div class="relative" class:shake>
 	<div
 		class="clipped mx-auto w-full max-w-md rounded-xl rounded-br-none border border-[var(--widget-border-color)]"
 		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
 		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
-		style="padding:8px"
 	>
 		<div
-			class="flex flex-col transition-all"
+			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--widget-bg-color)] transition-all"
 			class:justify-between={fromCurrency.isLpPool}
 			style={fromCurrency.isLpToken || toCurrency.isLpToken
 				? 'min-height:258px'
@@ -698,8 +697,8 @@
 		>
 			<div>
 				<!-- FROM SELECTION -->
-				<div class="rounded-md rounded-bl-none bg-gray-800">
-					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
+				<div class="rounded-md rounded-bl-none">
+					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 						<span class="text-sm"
 							>{fromCurrency.isLpPool
 								? 'Add Liquidity'
@@ -708,7 +707,7 @@
 									: 'From'}</span
 						>
 						<button
-							class="flex items-center gap-1 text-sm hover:text-white"
+							class="hover: flex items-center gap-1 text-sm"
 							on:click={handleFromBalanceClick}
 						>
 							<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
@@ -732,16 +731,17 @@
 					</div>
 
 					<div
-						class="relative flex flex-col bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
+						class="relative flex flex-col focus-within:ring-1 focus-within:ring-blue-500"
 						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
 							? '58px'
 							: '116px'}; "
 					>
-						<div class="flex">
+						<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
 							<!-- FROM AMOUNT -->
 							<input
 								type="number"
-								class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
+								style=""
+								class="w-[256px] bg-transparent text-3xl outline-none"
 								placeholder="0"
 								min="0"
 								bind:value={fromAmount}
@@ -754,11 +754,11 @@
 								id="fromDropdownBtn"
 								type="button"
 								style="width:271px; border-right:none; margin-bottom:-4px; border-width:4px;  height:62px;"
-								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none px-3 py-2 font-medium outline-none"
 								on:click={toggleFromDropdown}
 							>
 								{#if fromCurrency.isLpToken}
-									<div class="flex items-center gap-3 text-white">
+									<div class="flex items-center gap-3">
 										<div class="text-lg text-blue-300"><Tint></Tint></div>
 										<div class=" leading-0 flex w-full flex-col justify-center text-xs">
 											<div>Liquidity</div>
@@ -774,7 +774,7 @@
 								{/if}
 								{#if fromCurrency.isToken || fromCurrency.isLpToken}
 									<svg
-										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
 										fill={fromCurrency.isLpToken ? 'gray' : 'currentColor'}
@@ -792,7 +792,7 @@
 								<div style="border-top-width:4px;" class="border-color w-[256px]">
 									<input
 										type="number"
-										class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
+										class="w-[256px] bg-transparent text-3xl outline-none"
 										placeholder="0"
 										min="0"
 										bind:value={fromAmount2}
@@ -808,7 +808,7 @@
 									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
 										? 4
 										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-									class=" border-color flex items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+									class=" border-color flex items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
 									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
@@ -818,7 +818,7 @@
 									</div>
 
 									<svg
-										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
 										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
@@ -837,8 +837,8 @@
 			</div>
 
 			<!-- TO SELECTION -->
-			<div class="bg-gray-800">
-				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3 text-gray-400">
+			<div class="">
+				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabled}>
 						{getLabelText()}</span
 					>
@@ -860,16 +860,16 @@
 				</div>
 
 				<div
-					class="relative flex flex-col rounded-lg rounded-bl-none bg-gray-800 focus-within:ring-1 focus-within:ring-blue-500"
+					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
 						? '58px'
 						: '116px'}; "
 				>
-					<div class="flex">
+					<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
 						<!-- TO AMOUNT -->
 						<input
 							type="number"
-							class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
+							class="w-[256px] bg-transparent text-3xl outline-none"
 							placeholder="0"
 							min="0"
 							bind:value={toAmount}
@@ -882,12 +882,12 @@
 							id="toDropdownBtn"
 							type="button"
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
-							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
 							disabled={getAllowedToCurrencies(fromCurrency).length < 2}
 							on:click={toggleToDropdown}
 						>
 							{#if toCurrency.isLpToken}
-								<div class="flex items-center gap-3 text-white">
+								<div class="flex items-center gap-3">
 									<div class="text-lg text-blue-300"><Tint></Tint></div>
 									<div class=" leading-0 flex w-full flex-col justify-center text-xs">
 										<div>Liquidity</div>
@@ -903,7 +903,7 @@
 							{/if}
 							{#if getAllowedToCurrencies(fromCurrency).length > 1}
 								<svg
-									class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+									class="pointer-events-none ml-2 h-6 w-6"
 									xmlns="http://www.w3.org/2000/svg"
 									viewBox="0 0 24 24"
 									fill="currentColor"
@@ -921,7 +921,7 @@
 							<div style="border-top-width:4px;" class="border-color w-[256px]">
 								<input
 									type="number"
-									class="w-[256px] bg-transparent text-3xl text-gray-100 outline-none"
+									class="w-[256px] bg-transparent text-3xl outline-none"
 									placeholder="0"
 									min="0"
 									bind:value={toAmount2}
@@ -937,7 +937,7 @@
 								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-right-radius:0px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
 									? 4
 									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
-								class="border-color flex w-full items-center justify-between bg-gray-800 px-3 py-2 font-medium text-gray-100 outline-none"
+								class="border-color flex w-full items-center justify-between px-3 py-2 font-medium outline-none"
 								on:click={toggleToDropdown}
 								disabled={getAllowedToCurrencies(fromCurrency).length < 2}
 							>
@@ -948,7 +948,7 @@
 								</div>
 								{#if getAllowedToCurrencies(fromCurrency).length > 1}
 									<svg
-										class="pointer-events-none ml-2 h-6 w-6 text-gray-100"
+										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
 										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
@@ -969,7 +969,7 @@
 			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
 			}`}
-			style={'margin-bottom:6px'}
+			style={'margin-bottom:2px'}
 		>
 			<input
 				type="range"
@@ -980,7 +980,7 @@
 				on:change={handleFeeChange}
 				class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700"
 			/>
-			<div class="mt-2 text-center text-sm text-gray-400">
+			<div class="mt-2 text-center text-sm">
 				Miner Fee: {minerFee.toFixed(2)} ERG
 			</div>
 		</div>
@@ -989,12 +989,12 @@
 			<a
 				target="_blank"
 				href={getWalletInstallLink()}
-				class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium text-white hover:bg-orange-500"
+				class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium hover:bg-orange-500"
 			>
 				Install Wallet
 			</a>
 		{:else}
-			<div class="flex">
+			<div class="flex bg-black">
 				<button
 					style="display:none"
 					on:click={toggleFeeSlider}
@@ -1027,7 +1027,7 @@
 
 <style>
 	.clip-short {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6.4% 100%, 0% 90.2%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6% 100%, 0% 90.7%);
 	}
 	.clipped {
 		position: relative;

@@ -11,6 +11,9 @@
 		isMobile =
 			/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent) ||
 			window.matchMedia('(max-width: 768px)').matches;
+
+		document.documentElement.style.setProperty('--widget-border-color', '#1f2937');
+		document.documentElement.style.setProperty('--widget-bg-color', '#f5f2a8ed');
 	});
 </script>
 
@@ -31,7 +34,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="tachikoma-bg flex flex-col" style="height:100vh;">
+	<div class="powwowgirl-bg flex flex-col" style="height:100vh;">
 		<Navbar></Navbar>
 		<div class="flex grow">
 			<div class="flex flex-col">
@@ -49,13 +52,14 @@
 {/if}
 
 <style>
-	.tachikoma-old-bg {
+	.powwowgirl-bg {
+		background-color: #f5f2a8;
 		background-size: contain;
-		background-image: url('/atachikoma.png');
+		background-image: url('/powwowgirl2.png');
 		background-repeat: no-repeat;
 		background-position-x: right;
 		background-position-y: bottom;
-		background-size: 640px;
+		background-size: 100vh;
 		z-index: -2;
 	}
 	.tachikoma-bg {

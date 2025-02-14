@@ -42,8 +42,8 @@
 		justify-content: center;
 		position: absolute;
 		top: 2px;
-		left: 0px;
-		right: 0px;
+		left: 2px;
+		right: 2px;
 		bottom: 2px;
 		clip-path: polygon(100% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}

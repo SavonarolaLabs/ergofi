@@ -102,6 +102,33 @@ const DEXY_LP_SWAP_TREE = tree(DEXY_LP_SWAP_ADDRESS);
 const DEXY_LP_REDEEM_TREE = tree(DEXY_LP_REDEEM_ADDRESS);
 const DEXY_GORT_DEV_EMISSION_TREE = tree(DEXY_GORT_DEV_EMISSION_ADDRESS);
 
+export type VitestErgoTrees = {
+	trackingErgoTree: string;
+	bankUpdateErgoTree: string;
+	ballotErgoTree: string;
+	interventionErgoTree: string;
+	interventionUpdateErgoTree: string;
+	buybackErgoTree: string;
+	payoutErgoTree: string;
+	freeMintErgoTree: string;
+	bankErgoTree: string;
+	arbitrageMintErgoTree: string;
+	lpErgoTree: string;
+	lpMintErgoTree: string;
+	lpRedeemErgoTree: string;
+	extractScriptErgoTree: string;
+	extractUpdateErgoTree: string;
+	//DEXY_LP_POOL_EXTRACT,
+	//DEXY_LP_POOL_MINT,
+	swapErgoTree: string;
+	//DEXY_LP_POOL_REDEEM,
+	//DEXY_GORT_DEV_EMISSION,
+	lpSwapBuyV1ErgoTree: string;
+	lpSwapSellV1ErgoTree: string;
+	oracleErgoTree: string; //<----- // sigmaProp(true)
+	fakeScriptErgoTree: string; // sigmaProp(true)
+};
+
 export const vitestErgoTrees = {
 	trackingErgoTree: DEXY_TRACKING_TREE,
 	bankUpdateErgoTree: DEXY_BANK_UPDATE_TREE,
@@ -241,6 +268,24 @@ export const mainnetTokenIds: MainnetTokenIds = {
 // const adresses[7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9] = addr
 // const ergoTree[7ba2a85fdb302a181578b1f64cb4a533d89b3f8de4159efece75da41041537f9] = tree
 
+export type ContractConfigJs = {
+	initialDexyTokens: bigint;
+	feeNumLp: bigint;
+	feeDenomLp: bigint;
+	initialLp: bigint;
+	intMax: bigint;
+	epochLength: bigint;
+	intZero: bigint; //??
+	longZero: bigint; //??
+	//LP dep lpToken: ${initialLp - 6400000000L}
+	T_arb: bigint;
+	T_free: bigint;
+	T_buffer_5: bigint;
+	bankFeeNum: bigint;
+	buybackFeeNum: bigint;
+	feeDenom: bigint;
+};
+
 export const contractConfig = {
 	initialDexyTokens: '10000000000000L',
 	feeNumLp: '997L',
@@ -260,13 +305,21 @@ export const contractConfig = {
 	feeDenom: 1000n
 };
 
+export type DexyAddresses = {
+	interventionAddress: string;
+	interventionUpdateAddress: string;
+	extractUpdateAddress: string;
+};
+
 export const dexyAddresses = {
 	interventionAddress: DEXY_BANK_INTERVENTION_ADDRESS,
 	interventionUpdateAddress: DEXY_BANK_INTERVENTION_UPDATE_ADDRESS,
 	extractUpdateAddress: DEXY_BANK_EXTRACT_UPDATE_ADDRESS
 };
 
-export const DEXY_GOLD = {
+export type DexyGoldContants = MainnetTokenIds & ContractConfigJs & DexyAddresses & VitestErgoTrees;
+
+export const DEXY_GOLD: DexyGoldContants = {
 	...mainnetTokenIds,
 	...scalaToJsNumbers(contractConfig),
 	...dexyAddresses,
@@ -300,7 +353,7 @@ export const contractCompileVariables = sortKeysByLength({
 // vitest helpers
 export const vitestContractConfig = scalaToJsNumbers(contractConfig);
 
-function scalaToJsNumbers(o: Object) {
+function scalaToJsNumbers(o: Object): ContractConfigJs {
 	return Object.fromEntries(
 		Object.entries(o).map(([key, value]) => {
 			if (typeof value === 'string') {

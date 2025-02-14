@@ -32,6 +32,7 @@ import { BOB_MNEMONIC } from '$lib/private/mnemonics';
 import {
 	applyFee,
 	applyFeeSell,
+	feeTokensAndErgForward,
 	reverseFee,
 	reverseFeeSell,
 	type Direction
@@ -1092,5 +1093,84 @@ describe('Lp Redeem ', async () => {
 		);
 		const signedTx = await signTx(unsignedTx, BOB_MNEMONIC);
 		expect(signedTx).toBeTruthy();
+	});
+});
+
+describe('feeTest', () => {
+	it.only('forward fee works', () => {
+		const inputTokens = [
+			{
+				tokenId: 'alpha',
+				amount: 10000n
+			},
+			{
+				tokenId: 'beta',
+				amount: 1000n
+			}
+		];
+		const inputErg = 100_000_000n;
+		const feeMining = 10_000_000n;
+
+		const { contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens } =
+			feeTokensAndErgForward(inputErg, inputTokens, feeMining);
+
+		expect(uiSwapFeeErg).toBe(100000n);
+		expect(uiSwapFeeInputTokens[0].amount).toBe(10n);
+		expect(uiSwapFeeInputTokens[1].amount).toBe(1n);
+	});
+	it.only('forward fee multiplicator works', () => {
+		const inputTokens = [
+			{
+				tokenId: 'alpha',
+				amount: 10000n
+			},
+			{
+				tokenId: 'beta',
+				amount: 1000n
+			}
+		];
+		const inputErg = 100_000_000n;
+		const feeMining = 10_000_000n;
+		const multiplicatorErg = 3n;
+		const multiplicatorDenomErg = 1n;
+
+		const multiplicatorTokens = 1n;
+		const multiplicatorDenomTokens = 2n;
+
+		const { contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens } =
+			feeTokensAndErgForward(
+				inputErg,
+				inputTokens,
+				feeMining,
+				multiplicatorErg,
+				multiplicatorDenomErg,
+				multiplicatorTokens,
+				multiplicatorDenomTokens
+			);
+
+		expect(uiSwapFeeErg).toBe(3n * 100000n);
+		expect(uiSwapFeeInputTokens[0].amount).toBe((10n * 1n) / 2n);
+		expect(uiSwapFeeInputTokens[1]).toBe(undefined);
+	});
+	it.only('forward fee less than Minimal Fee', () => {
+		const inputTokens = [
+			{
+				tokenId: 'alpha',
+				amount: 10000n
+			},
+			{
+				tokenId: 'beta',
+				amount: 1000n
+			}
+		];
+		const inputErg = 500_000n;
+		const feeMining = 100_000n;
+
+		const { contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens } =
+			feeTokensAndErgForward(inputErg, inputTokens, feeMining);
+		console.log({ contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens });
+		expect(uiSwapFeeErg).toBe(100_000n);
+		expect(uiSwapFeeInputTokens[0].amount).toBe(10n);
+		expect(uiSwapFeeInputTokens[1].amount).toBe(1n);
 	});
 });

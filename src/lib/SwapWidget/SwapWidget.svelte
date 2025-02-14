@@ -187,6 +187,7 @@
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
+			//-----
 			doRecalcDexyGoldContract();
 		}
 	}
@@ -234,7 +235,6 @@
 			calculatedIntent:[{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'DexyGold'}],
 			price: 123123.124312
 		}
-
 		//TO UI
 
 		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken

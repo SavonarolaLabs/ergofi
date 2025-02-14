@@ -59,7 +59,8 @@
 		ergStringToNanoErg,
 		isOwnTx,
 		nanoErgToErg,
-		usdStringToCentBigInt
+		usdStringToCentBigInt,
+		valueToAmount
 	} from '../utils';
 	import {
 		currencyERG,
@@ -218,11 +219,16 @@
 			}
 		
 		const inputTokenId = ERGO_TOKEN_ID
-		const outputTokenId =DEXY_GOLD.dexyTokenId
+		const outputTokenId =DEXY_GOLD.dexyTokenId 
+		//const outputTokenId =SigUSD_TOKEN_ID 
 
-		const swapIntent:SwapIntention= [{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, ticker:'DexyGold'}]
-	
-		
+
+
+		//1_100_000_000n
+		const swapIntent:SwapIntention= [{side:'output',tokenId:inputTokenId, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, ticker:'DexyGold', value:'2',}]
+		swapIntent[0].amount = valueToAmount(swapIntent[0])
+		swapIntent[1].amount = valueToAmount(swapIntent[1])
+		console.log(swapIntent)
 
 		const swapPreview:SwapPreview = {
 			calculatedIntent:[{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'DexyGold'}],

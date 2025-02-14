@@ -204,7 +204,6 @@
 
 	//prettier-ignore
 	async function doRecalcDexyGoldContract() {
-		// 4 from 10
 		let dexyGoldUtxo = {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpMintIn: $dexygold_lp_mint_box,
@@ -222,7 +221,8 @@
 		const outputTokenId =DEXY_GOLD.dexyTokenId
 
 		const swapIntent:SwapIntention= [{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, ticker:'DexyGold'}]
-			
+	
+		
 
 		const swapPreview:SwapPreview = {
 			calculatedIntent:[{side:'output',tokenId:inputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'ERG'},{side:'input',tokenId:outputTokenId, amount:1_100_000_000n, value:'1.1', ticker:'DexyGold'}],

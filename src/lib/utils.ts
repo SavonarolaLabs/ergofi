@@ -4,6 +4,14 @@ import { TOKEN_BANK_NFT, type MempoolTransaction, type Output } from './api/ergo
 import { ErgoAddress } from '@fleet-sdk/core';
 import { formatDistanceToNowStrict } from 'date-fns';
 import numeral from 'numeral';
+import type { SwapRow } from './SwapWidget/swapIntention';
+import { ergoTokens } from './stores/ergoTokens';
+
+export function valueToAmount(swapRow: SwapRow): bigint {
+	const multiplicator = 10 ** ergoTokens[swapRow.tokenId].decimals;
+	const pureValue = swapRow.value!.replaceAll(',', '');
+	return BigInt(BigNumber(pureValue).multipliedBy(multiplicator).toString());
+}
 
 export function ergStringToNanoErg(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());

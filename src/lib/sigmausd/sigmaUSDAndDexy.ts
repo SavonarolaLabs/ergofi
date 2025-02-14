@@ -118,10 +118,12 @@ function applyFeeErgForward(
 	inputErg: bigint,
 	feeMining: bigint,
 	multiplicator: bigint = 1n,
-	multiplicatorDenom: bigint = 1n
+	multiplicatorDenom: bigint = 1n,
+	when: string = 'before' // after
 ) {
 	const minimalErgFee = 100_000n; // <== To Change? Global const?
 	let uiSwapFeeErg = forwardFee(inputErg, multiplicator, multiplicatorDenom);
+
 	uiSwapFeeErg = uiSwapFeeErg < minimalErgFee ? minimalErgFee : uiSwapFeeErg;
 	const contractErg = inputErg - feeMining - uiSwapFeeErg;
 	return { contractErg, uiSwapFeeErg };
@@ -225,4 +227,16 @@ function backwardFee(
 	multiplicatorDenom: bigint = 1n
 ) {
 	return (amount * FEE_UI * multiplicator) / (FEE_UI_DENOM - FEE_UI * multiplicator) /multiplicatorDenom;
+}
+
+function feeLogic() {
+	const contractInputErgOutputDexy = '';
+	//if Input => Forward
+	//if fee ERG => Forward = OK
+	//[Input ERG / InputTokens] => - % - mining => [ Contract Erg / InputTokens ]
+
+	//if Output => Backward
+	//if fee Dexy
+	//
+	//Take MinFeeBefore => Contract => Dexy + ForwardDexy
 }

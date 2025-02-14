@@ -1168,9 +1168,43 @@ describe('feeTest', () => {
 
 		const { contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens } =
 			feeTokensAndErgForward(inputErg, inputTokens, feeMining);
-		console.log({ contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens });
 		expect(uiSwapFeeErg).toBe(100_000n);
 		expect(uiSwapFeeInputTokens[0].amount).toBe(10n);
 		expect(uiSwapFeeInputTokens[1].amount).toBe(1n);
+	});
+	it.only('forward fee Zero Tokens + Minimal Erg', () => {
+		const inputTokens = [
+			{
+				tokenId: 'alpha',
+				amount: 10000n
+			},
+			{
+				tokenId: 'beta',
+				amount: 1000n
+			}
+		];
+		const inputErg = 100_000_000n;
+		const feeMining = 10_000_000n;
+		const multiplicatorErg = 0n; //<==
+		const multiplicatorDenomErg = 1n;
+
+		const multiplicatorTokens = 0n; //<==
+		const multiplicatorDenomTokens = 1n;
+
+		const { contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens } =
+			feeTokensAndErgForward(
+				inputErg,
+				inputTokens,
+				feeMining,
+				multiplicatorErg,
+				multiplicatorDenomErg,
+				multiplicatorTokens,
+				multiplicatorDenomTokens
+			);
+
+		console.log({ contractErg, uiSwapFeeErg, contractInputTokens, uiSwapFeeInputTokens });
+		expect(uiSwapFeeErg).toBe(100000n);
+		expect(uiSwapFeeInputTokens[0]).toBe(undefined);
+		expect(uiSwapFeeInputTokens[1]).toBe(undefined);
 	});
 });

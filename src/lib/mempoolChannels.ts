@@ -10,6 +10,7 @@ import {
 import { handleOracleBoxesUpdate, updateBestBankBox } from './stores/bank';
 import { web3wallet_wallet_used_addresses } from './stores/web3wallet';
 import { info } from './stores/nodeInfo';
+import { jsonParseBigInt } from './api/ergoNode';
 
 // We store references to the Socket and the channels so we can reference them later.
 export const socketStore = writable<Socket | null>(null);
@@ -24,7 +25,12 @@ export const oracleBoxesChannelStore = writable<any>(null);
  */
 export function initMempoolChannels() {
 	// 1) Create and connect the socket
-	const socket = new Socket('wss://ergfi.xyz:4004/socket', { params: {} });
+	const socket = new Socket('wss://ergfi.xyz:4004/socket', {
+		decode: (rawPayload: string, callback: (decoded: any) => void) => {
+			const decoded = jsonParseBigInt(rawPayload);
+			callback(decoded);
+		}
+	});
 	socket.connect();
 	socketStore.set(socket);
 

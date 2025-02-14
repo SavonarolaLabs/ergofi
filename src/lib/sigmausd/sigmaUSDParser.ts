@@ -1,5 +1,5 @@
 import type { NodeBox } from '../stores/bank.types';
-import { decodeBigInt } from '../utils';
+import { parseBigInt } from '../utils';
 
 export type ParsedSigUsdBankBox = {
 	inErg: bigint;
@@ -17,8 +17,8 @@ export function parseSigUsdBankBox(bankBox: NodeBox): ParsedSigUsdBankBox {
 	const inErg = BigInt(bankBox.value);
 	const inSigUSD = BigInt(bankBox.assets[0].amount);
 	const inSigRSV = BigInt(bankBox.assets[1].amount);
-	const inCircSigUSD = decodeBigInt(bankBox.additionalRegisters.R4);
-	const inCircSigRSV = decodeBigInt(bankBox.additionalRegisters.R5);
+	const inCircSigUSD = parseBigInt(bankBox.additionalRegisters.R4);
+	const inCircSigRSV = parseBigInt(bankBox.additionalRegisters.R5);
 
 	return {
 		inErg,
@@ -30,7 +30,7 @@ export function parseSigUsdBankBox(bankBox: NodeBox): ParsedSigUsdBankBox {
 }
 
 export function parseErgUsdOracleBox(oracleBox: NodeBox): ParsedErgUsdOracleBox {
-	const oraclePrice = decodeBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
+	const oraclePrice = parseBigInt(oracleBox.additionalRegisters.R4) / 100n; // nanoerg for cent
 	return {
 		oraclePrice
 	};

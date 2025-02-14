@@ -6,6 +6,7 @@ import type { Amount, TokenAmount, FleetPlugin } from '@fleet-sdk/core';
 import { blake2b256, hex } from '@fleet-sdk/crypto';
 import { parse, SByte, SColl, SGroupElement, SInt, SLong, SSigmaProp } from '@fleet-sdk/serializer';
 import { ERG_TOKEN_ID } from './loansConstants';
+import { parseBigInt } from './utils';
 
 export type OpenOrderType = 'on-close' | 'fixed-height';
 
@@ -175,7 +176,7 @@ export function CloseOrderPlugin(
 		if (!orderBox.additionalRegisters.R7)
 			throw new Error('Invalid order. Lend term is no present.');
 
-		const amount = parse<bigint>(orderBox.additionalRegisters.R5);
+		const amount = parseBigInt(orderBox.additionalRegisters.R5);
 		const term = parse<number>(orderBox.additionalRegisters.R7);
 		if (term >= STORAGE_PERIOD) {
 			throw `The term is over storage rent period of ${STORAGE_PERIOD} blocks.`;
@@ -193,7 +194,7 @@ export function CloseOrderPlugin(
 				R8: SSigmaProp(SGroupElement(first(params.lender.getPublicKeys()))).toHex()
 			});
 
-		const loanAmount = parse<bigint>(orderBox.additionalRegisters.R5);
+		const loanAmount = parseBigInt(orderBox.additionalRegisters.R5);
 		const loan = new OutputBuilder(
 			isErg ? loanAmount : SAFE_MIN_BOX_VALUE,
 			ErgoAddress.fromPublicKey(orderBox.additionalRegisters.R4.substring(4))
@@ -264,7 +265,7 @@ export function RepayPlugin(bondBox: Box<Amount>): FleetPlugin {
 			throw new Error('Invalid bond. Lender public key is not present.');
 		}
 
-		const repaymentAmount = parse<bigint>(bondBox.additionalRegisters.R6);
+		const repaymentAmount = parseBigInt(bondBox.additionalRegisters.R6);
 		const borrower = ErgoAddress.fromPublicKey(bondBox.additionalRegisters.R5.substring(4));
 		const lender = ErgoAddress.fromPublicKey(bondBox.additionalRegisters.R8.substring(4));
 		const tokenId = extractTokenIdFromBondContract(bondBox.ergoTree);

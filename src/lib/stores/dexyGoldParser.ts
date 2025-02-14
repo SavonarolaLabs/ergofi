@@ -1,3 +1,4 @@
+import { parseBigInt } from '$lib/utils';
 import { asBigInt } from '$lib/utils/helper';
 import { parse } from '@fleet-sdk/serializer';
 
@@ -88,8 +89,8 @@ export function parseBankArbitrageMintBox(box: any): ParsedBankArbitrageMintBox 
 	return {
 		value: asBigInt(box.value),
 		arbitrageMintNFT: box.assets[0].tokenId,
-		R4ResetHeight: parse<bigint>(box.additionalRegisters.R4),
-		R5AvailableAmount: parse<bigint>(box.additionalRegisters.R5)
+		R4ResetHeight: parseBigInt(box.additionalRegisters.R4),
+		R5AvailableAmount: parseBigInt(box.additionalRegisters.R5)
 	};
 }
 
@@ -106,8 +107,8 @@ export function parseBankFreeMintBox(box: any): ParsedBankFreeMintBox {
 	return {
 		value: asBigInt(box.value),
 		freeMintNFT: box.assets[0].tokenId,
-		R4ResetHeight: parse<bigint>(box.additionalRegisters.R4),
-		R5AvailableAmount: parse<bigint>(box.additionalRegisters.R5)
+		R4ResetHeight: parseBigInt(box.additionalRegisters.R4),
+		R5AvailableAmount: parseBigInt(box.additionalRegisters.R5)
 	};
 }
 
@@ -122,7 +123,7 @@ export function parseBankPayoutBox(box: any): ParsedBankPayoutBox {
 	return {
 		value: asBigInt(box.value),
 		payoutNFT: box.assets[0].tokenId,
-		R4LastPaymentHeight: parse<bigint>(box.additionalRegisters.R4)
+		R4LastPaymentHeight: parseBigInt(box.additionalRegisters.R4)
 	};
 }
 
@@ -179,10 +180,10 @@ export function parseTrackingBox(box: any): ParsedTrackingBox {
 	return {
 		value: asBigInt(box.value),
 		trackingNFT: box.assets[0].tokenId,
-		R4Target: parse<bigint>(box.additionalRegisters.R4),
-		R5Denom: parse<bigint>(box.additionalRegisters.R5),
+		R4Target: parseBigInt(box.additionalRegisters.R4),
+		R5Denom: parseBigInt(box.additionalRegisters.R5),
 		R6IsBelow: parse<boolean>(box.additionalRegisters.R6),
-		R7TriggeredHeight: parse<bigint>(box.additionalRegisters.R7)
+		R7TriggeredHeight: parseBigInt(box.additionalRegisters.R7)
 	};
 }
 
@@ -190,6 +191,6 @@ export function parseDexyGoldOracleBox(box: any): ParsedDexyGoldOracleBox {
 	return {
 		value: asBigInt(box.value),
 		oraclePoolNFT: box.assets[0].tokenId,
-		R4Rate: parse<bigint>(box.additionalRegisters.R4)
+		R4Rate: parseBigInt(box.additionalRegisters.R4)
 	};
 }

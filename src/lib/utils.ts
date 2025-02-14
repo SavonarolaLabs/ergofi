@@ -52,9 +52,9 @@ export function oracleRateToUsd(rate: bigint): string {
 	});
 }
 
-export function decodeBigInt(register: string): bigint {
-	const parsed = parse<bigint>(register);
-	return parsed;
+export function parseBigInt(register: string): bigint {
+	const parsed = parse<number>(register);
+	return BigInt(parsed);
 }
 
 export function getBankBoxOutput(tx: MempoolTransaction): Output | undefined {

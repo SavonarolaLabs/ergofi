@@ -16,7 +16,6 @@
 	} from './stores/bank';
 	import SubNumber from './SubNumber.svelte';
 	import { DEXY_BANK_BANK, DEXY_LP_POOL_MAIN } from './dexygold/dexyAddressConstants';
-	import { floor } from 'lodash-es';
 	import { info } from './stores/nodeInfo';
 	import { DEXY_GOLD } from './dexygold/dexyConstants';
 
@@ -184,8 +183,9 @@
 	</div>
 </div>
 
+{$dexygold_widget_numbers}
 <div class="text-sm">
-	{#if $dexygold_widget_numbers}
+	{#if $dexygold_widget_numbers && $info}
 		<div>ERG/XAU Oracle: {$dexygold_widget_numbers.lpRate}</div>
 		<div>
 			LP/Oracle Rate: {Math.floor(
@@ -198,10 +198,10 @@
 		<div>98%</div>
 		<div>101,505%</div>
 
-		{#if $dexygold_widget_numbers.tracking101TriggerHeight + BigInt(DEXY_GOLD.T_arb) > BigInt($info.fullHeight)}
+		{#if $dexygold_widget_numbers.tracking101TriggerHeight + DEXY_GOLD.T_arb > $info.fullHeight}
 			<div>
 				PRICE ACTIVATION HEIGHT:{$dexygold_widget_numbers.tracking101TriggerHeight +
-					BigInt(DEXY_GOLD.T_arb) -
+					DEXY_GOLD.T_arb -
 					BigInt($info.fullHeight)}
 			</div>
 		{/if}

@@ -73,7 +73,7 @@ async function getTokenRatesFromSpectrum(): Promise<Map<string, BigNumber>> {
 // 	}
 
 // 	const reserve = BigInt(box.value);
-// 	const supply = parse<bigint>(box.additionalRegisters.R4);
+// 	const supply = parseBigInt(box.additionalRegisters.R4);
 // 	const tokens = BigInt(token.amount);
 // 	const circ = supply - tokens;
 

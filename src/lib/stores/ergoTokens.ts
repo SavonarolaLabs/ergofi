@@ -250,7 +250,8 @@ ergoFakeTokens[DEXY_GOLD.lpTokenId] = {
 	decimals: 0,
 	project: 'Dexy Gold',
 	name: 'DexyGoldLP',
-	ticker: 'DexyGoldLP'
+	ticker: 'DexyGoldLP',
+	isLpToken: true
 };
 ergoFakeTokens[DEXY_GOLD.dexyTokenId] = {
 	decimals: 0,

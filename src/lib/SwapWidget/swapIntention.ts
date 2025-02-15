@@ -1,3 +1,5 @@
+import { ergoTokens } from '$lib/stores/ergoTokens';
+
 export type SwapSide = 'input' | 'output';
 
 export type TokenInput = {
@@ -70,4 +72,14 @@ export function setAmount(
 	} else {
 		swapIntention.find((i) => i.tokenId == tokenId)!.amount = amount;
 	}
+}
+
+export function isLpTokenOutput(swapIntent: SwapIntention): boolean {
+	const tokenIds = outputTokenIds(swapIntent);
+	return tokenIds.length == 1 && ergoTokens[tokenIds[0]].isLpToken;
+}
+
+export function isLpTokenInput(swapIntent: SwapIntention): boolean {
+	const tokenIds = inputTokenIds(swapIntent);
+	return tokenIds.length == 1 && ergoTokens[tokenIds[0]].isLpToken;
 }

@@ -88,8 +88,6 @@
 		anchorSide,
 		getSwapTag,
 		inputTokenIds,
-		isLpTokenInput,
-		isLpTokenOutput,
 		outputTokenIds,
 		setAmount,
 		swapAmount,
@@ -98,7 +96,6 @@
 		type SwapRow
 	} from './swapIntention';
 	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
-	import { getFromLabel } from './swapWidgetUtils';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -111,8 +108,10 @@
 
 	let fromCurrency: Currency = currencyErgDexyGoldLpToken;
 	let toCurrency: Currency = currencyErgDexyGoldLpPool;
-	let fromAmount = ['', ''];
-	let toAmount = ['', ''];
+	let fromAmount = '';
+	let fromAmount2 = '';
+	let toAmount = '';
+	let toAmount2 = '';
 	let swapPrice: number = 0.0;
 	let lastInput: LastUserInput = 'From';
 
@@ -162,7 +161,7 @@
 		//TODO: remove
 		initJsonTestBoxes();
 
-		//loadFromToCurrencyFromLocalStorage();
+		loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
 			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
@@ -205,34 +204,33 @@
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
+			//----------------------------
+			const inputTokenId = ERGO_TOKEN_ID;
+			const outputTokenId = DEXY_GOLD.dexyTokenId;
+			const output2TokenId = DEXY_GOLD.lpTokenId;
+
 			swapIntent.forEach((row) => {
 				if (row.tokenId == inputRow?.tokenId && row.side == inputRow?.side) {
 					row.amount = inputRow.amount;
 					row.value = inputRow.value;
-					console.log('swapIntent.forEach((row) => {', inputRow.amount);
 				}
 			});
 
+			//swapIntent[0].amount = valueToAmount(swapIntent[0]);
+			//swapIntent[1].amount = valueToAmount(swapIntent[1]);
+			//----------------------------
 			const swapPreview = doRecalcDexyGoldContract(swapIntent);
-			swapIntent = swapPreview.calculatedIntent;
-			swapPrice = swapPreview.price;
 		}
 	}
 	function doRecalcSigUsdContract() {
-		const recalc = recalcAmountAndPrice(
-			fromCurrency,
-			fromAmount[0],
-			toCurrency,
-			toAmount[0],
-			lastInput
-		);
+		const recalc = recalcAmountAndPrice(fromCurrency, fromAmount, toCurrency, toAmount, lastInput);
 		if (recalc) {
 			swapPrice = recalc.price;
 			if (recalc.from != undefined) {
-				fromAmount[0] = recalc.from;
+				fromAmount = recalc.from;
 			}
 			if (recalc.to != undefined) {
-				toAmount[0] = recalc.to;
+				toAmount = recalc.to;
 			}
 		}
 	}
@@ -257,7 +255,7 @@
 
 		let calculatedIntent = structuredClone(swapIntent);
 		let swapPreview: SwapPreview;
-		if (swapTag == 'ERG+DEXYGOLD_ERG/DEXYGOLDLP') {
+		if (swapTag == 'ERG+DEXYGOLD_ERG/DEXYLP') {
 			const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
 				dexyGoldLpMintInputErgPrice(swapAmount(swapIntent), $fee_mining, dexyGoldUtxo);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
@@ -265,27 +263,27 @@
 			swapPreview = { calculatedIntent, price };
 		}
 
-		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP') {
+		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP') {
 			const { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =
-				dexyGoldLpMintInputDexyPrice(BigInt(fromAmount[1]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpMintInputDexyPrice(BigInt(fromAmount2), $fee_mining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, contractErg);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 			swapPreview = { calculatedIntent, price };
 			console.log({ swapPreview });
 		}
-		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLDLP_DEXYGOLDLP') {
+		if (swapTag == 'ERG+DEXYGOLD_DEXYLP_DEXYLP') {
 			const { uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price } =
-				dexyGoldLpMintInputSharesPrice(BigInt(toAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpMintInputSharesPrice(BigInt(toAmount), $fee_mining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 			swapPreview = { calculatedIntent, price };
 			console.log({ swapPreview });
 		}
-		if (swapTag == 'DEXYGOLDLP_DEXYGOLDLP/ERG+DEXYGOLD') {
+		if (swapTag == 'DEXYLP_DEXYLP/ERG+DEXYGOLD') {
 			const { uiSwapFee, userErg, contractErg, contractDexy, price } =
-				dexyGoldLpRedeemInputSharesPrice(BigInt(fromAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputSharesPrice(BigInt(fromAmount), $fee_mining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, userErg);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
@@ -293,18 +291,18 @@
 			console.log({ swapPreview });
 		}
 
-		if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_ERG') {
+		if (swapTag == 'DEXYLP/ERG+DEXYGOLD_ERG') {
 			const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
-				dexyGoldLpRedeemInputErgPrice(ergStringToNanoErg(toAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputErgPrice(ergStringToNanoErg(toAmount), $fee_mining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 			swapPreview = { calculatedIntent, price };
 			console.log({ swapPreview });
 		}
-		if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD') {
+		if (swapTag == 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD') {
 			const { uiSwapFee, userErg, contractErg, sharesUnlocked, price } =
-				dexyGoldLpRedeemInputDexyPrice(BigInt(toAmount[1]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputDexyPrice(BigInt(toAmount2), $fee_mining, dexyGoldUtxo);
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, userErg);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 
@@ -336,7 +334,7 @@
 		}
 		if (swapTag == 'DEXYGOLD_DEXYGOLD/ERG') {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
-				BigInt(fromAmount[0]),
+				BigInt(fromAmount),
 				DIRECTION_BUY,
 				$fee_mining,
 				dexyGoldUtxo
@@ -349,7 +347,7 @@
 		if (swapTag == 'DEXYGOLD/ERG_ERG') {
 			console.log(getSwapTag(swapIntent));
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
-				ergStringToNanoErg(toAmount[0]),
+				ergStringToNanoErg(toAmount),
 				DIRECTION_BUY, //
 				$fee_mining,
 				dexyGoldUtxo
@@ -375,9 +373,27 @@
 		const amount = valueToAmount({ tokenId, value });
 
 		console.log({ side, ticker, tokenId, value, amount });
-		fromAmount[0] = input.value;
+		fromAmount = input.value;
 		lastInput = 'From';
 		doRecalc({ side, ticker, tokenId, value, amount });
+	}
+
+	function handleFromAmount2Change(event: Event) {
+		fromAmount2 = (event.target as HTMLInputElement).value;
+		lastInput = 'From2';
+		doRecalc();
+	}
+
+	function handleToAmountChange(event: Event) {
+		toAmount = (event.target as HTMLInputElement).value;
+		lastInput = 'To';
+		doRecalc();
+	}
+
+	function handleToAmount2Change(event: Event) {
+		toAmount2 = (event.target as HTMLInputElement).value;
+		lastInput = 'To2';
+		doRecalc();
 	}
 
 	let shake = false;
@@ -402,7 +418,20 @@
 			}, 300);
 			return;
 		}
+		// Check direction based on the last typed field
 
+		let isLpTokenFrom = false;
+		let isLpTokenTo = false;
+
+		let fromToken = fromCurrency.tokens[0];
+		let fromToken2 = fromCurrency.tokens[1];
+		let toToken = toCurrency.tokens[0];
+		let toToken2 = toCurrency.tokens[1];
+
+		let fromAmountX: bigint = 0n;
+		let fromAmount2X: bigint = 0n;
+		let toAmountX: bigint = 0n;
+		let toAmount2X: bigint = 0n;
 
 		let dexyGoldUtxo = {
 				lpSwapIn: $dexygold_lp_swap_box,
@@ -416,15 +445,75 @@
 				goldOracle: $oracle_erg_xau_box,
 				tracking101: $dexygold_tracking101_box,
 			}
+			 
+		let lpTokenName = 'DexyGoldLp'
 
+		if ( lastInput === 'From' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			
+			toToken = lpTokenName
+			toToken2 = undefined
+			fromAmountX = ergStringToNanoErg(fromAmount);
+		}
+		if ( lastInput === 'From2' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			toToken = lpTokenName
+			toToken2 = undefined
+			fromAmount2X = BigInt(fromAmount2);
+		}
+		if ( lastInput === 'To' 	&& fromCurrency.tokens[0] === 'ERG' && fromCurrency.tokens[1] === 'DexyGold' && toCurrency.isLpToken){
+			toToken = lpTokenName
+			toToken2 = undefined
+			toAmountX = BigInt(toAmount);
+		}
+		if ( lastInput === 'From' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			fromToken = lpTokenName
+			fromToken2 = undefined
+			fromAmountX = BigInt(fromAmount);
+		}
+		if ( lastInput === 'To' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			fromToken = lpTokenName
+			fromToken2 = undefined
+			toAmountX = ergStringToNanoErg(toAmount);
+		}
+		if ( lastInput === 'To2' 	&& fromCurrency.isLpToken && toCurrency.tokens[0] === 'ERG' && toCurrency.tokens[1] === 'DexyGold'){
+			fromToken = lpTokenName
+			fromToken2 = undefined
+			toAmount2X = BigInt(toAmount2);
+		}
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
+			fromAmountX = ergStringToNanoErg(fromAmount); // SKIP
+
+		}
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
+			toAmountX = ergStringToNanoErg(toAmount); 
+		}
+		if ( lastInput === 'From' && fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'){
+			fromAmountX = BigInt(fromAmount);
+		}
+		if ( lastInput === 'To' && fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'){
+			toAmountX = BigInt(toAmount);
+		}
+		const fromAssets = [{
+			token: fromToken, // 'ERG' // 'DexyGold' // 'DexyGoldLP'
+			amount: fromAmountX,
+		},{
+			token: fromToken2,
+			amount: fromAmount2X
+		} ];
+		const toAssets = [{
+			token: toToken,
+			amount: toAmountX,
+		},{
+			token: toToken2,
+			amount: toAmount2X
+		} ];
+	
+		console.log({fromAssets})
+		console.log({toAssets})
 
 
 		const { me, utxos, height } = await getWeb3WalletData();
 
-		const input = 1_000_000_000n;
-
-		const fromAssets =[]
-		const toAssets =[]
+		const input = 1_000_000_000n
 
 		const unsignedTx = buildSwapDexyGoldTx(fromAssets,toAssets,input,me,height,$fee_mining,utxos,dexyGoldUtxo,$dexygold_widget_numbers)
 		
@@ -442,14 +531,26 @@
 			return;
 		}
 		// Check direction based on the last typed field
-
+		let fromAmountX: bigint = 0n;
+		let toAmountX: bigint = 0n;
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'ERG')
+			fromAmountX = ergStringToNanoErg(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigUSD')
+			fromAmountX = usdStringToCentBigInt(fromAmount);
+		if (lastInput === 'From' && fromCurrency.tokens[0] === 'SigRSV')
+			fromAmountX = BigInt(fromAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'ERG')
+			toAmountX = ergStringToNanoErg(toAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'SigUSD')
+			toAmountX = usdStringToCentBigInt(toAmount);
+		if (lastInput === 'To' && toCurrency.tokens[0] === 'SigRSV') toAmountX = BigInt(toAmount);
 		const fromAsset = {
 			token: fromCurrency.tokens[0],
-			amount: fromAmount[0]
+			amount: fromAmountX
 		};
 		const toAsset = {
 			token: toCurrency.tokens[0],
-			amount: toAmount[0]
+			amount: toAmountX
 		};
 
 		const { me, utxos, height } = await getWeb3WalletData();
@@ -470,7 +571,7 @@
 	}
 
 	function handleFromBalanceClick() {
-		fromAmount[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
+		fromAmount = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
 		doRecalc();
 	}
 
@@ -646,30 +747,33 @@
 	>
 		<div
 			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--widget-bg-color)] transition-all"
-			class:justify-between={inputTokenIds(swapIntent).length > 1}
-			style={swapIntent.length > 2 ? 'min-height:258px' : 'min-height:200px'}
+			class:justify-between={fromCurrency.isLpPool}
+			style={fromCurrency.isLpToken || toCurrency.isLpToken
+				? 'min-height:258px'
+				: 'min-height:200px'}
 		>
 			<div>
 				<!-- FROM SELECTION -->
 				<div class="rounded-md rounded-bl-none">
 					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
-						<span class="text-sm">{getFromLabel(swapIntent)}</span>
+						<span class="text-sm"
+							>{fromCurrency.isLpPool
+								? 'Add Liquidity'
+								: fromCurrency.isLpToken
+									? 'Remove Liquidity'
+									: 'From'}</span
+						>
 						<button
 							class="hover: flex items-center gap-1 text-sm"
 							on:click={handleFromBalanceClick}
 						>
 							<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
-							{#if isLpTokenOutput(swapIntent)}
-								isLpTokenOutput
+							{#if fromCurrency.isLpPool}
 								<!-- <span><WalletBalance /></span> -->
 								<span class="font-normal">{fromBalance}</span>
-								<span class="font-thin"
-									>{swapIntent.filter((i) => i.side == 'input')[0].ticker}</span
-								>
+								<span class="font-thin">{fromCurrency.tokens[0]}</span>
 								<span class="font-normal">{fromBalance}</span>
-								<span class="font-thin"
-									>{swapIntent.filter((i) => i.side == 'input')[1].ticker}</span
-								>
+								<span class="font-thin">{fromCurrency.tokens[1]}</span>
 							{:else if typeof fromBalance === 'number'}
 								{fromBalance.toLocaleString('en-US', {
 									minimumFractionDigits: 0,
@@ -678,9 +782,7 @@
 							{:else}
 								<!-- <WalletBalance /> -->
 								<span class="font-normal">{fromBalance}</span>
-								<span class="font-thin"
-									>{swapIntent.filter((i) => i.side == 'input')[0].ticker}</span
-								>
+								<span class="font-thin">{fromCurrency.tokens[0]}</span>
 							{/if}
 						</button>
 					</div>
@@ -700,8 +802,8 @@
 								placeholder="0"
 								min="0"
 								data-side="input"
-								data-ticker={swapIntent.filter((i) => i.side == 'input')[0].ticker}
-								bind:value={fromAmount[0]}
+								data-ticker={fromCurrency.tokens[0]}
+								bind:value={fromAmount}
 								on:input={handleFromAmountChange}
 							/>
 
@@ -714,7 +816,7 @@
 								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none px-3 py-2 font-medium outline-none"
 								on:click={toggleFromDropdown}
 							>
-								{#if isLpTokenInput(swapIntent)}
+								{#if fromCurrency.isLpToken}
 									<div class="flex items-center gap-3">
 										<div class="text-lg text-blue-300"><Tint></Tint></div>
 										<div class=" leading-0 flex w-full flex-col justify-center text-xs">
@@ -725,15 +827,11 @@
 								{:else}
 									<div class="flex items-center gap-3">
 										<!-- Show the first token name, e.g. "ERG" -->
-										<div
-											class="h-5 w-5 {tokenColor(
-												swapIntent.find((i) => i.side == 'input')!.ticker
-											)} rounded-full"
-										></div>
+										<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[0])} rounded-full"></div>
 										{fromCurrency.tokens[0]}
 									</div>
 								{/if}
-								{#if swapIntent.filter((i) => (i.side = 'input')).length == 1}
+								{#if fromCurrency.isToken || fromCurrency.isLpToken}
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
@@ -747,7 +845,7 @@
 						</div>
 
 						<!-- LP second token START -->
-						{#if swapIntent.filter((i) => (i.side = 'input')).length > 1}
+						{#if fromCurrency.isLpPool}
 							<div class="flex">
 								<!-- FROM AMOUNT -->
 								<div style="border-top-width:4px;" class="border-color w-[256px]">
@@ -756,9 +854,9 @@
 										class="w-[256px] bg-transparent text-3xl outline-none"
 										placeholder="0"
 										min="0"
-										bind:value={fromAmount[1]}
+										bind:value={fromAmount2}
 										data-side="input"
-										data-ticker={swapIntent.filter((i) => i.side == 'input')[1].ticker}
+										data-ticker={fromCurrency.tokens[1]}
 										on:input={handleFromAmountChange}
 									/>
 								</div>
@@ -770,18 +868,14 @@
 									type="button"
 									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
 										? 4
-										: 4}px; {fromCurrency.isLpPool || true ? ' border-top-left-radius:0' : ''}"
+										: 4}px; {fromCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
 									class=" border-color flex items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
 									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
 										<!-- Show the first token name, e.g. "ERG" -->
-										<div
-											class="h-5 w-5 {tokenColor(
-												swapIntent.filter((i) => i.side == 'input')[1].ticker
-											)} rounded-full"
-										></div>
-										{swapIntent.filter((i) => i.side == 'input')[1].ticker}
+										<div class="h-5 w-5 {tokenColor(fromCurrency.tokens[1])} rounded-full"></div>
+										{fromCurrency.tokens[1]}
 									</div>
 
 									<svg
@@ -834,16 +928,14 @@
 				>
 					<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
 						<!-- TO AMOUNT -->
-						{swapIntent[2].side}
-						{swapIntent[2].ticker}
 						<input
 							type="number"
 							class="w-[256px] bg-transparent text-3xl outline-none"
 							placeholder="0"
 							min="0"
-							bind:value={toAmount[0]}
+							bind:value={toAmount}
 							data-side="output"
-							data-ticker={swapIntent.filter((i) => i.side == 'output')[0]}
+							data-ticker={toCurrency.tokens[0]}
 							on:input={handleFromAmountChange}
 						/>
 
@@ -886,7 +978,7 @@
 					</div>
 
 					<!-- LP second token START -->
-					{#if swapIntent.filter((i) => i.side == 'output').length > 1}
+					{#if toCurrency.isLpPool}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
 							<div style="border-top-width:4px;" class="border-color w-[256px]">
@@ -895,9 +987,9 @@
 									class="w-[256px] bg-transparent text-3xl outline-none"
 									placeholder="0"
 									min="0"
-									bind:value={toAmount[1]}
+									bind:value={toAmount2}
 									data-side="output"
-									data-ticker={swapIntent.filter((i) => i.side == 'output')[1].ticker}
+									data-ticker={toCurrency.tokens[1]}
 									on:input={handleFromAmountChange}
 								/>
 							</div>

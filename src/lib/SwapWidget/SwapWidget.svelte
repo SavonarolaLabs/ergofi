@@ -24,7 +24,8 @@
 		dexygold_lp_swap_box,
 		dexygold_tracking101_box,
 		dexygold_widget_numbers,
-		oracle_erg_xau_box
+		oracle_erg_xau_box,
+		type DexyGoldNumbers
 	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
@@ -190,7 +191,25 @@
 				}
 			});
 
-			const swapPreview = doRecalcDexyGoldContract(swapIntent);
+			let dexyGoldUtxo = {
+				lpSwapIn: $dexygold_lp_swap_box,
+				lpMintIn: $dexygold_lp_mint_box,
+				lpRedeemIn: $dexygold_lp_redeem_box,
+				freeMintIn: $dexygold_bank_free_mint_box,
+				bankIn: $dexygold_bank_box,
+				buybankIn: $dexygold_buyback_box,
+				arbMintIn: $dexygold_bank_arbitrage_mint_box,
+				lpIn: $dexygold_lp_box,
+				goldOracle: $oracle_erg_xau_box,
+				tracking101: $dexygold_tracking101_box
+			};
+
+			const swapPreview = doRecalcDexyGoldContract(
+				swapIntent,
+				dexyGoldUtxo,
+				$dexygold_widget_numbers,
+				$fee_mining
+			);
 			swapIntent = swapPreview.calculatedIntent;
 			swapPrice = swapPreview.price;
 		}
@@ -214,20 +233,12 @@
 		}
 	}
 
-	function doRecalcDexyGoldContract(swapIntent: SwapIntention): SwapPreview {
-		let dexyGoldUtxo = {
-			lpSwapIn: $dexygold_lp_swap_box,
-			lpMintIn: $dexygold_lp_mint_box,
-			lpRedeemIn: $dexygold_lp_redeem_box,
-			freeMintIn: $dexygold_bank_free_mint_box,
-			bankIn: $dexygold_bank_box,
-			buybankIn: $dexygold_buyback_box,
-			arbMintIn: $dexygold_bank_arbitrage_mint_box,
-			lpIn: $dexygold_lp_box,
-			goldOracle: $oracle_erg_xau_box,
-			tracking101: $dexygold_tracking101_box
-		};
-
+	export function doRecalcDexyGoldContract(
+		swapIntent: SwapIntention,
+		dexyGoldUtxo: any,
+		dexyGoldNumbers: DexyGoldNumbers,
+		feeMining: bigint
+	): SwapPreview {
 		console.log({ swapIntent });
 		const swapTag = getSwapTag(swapIntent);
 		const a = anchor(swapIntent);
@@ -236,7 +247,7 @@
 		let swapPreview: SwapPreview;
 		if (swapTag == 'ERG+DEXYGOLD_ERG/DEXYGOLDLP') {
 			const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
-				dexyGoldLpMintInputErgPrice(swapAmount(swapIntent), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpMintInputErgPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 			swapPreview = { calculatedIntent, price };
@@ -244,7 +255,7 @@
 
 		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP') {
 			const { uiSwapFee, inputErg, contractDexy, contractErg, sharesUnlocked, price } =
-				dexyGoldLpMintInputDexyPrice(BigInt(fromAmount[1]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpMintInputDexyPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, contractErg);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
@@ -253,7 +264,7 @@
 		}
 		if (swapTag == 'ERG+DEXYGOLD_DEXYGOLDLP_DEXYGOLDLP') {
 			const { uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price } =
-				dexyGoldLpMintInputSharesPrice(BigInt(toAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpMintInputSharesPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
@@ -262,7 +273,7 @@
 		}
 		if (swapTag == 'DEXYGOLDLP_DEXYGOLDLP/ERG+DEXYGOLD') {
 			const { uiSwapFee, userErg, contractErg, contractDexy, price } =
-				dexyGoldLpRedeemInputSharesPrice(BigInt(fromAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputSharesPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, userErg);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
@@ -272,7 +283,7 @@
 
 		if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_ERG') {
 			const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
-				dexyGoldLpRedeemInputErgPrice(ergStringToNanoErg(toAmount[0]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputErgPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
@@ -281,7 +292,7 @@
 		}
 		if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD') {
 			const { uiSwapFee, userErg, contractErg, sharesUnlocked, price } =
-				dexyGoldLpRedeemInputDexyPrice(BigInt(toAmount[1]), $fee_mining, dexyGoldUtxo);
+				dexyGoldLpRedeemInputDexyPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, userErg);
 			setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 
@@ -293,8 +304,8 @@
 			const { bestAmount: contractDexy, bestPrice: price } = bestOptionErgToDexyGoldInputErg(
 				swapAmount(swapIntent),
 				dexyGoldUtxo,
-				$dexygold_widget_numbers,
-				$fee_mining
+				dexyGoldNumbers,
+				feeMining
 			);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 			swapPreview = { calculatedIntent, price };
@@ -304,8 +315,8 @@
 			const { bestAmount: inputErg, bestPrice: price } = bestOptionErgToDexyGoldInputDexy(
 				swapAmount(swapIntent),
 				dexyGoldUtxo,
-				$dexygold_widget_numbers,
-				$fee_mining
+				dexyGoldNumbers,
+				feeMining
 			);
 			setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
 			swapPreview = { calculatedIntent, price };
@@ -313,9 +324,9 @@
 		}
 		if (swapTag == 'DEXYGOLD_DEXYGOLD/ERG') {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
-				BigInt(fromAmount[0]),
+				swapAmount(swapIntent),
 				DIRECTION_BUY,
-				$fee_mining,
+				feeMining,
 				dexyGoldUtxo
 			);
 
@@ -326,9 +337,9 @@
 		if (swapTag == 'DEXYGOLD/ERG_ERG') {
 			console.log(getSwapTag(swapIntent));
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
-				ergStringToNanoErg(toAmount[0]),
+				swapAmount(swapIntent),
 				DIRECTION_BUY, //
-				$fee_mining,
+				feeMining,
 				dexyGoldUtxo
 			);
 			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, amountDexy);

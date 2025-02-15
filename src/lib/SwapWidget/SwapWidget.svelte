@@ -11,7 +11,8 @@
 		dexyGoldLpRedeemInputErgPrice,
 		dexyGoldLpRedeemInputSharesPrice,
 		dexyGoldLpSwapInputDexyPrice,
-		dexyGoldLpSwapInputErgPrice
+		dexyGoldLpSwapInputErgPrice,
+		type DexyGoldUtxo
 	} from '$lib/dexygold/dexyGold';
 	import {
 		dexygold_bank_arbitrage_mint_box,
@@ -191,7 +192,7 @@
 				}
 			});
 
-			let dexyGoldUtxo = {
+			let dexyGoldUtxo: DexyGoldUtxo = {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpMintIn: $dexygold_lp_mint_box,
 				lpRedeemIn: $dexygold_lp_redeem_box,
@@ -235,7 +236,7 @@
 
 	export function doRecalcDexyGoldContract(
 		swapIntent: SwapIntention,
-		dexyGoldUtxo: any,
+		dexyGoldUtxo: DexyGoldUtxo,
 		dexyGoldNumbers: DexyGoldNumbers,
 		feeMining: bigint
 	): SwapPreview {

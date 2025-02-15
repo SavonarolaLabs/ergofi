@@ -93,6 +93,9 @@ export type ErgToDexyGoldOptions = {
 	bankFreeBetterThanLp: boolean;
 	bankFreePrice: number;
 	bankFreeAmount: bigint;
+
+	bestAmount: bigint;
+	bestPrice: number;
 };
 
 export type ErgToDexyGoldBestOption = {
@@ -1715,6 +1718,17 @@ export function bestOptionErgToDexyGoldInputErg(
 		bankFreeBetterThanLp = true;
 	}
 
+	let bestAmount = bankArbBetterThanLp
+		? bankArbAmount
+		: bankFreeBetterThanLp
+			? bankFreeAmount
+			: lpSwapAmount;
+	let bestPrice = bankArbBetterThanLp
+		? bankArbPrice
+		: bankFreeBetterThanLp
+			? bankFreePrice
+			: lpSwapPrice;
+
 	return {
 		lpSwapPrice,
 		lpSwapAmount,
@@ -1725,7 +1739,10 @@ export function bestOptionErgToDexyGoldInputErg(
 
 		bankFreeBetterThanLp,
 		bankFreePrice,
-		bankFreeAmount
+		bankFreeAmount,
+
+		bestAmount,
+		bestPrice
 	};
 }
 export function bestOptionErgToDexyGoldInputDexy(
@@ -1778,7 +1795,16 @@ export function bestOptionErgToDexyGoldInputDexy(
 		bankFreeBetterThanLp = true;
 		//Use Function To Calculate Price and Amount
 	}
-
+	let bestAmount = bankArbBetterThanLp
+		? bankArbAmount
+		: bankFreeBetterThanLp
+			? bankFreeAmount
+			: lpSwapAmount;
+	let bestPrice = bankArbBetterThanLp
+		? bankArbPrice
+		: bankFreeBetterThanLp
+			? bankFreePrice
+			: lpSwapPrice;
 	return {
 		lpSwapPrice,
 		lpSwapAmount,
@@ -1789,7 +1815,10 @@ export function bestOptionErgToDexyGoldInputDexy(
 
 		bankFreeBetterThanLp,
 		bankFreePrice,
-		bankFreeAmount
+		bankFreeAmount,
+
+		bestAmount,
+		bestPrice
 	};
 }
 export function bestOptionErgToDexyGold(

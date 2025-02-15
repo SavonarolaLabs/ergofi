@@ -1,6 +1,8 @@
 <script lang="ts">
 	import {
 		bestOptionErgToDexyGold,
+		bestOptionErgToDexyGoldInputDexy,
+		bestOptionErgToDexyGoldInputErg,
 		buildSwapDexyGoldTx,
 		dexyGoldBankArbitrageInputDexyPrice,
 		dexyGoldBankArbitrageInputErgPrice,
@@ -295,8 +297,26 @@
 		}
 		//
 		if (swapTag == 'ERG_ERG/DEXYGOLD') {
+			const { bestAmount: contractDexy, bestPrice: price } = bestOptionErgToDexyGoldInputErg(
+				swapAmount(swapIntent),
+				dexyGoldUtxo,
+				$dexygold_widget_numbers,
+				$fee_mining
+			);
+			setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
+			swapPreview = { calculatedIntent, price };
+			console.log({ swapPreview });
 		}
 		if (swapTag == 'ERG/DEXYGOLD_DEXYGOLD') {
+			const { bestAmount: inputErg, bestPrice: price } = bestOptionErgToDexyGoldInputDexy(
+				swapAmount(swapIntent),
+				dexyGoldUtxo,
+				$dexygold_widget_numbers,
+				$fee_mining
+			);
+			setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
+			swapPreview = { calculatedIntent, price };
+			console.log({ swapPreview });
 		}
 		if (swapTag == 'DEXYGOLD_DEXYGOLD/ERG') {
 			const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(

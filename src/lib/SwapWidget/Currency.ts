@@ -1,6 +1,6 @@
 // All possible "from" currencies
 
-import type { SwapIntention } from './swapIntention';
+import type { SwapIntention } from '../swapIntention';
 import type { Currency } from './SwapWidget.types';
 
 export const currencyERG: Currency = { tokens: ['ERG'], isToken: true };

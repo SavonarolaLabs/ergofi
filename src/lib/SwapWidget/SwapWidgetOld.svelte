@@ -94,7 +94,7 @@
 		type SwapIntention,
 		type SwapPreview,
 		type SwapRow
-	} from './swapIntention';
+	} from '../swapIntentionn';
 	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
 	/* ---------------------------------------

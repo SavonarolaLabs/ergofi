@@ -6,14 +6,19 @@
 
 	let isMobile = false;
 
+	//let theme = 'powwowgirls'
+	let theme = 'ergfi';
+
 	// Detect mobile device
 	onMount(() => {
 		isMobile =
 			/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent) ||
 			window.matchMedia('(max-width: 768px)').matches;
 
-		document.documentElement.style.setProperty('--widget-border-color', '#1f2937');
-		document.documentElement.style.setProperty('--widget-bg-color', '#f5f2a8ed');
+		if (theme) {
+			document.documentElement.style.setProperty('--widget-border-color', '#1f2937');
+			document.documentElement.style.setProperty('--widget-bg-color', '#f5f2a8ed');
+		}
 	});
 </script>
 
@@ -53,9 +58,9 @@
 
 <style>
 	.powwowgirl-bg {
-		background-color: var(--bg-color);
+		/* background-color: var(--bg-color); */
 		background-size: contain;
-		background-image: url('/powwowgirl2.png');
+		/* background-image: url('/powwowgirl2.png'); */
 		background-repeat: no-repeat;
 		background-position-x: right;
 		background-position-y: bottom;

@@ -41,10 +41,10 @@
 		align-items: center;
 		justify-content: center;
 		position: absolute;
-		top: 2px;
-		left: 2px;
-		right: 2px;
-		bottom: 2px;
+		top: 0px;
+		left: 4px;
+		right: 4px;
+		bottom: 4px;
 		clip-path: polygon(100% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}
 

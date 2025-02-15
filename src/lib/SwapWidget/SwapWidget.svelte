@@ -694,9 +694,7 @@
 <!-- UI Layout -->
 <div class="relative" class:shake>
 	<div
-		class="clipped mx-auto w-full max-w-md rounded-xl rounded-br-none border border-[var(--widget-border-color)]"
-		class:clip-long={fromCurrency.isLpPool || toCurrency.isLpPool}
-		class:clip-short={!(fromCurrency.isLpPool || toCurrency.isLpPool)}
+		class="mx-auto w-full max-w-md rounded-xl rounded-bl-none rounded-br-none border-4 border-[var(--widget-border-color)]"
 	>
 		<div
 			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--widget-bg-color)] transition-all"
@@ -979,7 +977,6 @@
 			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
 			}`}
-			style={'margin-bottom:4px'}
 		>
 			<input
 				type="range"
@@ -995,32 +992,32 @@
 			</div>
 		</div>
 		<!-- Swap Button -->
-		{#if $web3wallet_available_wallets.length == 0}
-			<a
-				target="_blank"
-				href={getWalletInstallLink()}
-				class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium hover:bg-orange-500"
-			>
-				Install Wallet
-			</a>
-		{:else}
-			<div class="flex bg-black">
-				<button
-					style="display:none"
-					on:click={toggleFeeSlider}
-					class="mr-1 rounded-lg bg-gray-500 px-4 py-3 font-medium text-gray-200 hover:bg-gray-100 hover:text-black"
-				>
-					<Gear></Gear>
-				</button>
-				<PrimaryButton
-					onClick={handleSwapButton}
-					text="Swap_"
-					bgColor={'#F87315'}
-					subtext={$selected_contract}
-				></PrimaryButton>
-			</div>
-		{/if}
 	</div>
+	{#if $web3wallet_available_wallets.length == 0}
+		<a
+			target="_blank"
+			href={getWalletInstallLink()}
+			class="flex w-full justify-center rounded-lg bg-orange-600 py-3 font-medium hover:bg-orange-500"
+		>
+			Install Wallet
+		</a>
+	{:else}
+		<div class="flex">
+			<button
+				style="display:none"
+				on:click={toggleFeeSlider}
+				class="mr-1 rounded-lg bg-gray-500 px-4 py-3 font-medium text-gray-200 hover:bg-gray-100 hover:text-black"
+			>
+				<Gear></Gear>
+			</button>
+			<PrimaryButton
+				onClick={handleSwapButton}
+				text="Swap_"
+				bgColor={'#F87315'}
+				subtext={$selected_contract}
+			></PrimaryButton>
+		</div>
+	{/if}
 </div>
 
 <!-- Dropdown list -->
@@ -1036,29 +1033,4 @@
 {/if}
 
 <style>
-	.clip-short {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 5.7% 100%, 0% 91.2%);
-	}
-	.clipped {
-		position: relative;
-		border-width: 4px;
-	}
-	.clip-long {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6.2% 100%, 0% 92%);
-	}
-
-	.clipped::before {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 0;
-
-		width: 0;
-		height: 0;
-
-		border-bottom: 26px solid var(--widget-border-color);
-		border-right: 26px solid transparent;
-	}
-
-	/* https://img.goodfon.ru/wallpaper/nbig/4/f0/gold-texture-golden-zoloto-fon-4060.webp */
 </style>

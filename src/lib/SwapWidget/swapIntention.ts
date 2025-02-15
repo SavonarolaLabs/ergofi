@@ -59,9 +59,13 @@ export function getSwapTag(swapIntent: SwapIntention): string {
 
 export function setAmount(
 	swapIntention: SwapIntention,
-	side: SwapSide,
 	tokenId: string,
-	amount: bigint
+	amount: bigint,
+	side?: SwapSide
 ) {
-	swapIntention.find((i) => i.tokenId == tokenId && i.side == side)!.amount = amount;
+	if (side) {
+		swapIntention.find((i) => i.tokenId == tokenId && i.side == side)!.amount = amount;
+	} else {
+		swapIntention.find((i) => i.tokenId == tokenId)!.amount = amount;
+	}
 }

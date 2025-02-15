@@ -47,7 +47,13 @@
 	import PrimaryButton from '../PrimaryButton.svelte';
 	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
 	import { bank_box, fee_mining, oracle_box, reserve_border_left_USD } from '../stores/bank';
-	import { ERGO_TOKEN_ID, SigRSV_TOKEN_ID, SigUSD_TOKEN_ID } from '../stores/ergoTokens';
+	import {
+		ERGO_TOKEN_ID,
+		ergoTokens,
+		getTokenId,
+		SigRSV_TOKEN_ID,
+		SigUSD_TOKEN_ID
+	} from '../stores/ergoTokens';
 	import { confirmed_interactions, mempool_interactions } from '../stores/preparedInteractions';
 	import { selected_contract } from '../stores/ui';
 	import {
@@ -86,13 +92,20 @@
 		setAmount,
 		swapAmount,
 		type SwapIntention,
-		type SwapPreview
+		type SwapPreview,
+		type SwapRow
 	} from './swapIntention';
 	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
 	/* ---------------------------------------
 	 * Local variables
 	 * ------------------------------------- */
+	let swapIntent: SwapIntention = [
+		{ side: 'input', tokenId: getTokenId('ERG')!, ticker: 'ERG' },
+		{ side: 'input', tokenId: getTokenId('DexyGold')!, ticker: 'DexyGold' },
+		{ side: 'output', tokenId: getTokenId('DexyLP')!, ticker: 'DexyLP' }
+	];
+
 	let fromCurrency: Currency = currencyErgDexyGoldLpToken;
 	let toCurrency: Currency = currencyErgDexyGoldLpPool;
 	let fromAmount = '';
@@ -187,7 +200,7 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	function doRecalc() {
+	function doRecalc(inputRow?: SwapRow) {
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
@@ -196,12 +209,13 @@
 			const outputTokenId = DEXY_GOLD.dexyTokenId;
 			const output2TokenId = DEXY_GOLD.lpTokenId;
 
-			const swapIntent: SwapIntention = [
-				{ side: 'input', tokenId: inputTokenId, ticker: 'ERG' },
-				//{ side: 'input', tokenId: inputTokenId, value: '1.1', ticker: 'ERG' },
-				{ side: 'input', tokenId: outputTokenId, value: '50', amount: 50n, ticker: 'DexyGold' },
-				{ side: 'output', tokenId: output2TokenId, ticker: 'DexyLP' }
-			];
+			swapIntent.forEach((row) => {
+				if (row.tokenId == inputRow?.tokenId && row.side == inputRow?.side) {
+					row.amount = inputRow.amount;
+					row.value = inputRow.value;
+				}
+			});
+
 			//swapIntent[0].amount = valueToAmount(swapIntent[0]);
 			//swapIntent[1].amount = valueToAmount(swapIntent[1]);
 			//----------------------------
@@ -349,10 +363,19 @@
 	/* ---------------------------------------
 	 * Recalc Handlers
 	 * ------------------------------------- */
+
 	function handleFromAmountChange(event: Event) {
-		fromAmount = (event.target as HTMLInputElement).value;
+		const input = event.target as HTMLInputElement;
+		const side = input.dataset.side;
+		const ticker = input.dataset.ticker;
+		const tokenId = getTokenId(ticker)!;
+		const value = input.value;
+		const amount = valueToAmount({ tokenId, value });
+
+		console.log({ side, ticker, tokenId, value, amount });
+		fromAmount = input.value;
 		lastInput = 'From';
-		doRecalc();
+		doRecalc({ side, ticker, tokenId, value, amount });
 	}
 
 	function handleFromAmount2Change(event: Event) {
@@ -553,6 +576,12 @@
 	}
 
 	function handleSwapInputs() {
+		const newSwapIntent: SwapIntention = structuredClone(swapIntent);
+		swapIntent = newSwapIntent.map((row) => {
+			row.side = row.side == 'input' ? 'output' : 'input';
+			return row;
+		});
+
 		const temp = fromCurrency;
 		fromCurrency = toCurrency;
 		toCurrency = temp;
@@ -772,6 +801,8 @@
 								class="w-[256px] bg-transparent text-3xl outline-none"
 								placeholder="0"
 								min="0"
+								data-side="input"
+								data-ticker={fromCurrency.tokens[0]}
 								bind:value={fromAmount}
 								on:input={handleFromAmountChange}
 							/>
@@ -824,7 +855,9 @@
 										placeholder="0"
 										min="0"
 										bind:value={fromAmount2}
-										on:input={handleFromAmount2Change}
+										data-side="input"
+										data-ticker={fromCurrency.tokens[1]}
+										on:input={handleFromAmountChange}
 									/>
 								</div>
 
@@ -901,7 +934,9 @@
 							placeholder="0"
 							min="0"
 							bind:value={toAmount}
-							on:input={handleToAmountChange}
+							data-side="output"
+							data-ticker={toCurrency.tokens[0]}
+							on:input={handleFromAmountChange}
 						/>
 
 						<!-- TO CURRENCY DROPDOWN -->
@@ -953,7 +988,9 @@
 									placeholder="0"
 									min="0"
 									bind:value={toAmount2}
-									on:input={handleToAmount2Change}
+									data-side="output"
+									data-ticker={toCurrency.tokens[1]}
+									on:input={handleFromAmountChange}
 								/>
 							</div>
 

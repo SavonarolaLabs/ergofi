@@ -7,7 +7,7 @@ export const currencySigUSD: Currency = { tokens: ['SigUSD'], isToken: true };
 export const currencySigRSV: Currency = { tokens: ['SigRSV'], isToken: true };
 export const currencyDexyGold: Currency = { tokens: ['DexyGold'], isToken: true };
 export const currencyErgDexyGoldLpToken: Currency = {
-	tokens: ['ERG', 'DexyGold'],
+	tokens: ['DexyGoldLP'],
 	isLpToken: true
 };
 export const currencyErgDexyGoldLpPool: Currency = { tokens: ['ERG', 'DexyGold'], isLpPool: true };

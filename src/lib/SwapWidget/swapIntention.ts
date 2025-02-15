@@ -1,12 +1,14 @@
 export type SwapSide = 'input' | 'output';
 
-export type SwapRow = {
+export type TokenInput = {
 	tokenId: string;
+	value?: string;
+};
+
+export type SwapRow = TokenInput & {
 	ticker: string;
 	amount?: bigint;
-
 	side: SwapSide;
-	value?: string;
 };
 
 export type SwapIntention = SwapRow[];

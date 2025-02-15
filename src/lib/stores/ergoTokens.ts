@@ -1,7 +1,9 @@
+import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
+
 export const ERGO_TOKEN_ID = '0000000000000000000000000000000000000000000000000000000000000000';
 export const SigUSD_TOKEN_ID = '03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04';
 export const SigRSV_TOKEN_ID = '003bd19d0187117f130b62e1bcab0939929ff5c7709f843c5c4dd158949285d0';
-export const ergoTokens = {
+let ergoRealTokens = {
 	'0000000000000000000000000000000000000000000000000000000000000000': {
 		decimals: 9,
 		name: 'Ergo',
@@ -242,3 +244,25 @@ export const ergoTokens = {
 		ticker: 'rsBTC'
 	}
 };
+
+let ergoFakeTokens = {};
+ergoFakeTokens[DEXY_GOLD.lpTokenId] = {
+	decimals: 0,
+	project: 'Dexy Gold',
+	name: 'DexyGoldLP',
+	ticker: 'DexyGoldLP'
+};
+ergoFakeTokens[DEXY_GOLD.dexyTokenId] = {
+	decimals: 0,
+	project: 'Dexy Gold',
+	name: 'DexyGold',
+	ticker: 'DexyGold'
+};
+
+export const ergoTokens = { ...ergoRealTokens, ...ergoFakeTokens };
+
+export function getTokenId(ticker: string): string | undefined {
+	if (ticker) {
+		return Object.entries(ergoTokens).find(([key, value]) => value.ticker === ticker)?.[0];
+	}
+}

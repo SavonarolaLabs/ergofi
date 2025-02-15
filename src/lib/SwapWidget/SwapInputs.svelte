@@ -24,7 +24,7 @@
 			on:mouseenter={handleMouseEnter}
 			on:mouseleave={handleMouseLeave}
 			on:click={dispatchSwap}
-			class="border-color flex items-center justify-center rounded-full border-4 bg-[var(--widget-bg-color)] px-1 py-1 hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
+			class="border-color flex items-center justify-center rounded-full border-4 bg-[var(--cl-bg)] px-1 py-1 hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
 			style="width:42px;height:42px;"
 		>
 			{#if currencySwapHovered}

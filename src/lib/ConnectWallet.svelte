@@ -15,20 +15,20 @@
 			<a
 				target="_blank"
 				href={getWalletInstallLink()}
-				class="text-md flex h-full items-center justify-center rounded-md bg-gray-800 leading-none text-gray-300 shadow-md transition hover:bg-gray-700"
+				class="text-md flex h-full items-center justify-center rounded-md leading-none transition hover:bg-gray-700 hover:text-[var(--cl-bg)]"
 				>INSTALL WALLET</a
 			>
 		{/if}
 
 		{#if $web3wallet_connected}
 			<button
-				class="wallet-box text-md flex items-center justify-center rounded-md bg-gray-800 text-gray-300 shadow-md transition hover:bg-gray-700"
+				class="pow-wow-border wallet-box text-md flex items-center justify-center transition hover:bg-gray-700"
 			>
 				{#if $web3wallet_wallet_name == 'nautilus'}
 					<img
 						src="https://sigmafi.app/assets/nautilus-BfkGomjP.svg"
 						alt="Nautilus Icon"
-						class="h-5 w-5"
+						class="h-7 w-7"
 					/>
 				{/if}
 				{#if $web3wallet_wallet_name == 'safew'}
@@ -74,7 +74,7 @@
 			</div>
 		{:else if $web3wallet_available_wallets.length}
 			<button
-				class="w-wallet text-md h-full rounded-md bg-gray-800 px-6 py-2 text-gray-300 shadow-md transition hover:bg-gray-700"
+				class="pow-wow-border w-wallet text-md h-full rounded-md px-6 py-2 transition hover:bg-gray-700 hover:text-[var(--cl-bg)]"
 			>
 				CONNECT WALLET
 			</button>
@@ -116,6 +116,11 @@
 </div>
 
 <style>
+	.pow-wow-border {
+		border: 2px solid var(--cl-border);
+		color: var(--cl-border);
+	}
+
 	.w-wallet {
 		width: 200px;
 		height: 42px;

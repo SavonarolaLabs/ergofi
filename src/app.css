@@ -49,8 +49,11 @@ sub {
 }
 
 :root {
+	--cl-border: #1f2937;
+	--cl-bg: #f5f2a8;
 	--widget-border-color: #1f2937;
 	--text-color: #1f2937;
+	--bg-color: #f5f2a8;
 	--widget-bg-color: #f5f2a8ed;
 }
 

@@ -921,7 +921,7 @@
 			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
 			}`}
-			style={'margin-bottom:2px'}
+			style={'margin-bottom:4px'}
 		>
 			<input
 				type="range"
@@ -979,7 +979,7 @@
 
 <style>
 	.clip-short {
-		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 6% 100%, 0% 90.7%);
+		clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 5.7% 100%, 0% 91.2%);
 	}
 	.clipped {
 		position: relative;

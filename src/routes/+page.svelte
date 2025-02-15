@@ -53,7 +53,7 @@
 
 <style>
 	.powwowgirl-bg {
-		background-color: #f5f2a8;
+		background-color: var(--bg-color);
 		background-size: contain;
 		background-image: url('/powwowgirl2.png');
 		background-repeat: no-repeat;

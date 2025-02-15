@@ -1,26 +1,17 @@
 <script lang="ts">
+	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 	import {
-		bestOptionErgToDexyGold,
 		bestOptionErgToDexyGoldInputDexy,
 		bestOptionErgToDexyGoldInputErg,
 		buildSwapDexyGoldTx,
-		dexyGoldBankArbitrageInputDexyPrice,
-		dexyGoldBankArbitrageInputErgPrice,
-		dexyGoldBankFreeInputDexyPrice,
-		dexyGoldBankFreeInputErgPrice,
 		dexyGoldLpMintInputDexyPrice,
 		dexyGoldLpMintInputErgPrice,
 		dexyGoldLpMintInputSharesPrice,
-		dexyGoldLpMintInputSharesTx,
 		dexyGoldLpRedeemInputDexyPrice,
 		dexyGoldLpRedeemInputErgPrice,
 		dexyGoldLpRedeemInputSharesPrice,
 		dexyGoldLpSwapInputDexyPrice,
-		dexyGoldLpSwapInputErgPrice,
-		dexyGoldLpSwapInputErgTx,
-		type DexyGoldUtxo,
-		type ErgToDexyGoldBestOption,
-		type ErgToDexyGoldOptions
+		dexyGoldLpSwapInputErgPrice
 	} from '$lib/dexygold/dexyGold';
 	import {
 		dexygold_bank_arbitrage_mint_box,
@@ -33,23 +24,20 @@
 		dexygold_lp_swap_box,
 		dexygold_tracking101_box,
 		dexygold_widget_numbers,
-		oracle_erg_xau_box,
-		type DexyGoldNumbers
+		oracle_erg_xau_box
 	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
-	import { DIRECTION_BUY, DIRECTION_SELL, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { DIRECTION_BUY, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
-	import WalletBalance from '../icons/WalletBalance.svelte';
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
 	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
 	import { bank_box, fee_mining, oracle_box, reserve_border_left_USD } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
-		ergoTokens,
 		getTokenId,
 		SigRSV_TOKEN_ID,
 		SigUSD_TOKEN_ID
@@ -62,43 +50,32 @@
 		web3wallet_wallet_used_addresses
 	} from '../stores/web3wallet';
 	import SubNumber from '../SubNumber.svelte';
+	import { centsToUsd, ergStringToNanoErg, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import {
-		centsToUsd,
-		ergStringToNanoErg,
-		isOwnTx,
-		nanoErgToErg,
-		usdStringToCentBigInt,
-		valueToAmount
-	} from '../utils';
-	import {
-		currencyERG,
 		currencyErgDexyGoldLpPool,
 		currencyErgDexyGoldLpToken,
 		fromCurrencies,
-		getAllowedToCurrencies,
+		getAllowedToTokens,
 		tokenColor
 	} from './currency';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
-	import type { Currency, LastUserInput } from './SwapWidget.types';
-	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
-	import { info } from '$lib/stores/nodeInfo';
 	import {
 		anchor,
-		anchorSide,
 		getSwapTag,
 		inputTokenIds,
 		isLpTokenInput,
 		isLpTokenOutput,
-		outputTokenIds,
 		setAmount,
 		swapAmount,
 		type SwapIntention,
 		type SwapPreview,
 		type SwapRow
 	} from './swapIntention';
-	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
+	import type { Currency, LastUserInput } from './SwapWidget.types';
+	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import { getFromLabel } from './swapWidgetUtils';
+	import { filter } from 'lodash-es';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -580,14 +557,13 @@
 	function handleSelectFromCurrency(c) {
 		fromCurrency = c;
 		fromDropdownOpen = false;
-		const allowed = getAllowedToCurrencies(fromCurrency);
+		const allowed = getAllowedToTokens(swapIntent);
 		toCurrency = allowed[0];
 		selectContract();
 		saveFromToCurrencyToLocalStorage();
 		doRecalc();
 	}
 	function handleSelectToCurrency(c) {
-		toCurrency = c;
 		toDropdownOpen = false;
 		selectContract();
 		saveFromToCurrencyToLocalStorage();
@@ -658,9 +634,7 @@
 							class="hover: flex items-center gap-1 text-sm"
 							on:click={handleFromBalanceClick}
 						>
-							<!-- fromBalance is string if fromCurrency=SigRSV, or number otherwise -->
 							{#if isLpTokenOutput(swapIntent)}
-								isLpTokenOutput
 								<!-- <span><WalletBalance /></span> -->
 								<span class="font-normal">{fromBalance}</span>
 								<span class="font-thin"
@@ -687,9 +661,8 @@
 
 					<div
 						class="relative flex flex-col focus-within:ring-1 focus-within:ring-blue-500"
-						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!fromCurrency.isLpPool
-							? '58px'
-							: '116px'}; "
+						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: 
+						{swapIntent.filter((i) => 'input' == i.side).length == 1 ? '58px' : '116px'}; "
 					>
 						<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
 							<!-- FROM AMOUNT -->
@@ -727,18 +700,18 @@
 										<!-- Show the first token name, e.g. "ERG" -->
 										<div
 											class="h-5 w-5 {tokenColor(
-												swapIntent.find((i) => i.side == 'input')!.ticker
+												swapIntent.find((i) => 'input' == i.side)!.ticker
 											)} rounded-full"
 										></div>
-										{fromCurrency.tokens[0]}
+										{swapIntent.filter((i) => 'input' == i.side)[0].ticker}
 									</div>
 								{/if}
-								{#if swapIntent.filter((i) => (i.side = 'input')).length == 1}
+								{#if swapIntent.filter((i) => 'input' == i.side).length == 1}
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
-										fill={fromCurrency.isLpToken ? 'gray' : 'currentColor'}
+										fill={'currentColor'}
 									>
 										<path d="M12 15.5l-6-6h12l-6 6z" />
 									</svg>
@@ -747,7 +720,7 @@
 						</div>
 
 						<!-- LP second token START -->
-						{#if swapIntent.filter((i) => (i.side = 'input')).length > 1}
+						{#if swapIntent.filter((i) => i.side == 'input').length > 1}
 							<div class="flex">
 								<!-- FROM AMOUNT -->
 								<div style="border-top-width:4px;" class="border-color w-[256px]">
@@ -768,9 +741,8 @@
 								<button
 									id="fromDropdownBtn2"
 									type="button"
-									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{fromCurrency.isLpPool
-										? 4
-										: 4}px; {fromCurrency.isLpPool || true ? ' border-top-left-radius:0' : ''}"
+									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;
+									{fromCurrency.isLpPool || true ? ' border-top-left-radius:0' : ''}"
 									class=" border-color flex items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
 									on:click={toggleFromDropdown}
 								>
@@ -788,7 +760,7 @@
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
-										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
+										fill={'currentColor'}
 									>
 										<path d="M12 15.5l-6-6h12l-6 6z" />
 									</svg>
@@ -828,14 +800,14 @@
 
 				<div
 					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"
-					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {!toCurrency.isLpPool
+					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {swapIntent.filter(
+						(i) => 'output' == i.side
+					).length == 1
 						? '58px'
 						: '116px'}; "
 				>
 					<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
 						<!-- TO AMOUNT -->
-						{swapIntent[2].side}
-						{swapIntent[2].ticker}
 						<input
 							type="number"
 							class="w-[256px] bg-transparent text-3xl outline-none"
@@ -843,7 +815,7 @@
 							min="0"
 							bind:value={toAmount[0]}
 							data-side="output"
-							data-ticker={swapIntent.filter((i) => i.side == 'output')[0]}
+							data-ticker={swapIntent.filter((i) => i.side == 'output')[0].ticker}
 							on:input={handleFromAmountChange}
 						/>
 
@@ -854,10 +826,10 @@
 							type="button"
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
-							disabled={getAllowedToCurrencies(fromCurrency).length < 2}
+							disabled={getAllowedToTokens(swapIntent).length < 2}
 							on:click={toggleToDropdown}
 						>
-							{#if toCurrency.isLpToken}
+							{#if isLpTokenOutput(swapIntent)}
 								<div class="flex items-center gap-3">
 									<div class="text-lg text-blue-300"><Tint></Tint></div>
 									<div class=" leading-0 flex w-full flex-col justify-center text-xs">
@@ -868,11 +840,15 @@
 							{:else}
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
-									<div class="h-5 w-5 {tokenColor(toCurrency.tokens[0])} rounded-full"></div>
-									{toCurrency.tokens[0]}
+									<div
+										class="h-5 w-5 {tokenColor(
+											swapIntent.filter((i) => i.side == 'output')[0].ticker
+										)} rounded-full"
+									></div>
+									{swapIntent.filter((i) => i.side == 'output')[0].ticker}
 								</div>
 							{/if}
-							{#if getAllowedToCurrencies(fromCurrency).length > 1}
+							{#if getAllowedToTokens(swapIntent).length > 1}
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6"
 									xmlns="http://www.w3.org/2000/svg"
@@ -907,24 +883,27 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-right-radius:0px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px; border-top-width:{toCurrency.isLpPool
-									? 4
-									: 4}px; {toCurrency.isLpPool ? ' border-top-left-radius:0' : ''}"
+								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-right-radius:0px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;
+								{swapIntent.filter((i) => i.side == 'output').length > 1 ? ' border-top-left-radius:0' : ''}"
 								class="border-color flex w-full items-center justify-between px-3 py-2 font-medium outline-none"
 								on:click={toggleToDropdown}
-								disabled={getAllowedToCurrencies(fromCurrency).length < 2}
+								disabled={getAllowedToTokens(swapIntent).length < 2}
 							>
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
-									<div class="h-5 w-5 {tokenColor(toCurrency.tokens[1])} rounded-full"></div>
-									{toCurrency.tokens[1]}
+									<div
+										class="h-5 w-5 {tokenColor(
+											swapIntent.filter((i) => i.side == 'output')[1].ticker
+										)} rounded-full"
+									></div>
+									{swapIntent.filter((i) => i.side == 'output')[1].ticker}
 								</div>
-								{#if getAllowedToCurrencies(fromCurrency).length > 1}
+								{#if getAllowedToTokens(swapIntent).length > 1}
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
-										fill={toCurrency.isToken ? 'currentColor' : 'gray'}
+										fill="currentColor"
 									>
 										<path d="M12 15.5l-6-6h12l-6 6z" />
 									</svg>
@@ -992,7 +971,7 @@
 {#if toDropdownOpen}
 	<Dropdown
 		btnRect={toBtnRect}
-		currencies={getAllowedToCurrencies(fromCurrency)}
+		currencies={getAllowedToTokens(swapIntent)}
 		onSelect={handleSelectToCurrency}
 	/>
 {/if}

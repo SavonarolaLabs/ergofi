@@ -1,5 +1,6 @@
 // All possible "from" currencies
 
+import type { SwapIntention } from './swapIntention';
 import type { Currency } from './SwapWidget.types';
 
 export const currencyERG: Currency = { tokens: ['ERG'], isToken: true };
@@ -21,10 +22,11 @@ export const fromCurrencies: Currency[] = [
 	currencyErgDexyGoldLpPool
 ];
 
-export function getAllowedToCurrencies(fromC: Currency): Currency[] {
-	if (fromC.tokens[0] === 'ERG' && fromC.isToken) {
+export function getAllowedToTokens(swapIntent: SwapIntention): Currency[] {
+	const inputs = swapIntent.filter((i) => i.side == 'input');
+	if (inputs.length == 1 && inputs[0].ticker == 'ERG') {
 		return [currencySigUSD, currencySigRSV, currencyDexyGold];
-	} else if (fromC.isLpPool) {
+	} else if (inputs.length == 2) {
 		return [currencyErgDexyGoldLpToken];
 	} else {
 		return [currencyERG];

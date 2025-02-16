@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		buildSwapDexyGoldTx,
-		doRecalcDexyGoldContract,
-		type DexyGoldUtxo
-	} from '$lib/dexygold/dexyGold';
+	import { doRecalcDexyGoldContract, type DexyGoldUtxo } from '$lib/dexygold/dexyGold';
 	import {
 		dexygold_bank_arbitrage_mint_box,
 		dexygold_bank_box,
@@ -19,13 +15,10 @@
 	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
-	import { SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
-	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
-	import { buildSwapSigmaUsdTx } from '../sigmausd/sigmaUSD';
 	import { bank_box, fee_mining, oracle_box, reserve_border_left_USD } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
@@ -42,7 +35,6 @@
 	} from '../stores/web3wallet';
 	import SubNumber from '../SubNumber.svelte';
 	import {
-		anchor,
 		inputTicker,
 		inputTokenIds,
 		isLpTokenInput,
@@ -54,6 +46,8 @@
 		type SwapPreview
 	} from '../swapIntention';
 	import { amountToValue, centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import Dropdown from './Dropdown.svelte';
+	import SwapInputs from './SwapInputs.svelte';
 	import {
 		defaultAmountIntent,
 		ergDexyGoldToLp,
@@ -62,10 +56,13 @@
 		tokenColor,
 		type SwapOption
 	} from './swapOptions';
-	import Dropdown from './Dropdown.svelte';
-	import SwapInputs from './SwapInputs.svelte';
-	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
-	import { getFromLabel } from './swapWidgetUtils';
+	import {
+		getFromLabel,
+		handleSwapButtonDexyGold,
+		handleSwapButtonSigUsd,
+		isSwapDisabledCalc,
+		recalcSigUsdBankAndOracleBoxes
+	} from './swapWidgetUtils';
 
 	/* ---------------------------------------
 	 * Local variables
@@ -132,10 +129,10 @@
 
 		window.addEventListener('click', handleGlobalClick);
 		window.addEventListener('keydown', handleGlobalKeydown);
-		//return () => {
-		//	window.removeEventListener('click', handleGlobalClick);
-		//	window.removeEventListener('keydown', handleGlobalKeydown);
-		//};
+		return () => {
+			window.removeEventListener('click', handleGlobalClick);
+			window.removeEventListener('keydown', handleGlobalKeydown);
+		};
 	});
 
 	/* ---------------------------------------
@@ -199,9 +196,7 @@
 
 	function updateSwapIntent(swapPreview: SwapPreview) {
 		swapPreview.calculatedIntent.forEach((s) => {
-			//if (s.value == undefined) {
 			s.value = amountToValue(s);
-			//}
 		});
 
 		swapIntent = swapPreview.calculatedIntent;
@@ -239,85 +234,19 @@
 
 	let shake = false;
 
-	/* prettier-ignore */
-	async function handleSwapButton(){
-	if ($selected_contract == 'SigmaUsd') {
-		handleSwapButtonSigUsd();
+	async function handleSwapButton() {
+		if (isSwapDisabledCalc(swapIntent)) {
+			shake = true;
+			setTimeout(() => {
+				shake = false;
+			}, 300);
+			return;
+		}
+		if ($selected_contract == 'SigmaUsd') {
+			handleSwapButtonSigUsd(swapIntent, fromValue, toValue);
 		} else if ($selected_contract == 'DexyGold') {
-		handleSwapButtonDexyGold();
+			await handleSwapButtonDexyGold();
 		}
-	}
-
-	/* prettier-ignore */
-	async function handleSwapButtonDexyGold() {
-		if (isSwapDisabledCalc()) {
-			shake = true;
-			setTimeout(() => {
-				shake = false;
-			}, 300);
-			return;
-		}
-
-
-		let dexyGoldUtxo = {
-				lpSwapIn: $dexygold_lp_swap_box,
-				lpMintIn: $dexygold_lp_mint_box,
-				lpRedeemIn: $dexygold_lp_redeem_box,
-				freeMintIn:$dexygold_bank_free_mint_box,
-				bankIn: $dexygold_bank_box,
-				buybankIn: $dexygold_buyback_box,
-				arbMintIn:$dexygold_bank_arbitrage_mint_box,
-				lpIn: $dexygold_lp_box,
-				goldOracle: $oracle_erg_xau_box,
-				tracking101: $dexygold_tracking101_box,
-			}
-
-
-
-		const { me, utxos, height } = await getWeb3WalletData();
-
-		const input = 1_000_000_000n;
-
-		const fromAssets =[]
-		const toAssets =[]
-
-		const unsignedTx = buildSwapDexyGoldTx(fromAssets,toAssets,input,me,height,$fee_mining,utxos,dexyGoldUtxo,$dexygold_widget_numbers)
-		
-		await createInteractionAndSubmitTx(unsignedTx, [me]);
-	}
-
-	async function handleSwapButtonSigUsd() {
-		if (isSwapDisabledCalc()) {
-			shake = true;
-			setTimeout(() => {
-				shake = false;
-			}, 300);
-			return;
-		}
-		// Check direction based on the last typed field
-
-		const fromAsset = {
-			token: inputTicker(swapIntent, 0),
-			amount: fromValue[0]
-		};
-		const toAsset = {
-			token: outputTicker(swapIntent, 0),
-			amount: toValue[0]
-		};
-
-		const { me, utxos, height } = await getWeb3WalletData();
-		const unsignedTx = buildSwapSigmaUsdTx(
-			swapIntent,
-			me,
-			SIGUSD_BANK_ADDRESS,
-			utxos,
-			height,
-			$bank_box,
-			$oracle_box,
-			$fee_mining
-		);
-
-		await createInteractionAndSubmitTx(unsignedTx, [me]);
 	}
 
 	function handleFromBalanceClick() {
@@ -464,17 +393,6 @@
 		} else {
 			return 'To';
 		}
-	}
-
-	function isSwapDisabledCalc() {
-		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
-			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
-				return true;
-			} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {
-				return true;
-			}
-		}
-		return false;
 	}
 </script>
 

@@ -6,8 +6,8 @@
 
 	let isMobile = false;
 
-	//let theme = 'powwowgirls'
-	let theme = 'ergfi';
+	let theme = 'powwowgirls';
+	//let theme = 'ergfi';
 
 	// Detect mobile device
 	onMount(() => {
@@ -22,6 +22,9 @@
 			document.documentElement.style.setProperty('--cl-bg-alpha', '#26243759');
 			document.documentElement.style.setProperty('--cl-bg-widget', '#1B1B28');
 			document.documentElement.style.setProperty('--cl-contrast-text', '#CCC');
+		}
+		if (theme == 'powwowgirls') {
+			document.documentElement.style.setProperty('--cl-bg', '#f5f2a8');
 		}
 	});
 </script>

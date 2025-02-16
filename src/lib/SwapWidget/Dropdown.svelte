@@ -11,14 +11,14 @@
 	export let onClose: () => void;
 
 	function handleGlobalClick(e: MouseEvent) {
-		const menu = document.getElementById('dropdownMenu');
-		if (menu && !menu.contains(e.target as Node)) {
+		const menu = document.getElementById(id);
+		if (open && menu && !menu.contains(e.target as Node)) {
 			onClose();
 		}
 	}
 
 	function handleGlobalKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
+		if (open && e.key === 'Escape') {
 			onClose();
 		}
 	}
@@ -42,7 +42,7 @@
 		{id}
 		class="border-color absolute z-30 border-4 bg-[var(--cl-bg-widget)] shadow-md ring-1 ring-black ring-opacity-5"
 		style="
-		width: {btnRect.width}px;
+		width: 230px;
 		left: {btnRect.left}px;
 		top: {btnRect.top - 4}px;
 	"

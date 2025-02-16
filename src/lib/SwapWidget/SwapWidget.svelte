@@ -67,15 +67,12 @@
 
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');
-
 	let fromValue = ['', ''];
 	let toValue = ['', ''];
 	let swapPrice: number = 0.0;
 	let selectedInputOption: SwapOption = ergDexyGoldToLp;
-
 	let minerFee = 0.01;
 	let showFeeSlider = false;
-
 	let fromDropdownOpen = false;
 	let toDropdownOpen = false;
 
@@ -98,12 +95,10 @@
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
 			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
 		});
-
 		bank_box.subscribe((bankBox) => {
 			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
 			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
 		});
-
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
 			if (addr) {
 				confirmed_interactions.update((list) =>
@@ -130,10 +125,8 @@
 				if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
 					row.amount = inputItem.amount;
 					row.value = inputItem.value;
-					console.log('swapIntent.forEach((row) => {', inputItem.amount);
 				}
 			});
-
 			let dexyGoldUtxo: DexyGoldUtxo = {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpMintIn: $dexygold_lp_mint_box,
@@ -146,10 +139,8 @@
 				goldOracle: $oracle_erg_xau_box,
 				tracking101: $dexygold_tracking101_box
 			};
-
 			if (!inputItem) {
 				const copySwapIntent = defaultAmountIntent(swapIntent);
-
 				const swapPreview = doRecalcDexyGoldContract(
 					copySwapIntent[0],
 					copySwapIntent,
@@ -193,8 +184,6 @@
 		const tokenId = getTokenId(ticker)!;
 		const value = input.value;
 		const amount = valueToAmount({ tokenId, value });
-
-		console.log({ side, ticker, tokenId, value, amount });
 		fromValue[0] = input.value;
 		doRecalc({ side, ticker, tokenId, value, amount });
 	}
@@ -259,13 +248,13 @@
 	})();
 
 	function handleGlobalClick(e: MouseEvent) {}
-
 	function handleGlobalKeydown(e: KeyboardEvent) {}
 
 	let fromBtnRect = { top: 0, left: 0, width: 0 };
 	let toBtnRect = { top: 0, left: 0, width: 0 };
 
 	function toggleFromDropdown(e) {
+		e.stopPropagation();
 		const rect = e.currentTarget.getBoundingClientRect();
 		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		fromDropdownOpen = !fromDropdownOpen;
@@ -273,6 +262,7 @@
 	}
 
 	function toggleToDropdown(e) {
+		e.stopPropagation();
 		const rect = e.currentTarget.getBoundingClientRect();
 		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		toDropdownOpen = !toDropdownOpen;
@@ -380,7 +370,7 @@
 								type="button"
 								style="width:271px; border-right:none; margin-bottom:-4px; border-width:4px;  height:62px;"
 								class="border-color flex w-full items-center justify-between rounded-lg rounded-bl-none rounded-br-none rounded-tr-none px-3 py-2 font-medium outline-none"
-								on:click={toggleFromDropdown}
+								on:click|stopPropagation={toggleFromDropdown}
 							>
 								{#if isLpTokenInput(swapIntent)}
 									<div class="flex items-center gap-3">
@@ -431,7 +421,7 @@
 									type="button"
 									style="height:62px; border-left: 4px solid var(--cl-border);"
 									class="flex w-full items-center justify-between px-3 py-2 font-medium outline-none"
-									on:click={toggleFromDropdown}
+									on:click|stopPropagation={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
 										<div
@@ -500,7 +490,7 @@
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
 							disabled={getOutputOptions(swapIntent).length < 2}
-							on:click={toggleToDropdown}
+							on:click|stopPropagation={toggleToDropdown}
 						>
 							{#if isLpTokenOutput(swapIntent)}
 								<div class="flex items-center gap-3">
@@ -551,7 +541,7 @@
 								type="button"
 								style="height:62px; border-left: 4px solid var(--cl-border)"
 								class="flex w-full items-center justify-between px-3 font-medium outline-none"
-								on:click={toggleToDropdown}
+								on:click|stopPropagation={toggleToDropdown}
 								disabled={getOutputOptions(swapIntent).length < 2}
 							>
 								<div class="flex items-center gap-3">

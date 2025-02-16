@@ -1,28 +1,49 @@
 // All possible "from" currencies
 
-import type { SwapIntention } from '../swapIntention';
-import type { SwapItem } from './SwapWidget.types';
+import { getTokenId } from '$lib/stores/ergoTokens';
+import type { SwapIntention, SwapItem } from '../swapIntention';
 
-export const currencyERG: SwapItem = { tokens: ['ERG'], isToken: true };
-export const currencySigUSD: SwapItem = { tokens: ['SigUSD'], isToken: true };
-export const currencySigRSV: SwapItem = { tokens: ['SigRSV'], isToken: true };
-export const currencyDexyGold: SwapItem = { tokens: ['DexyGold'], isToken: true };
-export const currencyErgDexyGoldLpToken: SwapItem = {
-	tokens: ['DexyGoldLP'],
-	isLpToken: true
+export type SwapOption =
+	| { item: SwapItem; intention?: never }
+	| { item?: never; intention: SwapIntention };
+
+export const currencyERG: SwapItem = { side: 'input', ticker: 'ERG', tokenId: getTokenId('ERG')! };
+export const currencySigUSD: SwapItem = {
+	side: 'input',
+	ticker: 'SigUSD',
+	tokenId: getTokenId('SigUSD')!
 };
-export const currencyErgDexyGoldLpPool: SwapItem = { tokens: ['ERG', 'DexyGold'], isLpPool: true };
-
-export const fromCurrencies: SwapItem[] = [
-	currencyERG,
-	currencyDexyGold,
-	currencySigUSD,
-	currencySigRSV,
-	// currencyErgDexyGoldLpToken,
-	currencyErgDexyGoldLpPool
+export const currencySigRSV: SwapItem = {
+	side: 'input',
+	ticker: 'SigRSV',
+	tokenId: getTokenId('SigRSV')!
+};
+export const currencyDexyGold: SwapItem = {
+	side: 'input',
+	ticker: 'DexyGold',
+	tokenId: getTokenId('DexyGold')!
+};
+export const currencyErgDexyGoldLpToken: SwapItem = {
+	side: 'input',
+	ticker: 'DexyGoldLP',
+	tokenId: getTokenId('DexyGoldLP')!
+};
+export const ergDexyGoldToLp: SwapIntention = [
+	{ side: 'input', ticker: 'ERG', tokenId: getTokenId('ERG')! },
+	{ side: 'input', ticker: 'DexyGold', tokenId: getTokenId('DexyGold')! },
+	{ side: 'output', ticker: 'DexyGoldLP', tokenId: getTokenId('DexyGoldLP')! }
 ];
 
-export function getAllowedSwapItems(swapIntent: SwapIntention): SwapItem[] {
+export const inputOptions: SwapOption[] = [
+	{ item: currencyERG },
+	{ item: currencyDexyGold },
+	{ item: currencySigUSD },
+	{ item: currencySigRSV },
+	// currencyErgDexyGoldLpToken,
+	{ intention: ergDexyGoldToLp }
+];
+
+export function getOutputOptions(swapIntent: SwapIntention): SwapOption[] {
 	const inputs = swapIntent.filter((i) => i.side == 'input');
 	if (inputs.length == 1 && inputs[0].ticker == 'ERG') {
 		return [currencySigUSD, currencySigRSV, currencyDexyGold];

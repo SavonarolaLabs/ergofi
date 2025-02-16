@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
+	import WidgetOptionRow from '$lib/WidgetOptionRow.svelte';
 	import type { SwapItem } from './SwapWidget.types';
 
 	export let toBtnRect: { top: number; left: number; width: number };
@@ -21,7 +21,7 @@ top:{toBtnRect.top - 4}px;"
 				style="height:56px"
 				on:click={() => onSelect(c)}
 			>
-				<SwapWidgetTokenRow {c} />
+				<WidgetOptionRow {c} />
 			</button>
 
 			{#if i !== toCurrencies.length - 1}

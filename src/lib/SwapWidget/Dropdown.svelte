@@ -1,15 +1,15 @@
 <script lang="ts">
-	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
-	import type { SwapItem } from './SwapWidget.types';
+	import WidgetOptionRow from './WidgetOptionRow.svelte';
+	import type { SwapOption } from './currency';
 
 	export let btnRect: { top: number; left: number; width: number };
-	export let currencies: SwapItem[];
-	export let onSelect: (currency: SwapItem) => void;
+	export let options: SwapOption[];
+	export let onSelect: (selectedInputOption: SwapOption) => void;
 </script>
 
 <div
 	id="fromDropdownMenu"
-	class="border-color absolute z-30 border-4 bg-[var(--cl-bg-alpha)] shadow-md ring-1 ring-black ring-opacity-5"
+	class="border-color absolute z-30 border-4 bg-[var(--cl-bg-widget)] shadow-md ring-1 ring-black ring-opacity-5"
 	style="
 			width: 250px;
 			border-top-left-radius: 0;
@@ -19,18 +19,14 @@
 		"
 >
 	<div>
-		{#each currencies as c, i}
+		{#each options as option, i}
 			<button
 				class="text-md flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-gray-600 hover:text-white"
 				style="height:56px"
-				on:click={() => onSelect(c)}
+				on:click={() => onSelect(option)}
 			>
-				<SwapWidgetTokenRow {c} />
+				<WidgetOptionRow {option} />
 			</button>
-
-			{#if i !== currencies.length - 1}
-				<hr class="border-slate-800" />
-			{/if}
 		{/each}
 	</div>
 </div>

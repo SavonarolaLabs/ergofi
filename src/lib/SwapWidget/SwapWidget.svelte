@@ -67,13 +67,13 @@
 	/* ---------------------------------------
 	 * Local variables
 	 * ------------------------------------- */
-	let swapIntent: SwapIntention = ergDexyGoldToLp;
+	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');
 
 	let fromAmount = ['', ''];
 	let toAmount = ['', ''];
 	let swapPrice: number = 0.0;
-	let selectedInputOption: SwapOption = { intention: ergDexyGoldToLp };
+	let selectedInputOption: SwapOption = ergDexyGoldToLp;
 
 	let minerFee = 0.01;
 	let showFeeSlider = false;
@@ -391,8 +391,17 @@
 	function handleSelectInputOption(option: SwapOption) {
 		fromDropdownOpen = false;
 		selectedInputOption = option;
-		const allowed = getOutputOptions(swapIntent);
+
+		if (option.intention) {
+			swapIntent = structuredClone(option.intention);
+		} else {
+			const input = structuredClone(option.item);
+			const outputItem = structuredClone(getOutputOptions(option)[0].item!);
+			outputItem.side = 'output';
+			swapIntent = [input, outputItem];
+		}
 		updateSelectedContract();
+		console.log('$selected_contract', $selected_contract);
 		doRecalc();
 	}
 	function handleSelectToOption(i: SwapOption) {

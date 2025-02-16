@@ -28,9 +28,9 @@
 			style="width:42px;height:42px;height: 30px; border-radius: 8px;"
 		>
 			{#if currencySwapHovered}
-				<ArrowUpDown size={20} />
+				<ArrowUpDown size={18} />
 			{:else}
-				<ArrowDown />
+				<ArrowDown size={18} />
 			{/if}
 		</button>
 	</div>

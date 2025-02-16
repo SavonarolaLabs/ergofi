@@ -443,6 +443,10 @@
 	}
 </script>
 
+{$selected_contract}
+<hr />
+<hr />
+<hr />
 <div>
 	{#each swapIntent.filter((i) => 'input' == i.side) as row}
 		<div>{row.side}:{row.ticker}</div>

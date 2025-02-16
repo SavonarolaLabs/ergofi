@@ -89,5 +89,5 @@ export function inputTicker(swapIntent: SwapIntention, index: number) {
 }
 
 export function outputTicker(swapIntent: SwapIntention, index: number) {
-	return swapIntent.filter((i) => 'input' == i.side)[index].ticker;
+	return swapIntent.filter((i) => 'output' == i.side)[index].ticker;
 }

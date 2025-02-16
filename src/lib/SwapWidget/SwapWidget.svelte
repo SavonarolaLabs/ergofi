@@ -804,7 +804,7 @@
 {#if toDropdownOpen}
 	<Dropdown
 		btnRect={toBtnRect}
-		options={getOutputOptions(swapIntent)}
+		options={getOutputOptions(selectedInputOption)}
 		onSelect={handleSelectToOption}
 	/>
 {/if}

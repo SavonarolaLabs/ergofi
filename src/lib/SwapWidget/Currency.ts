@@ -59,6 +59,7 @@ export const inputOptions: SwapOption[] = [
 ];
 
 export function getOutputOptions(swapIntent: SwapOption): SwapOption[] {
+	console.log('getOutputOptions', swapIntent);
 	if (swapIntent.item) {
 		if (swapIntent.item.ticker == 'ERG') {
 			return [currencySigUSD, currencySigRSV, currencyDexyGold];

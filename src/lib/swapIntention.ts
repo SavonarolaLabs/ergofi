@@ -7,13 +7,13 @@ export type TokenInput = {
 	value?: string;
 };
 
-export type SwapRow = TokenInput & {
+export type SwapItem = TokenInput & {
 	ticker: string;
 	amount?: bigint;
 	side: SwapSide;
 };
 
-export type SwapIntention = SwapRow[];
+export type SwapIntention = SwapItem[];
 export type SwapPreview = { calculatedIntent: SwapIntention; price: number };
 
 export function inputTokenIds(swapIntention: SwapIntention): string[] {
@@ -28,7 +28,7 @@ export function swapAmount(swapIntention: SwapIntention): bigint {
 	return swapIntention.find((si) => si.amount != undefined)!.amount!;
 }
 
-export function anchor(swapIntention: SwapIntention): SwapRow {
+export function anchor(swapIntention: SwapIntention): SwapItem {
 	return swapIntention.find((si) => si.amount != undefined)!;
 }
 
@@ -82,4 +82,12 @@ export function isLpTokenOutput(swapIntent: SwapIntention): boolean {
 export function isLpTokenInput(swapIntent: SwapIntention): boolean {
 	const tokenIds = inputTokenIds(swapIntent);
 	return tokenIds.length == 1 && ergoTokens[tokenIds[0]].isLpToken;
+}
+
+export function inputTicker(swapIntent: SwapIntention, index: number) {
+	return swapIntent.filter((i) => 'input' == i.side)[index].ticker;
+}
+
+export function outputTicker(swapIntent: SwapIntention, index: number) {
+	return swapIntent.filter((i) => 'input' == i.side)[index].ticker;
 }

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
-	import type { Currency } from './SwapWidget.types';
+	import type { SwapItem } from './SwapWidget.types';
 
 	export let toBtnRect: { top: number; left: number; width: number };
-	export let toCurrencies: Currency[];
-	export let onSelect: (currency: Currency) => void;
+	export let toCurrencies: SwapItem[];
+	export let onSelect: (currency: SwapItem) => void;
 </script>
 
 <div
@@ -12,7 +12,7 @@
 	style="width: 250px; border-top-left-radius:0px; border-top-right-radius:0px;
 left: {toBtnRect.left}px;
 top:{toBtnRect.top - 4}px;"
-	class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-[var(--widget-bg-color)] shadow-md ring-1 ring-black ring-opacity-5"
+	class="border-color absolute right-0 z-30 w-28 origin-top-right rounded-md border-4 bg-[var(--cl-bg-alpha)] shadow-md ring-1 ring-black ring-opacity-5"
 >
 	<div>
 		{#each toCurrencies as c, i}

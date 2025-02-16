@@ -1,17 +1,6 @@
 <script lang="ts">
-	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 	import {
-		bestOptionErgToDexyGoldInputDexy,
-		bestOptionErgToDexyGoldInputErg,
 		buildSwapDexyGoldTx,
-		dexyGoldLpMintInputDexyPrice,
-		dexyGoldLpMintInputErgPrice,
-		dexyGoldLpMintInputSharesPrice,
-		dexyGoldLpRedeemInputDexyPrice,
-		dexyGoldLpRedeemInputErgPrice,
-		dexyGoldLpRedeemInputSharesPrice,
-		dexyGoldLpSwapInputDexyPrice,
-		dexyGoldLpSwapInputErgPrice,
 		doRecalcDexyGoldContract,
 		type DexyGoldUtxo
 	} from '$lib/dexygold/dexyGold';
@@ -26,12 +15,11 @@
 		dexygold_lp_swap_box,
 		dexygold_tracking101_box,
 		dexygold_widget_numbers,
-		oracle_erg_xau_box,
-		type DexyGoldNumbers
+		oracle_erg_xau_box
 	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
-	import { DIRECTION_BUY, SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
+	import { SIGUSD_BANK_ADDRESS } from '../api/ergoNode';
 	import { createInteractionAndSubmitTx, getWeb3WalletData } from '../asdf';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
@@ -53,29 +41,20 @@
 		web3wallet_wallet_used_addresses
 	} from '../stores/web3wallet';
 	import SubNumber from '../SubNumber.svelte';
-	import { centsToUsd, ergStringToNanoErg, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import {
-		currencyErgDexyGoldLpPool,
-		currencyErgDexyGoldLpToken,
-		fromCurrencies,
-		getAllowedToTokens,
-		tokenColor
-	} from './currency';
-	import Dropdown from './Dropdown.svelte';
-	import SwapInputs from './SwapInputs.svelte';
-	import {
-		anchor,
-		getSwapTag,
+		inputTicker,
 		inputTokenIds,
 		isLpTokenInput,
 		isLpTokenOutput,
-		setAmount,
-		swapAmount,
+		outputTicker,
+		outputTokenIds,
 		type SwapIntention,
-		type SwapPreview,
-		type SwapRow
+		type SwapItem
 	} from '../swapIntention';
-	import type { Currency, LastUserInput } from './SwapWidget.types';
+	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import { getAllowedSwapItems, tokenColor } from './currency';
+	import Dropdown from './Dropdown.svelte';
+	import SwapInputs from './SwapInputs.svelte';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import { getFromLabel } from './swapWidgetUtils';
 
@@ -83,13 +62,12 @@
 	 * Local variables
 	 * ------------------------------------- */
 	let swapIntent: SwapIntention = [
-		{ side: 'input', tokenId: getTokenId('ERG')!, ticker: 'ERG' },
-		{ side: 'input', tokenId: getTokenId('DexyGold')!, ticker: 'DexyGold' },
-		{ side: 'output', tokenId: getTokenId('DexyGoldLP')!, ticker: 'DexyGoldLP' }
+		{ side: 'output', tokenId: getTokenId('ERG')!, ticker: 'ERG' },
+		{ side: 'output', tokenId: getTokenId('DexyGold')!, ticker: 'DexyGold' },
+		{ side: 'input', tokenId: getTokenId('DexyGoldLP')!, ticker: 'DexyGoldLP' }
 	];
+	selected_contract.set('DexyGold');
 
-	let fromCurrency: Currency = currencyErgDexyGoldLpToken;
-	let toCurrency: Currency = currencyErgDexyGoldLpPool;
 	let fromAmount = ['', ''];
 	let toAmount = ['', ''];
 	let swapPrice: number = 0.0;
@@ -101,32 +79,12 @@
 	let fromDropdownOpen = false;
 	let toDropdownOpen = false;
 
-	function saveFromToCurrencyToLocalStorage() {
-		localStorage.setItem('fromCurrency', JSON.stringify(fromCurrency));
-		localStorage.setItem('toCurrency', JSON.stringify(toCurrency));
-	}
-
-	function loadFromToCurrencyFromLocalStorage() {
-		try {
-			const savedFromCurrency = localStorage.getItem('fromCurrency');
-			const savedToCurrency = localStorage.getItem('toCurrency');
-
-			if (savedFromCurrency) {
-				fromCurrency = JSON.parse(savedFromCurrency);
-			}
-			if (savedToCurrency) {
-				toCurrency = JSON.parse(savedToCurrency);
-			}
-			selectContract();
-		} catch (e) {
-			// Gotta catch 'em all.
-		}
-	}
-
-	function selectContract() {
+	function updateSelectedContract() {
 		if (
-			(fromCurrency.isToken && ['SigUSD', 'SigRSV'].includes(fromCurrency.tokens[0])) ||
-			(toCurrency.isToken && ['SigUSD', 'SigRSV'].includes(toCurrency.tokens[0]))
+			(inputTokenIds(swapIntent).length == 1 &&
+				['SigUSD', 'SigRSV'].includes(inputTicker(swapIntent, 0))) ||
+			(outputTokenIds(swapIntent).length == 1 &&
+				['SigUSD', 'SigRSV'].includes(outputTicker(swapIntent, 0)))
 		) {
 			selected_contract.set('SigmaUsd');
 		} else {
@@ -140,8 +98,6 @@
 	onMount(() => {
 		//TODO: remove
 		initJsonTestBoxes();
-
-		//loadFromToCurrencyFromLocalStorage();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
 			if ($selected_contract == 'SigmaUsd') doRecalcSigUsdContract();
@@ -180,15 +136,15 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	function doRecalc(inputRow?: SwapRow) {
+	function doRecalc(inputItem?: SwapItem) {
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
 			swapIntent.forEach((row) => {
-				if (row.tokenId == inputRow?.tokenId && row.side == inputRow?.side) {
-					row.amount = inputRow.amount;
-					row.value = inputRow.value;
-					console.log('swapIntent.forEach((row) => {', inputRow.amount);
+				if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
+					row.amount = inputItem.amount;
+					row.value = inputItem.value;
+					console.log('swapIntent.forEach((row) => {', inputItem.amount);
 				}
 			});
 
@@ -216,13 +172,7 @@
 		}
 	}
 	function doRecalcSigUsdContract() {
-		const recalc = recalcAmountAndPrice(
-			fromCurrency,
-			fromAmount[0],
-			toCurrency,
-			toAmount[0],
-			lastInput
-		);
+		const recalc = recalcAmountAndPrice(swapIntent);
 		if (recalc) {
 			swapPrice = recalc.price;
 			if (recalc.from != undefined) {
@@ -248,7 +198,6 @@
 
 		console.log({ side, ticker, tokenId, value, amount });
 		fromAmount[0] = input.value;
-		lastInput = 'From';
 		doRecalc({ side, ticker, tokenId, value, amount });
 	}
 
@@ -266,11 +215,9 @@
 	/* prettier-ignore */
 	async function handleSwapButtonDexyGold() {
 		if (isSwapDisabledCalc()) {
-			setWidgetBorderError();
 			shake = true;
 			setTimeout(() => {
 				shake = false;
-				setWidgetBorderNormal();
 			}, 300);
 			return;
 		}
@@ -305,30 +252,26 @@
 
 	async function handleSwapButtonSigUsd() {
 		if (isSwapDisabledCalc()) {
-			setWidgetBorderError();
 			shake = true;
 			setTimeout(() => {
 				shake = false;
-				setWidgetBorderNormal();
 			}, 300);
 			return;
 		}
 		// Check direction based on the last typed field
 
 		const fromAsset = {
-			token: fromCurrency.tokens[0],
+			token: inputTicker(swapIntent, 0),
 			amount: fromAmount[0]
 		};
 		const toAsset = {
-			token: toCurrency.tokens[0],
+			token: outputTicker(swapIntent, 0),
 			amount: toAmount[0]
 		};
 
 		const { me, utxos, height } = await getWeb3WalletData();
 		const unsignedTx = buildSwapSigmaUsdTx(
-			fromAsset,
-			toAsset,
-			lastInput,
+			swapIntent,
 			me,
 			SIGUSD_BANK_ADDRESS,
 			utxos,
@@ -352,12 +295,7 @@
 			row.side = row.side == 'input' ? 'output' : 'input';
 			return row;
 		});
-
-		const temp = fromCurrency;
-		fromCurrency = toCurrency;
-		toCurrency = temp;
-		selectContract();
-		saveFromToCurrencyToLocalStorage();
+		updateSelectedContract();
 		doRecalc();
 	}
 
@@ -378,9 +316,8 @@
 	/* ---------------------------------------
 	 * Reactive / Derived
 	 * ------------------------------------- */
-	// Display the user's balance for the "fromCurrency"
 	$: fromBalance = (() => {
-		const fromToken = fromCurrency.tokens[0];
+		const fromToken = inputTicker(swapIntent, 0);
 		if (fromToken === 'ERG') {
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === ERGO_TOKEN_ID)?.amount || 0n;
@@ -450,18 +387,14 @@
 		fromDropdownOpen = false;
 	}
 	function handleSelectFromCurrency(c) {
-		fromCurrency = c;
 		fromDropdownOpen = false;
-		const allowed = getAllowedToTokens(swapIntent);
-		toCurrency = allowed[0];
-		selectContract();
-		saveFromToCurrencyToLocalStorage();
+		const allowed = getAllowedSwapItems(swapIntent);
+		updateSelectedContract();
 		doRecalc();
 	}
-	function handleSelectToCurrency(c) {
+	function handleSelectToItem(i: SwapItem) {
 		toDropdownOpen = false;
-		selectContract();
-		saveFromToCurrencyToLocalStorage();
+		updateSelectedContract();
 		doRecalc();
 	}
 
@@ -469,29 +402,17 @@
 	 * Validation ERRORS
 	 * ------------------------------------- */
 
-	const setCustomProperty = (property: string, value: string): void => {
-		document.documentElement.style.setProperty(property, value);
-	};
-
-	function setWidgetBorderError() {
-		setCustomProperty('--widget-border-color', 'red');
-	}
-
-	function setWidgetBorderNormal() {
-		setCustomProperty('--widget-border-color', '#1F2937');
-	}
-
 	let isSwapDisabled = false;
 	function getLabelText(): string {
 		isSwapDisabled = isSwapDisabledCalc();
 		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
-			if (fromCurrency.tokens[0] == 'ERG' && toCurrency.tokens[0] == 'SigUSD') {
+			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
 				return 'Mint Unavailable';
-			} else if (fromCurrency.tokens[0] == 'SigRSV' && toCurrency.tokens[0] == 'ERG') {
+			} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {
 				return 'Redeem Unavailable';
 			}
 		}
-		if (toCurrency.isLpPool || toCurrency.isLpToken) {
+		if (isLpTokenInput(swapIntent) || isLpTokenOutput(swapIntent)) {
 			return 'Get';
 		} else {
 			return 'To';
@@ -500,9 +421,9 @@
 
 	function isSwapDisabledCalc() {
 		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
-			if (fromCurrency.tokens[0] == 'ERG' && toCurrency.tokens[0] == 'SigUSD') {
+			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
 				return true;
-			} else if (fromCurrency.tokens[0] == 'SigRSV' && toCurrency.tokens[0] == 'ERG') {
+			} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {
 				return true;
 			}
 		}
@@ -510,13 +431,23 @@
 	}
 </script>
 
-<!-- UI Layout -->
-<div class="relative" class:shake>
+<div>
+	{#each swapIntent.filter((i) => 'input' == i.side) as row}
+		<div>{row.side}:{row.ticker}</div>
+	{/each}
+	<hr />
+	{#each swapIntent.filter((i) => 'output' == i.side) as row}
+		<div>{row.side}:{row.ticker}</div>
+	{/each}
+</div>
+
+<div class="relative text-[var(--cl-contrast-text)]" class:shake>
 	<div
-		class="mx-auto w-full max-w-md rounded-xl rounded-bl-none rounded-br-none border-4 border-[var(--widget-border-color)]"
+		class="mx-auto w-full max-w-md rounded-tl-xl rounded-tr-xl border-4
+		{!shake ? 'border-[var(--cl-border)]' : 'border-[var(--cl-border-error)]'}"
 	>
 		<div
-			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--widget-bg-color)] transition-all"
+			class="flex flex-col rounded-tl-xl rounded-tr-xl bg-[var(--cl-bg-alpha)] transition-all"
 			class:justify-between={inputTokenIds(swapIntent).length > 1}
 			style={swapIntent.length > 2 ? 'min-height:258px' : 'min-height:200px'}
 		>
@@ -530,7 +461,6 @@
 							on:click={handleFromBalanceClick}
 						>
 							{#if isLpTokenOutput(swapIntent)}
-								<!-- <span><WalletBalance /></span> -->
 								<span class="font-normal">{fromBalance}</span>
 								<span class="font-thin"
 									>{swapIntent.filter((i) => i.side == 'input')[0].ticker}</span
@@ -545,7 +475,6 @@
 									maximumFractionDigits: 2
 								})}
 							{:else}
-								<!-- <WalletBalance /> -->
 								<span class="font-normal">{fromBalance}</span>
 								<span class="font-thin"
 									>{swapIntent.filter((i) => i.side == 'input')[0].ticker}</span
@@ -559,7 +488,7 @@
 						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: 
 						{swapIntent.filter((i) => 'input' == i.side).length == 1 ? '58px' : '116px'}; "
 					>
-						<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
+						<div class="flex" style="border-bottom: 4px solid var(--cl-border)">
 							<!-- FROM AMOUNT -->
 							<input
 								type="number"
@@ -573,8 +502,7 @@
 								on:input={handleFromAmountChange}
 							/>
 
-							<!-- FROM CURRENCY DROPDOWN -->
-							<!-- Toggle button -->
+							<!-- FROM DROPDOWN -->
 							<button
 								id="fromDropdownBtn"
 								type="button"
@@ -614,11 +542,11 @@
 							</button>
 						</div>
 
-						<!-- LP second token START -->
+						<!-- FROM SECOND START -->
 						{#if swapIntent.filter((i) => i.side == 'input').length > 1}
-							<div class="flex">
+							<div class="flex" style="border-bottom:4px solid var(--cl-border);">
 								<!-- FROM AMOUNT -->
-								<div style="border-top-width:4px;" class="border-color w-[256px]">
+								<div>
 									<input
 										type="number"
 										class="w-[256px] bg-transparent text-3xl outline-none"
@@ -636,9 +564,8 @@
 								<button
 									id="fromDropdownBtn2"
 									type="button"
-									style="border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;
-									{fromCurrency.isLpPool || true ? ' border-top-left-radius:0' : ''}"
-									class=" border-color flex items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
+									style="height:62px; border-left: 4px solid var(--cl-border);"
+									class="flex w-full items-center justify-between px-3 py-2 font-medium outline-none"
 									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
@@ -662,7 +589,7 @@
 								</button>
 							</div>
 						{/if}
-						<!-- LP second token END -->
+						<!-- FROM SECOND END -->
 					</div>
 				</div>
 
@@ -677,16 +604,14 @@
 						{getLabelText()}</span
 					>
 					<span class="text-sm">
-						<!-- If SigRSV is involved, show SubNumber(1 / swapPrice) as example -->
-
-						{#if toCurrency.tokens[0] === 'SigRSV' || fromCurrency.tokens[0] === 'SigRSV'}
+						{#if outputTicker(swapIntent, 0) === 'SigRSV' || inputTicker(swapIntent, 0) === 'SigRSV'}
 							<SubNumber value={1 / swapPrice}></SubNumber>
-						{:else if fromCurrency.tokens[0] === 'ERG' && toCurrency.tokens[0] === 'DexyGold'}
-							1 {fromCurrency.tokens[0]} ≈ <SubNumber value={10 ** 9 / swapPrice}></SubNumber>
-							{toCurrency.tokens[0]}
-						{:else if fromCurrency.tokens[0] === 'DexyGold' && toCurrency.tokens[0] === 'ERG'}
-							1 {fromCurrency.tokens[0]} ≈ <SubNumber value={swapPrice / 10 ** 9}></SubNumber>
-							{toCurrency.tokens[0]}
+						{:else if inputTicker(swapIntent, 0) === 'ERG' && outputTicker(swapIntent, 0) === 'DexyGold'}
+							1 {inputTicker(swapIntent, 0)} ≈ <SubNumber value={10 ** 9 / swapPrice}></SubNumber>
+							{outputTicker(swapIntent, 0)}
+						{:else if inputTicker(swapIntent, 0) === 'DexyGold' && outputTicker(swapIntent, 0) === 'ERG'}
+							1 {inputTicker(swapIntent, 0)} ≈ <SubNumber value={swapPrice / 10 ** 9}></SubNumber>
+							{outputTicker(swapIntent, 0)}
 						{:else}
 							<SubNumber value={swapPrice}></SubNumber>
 						{/if}
@@ -701,7 +626,7 @@
 						? '58px'
 						: '116px'}; "
 				>
-					<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
+					<div class="flex">
 						<!-- TO AMOUNT -->
 						<input
 							type="number"
@@ -714,14 +639,13 @@
 							on:input={handleFromAmountChange}
 						/>
 
-						<!-- TO CURRENCY DROPDOWN -->
-						<!-- Toggle button -->
+						<!-- TO DROPDOWN -->
 						<button
 							id="toDropdownBtn"
 							type="button"
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
-							disabled={getAllowedToTokens(swapIntent).length < 2}
+							disabled={getAllowedSwapItems(swapIntent).length < 2}
 							on:click={toggleToDropdown}
 						>
 							{#if isLpTokenOutput(swapIntent)}
@@ -743,7 +667,7 @@
 									{swapIntent.filter((i) => i.side == 'output')[0].ticker}
 								</div>
 							{/if}
-							{#if getAllowedToTokens(swapIntent).length > 1}
+							{#if getAllowedSwapItems(swapIntent).length > 1}
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6"
 									xmlns="http://www.w3.org/2000/svg"
@@ -756,7 +680,7 @@
 						</button>
 					</div>
 
-					<!-- LP second token START -->
+					<!-- SECOND TO START -->
 					{#if swapIntent.filter((i) => i.side == 'output').length > 1}
 						<div class="flex">
 							<!-- FROM AMOUNT -->
@@ -778,11 +702,10 @@
 							<button
 								id="toDropdownBtn2"
 								type="button"
-								style="width: 166px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-right-radius:0px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;
-								{swapIntent.filter((i) => i.side == 'output').length > 1 ? ' border-top-left-radius:0' : ''}"
-								class="border-color flex w-full items-center justify-between px-3 py-2 font-medium outline-none"
+								style="height:62px; border-left: 4px solid var(--cl-border)"
+								class="flex w-full items-center justify-between px-3 font-medium outline-none"
 								on:click={toggleToDropdown}
-								disabled={getAllowedToTokens(swapIntent).length < 2}
+								disabled={getAllowedSwapItems(swapIntent).length < 2}
 							>
 								<div class="flex items-center gap-3">
 									<!-- Show the first token name, e.g. "ERG" -->
@@ -793,7 +716,7 @@
 									></div>
 									{swapIntent.filter((i) => i.side == 'output')[1].ticker}
 								</div>
-								{#if getAllowedToTokens(swapIntent).length > 1}
+								{#if getAllowedSwapItems(swapIntent).length > 1}
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
@@ -806,7 +729,7 @@
 							</button>
 						</div>
 					{/if}
-					<!-- LP second token END -->
+					<!-- SECOND TO END -->
 				</div>
 			</div>
 		</div>
@@ -830,7 +753,6 @@
 				Miner Fee: {minerFee.toFixed(2)} ERG
 			</div>
 		</div>
-		<!-- Swap Button -->
 	</div>
 	{#if $web3wallet_available_wallets.length == 0}
 		<a
@@ -866,8 +788,8 @@
 {#if toDropdownOpen}
 	<Dropdown
 		btnRect={toBtnRect}
-		currencies={getAllowedToTokens(swapIntent)}
-		onSelect={handleSelectToCurrency}
+		currencies={getAllowedSwapItems(swapIntent)}
+		onSelect={handleSelectToItem}
 	/>
 {/if}
 

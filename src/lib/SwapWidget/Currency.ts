@@ -1,19 +1,19 @@
 // All possible "from" currencies
 
 import type { SwapIntention } from '../swapIntention';
-import type { Currency } from './SwapWidget.types';
+import type { SwapItem } from './SwapWidget.types';
 
-export const currencyERG: Currency = { tokens: ['ERG'], isToken: true };
-export const currencySigUSD: Currency = { tokens: ['SigUSD'], isToken: true };
-export const currencySigRSV: Currency = { tokens: ['SigRSV'], isToken: true };
-export const currencyDexyGold: Currency = { tokens: ['DexyGold'], isToken: true };
-export const currencyErgDexyGoldLpToken: Currency = {
+export const currencyERG: SwapItem = { tokens: ['ERG'], isToken: true };
+export const currencySigUSD: SwapItem = { tokens: ['SigUSD'], isToken: true };
+export const currencySigRSV: SwapItem = { tokens: ['SigRSV'], isToken: true };
+export const currencyDexyGold: SwapItem = { tokens: ['DexyGold'], isToken: true };
+export const currencyErgDexyGoldLpToken: SwapItem = {
 	tokens: ['DexyGoldLP'],
 	isLpToken: true
 };
-export const currencyErgDexyGoldLpPool: Currency = { tokens: ['ERG', 'DexyGold'], isLpPool: true };
+export const currencyErgDexyGoldLpPool: SwapItem = { tokens: ['ERG', 'DexyGold'], isLpPool: true };
 
-export const fromCurrencies: Currency[] = [
+export const fromCurrencies: SwapItem[] = [
 	currencyERG,
 	currencyDexyGold,
 	currencySigUSD,
@@ -22,7 +22,7 @@ export const fromCurrencies: Currency[] = [
 	currencyErgDexyGoldLpPool
 ];
 
-export function getAllowedToTokens(swapIntent: SwapIntention): Currency[] {
+export function getAllowedSwapItems(swapIntent: SwapIntention): SwapItem[] {
 	const inputs = swapIntent.filter((i) => i.side == 'input');
 	if (inputs.length == 1 && inputs[0].ticker == 'ERG') {
 		return [currencySigUSD, currencySigRSV, currencyDexyGold];

@@ -4,7 +4,7 @@ import { TOKEN_BANK_NFT, type MempoolTransaction, type Output } from './api/ergo
 import { ErgoAddress } from '@fleet-sdk/core';
 import { formatDistanceToNowStrict } from 'date-fns';
 import numeral from 'numeral';
-import type { SwapRow, TokenInput } from './swapIntention';
+import type { SwapItem, TokenInput } from './swapIntention';
 import { ergoTokens } from './stores/ergoTokens';
 
 export function valueToAmount(swapRow: TokenInput): bigint {

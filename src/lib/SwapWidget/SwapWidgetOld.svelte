@@ -80,7 +80,7 @@
 	} from './currency';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
-	import type { Currency, LastUserInput } from './SwapWidget.types';
+	import type { SwapItem, LastUserInput } from './SwapWidget.types';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';
 	import { info } from '$lib/stores/nodeInfo';
 	import {
@@ -93,7 +93,7 @@
 		swapAmount,
 		type SwapIntention,
 		type SwapPreview,
-		type SwapRow
+		type SwapItem
 	} from '../swapIntentionn';
 	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
@@ -106,8 +106,8 @@
 		{ side: 'output', tokenId: getTokenId('DexyGoldLP')!, ticker: 'DexyGoldLP' }
 	];
 
-	let fromCurrency: Currency = currencyErgDexyGoldLpToken;
-	let toCurrency: Currency = currencyErgDexyGoldLpPool;
+	let fromCurrency: SwapItem = currencyErgDexyGoldLpToken;
+	let toCurrency: SwapItem = currencyErgDexyGoldLpPool;
 	let fromAmount = '';
 	let fromAmount2 = '';
 	let toAmount = '';
@@ -200,7 +200,7 @@
 	/* ---------------------------------------
 	 * Recalculation logic
 	 * ------------------------------------- */
-	function doRecalc(inputRow?: SwapRow) {
+	function doRecalc(inputItem?: SwapItem) {
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
 		} else if ($selected_contract == 'DexyGold') {
@@ -210,9 +210,9 @@
 			const output2TokenId = DEXY_GOLD.lpTokenId;
 
 			swapIntent.forEach((row) => {
-				if (row.tokenId == inputRow?.tokenId && row.side == inputRow?.side) {
-					row.amount = inputRow.amount;
-					row.value = inputRow.value;
+				if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
+					row.amount = inputItem.amount;
+					row.value = inputItem.value;
 				}
 			});
 
@@ -704,11 +704,11 @@
 	};
 
 	function setWidgetBorderError() {
-		setCustomProperty('--widget-border-color', 'red');
+		setCustomProperty('--cl-border', 'red');
 	}
 
 	function setWidgetBorderNormal() {
-		setCustomProperty('--widget-border-color', '#1F2937');
+		setCustomProperty('--cl-border', '#1F2937');
 	}
 
 	let isSwapDisabled = false;
@@ -743,10 +743,10 @@
 <!-- UI Layout -->
 <div class="relative" class:shake>
 	<div
-		class="mx-auto w-full max-w-md rounded-xl rounded-bl-none rounded-br-none border-4 border-[var(--widget-border-color)]"
+		class="mx-auto w-full max-w-md rounded-xl rounded-bl-none rounded-br-none border-4 border-[var(--cl-border)]"
 	>
 		<div
-			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--widget-bg-color)] transition-all"
+			class="flex flex-col rounded-md rounded-bl-none rounded-br-none bg-[var(--cl-bg-alpha)] transition-all"
 			class:justify-between={fromCurrency.isLpPool}
 			style={fromCurrency.isLpToken || toCurrency.isLpToken
 				? 'min-height:258px'
@@ -793,7 +793,7 @@
 							? '58px'
 							: '116px'}; "
 					>
-						<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
+						<div class="flex" style="border-bottom:4px solid var(--cl-border);">
 							<!-- FROM AMOUNT -->
 							<input
 								type="number"
@@ -926,7 +926,7 @@
 						? '58px'
 						: '116px'}; "
 				>
-					<div class="flex" style="border-bottom:4px solid var(--widget-border-color);">
+					<div class="flex" style="border-bottom:4px solid var(--cl-border);">
 						<!-- TO AMOUNT -->
 						<input
 							type="number"

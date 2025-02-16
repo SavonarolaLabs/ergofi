@@ -15,9 +15,13 @@
 			/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent) ||
 			window.matchMedia('(max-width: 768px)').matches;
 
-		if (theme) {
-			document.documentElement.style.setProperty('--widget-border-color', '#1f2937');
-			document.documentElement.style.setProperty('--widget-bg-color', '#f5f2a8ed');
+		if (theme == 'ergfi') {
+			document.documentElement.style.setProperty('--cl-text', '#6A7280');
+			document.documentElement.style.setProperty('--cl-border', '#1F2937');
+			document.documentElement.style.setProperty('--cl-bg', '#16151F');
+			document.documentElement.style.setProperty('--cl-bg-alpha', '#26243759');
+			document.documentElement.style.setProperty('--cl-bg-widget', '#1B1B28');
+			document.documentElement.style.setProperty('--cl-contrast-text', '#CCC');
 		}
 	});
 </script>
@@ -39,7 +43,12 @@
 		</div>
 	</div>
 {:else}
-	<div class="powwowgirl-bg flex flex-col" style="height:100vh;">
+	<div
+		class="flex flex-col"
+		class:ergfi-bg={theme == 'ergfi'}
+		class:powwowgirl-bg={theme == 'powwowgirls'}
+		style="height:100vh;"
+	>
 		<Navbar></Navbar>
 		<div class="flex grow">
 			<div class="flex flex-col">
@@ -58,16 +67,16 @@
 
 <style>
 	.powwowgirl-bg {
-		/* background-color: var(--bg-color); */
+		background-color: var(--cl-bg);
 		background-size: contain;
-		/* background-image: url('/powwowgirl2.png'); */
+		background-image: url('/powwowgirl2.png');
 		background-repeat: no-repeat;
 		background-position-x: right;
 		background-position-y: bottom;
 		background-size: 100vh;
 		z-index: -2;
 	}
-	.tachikoma-bg {
+	.ergfi-bg {
 		background-color: #16151f;
 		opacity: 1;
 		background-image: radial-gradient(#252152 0.5px, #16151f 0.5px);

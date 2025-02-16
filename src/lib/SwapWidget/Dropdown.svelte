@@ -1,15 +1,15 @@
 <script lang="ts">
 	import SwapWidgetTokenRow from '$lib/SwapWidgetTokenRow.svelte';
-	import type { Currency } from './SwapWidget.types';
+	import type { SwapItem } from './SwapWidget.types';
 
 	export let btnRect: { top: number; left: number; width: number };
-	export let currencies: Currency[];
-	export let onSelect: (currency: Currency) => void;
+	export let currencies: SwapItem[];
+	export let onSelect: (currency: SwapItem) => void;
 </script>
 
 <div
 	id="fromDropdownMenu"
-	class="border-color absolute z-30 border-4 bg-[var(--widget-bg-color)] shadow-md ring-1 ring-black ring-opacity-5"
+	class="border-color absolute z-30 border-4 bg-[var(--cl-bg-alpha)] shadow-md ring-1 ring-black ring-opacity-5"
 	style="
 			width: 250px;
 			border-top-left-radius: 0;

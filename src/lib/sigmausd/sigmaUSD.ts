@@ -16,6 +16,7 @@ import {
 	calculateBankRateRSVInputERG,
 	calculateBankRateRSVInputRSV
 } from './sigmaUSDMath';
+import type { SwapIntention } from '$lib/swapIntention';
 
 function calculateBankOutUsd(
 	inErg: bigint,
@@ -695,10 +696,11 @@ export function sellRSVInputERGTx(
 
 // ui
 //prettier-ignore
-export function buildSwapSigmaUsdTx(fromAsset:UiInputAsset, toAsset:UiInputAsset, lastInput:LastUserInput, me:string, bankAddress:string, utxos:NodeBox[], height:number, bankBox:NodeBox, oracleBox:NodeBox, feeMining:bigint){
-		let swapPairLastInput = `${fromAsset.token}/${toAsset.token}_${lastInput == 'From' ? fromAsset.token : toAsset.token}`;
-		
-		const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
+export function buildSwapSigmaUsdTx(swapIntent:SwapIntention, me:string, bankAddress:string, utxos:NodeBox[], height:number, bankBox:NodeBox, oracleBox:NodeBox, feeMining:bigint){
+		//let swapPairLastInput = `${fromAsset.token}/${toAsset.token}_${lastInput == 'From' ? fromAsset.token : toAsset.token}`;
+		//const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
+		let swapPairLastInput = ''
+		const amount = 0n;
 		
 		let unsignedTx;
 		switch (swapPairLastInput.toLocaleUpperCase()) {

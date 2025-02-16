@@ -15,18 +15,18 @@ import {
 } from '$lib/stores/bank';
 import type { NodeBox } from '$lib/stores/bank.types';
 import { get } from 'svelte/store';
-import type { Currency, LastUserInput } from './SwapWidget.types';
+import type { SwapIntention } from '$lib/swapIntention';
 
-export function recalcAmountAndPrice(
-	fromCurrency: Currency,
-	fromAmount: string,
-	toCurrency: Currency,
-	toAmount: string,
-	lastInput: LastUserInput
-) {
+export function recalcAmountAndPrice(swapIntent: SwapIntention) {
 	if (!get(oracle_box) || !get(bank_box)) return;
-	const fromToken = fromCurrency.tokens[0];
-	const toToken = toCurrency.tokens[0];
+
+	// get these values from swap intent, or pass down
+	const fromToken = 'ERG';
+	const fromAmount = '1';
+	const toToken = 'SigUSD';
+	const toAmount = '1';
+	const lastInput = 'From';
+
 	const { from, to, price } = calculateAmountAndSwapPrice(
 		lastInput,
 		fromToken,

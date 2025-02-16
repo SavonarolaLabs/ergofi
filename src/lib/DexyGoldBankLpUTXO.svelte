@@ -32,7 +32,9 @@
 	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
 >
 	<a href="https://sigmaspace.io/en/address/{DEXY_BANK_BANK}" target="_blank">
-		<div class="mb-2 font-mono text-xs font-bold text-yellow-600 hover:text-yellow-300">
+		<div
+			class="mb-2 font-mono text-xs font-bold text-[var(--cl-contrast-text)] hover:text-yellow-300"
+		>
 			DexyGold Bank :: x6iDu8vHTP81nodtTr...nbeTrPMey1WPaXX
 		</div>
 	</a>

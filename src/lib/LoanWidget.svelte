@@ -179,7 +179,7 @@
 					<span class="label-text-alt opacity-70"> ${amountInUsd} </span>
 				</label>
 
-				<!-- Контейнер с Amount и Currency -->
+				<!-- Контейнер с Amount и SwapItem -->
 				<div class="input-group">
 					<!-- Поле ввода Amount -->
 					<div class="input input-bordered input-lg align-content:center w-full">

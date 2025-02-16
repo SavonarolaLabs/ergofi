@@ -19,13 +19,13 @@
 </script>
 
 <div class="relative" style="height:4px;">
-	<div class="absolute" style="z-index:5;margin-top:-18px; left:170px">
+	<div class="absolute" style="z-index:5;margin-top:-13px; left:180px">
 		<button
 			on:mouseenter={handleMouseEnter}
 			on:mouseleave={handleMouseLeave}
 			on:click={dispatchSwap}
 			class="border-color flex items-center justify-center rounded-full border-4 bg-[var(--cl-bg-widget)] px-1 py-1 hover:[&>svg:first-child]:hidden hover:[&>svg:last-child]:block"
-			style="width:42px;height:42px;"
+			style="width:42px;height:42px;height: 30px; border-radius: 8px;"
 		>
 			{#if currencySwapHovered}
 				<ArrowUpDown size={20} />

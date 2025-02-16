@@ -32,7 +32,7 @@
 					on:click={() => toggleColor(letter)}
 					style="background-color: {selectedColors[letter]
 						? '#f77315'
-						: 'rgb(31 41 55)'}; color: {selectedColors[letter] ? 'black' : 'var(--cl-text)'}"
+						: 'var(--cl-text)'}; color: {selectedColors[letter] ? 'black' : 'var(--cl-bg)'}"
 				>
 					{letter}
 				</button>

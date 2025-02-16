@@ -166,7 +166,7 @@
 				tracking101: $dexygold_tracking101_box
 			};
 
-			if (!anchor(swapIntent)) {
+			if (!inputItem) {
 				const copySwapIntent = defaultAmountIntent(swapIntent);
 
 				const swapPreview = doRecalcDexyGoldContract(
@@ -185,8 +185,6 @@
 					$dexygold_widget_numbers,
 					$fee_mining
 				);
-
-				//swapIntent = swapPreview.calculatedIntent;
 				updateSwapIntent(swapPreview);
 				swapPrice = swapPreview.price;
 				updateUiValues(swapIntent);

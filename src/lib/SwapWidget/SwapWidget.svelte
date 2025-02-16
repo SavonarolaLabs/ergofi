@@ -72,8 +72,8 @@
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');
 
-	let fromAmount = ['', ''];
-	let toAmount = ['', ''];
+	let fromValue = ['', ''];
+	let toValue = ['', ''];
 	let swapPrice: number = 0.0;
 	let selectedInputOption: SwapOption = ergDexyGoldToLp;
 
@@ -186,6 +186,16 @@
 				swapIntent = swapPreview.calculatedIntent;
 				swapPrice = swapPreview.price;
 			}
+
+			function updateUiValues(swapIntent: SwapIntention) {
+				swapIntent
+					.filter((s) => s.side == 'input')
+					.forEach((s, i) => (fromValue[i] = s.amount?.toString()));
+
+				swapIntent
+					.filter((s) => s.side == 'output')
+					.forEach((s, i) => (toValue[i] = s.amount?.toString()));
+			}
 		}
 	}
 	function doRecalcSigUsdContract() {
@@ -193,10 +203,10 @@
 		if (recalc) {
 			swapPrice = recalc.price;
 			if (recalc.from != undefined) {
-				fromAmount[0] = recalc.from;
+				fromValue[0] = recalc.from;
 			}
 			if (recalc.to != undefined) {
-				toAmount[0] = recalc.to;
+				toValue[0] = recalc.to;
 			}
 		}
 	}
@@ -205,7 +215,7 @@
 	 * Recalc Handlers
 	 * ------------------------------------- */
 
-	function handleFromAmountChange(event: Event) {
+	function handleFromValueChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const side = input.dataset.side;
 		const ticker = input.dataset.ticker;
@@ -214,7 +224,7 @@
 		const amount = valueToAmount({ tokenId, value });
 
 		console.log({ side, ticker, tokenId, value, amount });
-		fromAmount[0] = input.value;
+		fromValue[0] = input.value;
 		doRecalc({ side, ticker, tokenId, value, amount });
 	}
 
@@ -279,11 +289,11 @@
 
 		const fromAsset = {
 			token: inputTicker(swapIntent, 0),
-			amount: fromAmount[0]
+			amount: fromValue[0]
 		};
 		const toAsset = {
 			token: outputTicker(swapIntent, 0),
-			amount: toAmount[0]
+			amount: toValue[0]
 		};
 
 		const { me, utxos, height } = await getWeb3WalletData();
@@ -302,7 +312,7 @@
 	}
 
 	function handleFromBalanceClick() {
-		fromAmount[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
+		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
 		doRecalc();
 	}
 
@@ -530,8 +540,8 @@
 								min="0"
 								data-side="input"
 								data-ticker={swapIntent.filter((i) => i.side == 'input')[0].ticker}
-								bind:value={fromAmount[0]}
-								on:input={handleFromAmountChange}
+								bind:value={fromValue[0]}
+								on:input={handleFromValueChange}
 							/>
 
 							<!-- FROM DROPDOWN -->
@@ -584,10 +594,10 @@
 										class="w-[256px] bg-transparent text-3xl outline-none"
 										placeholder="0"
 										min="0"
-										bind:value={fromAmount[1]}
+										bind:value={fromValue[1]}
 										data-side="input"
 										data-ticker={swapIntent.filter((i) => i.side == 'input')[1].ticker}
-										on:input={handleFromAmountChange}
+										on:input={handleFromValueChange}
 									/>
 								</div>
 
@@ -665,10 +675,10 @@
 							class="w-[256px] bg-transparent text-3xl outline-none"
 							placeholder="0"
 							min="0"
-							bind:value={toAmount[0]}
+							bind:value={toValue[0]}
 							data-side="output"
 							data-ticker={swapIntent.filter((i) => i.side == 'output')[0].ticker}
-							on:input={handleFromAmountChange}
+							on:input={handleFromValueChange}
 						/>
 
 						<!-- TO DROPDOWN -->
@@ -722,10 +732,10 @@
 									class="w-[256px] bg-transparent text-3xl outline-none"
 									placeholder="0"
 									min="0"
-									bind:value={toAmount[1]}
+									bind:value={toValue[1]}
 									data-side="output"
 									data-ticker={swapIntent.filter((i) => i.side == 'output')[1].ticker}
-									on:input={handleFromAmountChange}
+									on:input={handleFromValueChange}
 								/>
 							</div>
 

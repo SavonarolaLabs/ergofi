@@ -409,7 +409,7 @@
 								<div>
 									<input
 										type="number"
-										class="w-[256px] bg-transparent text-3xl outline-none"
+										class="h-full w-[256px] bg-transparent text-3xl outline-none"
 										placeholder="0"
 										min="0"
 										bind:value={fromValue[1]}
@@ -446,7 +446,10 @@
 						{/if}
 					</div>
 				</div>
-				<SwapInputs on:swap={handleSwapInputs} />
+				<SwapInputs
+					top={inputTokenIds(swapIntent).length > 1 ? -5 : -13}
+					on:swap={handleSwapInputs}
+				/>
 			</div>
 			<div class="">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
@@ -529,7 +532,7 @@
 							<div style="border-top-width:4px;" class="border-color w-[256px]">
 								<input
 									type="number"
-									class="w-[256px] bg-transparent text-3xl outline-none"
+									class="h-full w-[256px] bg-transparent text-3xl outline-none"
 									placeholder="0"
 									min="0"
 									bind:value={toValue[1]}

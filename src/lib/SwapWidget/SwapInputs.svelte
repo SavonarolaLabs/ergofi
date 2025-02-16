@@ -2,6 +2,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { ArrowDown, ArrowUpDown } from 'lucide-svelte';
 
+	export let top = -13;
+
 	let currencySwapHovered = false;
 	const dispatch = createEventDispatcher();
 
@@ -19,7 +21,7 @@
 </script>
 
 <div class="relative" style="height:4px;">
-	<div class="absolute" style="z-index:5;margin-top:-13px; left:180px">
+	<div class="absolute" style="z-index:5;margin-top:{top}px; left:180px">
 		<button
 			on:mouseenter={handleMouseEnter}
 			on:mouseleave={handleMouseLeave}

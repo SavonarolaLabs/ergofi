@@ -22,7 +22,7 @@
 
 		{#if $web3wallet_connected}
 			<button
-				class="pow-wow-border wallet-box text-md flex items-center justify-center transition hover:bg-gray-700"
+				class="pow-wow-border wallet-box text-md flex items-center justify-center bg-[var(--cl-bg-alpha)] text-[var(--cl-text)] transition hover:bg-gray-700"
 			>
 				{#if $web3wallet_wallet_name == 'nautilus'}
 					<img
@@ -74,7 +74,7 @@
 			</div>
 		{:else if $web3wallet_available_wallets.length}
 			<button
-				class="pow-wow-border w-wallet text-md h-full rounded-md px-6 py-2 transition hover:bg-gray-700 hover:text-[var(--cl-bg)]"
+				class="pow-wow-border w-wallet text-md h-full rounded-md bg-[var(--cl-bg-alpha)] px-6 py-2 text-[var(--cl-text)] transition hover:bg-gray-700 hover:text-[var(--cl-bg)]"
 			>
 				CONNECT WALLET
 			</button>

@@ -316,7 +316,7 @@
 		{!shake ? 'border-[var(--cl-border)]' : 'border-[var(--cl-border-error)]'}"
 	>
 		<div
-			class="flex flex-col rounded-tl-xl rounded-tr-xl bg-[var(--cl-bg-alpha)] transition-all"
+			class="flex flex-col rounded-tl-xl rounded-tr-lg bg-[var(--cl-bg-alpha)] transition-all"
 			class:justify-between={inputTokenIds(swapIntent).length > 1}
 			style={swapIntent.length > 2 ? 'min-height:258px' : 'min-height:200px'}
 		>

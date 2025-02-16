@@ -21,6 +21,41 @@
 		selectedColors[letter] = !selectedColors[letter];
 		localStorage.setItem('selectedColors', JSON.stringify(selectedColors));
 	}
+
+	type Girl = { img: number; bg: string; text?: string };
+
+	const girls: Girl[] = [
+		{ img: 1071, bg: '#EACCFE', text: '#444' },
+		{ img: 1087, bg: '#BFC2C9', text: '#444' },
+		{ img: 1153, bg: '#F6F2A9', text: '#444' },
+		{ img: 1360, bg: '#E39EF7', text: '#444' },
+		{ img: 1426, bg: '#F7E0C1', text: '#444' },
+		{ img: 1465, bg: '#FFD600', text: '#444' },
+		{ img: 1472, bg: '#DD143B', text: '#f0f0f0' },
+		{ img: 1475, bg: '#D5F6FB', text: '#444' },
+		{ img: 1494, bg: '#03890E', text: '#f0f0f0' },
+		{ img: 1499, bg: '#565C50', text: '#f0f0f0' },
+		{ img: 632, bg: '#A42BC4', text: '#f0f0f0' },
+		{ img: 641, bg: '#F7B9D2', text: '#444' },
+		{ img: 651, bg: '#FB7F73', text: '#444' },
+		{ img: 719, bg: '#F7E0C1', text: '#444' },
+		{ img: 822, bg: '#A1512C', text: '#f0f0f0' },
+		{ img: 858, bg: '#BEDDF1', text: '#444' },
+		{ img: 863, bg: '#D1FEB9', text: '#444' },
+		{ img: 990, bg: '#48AAAD', text: '#f0f0f0' }
+	];
+
+	function setbg(girl: Girl) {
+		if (girl.text) document.documentElement.style.setProperty('--cl-text', girl.text);
+		if (girl.text) document.documentElement.style.setProperty('--cl-contrast-text', girl.text);
+		document.documentElement.style.setProperty('--cl-bg', girl.bg);
+		document.documentElement.style.setProperty('--cl-bg-widget', girl.bg);
+		document.documentElement.style.setProperty('--cl-bg-alpha', `${girl.bg}ED`);
+		const element = document.querySelector('.powwowgirl-bg') as HTMLElement;
+		if (element) {
+			element.style.backgroundImage = `url('/powwowgirls/mono/${girl.img}.png')`;
+		}
+	}
 </script>
 
 <nav class="sticky top-0 flex items-center justify-between px-6 py-3">
@@ -39,6 +74,15 @@
 			{/each}
 		</span>
 		<sup class="ml-1 mt-1 text-xs text-gray-500">alpha 14</sup>
+	</div>
+
+	<div class="flex gap-1">
+		{#each girls as girl}
+			<button on:click={() => setbg(girl)}>
+				{girl.img}
+				<img src="/powwowgirls/mono/{girl.img}.png" alt="" style="width:40px;height:40px" />
+			</button>
+		{/each}
 	</div>
 
 	<div class="flex gap-3" style="height:52px;">

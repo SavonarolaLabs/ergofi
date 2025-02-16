@@ -1,6 +1,6 @@
 // All possible "from" currencies
 
-import { getTokenId } from '$lib/stores/ergoTokens';
+import { ergoTokens, getTokenId } from '$lib/stores/ergoTokens';
 import { inputTicker, type SwapIntention, type SwapItem } from '../swapIntention';
 
 export type SwapOption =
@@ -58,10 +58,19 @@ export const inputOptions: SwapOption[] = [
 	ergDexyGoldToLp
 ];
 
-export function getOutputOptions(swapIntent: SwapOption): SwapOption[] {
-	console.log('getOutputOptions', swapIntent);
-	if (swapIntent.item) {
-		if (swapIntent.item.ticker == 'ERG') {
+export function defaultAmountIntent(swapIntent: SwapIntention) {
+	const copySwapIntent = structuredClone(swapIntent);
+
+	const defaultAmount = ergoTokens[copySwapIntent[0].tokenId].defaultAmount;
+
+	copySwapIntent[0].amount = defaultAmount;
+	return copySwapIntent;
+}
+
+export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
+	console.log('getOutputOptions', swapOption);
+	if (swapOption.item) {
+		if (swapOption.item.ticker == 'ERG') {
 			return [currencySigUSD, currencySigRSV, currencyDexyGold];
 		} else {
 			return [currencyERG];

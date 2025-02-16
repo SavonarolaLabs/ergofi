@@ -1881,18 +1881,18 @@ export function doRecalcDexyGoldContract(
 	dexyGoldNumbers: DexyGoldNumbers,
 	feeMining: bigint
 ): SwapPreview {
-	console.log({ swapIntent });
 	const swapTag = getSwapTag(swapIntent);
-	const a = anchor(swapIntent);
 
 	let calculatedIntent = structuredClone(swapIntent);
 	let swapPreview: SwapPreview;
+
 	if (swapTag == 'ERG+DEXYGOLD_ERG/DEXYGOLDLP') {
 		const { uiSwapFee, contractErg, contractDexy, sharesUnlocked, price } =
 			dexyGoldLpMintInputErgPrice(swapAmount(swapIntent), feeMining, dexyGoldUtxo);
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 		swapPreview = { calculatedIntent, price };
+		console.log({ swapPreview });
 	}
 
 	if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP') {
@@ -1988,6 +1988,8 @@ export function doRecalcDexyGoldContract(
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });
 	}
+
+	//----
 
 	return swapPreview;
 }

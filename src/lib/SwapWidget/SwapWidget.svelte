@@ -42,6 +42,7 @@
 	} from '../stores/web3wallet';
 	import SubNumber from '../SubNumber.svelte';
 	import {
+		anchor,
 		inputTicker,
 		inputTokenIds,
 		isLpTokenInput,
@@ -53,6 +54,7 @@
 	} from '../swapIntention';
 	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import {
+		defaultAmountIntent,
 		ergDexyGoldToLp,
 		getOutputOptions,
 		inputOptions,
@@ -163,14 +165,27 @@
 				tracking101: $dexygold_tracking101_box
 			};
 
-			const swapPreview = doRecalcDexyGoldContract(
-				swapIntent,
-				dexyGoldUtxo,
-				$dexygold_widget_numbers,
-				$fee_mining
-			);
-			swapIntent = swapPreview.calculatedIntent;
-			swapPrice = swapPreview.price;
+			if (!anchor(swapIntent)) {
+				const copySwapIntent = defaultAmountIntent(swapIntent);
+
+				const swapPreview = doRecalcDexyGoldContract(
+					copySwapIntent,
+					dexyGoldUtxo,
+					$dexygold_widget_numbers,
+					$fee_mining
+				);
+				swapPrice = swapPreview.price;
+			} else {
+				const swapPreview = doRecalcDexyGoldContract(
+					swapIntent,
+					dexyGoldUtxo,
+					$dexygold_widget_numbers,
+					$fee_mining
+				);
+
+				swapIntent = swapPreview.calculatedIntent;
+				swapPrice = swapPreview.price;
+			}
 		}
 	}
 	function doRecalcSigUsdContract() {
@@ -392,6 +407,7 @@
 		fromDropdownOpen = false;
 		selectedInputOption = option;
 
+		console.log('selectedInputOption', selectedInputOption);
 		if (option.intention) {
 			swapIntent = structuredClone(option.intention);
 		} else {

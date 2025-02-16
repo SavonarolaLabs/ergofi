@@ -9,14 +9,16 @@ let ergoRealTokens = {
 		name: 'Ergo',
 		ticker: 'ERG',
 		project: 'Ergoplatform',
-		description: 'Ergoplatform native coin'
+		description: 'Ergoplatform native coin',
+		defaultAmount: 10_000_000_000n
 	},
 	'03faf2cb329f2e90d6d23b58d91bbb6c046aa143261cc21f52fbe2824bfcbf04': {
 		decimals: 2,
 		name: 'SigmaUSD',
 		ticker: 'SigUSD',
 		project: 'Sigma USD',
-		description: 'Algorithmic stablecoin'
+		description: 'Algorithmic stablecoin',
+		defaultAmount: 10_00n
 	},
 	'8b08cdd5449a9592a9e79711d7d79249d7a03c535d17efaee83e216e80a44c4b': {
 		decimals: 3,
@@ -43,7 +45,8 @@ let ergoRealTokens = {
 		name: 'SigmaUSD',
 		ticker: 'SigRSV',
 		project: 'Sigma USD',
-		description: 'Reserve token for Sigma USD'
+		description: 'Reserve token for Sigma USD',
+		defaultAmount: 50_000n
 	},
 	d71693c49a84fbbecd4908c94813b46514b18b67a99952dc1e6e4791556de413: {
 		decimals: 2,
@@ -251,13 +254,15 @@ ergoFakeTokens[DEXY_GOLD.lpTokenId] = {
 	project: 'Dexy Gold',
 	name: 'DexyGoldLP',
 	ticker: 'DexyGoldLP',
-	isLpToken: true
+	isLpToken: true,
+	defaultAmount: 50_000n
 };
 ergoFakeTokens[DEXY_GOLD.dexyTokenId] = {
 	decimals: 0,
 	project: 'Dexy Gold',
 	name: 'DexyGold',
-	ticker: 'DexyGold'
+	ticker: 'DexyGold',
+	defaultAmount: 50n
 };
 
 export const ergoTokens = { ...ergoRealTokens, ...ergoFakeTokens };

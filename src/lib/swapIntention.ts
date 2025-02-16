@@ -9,8 +9,8 @@ export type TokenInput = {
 
 export type SwapItem = TokenInput & {
 	ticker: string;
-	amount?: bigint;
 	side: SwapSide;
+	amount?: bigint;
 };
 
 export type SwapIntention = SwapItem[];
@@ -28,7 +28,7 @@ export function swapAmount(swapIntention: SwapIntention): bigint {
 	return swapIntention.find((si) => si.amount != undefined)!.amount!;
 }
 
-export function anchor(swapIntention: SwapIntention): SwapItem {
+export function anchor(swapIntention: SwapIntention): SwapItem | undefined {
 	return swapIntention.find((si) => si.amount != undefined)!;
 }
 
@@ -52,7 +52,9 @@ export function getSwapTag(swapIntent: SwapIntention): string {
 			outputStr = outputStr ? outputStr + '+' + s.ticker : s.ticker;
 		}
 	});
+
 	const anchorIntent = anchor(swapIntent);
+
 	if (anchorIntent.side == 'input') {
 		inputStr = inputStr + '_' + anchorIntent.ticker;
 	} else {

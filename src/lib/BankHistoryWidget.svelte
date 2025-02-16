@@ -80,7 +80,7 @@
 	});
 </script>
 
-<div class="widget pb-4 text-gray-500">
+<div class="widget pb-4 text-[var(--cl-text)]">
 	<div class="pl-2">
 		{#if $selected_contract == 'DexyGold'}
 			<DexyGoldLpUTXO></DexyGoldLpUTXO>

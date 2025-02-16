@@ -24,6 +24,7 @@
 			document.documentElement.style.setProperty('--cl-contrast-text', '#CCC');
 		}
 		if (theme == 'powwowgirls') {
+			document.documentElement.style.setProperty('--cl-text', '#2e3035');
 			document.documentElement.style.setProperty('--cl-bg', '#f5f2a8');
 		}
 	});

@@ -62,7 +62,9 @@
 		handleSwapButtonSigUsd,
 		isSwapDisabledCalc,
 		recalcAmountAndPrice,
-		recalcSigUsdBankAndOracleBoxes
+		recalcSigUsdBankAndOracleBoxes,
+		updateIntentValues,
+		updateUiValues
 	} from './swapWidgetUtils';
 
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
@@ -157,9 +159,12 @@
 					$dexygold_widget_numbers,
 					$fee_mining
 				);
+				console.log(swapPreview, 'swapPreview');
 				swapIntent = updateIntentValues(swapPreview);
 				swapPrice = swapPreview.price;
 				updateUiValues(swapIntent, fromValue, toValue);
+				toValue = toValue;
+				fromValue = fromValue;
 			}
 		}
 	}
@@ -247,9 +252,6 @@
 		}
 	})();
 
-	function handleGlobalClick(e: MouseEvent) {}
-	function handleGlobalKeydown(e: KeyboardEvent) {}
-
 	let fromBtnRect = { top: 0, left: 0, width: 0 };
 	let toBtnRect = { top: 0, left: 0, width: 0 };
 
@@ -292,7 +294,7 @@
 
 	let isSwapDisabled = false;
 	function getLabelText(): string {
-		isSwapDisabled = isSwapDisabledCalc();
+		isSwapDisabled = isSwapDisabledCalc(swapIntent);
 		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
 			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
 				return 'Mint Unavailable';

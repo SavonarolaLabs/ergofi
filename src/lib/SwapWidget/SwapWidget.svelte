@@ -61,7 +61,7 @@
 		inputOptions,
 		tokenColor,
 		type SwapOption
-	} from './currency';
+	} from './swapOptions';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import { recalcAmountAndPrice, recalcSigUsdBankAndOracleBoxes } from './swapWidgetProtocolSigUsd';

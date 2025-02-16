@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Tint from '../icons/Tint.svelte';
-	import type { SwapOption } from './currency';
+	import type { SwapOption } from './swapOptions';
 
 	export let option: SwapOption;
 

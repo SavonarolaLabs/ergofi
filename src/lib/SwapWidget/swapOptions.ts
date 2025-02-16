@@ -1,41 +1,41 @@
 // All possible "from" currencies
 
 import { ergoTokens, getTokenId } from '$lib/stores/ergoTokens';
-import { inputTicker, type SwapIntention, type SwapItem } from '../swapIntention';
+import { type SwapIntention, type SwapItem } from '../swapIntention';
 
 export type SwapOption =
 	| { item: SwapItem; intention?: never }
 	| { item?: never; intention: SwapIntention };
 
-export const currencyERG: SwapOption = {
+export const itemERG: SwapOption = {
 	item: {
 		side: 'input',
 		ticker: 'ERG',
 		tokenId: getTokenId('ERG')!
 	}
 };
-export const currencySigUSD: SwapOption = {
+export const itemSigUSD: SwapOption = {
 	item: {
 		side: 'input',
 		ticker: 'SigUSD',
 		tokenId: getTokenId('SigUSD')!
 	}
 };
-export const currencySigRSV: SwapOption = {
+export const itemSigRSV: SwapOption = {
 	item: {
 		side: 'input',
 		ticker: 'SigRSV',
 		tokenId: getTokenId('SigRSV')!
 	}
 };
-export const currencyDexyGold: SwapOption = {
+export const itemDexyGold: SwapOption = {
 	item: {
 		side: 'input',
 		ticker: 'DexyGold',
 		tokenId: getTokenId('DexyGold')!
 	}
 };
-export const currencyErgDexyGoldLpToken: SwapOption = {
+export const itemErgDexyGoldLpToken: SwapOption = {
 	item: {
 		side: 'input',
 		ticker: 'DexyGoldLP',
@@ -51,10 +51,10 @@ export const ergDexyGoldToLp: SwapOption = {
 };
 
 export const inputOptions: SwapOption[] = [
-	currencyERG,
-	currencyDexyGold,
-	currencySigUSD,
-	currencySigRSV,
+	itemERG,
+	itemDexyGold,
+	itemSigUSD,
+	itemSigRSV,
 	ergDexyGoldToLp
 ];
 
@@ -70,12 +70,12 @@ export function defaultAmountIntent(swapIntent: SwapIntention) {
 export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
 	if (swapOption.item) {
 		if (swapOption.item.ticker == 'ERG') {
-			return [currencySigUSD, currencySigRSV, currencyDexyGold];
+			return [itemSigUSD, itemSigRSV, itemDexyGold];
 		} else {
-			return [currencyERG];
+			return [itemERG];
 		}
 	} else {
-		return [currencyErgDexyGoldLpToken];
+		return [itemErgDexyGoldLpToken];
 	}
 }
 

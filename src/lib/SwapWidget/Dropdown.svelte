@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WidgetOptionRow from './WidgetOptionRow.svelte';
-	import type { SwapOption } from './currency';
+	import type { SwapOption } from './swapOptions';
 
 	export let btnRect: { top: number; left: number; width: number };
 	export let options: SwapOption[];

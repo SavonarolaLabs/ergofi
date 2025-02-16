@@ -61,6 +61,7 @@
 		handleSwapButtonDexyGold,
 		handleSwapButtonSigUsd,
 		isSwapDisabledCalc,
+		recalcAmountAndPrice,
 		recalcSigUsdBankAndOracleBoxes
 	} from './swapWidgetUtils';
 
@@ -182,24 +183,11 @@
 					$dexygold_widget_numbers,
 					$fee_mining
 				);
-				updateSwapIntent(swapPreview);
+				swapIntent = updateIntentValues(swapPreview);
 				swapPrice = swapPreview.price;
-				updateUiValues(swapIntent);
+				updateUiValues(swapIntent, fromValue, toValue);
 			}
 		}
-	}
-
-	function updateUiValues(swapIntent: SwapIntention) {
-		swapIntent.filter((s) => s.side == 'input').forEach((s, i) => (fromValue[i] = s.value));
-		swapIntent.filter((s) => s.side == 'output').forEach((s, i) => (toValue[i] = s.value));
-	}
-
-	function updateSwapIntent(swapPreview: SwapPreview) {
-		swapPreview.calculatedIntent.forEach((s) => {
-			s.value = amountToValue(s);
-		});
-
-		swapIntent = swapPreview.calculatedIntent;
 	}
 
 	function doRecalcSigUsdContract() {
@@ -243,9 +231,9 @@
 			return;
 		}
 		if ($selected_contract == 'SigmaUsd') {
-			handleSwapButtonSigUsd(swapIntent, fromValue, toValue);
+			await handleSwapButtonSigUsd(swapIntent, fromValue, toValue);
 		} else if ($selected_contract == 'DexyGold') {
-			await handleSwapButtonDexyGold();
+			await handleSwapButtonDexyGold(swapIntent, fromValue, toValue);
 		}
 	}
 

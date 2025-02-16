@@ -21,7 +21,8 @@ import {
 	isLpTokenInput,
 	isLpTokenOutput,
 	outputTicker,
-	type SwapIntention
+	type SwapIntention,
+	type SwapPreview
 } from '../swapIntention';
 import { selected_contract } from '$lib/stores/ui';
 import { buildSwapDexyGoldTx } from '$lib/dexygold/dexyGold';
@@ -41,6 +42,7 @@ import {
 import { SIGUSD_BANK_ADDRESS } from '$lib/api/ergoNode';
 import { createInteractionAndSubmitTx, getWeb3WalletData } from '$lib/asdf';
 import { buildSwapSigmaUsdTx } from '$lib/sigmausd/sigmaUSD';
+import { amountToValue } from '$lib/utils';
 
 export function recalcAmountAndPrice(swapIntent: SwapIntention) {
 	if (!get(oracle_box) || !get(bank_box)) return;
@@ -159,4 +161,17 @@ export async function handleSwapButtonSigUsd(
 	);
 
 	await createInteractionAndSubmitTx(unsignedTx, [me]);
+}
+
+export function updateUiValues(swapIntent: SwapIntention, fromValue: string[], toValue: string[]) {
+	swapIntent.filter((s) => s.side == 'input').forEach((s, i) => (fromValue[i] = s.value));
+	swapIntent.filter((s) => s.side == 'output').forEach((s, i) => (toValue[i] = s.value));
+}
+
+export function updateIntentValues(swapPreview: SwapPreview) {
+	swapPreview.calculatedIntent.forEach((s) => {
+		s.value = amountToValue(s);
+	});
+
+	return swapPreview.calculatedIntent;
 }

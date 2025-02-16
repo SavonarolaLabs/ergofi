@@ -50,9 +50,10 @@
 		outputTicker,
 		outputTokenIds,
 		type SwapIntention,
-		type SwapItem
+		type SwapItem,
+		type SwapPreview
 	} from '../swapIntention';
-	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import { amountToValue, centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import {
 		defaultAmountIntent,
 		ergDexyGoldToLp,
@@ -169,6 +170,7 @@
 				const copySwapIntent = defaultAmountIntent(swapIntent);
 
 				const swapPreview = doRecalcDexyGoldContract(
+					copySwapIntent[0],
 					copySwapIntent,
 					dexyGoldUtxo,
 					$dexygold_widget_numbers,
@@ -177,27 +179,43 @@
 				swapPrice = swapPreview.price;
 			} else {
 				const swapPreview = doRecalcDexyGoldContract(
+					inputItem,
 					swapIntent,
 					dexyGoldUtxo,
 					$dexygold_widget_numbers,
 					$fee_mining
 				);
 
-				swapIntent = swapPreview.calculatedIntent;
+				//swapIntent = swapPreview.calculatedIntent;
+				updateSwapIntent(swapPreview);
 				swapPrice = swapPreview.price;
+				updateUiValues(swapIntent);
 			}
 
 			function updateUiValues(swapIntent: SwapIntention) {
-				swapIntent
-					.filter((s) => s.side == 'input')
-					.forEach((s, i) => (fromValue[i] = s.amount?.toString()));
+				swapIntent.filter((s) => s.side == 'input').forEach((s, i) => (fromValue[i] = s.value));
+				// swapIntent
+				// 	.filter((s) => s.side == 'input')
+				// 	.forEach((s, i) => (fromValue[i] = amountToValue(s)));
 
-				swapIntent
-					.filter((s) => s.side == 'output')
-					.forEach((s, i) => (toValue[i] = s.amount?.toString()));
+				swapIntent.filter((s) => s.side == 'output').forEach((s, i) => (toValue[i] = s.value));
+				// swapIntent
+				// 	.filter((s) => s.side == 'output')
+				// 	.forEach((s, i) => (toValue[i] = amountToValue(s)));
 			}
 		}
 	}
+
+	function updateSwapIntent(swapPreview: SwapPreview) {
+		swapPreview.calculatedIntent.forEach((s) => {
+			//if (s.value == undefined) {
+			s.value = amountToValue(s);
+			//}
+		});
+
+		swapIntent = swapPreview.calculatedIntent;
+	}
+
 	function doRecalcSigUsdContract() {
 		const recalc = recalcAmountAndPrice(swapIntent);
 		if (recalc) {

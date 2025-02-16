@@ -13,6 +13,11 @@ export function valueToAmount(swapRow: TokenInput): bigint {
 	return BigInt(BigNumber(pureValue).multipliedBy(multiplicator).toString());
 }
 
+export function amountToValue(swapItem: SwapItem): string {
+	const multiplicator = 10 ** ergoTokens[swapItem.tokenId].decimals;
+	return BigNumber(swapItem.amount!.toString()).dividedBy(multiplicator).toString();
+}
+
 export function ergStringToNanoErg(erg: string): bigint {
 	return BigInt(BigNumber(erg).multipliedBy(1_000_000_000).toString());
 }

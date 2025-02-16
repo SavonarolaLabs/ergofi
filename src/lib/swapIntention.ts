@@ -40,7 +40,7 @@ export function anchorSide(swapIntention: SwapIntention): SwapSide {
 	return swapIntention.find((si) => si.amount != undefined)!.side;
 }
 
-export function getSwapTag(swapIntent: SwapIntention): string {
+export function getSwapTag(swapIntent: SwapIntention, anchorIntent: SwapItem): string {
 	console.log({ swapIntent });
 	let inputStr = '';
 	let outputStr = '';
@@ -52,8 +52,6 @@ export function getSwapTag(swapIntent: SwapIntention): string {
 			outputStr = outputStr ? outputStr + '+' + s.ticker : s.ticker;
 		}
 	});
-
-	const anchorIntent = anchor(swapIntent);
 
 	if (anchorIntent.side == 'input') {
 		inputStr = inputStr + '_' + anchorIntent.ticker;

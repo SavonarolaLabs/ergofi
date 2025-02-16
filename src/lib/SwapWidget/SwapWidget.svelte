@@ -189,19 +189,12 @@
 				swapPrice = swapPreview.price;
 				updateUiValues(swapIntent);
 			}
-
-			function updateUiValues(swapIntent: SwapIntention) {
-				swapIntent.filter((s) => s.side == 'input').forEach((s, i) => (fromValue[i] = s.value));
-				// swapIntent
-				// 	.filter((s) => s.side == 'input')
-				// 	.forEach((s, i) => (fromValue[i] = amountToValue(s)));
-
-				swapIntent.filter((s) => s.side == 'output').forEach((s, i) => (toValue[i] = s.value));
-				// swapIntent
-				// 	.filter((s) => s.side == 'output')
-				// 	.forEach((s, i) => (toValue[i] = amountToValue(s)));
-			}
 		}
+	}
+
+	function updateUiValues(swapIntent: SwapIntention) {
+		swapIntent.filter((s) => s.side == 'input').forEach((s, i) => (fromValue[i] = s.value));
+		swapIntent.filter((s) => s.side == 'output').forEach((s, i) => (toValue[i] = s.value));
 	}
 
 	function updateSwapIntent(swapPreview: SwapPreview) {
@@ -484,20 +477,6 @@
 		return false;
 	}
 </script>
-
-{$selected_contract}
-<hr />
-<hr />
-<hr />
-<div>
-	{#each swapIntent.filter((i) => 'input' == i.side) as row}
-		<div>{row.side}:{row.ticker}</div>
-	{/each}
-	<hr />
-	{#each swapIntent.filter((i) => 'output' == i.side) as row}
-		<div>{row.side}:{row.ticker}</div>
-	{/each}
-</div>
 
 <div class="relative text-[var(--cl-contrast-text)]" class:shake>
 	<div

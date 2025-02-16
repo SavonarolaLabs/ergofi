@@ -65,9 +65,6 @@
 		recalcSigUsdBankAndOracleBoxes
 	} from './swapWidgetUtils';
 
-	/* ---------------------------------------
-	 * Local variables
-	 * ------------------------------------- */
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');
 
@@ -95,11 +92,7 @@
 		}
 	}
 
-	/* ---------------------------------------
-	 * onMount: load / subscribe / etc.
-	 * ------------------------------------- */
 	onMount(() => {
-		//TODO: remove
 		initJsonTestBoxes();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
@@ -127,18 +120,8 @@
 				);
 			}
 		});
-
-		window.addEventListener('click', handleGlobalClick);
-		window.addEventListener('keydown', handleGlobalKeydown);
-		return () => {
-			window.removeEventListener('click', handleGlobalClick);
-			window.removeEventListener('keydown', handleGlobalKeydown);
-		};
 	});
 
-	/* ---------------------------------------
-	 * Recalculation logic
-	 * ------------------------------------- */
 	function doRecalc(inputItem?: SwapItem) {
 		if ($selected_contract == 'SigmaUsd') {
 			doRecalcSigUsdContract();
@@ -203,10 +186,6 @@
 		}
 	}
 
-	/* ---------------------------------------
-	 * Recalc Handlers
-	 * ------------------------------------- */
-
 	function handleFromValueChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const side = input.dataset.side;
@@ -252,10 +231,6 @@
 		doRecalc();
 	}
 
-	/* ---------------------------------------
-	 * Fee Change
-	 * ------------------------------------- */
-
 	const toggleFeeSlider = () => {
 		showFeeSlider = !showFeeSlider;
 	};
@@ -266,9 +241,6 @@
 		doRecalc();
 	}
 
-	/* ---------------------------------------
-	 * Reactive / Derived
-	 * ------------------------------------- */
 	$: fromBalance = (() => {
 		const fromToken = inputTicker(swapIntent, 0);
 		if (fromToken === 'ERG') {
@@ -280,70 +252,36 @@
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigUSD_TOKEN_ID)?.amount || 0n;
 			return centsToUsd(amt);
 		} else {
-			// SigRSV
 			const amt =
 				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigRSV_TOKEN_ID)?.amount || 0n;
-			// If SigRSV had decimals, convert as needed; for now, just show raw
 			return amt.toString();
 		}
 	})();
 
-	/* ---------------------------------------
-	 * Dropdowns
-	 * ------------------------------------- */
+	function handleGlobalClick(e: MouseEvent) {}
 
-	// move to own logic file, use stores if needed
-	function handleGlobalClick(e: MouseEvent) {
-		const target = e.target as HTMLElement;
+	function handleGlobalKeydown(e: KeyboardEvent) {}
 
-		const fromMenu = document.getElementById('fromDropdownMenu');
-		const fromBtn = document.getElementById('fromDropdownBtn');
-		const fromBtn2 = document.getElementById('fromDropdownBtn2');
-
-		const toMenu = document.getElementById('toDropdownMenu');
-		const toBtn = document.getElementById('toDropdownBtn');
-		const toBtn2 = document.getElementById('toDropdownBtn2');
-
-		if (fromMenu && (fromBtn || fromBtn2)) {
-			if (
-				!fromMenu.contains(target) &&
-				!(fromBtn?.contains(target) || fromBtn2?.contains(target))
-			) {
-				fromDropdownOpen = false;
-			}
-		}
-		if (toMenu && (toBtn || toBtn2)) {
-			if (!toMenu.contains(target) && !(toBtn?.contains(target) || toBtn2?.contains(target))) {
-				toDropdownOpen = false;
-			}
-		}
-	}
-
-	function handleGlobalKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			fromDropdownOpen = false;
-			toDropdownOpen = false;
-		}
-	}
 	let fromBtnRect = { top: 0, left: 0, width: 0 };
 	let toBtnRect = { top: 0, left: 0, width: 0 };
+
 	function toggleFromDropdown(e) {
 		const rect = e.currentTarget.getBoundingClientRect();
 		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		fromDropdownOpen = !fromDropdownOpen;
 		toDropdownOpen = false;
 	}
+
 	function toggleToDropdown(e) {
 		const rect = e.currentTarget.getBoundingClientRect();
 		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
 		toDropdownOpen = !toDropdownOpen;
 		fromDropdownOpen = false;
 	}
+
 	function handleSelectInputOption(option: SwapOption) {
 		fromDropdownOpen = false;
 		selectedInputOption = option;
-
-		console.log('selectedInputOption', selectedInputOption);
 		if (option.intention) {
 			swapIntent = structuredClone(option.intention);
 		} else {
@@ -353,18 +291,14 @@
 			swapIntent = [input, outputItem];
 		}
 		updateSelectedContract();
-		console.log('$selected_contract', $selected_contract);
 		doRecalc();
 	}
+
 	function handleSelectToOption(i: SwapOption) {
 		toDropdownOpen = false;
 		updateSelectedContract();
 		doRecalc();
 	}
-
-	/* ---------------------------------------
-	 * Validation ERRORS
-	 * ------------------------------------- */
 
 	let isSwapDisabled = false;
 	function getLabelText(): string {
@@ -395,7 +329,6 @@
 			style={swapIntent.length > 2 ? 'min-height:258px' : 'min-height:200px'}
 		>
 			<div>
-				<!-- FROM SELECTION -->
 				<div class="rounded-md rounded-bl-none">
 					<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 						<span class="text-sm">{getFromLabel(swapIntent)}</span>
@@ -425,14 +358,12 @@
 							{/if}
 						</button>
 					</div>
-
 					<div
 						class="relative flex flex-col focus-within:ring-1 focus-within:ring-blue-500"
 						style="border: none!important; outline: none!important; box-shadow: none!important; max-height: 
 						{swapIntent.filter((i) => 'input' == i.side).length == 1 ? '58px' : '116px'}; "
 					>
 						<div class="flex" style="border-bottom: 4px solid var(--cl-border)">
-							<!-- FROM AMOUNT -->
 							<input
 								type="number"
 								style=""
@@ -444,8 +375,6 @@
 								bind:value={fromValue[0]}
 								on:input={handleFromValueChange}
 							/>
-
-							<!-- FROM DROPDOWN -->
 							<button
 								id="fromDropdownBtn"
 								type="button"
@@ -463,13 +392,12 @@
 									</div>
 								{:else}
 									<div class="flex items-center gap-3">
-										<!-- Show the first token name, e.g. "ERG" -->
 										<div
 											class="h-5 w-5 {tokenColor(
 												swapIntent.find((i) => 'input' == i.side)!.ticker
 											)} rounded-full"
 										></div>
-										{swapIntent.filter((i) => 'input' == i.side)[0].ticker}
+										{swapIntent.filter((i) => i.side == 'input')[0].ticker}
 									</div>
 								{/if}
 								{#if swapIntent.filter((i) => 'input' == i.side).length == 1}
@@ -484,11 +412,8 @@
 								{/if}
 							</button>
 						</div>
-
-						<!-- FROM SECOND START -->
 						{#if swapIntent.filter((i) => i.side == 'input').length > 1}
 							<div class="flex" style="border-bottom:4px solid var(--cl-border);">
-								<!-- FROM AMOUNT -->
 								<div>
 									<input
 										type="number"
@@ -501,9 +426,6 @@
 										on:input={handleFromValueChange}
 									/>
 								</div>
-
-								<!-- FROM CURRENCY DROPDOWN -->
-								<!-- Toggle button -->
 								<button
 									id="fromDropdownBtn2"
 									type="button"
@@ -512,7 +434,6 @@
 									on:click={toggleFromDropdown}
 								>
 									<div class="flex items-center gap-3">
-										<!-- Show the first token name, e.g. "ERG" -->
 										<div
 											class="h-5 w-5 {tokenColor(
 												swapIntent.filter((i) => i.side == 'input')[1].ticker
@@ -520,7 +441,6 @@
 										></div>
 										{swapIntent.filter((i) => i.side == 'input')[1].ticker}
 									</div>
-
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"
@@ -532,15 +452,10 @@
 								</button>
 							</div>
 						{/if}
-						<!-- FROM SECOND END -->
 					</div>
 				</div>
-
-				<!-- DIRECTION -->
 				<SwapInputs on:swap={handleSwapInputs} />
 			</div>
-
-			<!-- TO SELECTION -->
 			<div class="">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabled}>
@@ -560,7 +475,6 @@
 						{/if}
 					</span>
 				</div>
-
 				<div
 					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {swapIntent.filter(
@@ -570,7 +484,6 @@
 						: '116px'}; "
 				>
 					<div class="flex">
-						<!-- TO AMOUNT -->
 						<input
 							type="number"
 							class="w-[256px] bg-transparent text-3xl outline-none"
@@ -581,8 +494,6 @@
 							data-ticker={swapIntent.filter((i) => i.side == 'output')[0].ticker}
 							on:input={handleFromValueChange}
 						/>
-
-						<!-- TO DROPDOWN -->
 						<button
 							id="toDropdownBtn"
 							type="button"
@@ -601,7 +512,6 @@
 								</div>
 							{:else}
 								<div class="flex items-center gap-3">
-									<!-- Show the first token name, e.g. "ERG" -->
 									<div
 										class="h-5 w-5 {tokenColor(
 											swapIntent.filter((i) => i.side == 'output')[0].ticker
@@ -622,11 +532,8 @@
 							{/if}
 						</button>
 					</div>
-
-					<!-- SECOND TO START -->
 					{#if swapIntent.filter((i) => i.side == 'output').length > 1}
 						<div class="flex">
-							<!-- FROM AMOUNT -->
 							<div style="border-top-width:4px;" class="border-color w-[256px]">
 								<input
 									type="number"
@@ -639,9 +546,6 @@
 									on:input={handleFromValueChange}
 								/>
 							</div>
-
-							<!-- FROM CURRENCY DROPDOWN -->
-							<!-- Toggle button -->
 							<button
 								id="toDropdownBtn2"
 								type="button"
@@ -651,7 +555,6 @@
 								disabled={getOutputOptions(swapIntent).length < 2}
 							>
 								<div class="flex items-center gap-3">
-									<!-- Show the first token name, e.g. "ERG" -->
 									<div
 										class="h-5 w-5 {tokenColor(
 											swapIntent.filter((i) => i.side == 'output')[1].ticker
@@ -672,12 +575,9 @@
 							</button>
 						</div>
 					{/if}
-					<!-- SECOND TO END -->
 				</div>
 			</div>
 		</div>
-
-		<!-- Fee Settings (Expert) -->
 		<div
 			class={` overflow-hidden transition-all duration-300 ${
 				showFeeSlider ? 'max-h-24 py-4' : 'max-h-0'
@@ -724,15 +624,24 @@
 	{/if}
 </div>
 
-<!-- Dropdown list -->
 {#if fromDropdownOpen}
-	<Dropdown btnRect={fromBtnRect} options={inputOptions} onSelect={handleSelectInputOption} />
+	<Dropdown
+		id="dropdownMenu1"
+		btnRect={fromBtnRect}
+		options={inputOptions}
+		onSelect={handleSelectInputOption}
+		open={fromDropdownOpen}
+		onClose={() => (fromDropdownOpen = false)}
+	/>
 {/if}
 {#if toDropdownOpen}
 	<Dropdown
+		id="dropdownMenu2"
 		btnRect={toBtnRect}
 		options={getOutputOptions(selectedInputOption)}
 		onSelect={handleSelectToOption}
+		open={toDropdownOpen}
+		onClose={() => (toDropdownOpen = false)}
 	/>
 {/if}
 

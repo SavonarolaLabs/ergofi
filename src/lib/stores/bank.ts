@@ -1,4 +1,4 @@
-import { get, writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
 import type { Interaction, MempoolSocketUpdate } from './preparedInteractions';
 import { getMaxFeeLeaf } from './bankBoxSelection';
 import type { NodeBox, OracleData } from './bank.types';
@@ -22,6 +22,29 @@ export const bank_price_usd_buy = writable<number>(0);
 export const bank_price_usd_sell = writable<number>(0);
 export const bank_price_rsv_buy = writable<number>(0);
 export const bank_price_rsv_sell = writable<number>(0);
+
+//
+export const sigmausd_widget_numbers: Writable<SigmaUsdNumbers> = writable();
+
+export type SigmaUsdNumbers = {
+	reserve_rate: number;
+	reserve_border_left_USD: number;
+	reserve_border_left_ERG: number;
+	reserve_border_left_RSV: number;
+	reserve_border_right_USD: number;
+	reserve_border_right_ERG: number;
+	reserve_border_right_RSV: number;
+
+	bank_box_nano_erg: bigint;
+	bank_box_circulating_usd_cent: bigint;
+	bank_box_circulating_rsv: bigint;
+	oracle_price_sig_usd_cent: bigint;
+
+	bank_price_usd_buy: number;
+	bank_price_usd_sell: number;
+	bank_price_rsv_buy: number;
+	bank_price_rsv_sell: number;
+};
 
 export const unconfirmed_bank_erg = writable<bigint>(1653105734759386n);
 export const unconfrimed_bank_usd = writable<bigint>(46260638n);

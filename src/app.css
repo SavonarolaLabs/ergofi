@@ -67,6 +67,12 @@ body {
 .border-color {
 	border-color: var(--cl-border);
 }
+
+input::placeholder {
+	color: var(--cl-text);
+	opacity: 1;
+}
+
 .shake {
 	animation: shake 0.3s;
 }

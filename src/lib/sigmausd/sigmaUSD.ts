@@ -17,7 +17,7 @@ import {
 	calculateBankRateRSVInputRSV
 } from './sigmaUSDMath';
 
-import { getSwapTag } from '$lib/swapIntention';
+import { getSwapTag, getSwapTagAndAmount } from '$lib/swapIntention';
 
 import type { SwapIntention } from '$lib/swapIntention';
 
@@ -698,16 +698,21 @@ export function sellRSVInputERGTx(
 }
 
 // ui
-//prettier-ignore
-export function buildSwapSigmaUsdTx(swapIntent:SwapIntention, me:string, bankAddress:string, utxos:NodeBox[], height:number, bankBox:NodeBox, oracleBox:NodeBox, feeMining:bigint){
+export function buildSwapSigmaUsdTx(
+	swapIntent: SwapIntention,
+	me: string,
+	bankAddress: string,
+	utxos: NodeBox[],
+	height: number,
+	bankBox: NodeBox,
+	oracleBox: NodeBox,
+	feeMining: bigint
+) {
+	const { swapTag, amount } = getSwapTagAndAmount(swapIntent);
 
-		const lastInput = swapIntent.find((s)=>s.lastInput)!
-		const swapTag = getSwapTag(swapIntent, lastInput);
-		const amount = lastInput.amount!;
-		console.log('swapTag:', swapTag)
-		
-		let unsignedTx;
-		switch (swapTag) {
+	let unsignedTx;
+	//prettier-ignore
+	switch (swapTag) {
 			case 'ERG_ERG/SIGUSD':      unsignedTx = buyUSDInputERGTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
 			case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
 			case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
@@ -719,5 +724,5 @@ export function buildSwapSigmaUsdTx(swapIntent:SwapIntention, me:string, bankAdd
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapTag}`);
 		}
-		return unsignedTx;
-	}
+	return unsignedTx;
+}

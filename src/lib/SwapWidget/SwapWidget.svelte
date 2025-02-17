@@ -133,10 +133,10 @@
 		if ($selected_contract == 'SigmaUsd') {
 			if (!inputItem) {
 				const copySwapIntent = defaultAmountIntent(swapIntent);
-				const swapPreview = doRecalcSigUsdContract(copySwapIntent, copySwapIntent[0]);
+				const swapPreview = doRecalcSigUsdContract(copySwapIntent);
 				swapPrice = swapPreview.price;
 			} else {
-				const swapPreview = doRecalcSigUsdContract(swapIntent, inputItem);
+				const swapPreview = doRecalcSigUsdContract(swapIntent);
 				swapIntent = updateIntentValues(swapPreview);
 				swapPrice = swapPreview.price;
 				updateUiValues(swapIntent, fromValue, toValue);
@@ -159,7 +159,6 @@
 			if (!inputItem) {
 				const copySwapIntent = defaultAmountIntent(swapIntent);
 				const swapPreview = doRecalcDexyGoldContract(
-					copySwapIntent[0],
 					copySwapIntent,
 					dexyGoldUtxo,
 					$dexygold_widget_numbers,
@@ -168,7 +167,6 @@
 				swapPrice = swapPreview.price;
 			} else {
 				const swapPreview = doRecalcDexyGoldContract(
-					inputItem,
 					swapIntent,
 					dexyGoldUtxo,
 					$dexygold_widget_numbers,
@@ -184,8 +182,8 @@
 		}
 	}
 
-	function doRecalcSigUsdContract(swapIntent: SwapIntention, inputItem: SwapItem): SwapPreview {
-		const swapPreview = recalcAmountAndPrice(inputItem, swapIntent);
+	function doRecalcSigUsdContract(swapIntent: SwapIntention): SwapPreview {
+		const swapPreview = recalcAmountAndPrice(swapIntent);
 		return swapPreview;
 	}
 

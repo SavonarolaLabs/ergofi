@@ -2,6 +2,11 @@ import { ergoTokens } from '$lib/stores/ergoTokens';
 
 export type SwapSide = 'input' | 'output';
 
+export type SwapTagAndAmount = {
+	swapTag: string;
+	amount: bigint;
+};
+
 export type TokenInput = {
 	tokenId: string;
 	value?: string;
@@ -39,6 +44,13 @@ export function anchorTokenId(swapIntention: SwapIntention): string {
 
 export function anchorSide(swapIntention: SwapIntention): SwapSide {
 	return swapIntention.find((si) => si.amount != undefined)!.side;
+}
+
+export function getSwapTagAndAmount(swapIntent: SwapIntention): SwapTagAndAmount {
+	const lastInput = swapIntent.find((s) => s.lastInput)!;
+	const swapTag = getSwapTag(swapIntent, lastInput);
+	const amount = lastInput.amount!;
+	return { swapTag, amount };
 }
 
 export function getSwapTag(swapIntent: SwapIntention, anchorIntent: SwapItem): string {

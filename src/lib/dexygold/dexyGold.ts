@@ -26,6 +26,7 @@ import type { DexyGoldNumbers } from '$lib/stores/dexyGoldStore';
 import {
 	anchor,
 	getSwapTag,
+	getSwapTagAndAmount,
 	setAmount,
 	swapAmount,
 	type SwapIntention,
@@ -1562,33 +1563,36 @@ export function dexyGoldBankArbitrageInputErgTx(
 }
 
 // ui
-//prettier-ignore
-export function buildSwapDexyGoldTx(swapIntent: SwapIntention, me:string, height:number, feeMining:bigint, utxos:NodeBox[], dexyGoldUtxo: DexyGoldUtxo, dexyGoldNumbers: DexyGoldNumbers){
-		
+export function buildSwapDexyGoldTx(
+	swapIntent: SwapIntention,
+	me: string,
+	height: number,
+	feeMining: bigint,
+	utxos: NodeBox[],
+	dexyGoldUtxo: DexyGoldUtxo,
+	dexyGoldNumbers: DexyGoldNumbers
+) {
+	const { swapTag, amount } = getSwapTagAndAmount(swapIntent);
 
-		const lastInput = swapIntent.find((s)=>s.lastInput)!	
-		const swapTag = getSwapTag(swapIntent, lastInput);
-		const amount = lastInput.amount!;
-		console.log('swapTag:', swapTag)
-
-		let unsignedTx;
-		switch (swapTag) {
-			case 'ERG+DEXYGOLD_ERG/DEXYGOLDLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+	let unsignedTx;
+	//prettier-ignore
+	switch (swapTag) {
+			case 'ERG+DEXYGOLD_ERG/DEXYGOLDLP':  		unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP':	unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 			case 'ERG+DEXYGOLD/DEXYGOLDLP_DEXYGOLDLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 			case 'DEXYGOLDLP_DEXYGOLDLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYGOLDLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLDLP/ERG+DEXYGOLD_ERG': 		unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 
-			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldBestBuyDexyGoldInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;			
-			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldBestBuyDexyGoldInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;
-			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG_ERG/DEXYGOLD': 					unsignedTx = dexyGoldBestBuyDexyGoldInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;			
+			case 'ERG/DEXYGOLD_DEXYGOLD': 				unsignedTx = dexyGoldBestBuyDexyGoldInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;
+			case 'DEXYGOLD_DEXYGOLD/ERG':				unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLD/ERG_ERG':					unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); break;
 			default:
 				throw new Error(`Unsupported swapPair and lastInput combination: ${swapTag}`);
 		}
-		return unsignedTx;
-	}
+	return unsignedTx;
+}
 
 function dexyGoldBestBuyDexyGoldInputErgTx(
 	amount: bigint,
@@ -1869,14 +1873,12 @@ export function bestOptionErgToDexyGold(
 }
 
 export function doRecalcDexyGoldContract(
-	anchor: SwapItem,
 	swapIntent: SwapIntention,
 	dexyGoldUtxo: DexyGoldUtxo,
 	dexyGoldNumbers: DexyGoldNumbers,
 	feeMining: bigint
 ): SwapPreview {
-	const swapTag = getSwapTag(swapIntent, anchor);
-	const amount = anchor.amount!;
+	const { swapTag, amount } = getSwapTagAndAmount(swapIntent);
 
 	let calculatedIntent = structuredClone(swapIntent);
 	let swapPreview: SwapPreview;

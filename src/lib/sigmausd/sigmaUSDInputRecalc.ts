@@ -16,6 +16,7 @@ import { DIRECTION_BUY, DIRECTION_SELL } from '$lib/api/ergoNode';
 import type { SigmaUsdNumbers } from '$lib/stores/bank';
 import {
 	getSwapTag,
+	getSwapTagAndAmount,
 	setAmount,
 	type SwapIntention,
 	type SwapItem,
@@ -328,14 +329,11 @@ export function calculateInputsRSVErgInRSVPrice(
 
 // prettier-ignore
 export function calculateAmountAndSwapPrice( 
-	anchor: SwapItem,
 	swapIntent: SwapIntention,
 	sigmaUsdNumbers:SigmaUsdNumbers,
 	feeMining: bigint
 	): SwapPreview {
-	
-	const swapTag = getSwapTag(swapIntent, anchor);
-	const amount = anchor.amount!;
+	const { swapTag, amount } = getSwapTagAndAmount(swapIntent);
 	
 	let swapPreview: SwapPreview;
 	let calculatedIntent = structuredClone(swapIntent);

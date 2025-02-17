@@ -38,14 +38,10 @@ import { createInteractionAndSubmitTx, getWeb3WalletData } from '$lib/asdf';
 import { buildSwapSigmaUsdTx } from '$lib/sigmausd/sigmaUSD';
 import { amountToValue } from '$lib/utils';
 
-export function recalcAmountAndPrice(
-	inputItem: SwapItem,
-	swapIntent: SwapIntention
-): SwapPreview | undefined {
+export function recalcAmountAndPrice(swapIntent: SwapIntention): SwapPreview | undefined {
 	if (!get(oracle_box) || !get(bank_box)) return;
 
 	const swapPreview = calculateAmountAndSwapPrice(
-		inputItem,
 		swapIntent,
 		get(sigmausd_numbers),
 		get(fee_mining)

@@ -106,21 +106,9 @@ export async function handleSwapButtonDexyGold(swapIntent: SwapIntention) {
 	await createInteractionAndSubmitTx(unsignedTx, [me]);
 }
 
-export async function handleSwapButtonSigUsd(
-	swapIntent: SwapIntention,
-	fromValue: string[],
-	toValue: string[]
-) {
-	const fromAsset = {
-		token: inputTicker(swapIntent, 0),
-		amount: fromValue[0]
-	};
-	const toAsset = {
-		token: outputTicker(swapIntent, 0),
-		amount: toValue[0]
-	};
-
+export async function handleSwapButtonSigUsd(swapIntent: SwapIntention) {
 	const { me, utxos, height } = await getWeb3WalletData();
+
 	const unsignedTx = buildSwapSigmaUsdTx(
 		swapIntent,
 		me,

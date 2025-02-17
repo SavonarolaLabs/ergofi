@@ -212,7 +212,7 @@
 			return;
 		}
 		if ($selected_contract == 'SigmaUsd') {
-			await handleSwapButtonSigUsd(swapIntent, fromValue, toValue);
+			await handleSwapButtonSigUsd(swapIntent);
 		} else if ($selected_contract == 'DexyGold') {
 			//
 			await handleSwapButtonDexyGold(swapIntent); //<==

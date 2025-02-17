@@ -7,7 +7,7 @@ import {
 	type Direction
 } from './sigmaUSDAndDexy';
 
-import type { LastUserInput, NodeBox, UiInputAsset } from '../stores/bank.types';
+import type { NodeBox } from '../stores/bank.types';
 import { parseErgUsdOracleBox, parseSigUsdBankBox } from './sigmaUSDParser';
 import { buildTx_SIGUSD_ERG_USD, buildTx_SIGUSD_ERG_RSV } from './sigmaUSDBuilder';
 import {
@@ -16,6 +16,9 @@ import {
 	calculateBankRateRSVInputERG,
 	calculateBankRateRSVInputRSV
 } from './sigmaUSDMath';
+
+import { getSwapTag } from '$lib/swapIntention';
+
 import type { SwapIntention } from '$lib/swapIntention';
 
 function calculateBankOutUsd(
@@ -697,23 +700,24 @@ export function sellRSVInputERGTx(
 // ui
 //prettier-ignore
 export function buildSwapSigmaUsdTx(swapIntent:SwapIntention, me:string, bankAddress:string, utxos:NodeBox[], height:number, bankBox:NodeBox, oracleBox:NodeBox, feeMining:bigint){
-		//let swapPairLastInput = `${fromAsset.token}/${toAsset.token}_${lastInput == 'From' ? fromAsset.token : toAsset.token}`;
-		//const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
-		let swapPairLastInput = ''
-		const amount = 0n;
+
+		const lastInput = swapIntent.find((s)=>s.lastInput)!
+		const swapTag = getSwapTag(swapIntent, lastInput);
+		const amount = lastInput.amount!;
+		console.log('swapTag:', swapTag)
 		
 		let unsignedTx;
-		switch (swapPairLastInput.toLocaleUpperCase()) {
-			case 'ERG/SIGUSD_ERG':      unsignedTx = buyUSDInputERGTx (amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'SIGUSD/ERG_SIGUSD':   unsignedTx = sellUSDInputUSDTx(amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'ERG/SIGRSV_ERG':      unsignedTx = buyRSVInputERGTx (amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
-			case 'SIGRSV/ERG_SIGRSV':   unsignedTx = sellRSVInputRSVTx(amount!, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+		switch (swapTag) {
+			case 'ERG_ERG/SIGUSD':      unsignedTx = buyUSDInputERGTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'ERG/SIGUSD_SIGUSD':   unsignedTx = buyUSDInputUSDTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'SIGUSD/ERG_ERG':      unsignedTx = sellUSDInputERGTx(amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'SIGUSD_SIGUSD/ERG':   unsignedTx = sellUSDInputUSDTx(amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'ERG_ERG/SIGRSV':      unsignedTx = buyRSVInputERGTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'ERG/SIGRSV_SIGRSV':   unsignedTx = buyRSVInputRSVTx (amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'SIGRSV/ERG_ERG':      unsignedTx = sellRSVInputERGTx(amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
+			case 'SIGRSV_SIGRSV/ERG':   unsignedTx = sellRSVInputRSVTx(amount, me, bankAddress, utxos, height, bankBox, oracleBox, feeMining); break;
 			default:
-				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
+				throw new Error(`Unsupported swapPair and lastInput combination: ${swapTag}`);
 		}
 		return unsignedTx;
 	}

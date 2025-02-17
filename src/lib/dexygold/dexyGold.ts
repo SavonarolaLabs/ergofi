@@ -1566,11 +1566,9 @@ export function dexyGoldBankArbitrageInputErgTx(
 export function buildSwapDexyGoldTx(swapIntent: SwapIntention, me:string, height:number, feeMining:bigint, utxos:NodeBox[], dexyGoldUtxo: DexyGoldUtxo, dexyGoldNumbers: DexyGoldNumbers){
 		
 
-		const lastInput = swapIntent.find((s)=>s.lastInput)!
-		
+		const lastInput = swapIntent.find((s)=>s.lastInput)!	
 		const swapTag = getSwapTag(swapIntent, lastInput);
 		const amount = lastInput.amount!;
-
 		console.log('swapTag:', swapTag)
 
 		let unsignedTx;

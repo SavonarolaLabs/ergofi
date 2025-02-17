@@ -8,6 +8,7 @@
 	import { bank_box, fee_mining, oracle_box } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
+		ergoTokens,
 		getTokenId,
 		SigRSV_TOKEN_ID,
 		SigUSD_TOKEN_ID
@@ -146,10 +147,22 @@
 			outputItem.side = 'output';
 			swapIntent = [input, outputItem];
 		}
-		lastInputItem.side = swapIntent[0].side;
-		lastInputItem.tokenId = swapIntent[0].tokenId;
-		lastInputItem.ticker = swapIntent[0].ticker;
-		lastInputItem.amount = valueToAmount(lastInputItem);
+
+		if (lastInputItem) {
+			lastInputItem.side = swapIntent[0].side;
+			lastInputItem.tokenId = swapIntent[0].tokenId;
+			lastInputItem.ticker = swapIntent[0].ticker;
+			lastInputItem.amount = valueToAmount(lastInputItem);
+		} else {
+			lastInputItem = {
+				side: swapIntent[0].side,
+				tokenId: swapIntent[0].tokenId,
+				ticker: swapIntent[0].ticker,
+				amount: ergoTokens[swapIntent[0].tokenId].defaultAmount
+			};
+			lastInputItem.value = amountToValue(lastInputItem);
+		}
+
 		//swapIntent
 
 		updateSelectedContractStore(swapIntent);

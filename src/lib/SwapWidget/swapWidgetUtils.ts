@@ -77,11 +77,7 @@ export function isSwapDisabledCalc(swapIntent: SwapIntention) {
 	return false;
 }
 
-export async function handleSwapButtonDexyGold(
-	swapIntent: SwapIntention,
-	fromValue: string[],
-	toValue: string[]
-) {
+export async function handleSwapButtonDexyGold(swapIntent: SwapIntention) {
 	let dexyGoldUtxo = {
 		lpSwapIn: get(dexygold_lp_swap_box),
 		lpMintIn: get(dexygold_lp_mint_box),

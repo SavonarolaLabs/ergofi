@@ -13,7 +13,6 @@
 	import { fade, fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { applyAnimation } from './animations';
-	import BankUtxoUnconfirmed from './BankUTXOUnconfirmed.svelte';
 	import { formatTimeAgo } from './utils';
 	import CheckCircle from './icons/CheckCircle.svelte';
 	import CheckCircleFilled from './icons/CheckCircleFilled.svelte';

@@ -46,8 +46,9 @@
 	];
 
 	function setbg(girl: Girl) {
-		if (girl.text) document.documentElement.style.setProperty('--cl-text', girl.text);
-		if (girl.text) document.documentElement.style.setProperty('--cl-contrast-text', girl.text);
+		document.documentElement.style.setProperty('--cl-text', girl.text);
+		document.documentElement.style.setProperty('--cl-contrast-text', girl.text);
+		document.documentElement.style.setProperty('--cl-border', girl.text);
 		document.documentElement.style.setProperty('--cl-bg', girl.bg);
 		document.documentElement.style.setProperty('--cl-bg-widget', girl.bg);
 		document.documentElement.style.setProperty('--cl-bg-alpha', `${girl.bg}ED`);

@@ -27,12 +27,12 @@
 		height: 60px;
 		border: 0;
 		outline: none;
-		background-color: var(--black-color);
+		background-color: var(--cl-border);
 		cursor: pointer;
 		position: relative;
 		font-size: 1rem;
 		text-transform: uppercase;
-		color: var(--black-color);
+		color: var(--cl-border);
 		clip-path: polygon(100% 0, 100% 37.5%, 100% 100%, 5.3% 100%, 0% 62.5%, 0 0);
 	}
 
@@ -69,7 +69,7 @@
 
 	.btn--secondary .btn__label {
 		background-color: var(--white-color);
-		color: var(--black-color);
+		color: var(--cl-text);
 	}
 
 	.btn__glitch {

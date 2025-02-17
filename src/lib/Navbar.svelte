@@ -51,11 +51,11 @@
 	// }
 
 	const unique: Girl[] = [
-		{ img: 57, bg: '#C5C5C5', text: '#f0f0f0' },
-		{ img: 59, bg: '#BFC2C9', text: '#444' },
-		{ img: 666, bg: '#F6F2A9', text: '#444' },
-		{ img: 680, bg: '#E39EF7', text: '#444' },
-		{ img: 743, bg: '#F7E0C1', text: '#444' },
+		{ img: 57, bg: '#A64F72', text: '#f0f0f0' },
+		{ img: 59, bg: '#4BB0E4', text: '#444' },
+		{ img: 666, bg: '#905320', text: '#f0f0f0' },
+		{ img: 680, bg: '#566D9A', text: '#f0f0f0' },
+		{ img: 743, bg: '#3C2E5A', text: '#f0f0f0' },
 		{ img: 1477, bg: '#B5DCEB', text: '#444' }
 	];
 

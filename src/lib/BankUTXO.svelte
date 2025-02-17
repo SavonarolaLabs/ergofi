@@ -18,11 +18,13 @@
 </script>
 
 <div
-	class="row flex flex-col gap-1 rounded-md p-4 pt-3 text-gray-500"
+	class="row flex flex-col gap-1 rounded-md p-4 pt-3"
 	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
 >
 	<a href="https://sigmaspace.io/en/address/{SIGUSD_BANK_ADDRESS}" target="_blank">
-		<div class="mb-2 font-mono text-xs font-bold text-yellow-600 hover:text-yellow-300">
+		<div
+			class="mb-2 font-mono text-xs font-bold text-[var(--cl-contrast-text)] hover:text-yellow-300"
+		>
 			SigmaUSD Bank :: MUbV38YgqHy7XbsoX...nbeTrPMey1WPaXX
 		</div>
 	</a>

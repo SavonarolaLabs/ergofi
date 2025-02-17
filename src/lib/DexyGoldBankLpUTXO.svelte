@@ -28,7 +28,7 @@
 </script>
 
 <div
-	class="row flex flex-col gap-1 rounded-md p-4 pt-3 text-gray-500"
+	class="row flex flex-col gap-1 rounded-md p-4 pt-3"
 	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
 >
 	<a href="https://sigmaspace.io/en/address/{DEXY_BANK_BANK}" target="_blank">
@@ -185,8 +185,7 @@
 	</div>
 </div>
 
-{$dexygold_widget_numbers}
-<div class="text-sm">
+<div class="hidden text-sm">
 	{#if $dexygold_widget_numbers && $info}
 		<div>ERG/XAU Oracle: {$dexygold_widget_numbers.lpRate}</div>
 		<div>

@@ -55,7 +55,12 @@ sub {
 	--cl-bg-alpha: #f5f2a8ed;
 	--cl-bg-widget: #f5f2a8;
 	--cl-text: #1f2937;
+	--cl-text-muted: #1f2937;
 	--cl-contrast-text: #1f2937;
+}
+
+.text-muted {
+	color: var(--cl-text-muted);
 }
 
 html,

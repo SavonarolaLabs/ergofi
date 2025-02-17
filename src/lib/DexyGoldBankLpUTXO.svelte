@@ -47,21 +47,17 @@
 				target="_blank"
 			>
 				<div class="items-left flex flex-col" style="width:150px">
-					<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-						ERG/XAU Oracle
-					</div>
+					<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>ERG/XAU Oracle</div>
 					<div>{77.98} <span class="text-xs">ERG/gram</span></div>
 				</div>
 			</a>
 		</div>
 		<div class="items-left flex flex-col" style="">
-			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>LP/Oracle</div>
+			<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>LP/Oracle</div>
 			<div>99%</div>
 		</div>
 		<div class="items-left flex flex-col">
-			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-				Total Bank Assets
-			</div>
+			<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Total Bank Assets</div>
 			<div class="items-left flex">
 				<div>
 					{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
@@ -74,21 +70,19 @@
 	<div class="mt-2 flex items-end justify-between">
 		<div class="flex">
 			<div class="items-left flex flex-col" style="width:131px">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Action</div>
+				<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Action</div>
 				<span class="items-left flex gap-1"> Freemint </span>
-				<span class="items-left flex gap-1 text-gray-700"> Arbmint </span>
+				<span class="items-left text-muted flex gap-1"> Arbmint </span>
 			</div>
 			<div class="items-left flex flex-col">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
-					Blocks Cooldown
-				</div>
+				<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Blocks Cooldown</div>
 				<span class="items-left flex gap-1">30 ≈ 15min</span>
 				<span class:text-gray-700={$reserve_border_left_USD < 0}> 360 </span>
 			</div>
 		</div>
 
 		<div class="items-left flex flex-col">
-			<div class="pr-5 text-right text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+			<div class="pr-5 text-right text-xs" class:text-muted={$reserve_border_left_USD > 0}>
 				Mintable Amount
 			</div>
 			<div class="flex justify-end">
@@ -124,16 +118,16 @@
 				href="https://explorer.ergoplatform.com/en/oracle-pool-state/xauerg"
 				target="_blank"
 			>
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>ERG/XAU Rate</div>
+				<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>ERG/XAU Rate</div>
 				<div>{77.98} <span class="text-xs">ERG/gram</span></div>
 			</a>
 		</div>
 		<div class="items-left flex flex-col" style="">
-			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Reserve Rate</div>
+			<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Reserve Rate</div>
 			<div>{$reserve_rate}%</div>
 		</div>
 		<div class="items-left flex flex-col">
-			<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Bank Reserve</div>
+			<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Bank Reserve</div>
 			<div class="items-left flex">
 				<div>
 					{formatAmount($bank_box_nano_erg / 10n ** 9n, false)}
@@ -146,7 +140,7 @@
 	<div class="mt-2 flex items-end justify-between">
 		<div class="flex">
 			<div class="items-left flex flex-col" style="width:131px">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Mint Price</div>
+				<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Mint Price</div>
 				<span class="items-left flex gap-1" class:text-gray-700={$reserve_border_left_USD < 0}>
 					{$bank_price_usd_sell}
 				</span>
@@ -155,7 +149,7 @@
 				>
 			</div>
 			<div class="items-left flex flex-col">
-				<div class="text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>Redeem Price</div>
+				<div class="text-xs" class:text-muted={$reserve_border_left_USD > 0}>Redeem Price</div>
 				<span class="items-left flex gap-1">
 					{$bank_price_usd_buy}
 				</span>
@@ -166,7 +160,7 @@
 		</div>
 
 		<div class="items-left flex flex-col">
-			<div class="pr-5 text-right text-xs" class:text-gray-600={$reserve_border_left_USD > 0}>
+			<div class="pr-5 text-right text-xs" class:text-muted={$reserve_border_left_USD > 0}>
 				Mintable Amount
 			</div>
 			<div class="flex justify-end" class:text-red-600={$reserve_border_left_USD < 0}>

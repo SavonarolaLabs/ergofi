@@ -53,24 +53,12 @@ export function recalcAmountAndPrice(
 ): SwapPreview | undefined {
 	if (!get(oracle_box) || !get(bank_box)) return;
 
-	// get these values from swap intent, or pass down
-	const fromToken = 'ERG';
-	const fromAmount = '1';
-	const toToken = 'SigUSD';
-	const toAmount = '1';
-	const lastInput = 'From';
-
-	//swapPreview => from
-	console.log(getSwapTag(swapIntent, inputItem));
-
 	const swapPreview = calculateAmountAndSwapPrice(
 		inputItem,
 		swapIntent,
 		get(sigmausd_widget_numbers),
 		get(fee_mining)
 	)!;
-
-	// to => swapPreview
 
 	return swapPreview;
 }

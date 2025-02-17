@@ -53,6 +53,7 @@
 	} from './swapWidgetUtils';
 
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
+	let lastInputItem: SwapItem;
 	selected_contract.set('DexyGold');
 	let fromValue = ['', ''];
 	let toValue = ['', ''];
@@ -110,24 +111,28 @@
 		const tokenId = getTokenId(ticker)!;
 		const value = input.value;
 		const amount = valueToAmount({ tokenId, value });
-		fromValue[0] = input.value;
-		doRecalc(swapIntent, { side, ticker, tokenId, value, amount });
+		lastInputItem = { side, ticker, tokenId, value, amount };
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	function handleSwapInputs() {
 		const newSwapIntent: SwapIntention = structuredClone(swapIntent);
+
 		swapIntent = newSwapIntent.map((row) => {
 			row.side = row.side == 'input' ? 'output' : 'input';
 			return row;
 		});
+		if (lastInputItem) {
+			lastInputItem.side = lastInputItem.side == 'input' ? 'output' : 'input';
+		}
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9));
-		doRecalc(swapIntent);
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	function handleSelectInputOption(option: SwapOption) {

@@ -1991,7 +1991,6 @@ export function doRecalcDexyGoldContract(
 		console.log({ swapPreview });
 	}
 
-	//----
-
+	// @ts-ignore
 	return swapPreview;
 }

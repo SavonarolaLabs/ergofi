@@ -18,11 +18,13 @@ import {
 import type { NodeBox } from '$lib/stores/bank.types';
 import { get } from 'svelte/store';
 import {
+	getSwapTag,
 	inputTicker,
 	isLpTokenInput,
 	isLpTokenOutput,
 	outputTicker,
 	type SwapIntention,
+	type SwapItem,
 	type SwapPreview
 } from '../swapIntention';
 import { selected_contract } from '$lib/stores/ui';
@@ -45,7 +47,7 @@ import { createInteractionAndSubmitTx, getWeb3WalletData } from '$lib/asdf';
 import { buildSwapSigmaUsdTx } from '$lib/sigmausd/sigmaUSD';
 import { amountToValue } from '$lib/utils';
 
-export function recalcAmountAndPrice(swapIntent: SwapIntention) {
+export function recalcAmountAndPrice(inputItem: SwapItem, swapIntent: SwapIntention) {
 	if (!get(oracle_box) || !get(bank_box)) return;
 
 	// get these values from swap intent, or pass down
@@ -56,13 +58,11 @@ export function recalcAmountAndPrice(swapIntent: SwapIntention) {
 	const lastInput = 'From';
 
 	//swapPreview => from
+	console.log(getSwapTag(swapIntent, inputItem));
 
 	const { from, to, price } = calculateAmountAndSwapPrice(
-		lastInput,
-		fromToken,
-		fromAmount,
-		toToken,
-		toAmount,
+		inputItem,
+		swapIntent,
 		get(sigmausd_widget_numbers),
 		get(fee_mining)
 	)!;

@@ -121,7 +121,7 @@
 
 	function doRecalc(inputItem?: SwapItem) {
 		if ($selected_contract == 'SigmaUsd') {
-			doRecalcSigUsdContract();
+			doRecalcSigUsdContract(swapIntent);
 		} else if ($selected_contract == 'DexyGold') {
 			swapIntent.forEach((row) => {
 				if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
@@ -169,8 +169,9 @@
 		}
 	}
 
-	function doRecalcSigUsdContract() {
-		const recalc = recalcAmountAndPrice(swapIntent);
+	function doRecalcSigUsdContract(swapIntent: SwapIntention) {
+		console.log({ swapIntent });
+		const recalc = recalcAmountAndPrice(swapIntent[0], swapIntent);
 		if (recalc) {
 			swapPrice = recalc.price;
 			if (recalc.from != undefined) {

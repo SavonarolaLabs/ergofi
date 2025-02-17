@@ -75,7 +75,16 @@ export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
 			return [itemERG];
 		}
 	} else {
-		return [itemErgDexyGoldLpToken];
+		//intention...
+		if (swapOption.intention.length > 2) {
+			return [itemErgDexyGoldLpToken];
+		} else {
+			if (swapOption.intention[0].ticker == 'ERG') {
+				return [itemSigUSD, itemSigRSV, itemDexyGold];
+			} else {
+				return [itemERG];
+			}
+		}
 	}
 }
 

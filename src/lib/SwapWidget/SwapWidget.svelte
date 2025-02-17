@@ -423,7 +423,7 @@
 							type="button"
 							style="width: 271px; border-right:none; margin-bottom:-4px; border-width:4px; border-bottom-left-radius:0; border-top-right-radius:0px; height:62px;"
 							class=" border-color flex w-full items-center justify-between rounded-lg rounded-br-none px-3 py-2 font-medium outline-none"
-							disabled={getOutputOptions(swapIntent).length < 2}
+							disabled={getOutputOptions({ intention: swapIntent }).length < 2}
 							on:click|stopPropagation={toggleToDropdown}
 						>
 							{#if isLpTokenOutput(swapIntent)}
@@ -444,7 +444,7 @@
 									{swapIntent.filter((i) => i.side == 'output')[0].ticker}
 								</div>
 							{/if}
-							{#if getOutputOptions(swapIntent).length > 1}
+							{#if getOutputOptions({ intention: swapIntent }).length > 1}
 								<svg
 									class="pointer-events-none ml-2 h-6 w-6"
 									xmlns="http://www.w3.org/2000/svg"
@@ -476,7 +476,7 @@
 								style="height:62px; border-left: 4px solid var(--cl-border)"
 								class="flex w-full items-center justify-between px-3 font-medium outline-none"
 								on:click|stopPropagation={toggleToDropdown}
-								disabled={getOutputOptions(swapIntent).length < 2}
+								disabled={getOutputOptions({ intention: swapIntent }).length < 2}
 							>
 								<div class="flex items-center gap-3">
 									<div
@@ -486,7 +486,7 @@
 									></div>
 									{swapIntent.filter((i) => i.side == 'output')[1].ticker}
 								</div>
-								{#if getOutputOptions(swapIntent).length > 1}
+								{#if getOutputOptions({ intention: swapIntent }).length > 1}
 									<svg
 										class="pointer-events-none ml-2 h-6 w-6"
 										xmlns="http://www.w3.org/2000/svg"

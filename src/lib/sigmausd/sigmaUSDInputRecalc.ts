@@ -426,6 +426,9 @@ export function calculateAmountAndSwapPrice(
 	const amount = anchor.amount!;
 	
 	let swapPreview: SwapPreview;
+	console.log(anchor,' inside anchor')
+	console.log(swapIntent,' inside swapIntent')
+
 	let calculatedIntent = structuredClone(swapIntent);
 
 	//ERGO_TOKEN_ID

@@ -120,15 +120,22 @@
 	});
 
 	function doRecalc(inputItem?: SwapItem) {
+		swapIntent.forEach((row) => {
+			if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
+				row.amount = inputItem.amount;
+				row.value = inputItem.value;
+			}
+		});
+
 		if ($selected_contract == 'SigmaUsd') {
-			doRecalcSigUsdContract(swapIntent);
+			const swapPreview = doRecalcSigUsdContract(swapIntent, inputItem);
+			console.log(swapPreview, 'swapPreview');
+			swapIntent = updateIntentValues(swapPreview);
+			swapPrice = swapPreview.price;
+			updateUiValues(swapIntent, fromValue, toValue);
+			toValue = toValue;
+			fromValue = fromValue;
 		} else if ($selected_contract == 'DexyGold') {
-			swapIntent.forEach((row) => {
-				if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
-					row.amount = inputItem.amount;
-					row.value = inputItem.value;
-				}
-			});
 			let dexyGoldUtxo: DexyGoldUtxo = {
 				lpSwapIn: $dexygold_lp_swap_box,
 				lpMintIn: $dexygold_lp_mint_box,
@@ -169,18 +176,11 @@
 		}
 	}
 
-	function doRecalcSigUsdContract(swapIntent: SwapIntention) {
+	function doRecalcSigUsdContract(swapIntent: SwapIntention, inputItem: SwapItem): SwapPreview {
+		// no 0 value
 		console.log({ swapIntent });
-		const recalc = recalcAmountAndPrice(swapIntent[0], swapIntent);
-		if (recalc) {
-			swapPrice = recalc.price;
-			if (recalc.from != undefined) {
-				fromValue[0] = recalc.from;
-			}
-			if (recalc.to != undefined) {
-				toValue[0] = recalc.to;
-			}
-		}
+		const swapPreview = recalcAmountAndPrice(inputItem, swapIntent);
+		return swapPreview;
 	}
 
 	function handleFromValueChange(event: Event) {

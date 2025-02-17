@@ -131,24 +131,6 @@
 		doRecalc(swapIntent, { side, ticker, tokenId, value, amount });
 	}
 
-	let shake = false;
-
-	async function handleSwapButton() {
-		const hasLastInput = swapIntent.some((s) => s.lastInput);
-		if (isSwapDisabledCalc(swapIntent) || !hasLastInput) {
-			shake = true;
-			setTimeout(() => {
-				shake = false;
-			}, 300);
-			return;
-		}
-		if ($selected_contract == 'SigmaUsd') {
-			await handleSwapButtonSigUsd(swapIntent);
-		} else if ($selected_contract == 'DexyGold') {
-			await handleSwapButtonDexyGold(swapIntent);
-		}
-	}
-
 	function handleSwapInputs() {
 		const newSwapIntent: SwapIntention = structuredClone(swapIntent);
 		swapIntent = newSwapIntent.map((row) => {
@@ -159,57 +141,10 @@
 		doRecalc(swapIntent);
 	}
 
-	const toggleFeeSlider = () => {
-		showFeeSlider = !showFeeSlider;
-	};
-
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9));
 		doRecalc(swapIntent);
-	}
-
-	// web3 wallet interaction
-	$: fromBalance = (() => {
-		const fromToken = inputTicker(swapIntent, 0);
-		if (fromToken === 'ERG') {
-			const amt =
-				$web3wallet_confirmedTokens.find((x) => x.tokenId === ERGO_TOKEN_ID)?.amount || 0n;
-			return nanoErgToErg(amt);
-		} else if (fromToken === 'SigUSD') {
-			const amt =
-				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigUSD_TOKEN_ID)?.amount || 0n;
-			return centsToUsd(amt);
-		} else {
-			const amt =
-				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigRSV_TOKEN_ID)?.amount || 0n;
-			return amt.toString();
-		}
-	})();
-
-	function handleFromBalanceClick() {
-		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalc(swapIntent);
-	}
-
-	// dropdowns
-	let fromBtnRect = { top: 0, left: 0, width: 0 };
-	let toBtnRect = { top: 0, left: 0, width: 0 };
-
-	function toggleFromDropdown(e) {
-		e.stopPropagation();
-		const rect = e.currentTarget.getBoundingClientRect();
-		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
-		fromDropdownOpen = !fromDropdownOpen;
-		toDropdownOpen = false;
-	}
-
-	function toggleToDropdown(e) {
-		e.stopPropagation();
-		const rect = e.currentTarget.getBoundingClientRect();
-		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
-		toDropdownOpen = !toDropdownOpen;
-		fromDropdownOpen = false;
 	}
 
 	function handleSelectInputOption(option: SwapOption) {
@@ -231,6 +166,73 @@
 		toDropdownOpen = false;
 		updateSelectedContractStore(swapIntent);
 		doRecalc(swapIntent);
+	}
+
+	function handleFromBalanceClick() {
+		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
+		doRecalc(swapIntent);
+	}
+
+	// swap button
+	let shake = false;
+
+	async function handleSwapButton() {
+		const hasLastInput = swapIntent.some((s) => s.lastInput);
+		if (isSwapDisabledCalc(swapIntent) || !hasLastInput) {
+			shake = true;
+			setTimeout(() => {
+				shake = false;
+			}, 300);
+			return;
+		}
+		if ($selected_contract == 'SigmaUsd') {
+			await handleSwapButtonSigUsd(swapIntent);
+		} else if ($selected_contract == 'DexyGold') {
+			await handleSwapButtonDexyGold(swapIntent);
+		}
+	}
+
+	//fee
+	const toggleFeeSlider = () => {
+		showFeeSlider = !showFeeSlider;
+	};
+
+	// web3 wallet interaction
+	$: fromBalance = (() => {
+		const fromToken = inputTicker(swapIntent, 0);
+		if (fromToken === 'ERG') {
+			const amt =
+				$web3wallet_confirmedTokens.find((x) => x.tokenId === ERGO_TOKEN_ID)?.amount || 0n;
+			return nanoErgToErg(amt);
+		} else if (fromToken === 'SigUSD') {
+			const amt =
+				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigUSD_TOKEN_ID)?.amount || 0n;
+			return centsToUsd(amt);
+		} else {
+			const amt =
+				$web3wallet_confirmedTokens.find((x) => x.tokenId === SigRSV_TOKEN_ID)?.amount || 0n;
+			return amt.toString();
+		}
+	})();
+
+	// dropdowns
+	let fromBtnRect = { top: 0, left: 0, width: 0 };
+	let toBtnRect = { top: 0, left: 0, width: 0 };
+
+	function toggleFromDropdown(e) {
+		e.stopPropagation();
+		const rect = e.currentTarget.getBoundingClientRect();
+		fromBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
+		fromDropdownOpen = !fromDropdownOpen;
+		toDropdownOpen = false;
+	}
+
+	function toggleToDropdown(e) {
+		e.stopPropagation();
+		const rect = e.currentTarget.getBoundingClientRect();
+		toBtnRect = { top: rect.bottom, left: rect.left, width: rect.width };
+		toDropdownOpen = !toDropdownOpen;
+		fromDropdownOpen = false;
 	}
 </script>
 

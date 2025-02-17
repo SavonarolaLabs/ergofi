@@ -20,7 +20,7 @@ export type SwapItem = TokenInput & {
 };
 
 export type SwapIntention = SwapItem[];
-export type SwapPreview = { calculatedIntent: SwapIntention; price: number };
+export type SwapPreview = { calculatedIntent?: SwapIntention; price: number };
 
 export function inputTokenIds(swapIntention: SwapIntention): string[] {
 	return swapIntention.filter((si) => si.side == 'input').map((si) => si.tokenId);

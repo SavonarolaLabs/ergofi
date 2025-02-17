@@ -61,11 +61,13 @@
 		handleSwapButtonDexyGold,
 		handleSwapButtonSigUsd,
 		isSwapDisabledCalc,
+		recalcPriceAndIntent,
 		recalcSigUsdBankAndOracleBoxes,
 		updateIntentValues,
 		updateSelectedContractStore,
 		updateUiValues
 	} from './swapWidgetUtils';
+	import { get } from 'svelte/store';
 
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');
@@ -82,11 +84,11 @@
 		initJsonTestBoxes();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
-			if ($selected_contract == 'SigmaUsd') doRecalc();
+			if ($selected_contract == 'SigmaUsd') doRecalc(swapIntent);
 		});
 		bank_box.subscribe((bankBox) => {
 			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
-			if ($selected_contract == 'SigmaUsd') doRecalc();
+			if ($selected_contract == 'SigmaUsd') doRecalc(swapIntent);
 		});
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
 			if (addr) {
@@ -106,71 +108,15 @@
 		});
 	});
 
-	function doRecalc(inputItem?: SwapItem) {
-		swapIntent.forEach((row) => {
-			if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
-				row.amount = inputItem.amount;
-				row.value = inputItem.value;
-				row.lastInput = true;
-			} else {
-				row.lastInput = false;
-			}
-		});
-
-		if ($selected_contract == 'SigmaUsd') {
-			if (!$oracle_box || !$bank_box) return;
-			if (!inputItem) {
-				const copySwapIntent = defaultAmountIntent(swapIntent);
-				const swapPreview = calculateAmountAndSwapPrice(
-					copySwapIntent,
-					$sigmausd_numbers,
-					$fee_mining
-				);
-				swapPrice = swapPreview.price;
-			} else {
-				const swapPreview = calculateAmountAndSwapPrice(swapIntent, $sigmausd_numbers, $fee_mining);
-				swapIntent = updateIntentValues(swapPreview);
-				swapPrice = swapPreview.price;
-				updateUiValues(swapIntent, fromValue, toValue);
-				toValue = toValue;
-				fromValue = fromValue;
-			}
-		} else if ($selected_contract == 'DexyGold') {
-			let dexyGoldUtxo: DexyGoldUtxo = {
-				lpSwapIn: $dexygold_lp_swap_box,
-				lpMintIn: $dexygold_lp_mint_box,
-				lpRedeemIn: $dexygold_lp_redeem_box,
-				freeMintIn: $dexygold_bank_free_mint_box,
-				bankIn: $dexygold_bank_box,
-				buybankIn: $dexygold_buyback_box,
-				arbMintIn: $dexygold_bank_arbitrage_mint_box,
-				lpIn: $dexygold_lp_box,
-				goldOracle: $oracle_erg_xau_box,
-				tracking101: $dexygold_tracking101_box
-			};
-			if (!inputItem) {
-				const copySwapIntent = defaultAmountIntent(swapIntent);
-				const swapPreview = doRecalcDexyGoldContract(
-					copySwapIntent,
-					dexyGoldUtxo,
-					$dexygold_widget_numbers,
-					$fee_mining
-				);
-				swapPrice = swapPreview.price;
-			} else {
-				const swapPreview = doRecalcDexyGoldContract(
-					swapIntent,
-					dexyGoldUtxo,
-					$dexygold_widget_numbers,
-					$fee_mining
-				);
-				console.log(swapPreview, 'swapPreview');
-				swapIntent = updateIntentValues(swapPreview);
-				swapPrice = swapPreview.price;
-				updateUiValues(swapIntent, fromValue, toValue);
-				toValue = toValue;
-				fromValue = fromValue;
-			}
+	function doRecalc(swapIntent: SwapIntention, inputItem?: SwapItem) {
+		const preview = recalcPriceAndIntent(swapIntent, inputItem);
+		if (preview?.price) swapPrice = preview.price;
+		if (preview?.calculatedIntent) {
+			const swapIntentNew = updateIntentValues(preview?.calculatedIntent);
+			updateUiValues(swapIntentNew, fromValue, toValue);
+			swapIntent = swapIntentNew;
+			toValue = toValue;
+			fromValue = fromValue;
 		}
 	}
 
@@ -182,7 +128,7 @@
 		const value = input.value;
 		const amount = valueToAmount({ tokenId, value });
 		fromValue[0] = input.value;
-		doRecalc({ side, ticker, tokenId, value, amount });
+		doRecalc(swapIntent, { side, ticker, tokenId, value, amount });
 	}
 
 	let shake = false;
@@ -210,7 +156,7 @@
 			return row;
 		});
 		updateSelectedContractStore(swapIntent);
-		doRecalc();
+		doRecalc(swapIntent);
 	}
 
 	const toggleFeeSlider = () => {
@@ -220,7 +166,7 @@
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9));
-		doRecalc();
+		doRecalc(swapIntent);
 	}
 
 	// web3 wallet interaction
@@ -243,7 +189,7 @@
 
 	function handleFromBalanceClick() {
 		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalc();
+		doRecalc(swapIntent);
 	}
 
 	// dropdowns
@@ -278,13 +224,13 @@
 			swapIntent = [input, outputItem];
 		}
 		updateSelectedContractStore(swapIntent);
-		doRecalc();
+		doRecalc(swapIntent);
 	}
 
 	function handleSelectToOption(i: SwapOption) {
 		toDropdownOpen = false;
 		updateSelectedContractStore(swapIntent);
-		doRecalc();
+		doRecalc(swapIntent);
 	}
 </script>
 

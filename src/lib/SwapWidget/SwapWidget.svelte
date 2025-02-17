@@ -1,26 +1,11 @@
 <script lang="ts">
-	import { doRecalcDexyGoldContract, type DexyGoldUtxo } from '$lib/dexygold/dexyGold';
-	import { calculateAmountAndSwapPrice } from '$lib/sigmausd/sigmaUSDInputRecalc';
-	import {
-		dexygold_bank_arbitrage_mint_box,
-		dexygold_bank_box,
-		dexygold_bank_free_mint_box,
-		dexygold_buyback_box,
-		dexygold_lp_box,
-		dexygold_lp_mint_box,
-		dexygold_lp_redeem_box,
-		dexygold_lp_swap_box,
-		dexygold_tracking101_box,
-		dexygold_widget_numbers,
-		oracle_erg_xau_box
-	} from '$lib/stores/dexyGoldStore';
 	import { initJsonTestBoxes } from '$lib/stores/dexyGoldStoreJsonTestData';
 	import { onMount } from 'svelte';
 	import Gear from '../icons/Gear.svelte';
 	import Tint from '../icons/Tint.svelte';
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
-	import { bank_box, fee_mining, oracle_box, sigmausd_numbers } from '../stores/bank';
+	import { bank_box, fee_mining, oracle_box } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
 		getTokenId,
@@ -48,7 +33,6 @@
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import {
-		defaultAmountIntent,
 		ergDexyGoldToLp,
 		getOutputOptions,
 		inputOptions,
@@ -67,7 +51,6 @@
 		updateSelectedContractStore,
 		updateUiValues
 	} from './swapWidgetUtils';
-	import { get } from 'svelte/store';
 
 	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
 	selected_contract.set('DexyGold');

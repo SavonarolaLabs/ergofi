@@ -69,7 +69,7 @@
 
 	.btn--secondary .btn__label {
 		background-color: var(--white-color);
-		color: var(--cl-text);
+		color: var(--black-color);
 	}
 
 	.btn__glitch {

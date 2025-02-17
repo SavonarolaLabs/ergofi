@@ -45,6 +45,20 @@
 		{ img: 990, bg: '#48AAAD', text: '#f0f0f0' }
 	];
 
+	// const p1 = {
+	// 	background-color: #DFDBE5;
+	// 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%239C92AC' fill-opacity='0.4' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+	// }
+
+	const unique: Girl[] = [
+		{ img: 57, bg: '#C5C5C5', text: '#f0f0f0' },
+		{ img: 59, bg: '#BFC2C9', text: '#444' },
+		{ img: 666, bg: '#F6F2A9', text: '#444' },
+		{ img: 680, bg: '#E39EF7', text: '#444' },
+		{ img: 743, bg: '#F7E0C1', text: '#444' },
+		{ img: 1477, bg: '#B5DCEB', text: '#444' }
+	];
+
 	function setbg(girl: Girl) {
 		document.documentElement.style.setProperty('--cl-text', girl.text);
 		document.documentElement.style.setProperty('--cl-contrast-text', girl.text);
@@ -55,6 +69,19 @@
 		const element = document.querySelector('.powwowgirl-bg') as HTMLElement;
 		if (element) {
 			element.style.backgroundImage = `url('/powwowgirls/mono/${girl.img}.png')`;
+		}
+	}
+
+	function setUnique(girl: Girl) {
+		document.documentElement.style.setProperty('--cl-text', girl.text);
+		document.documentElement.style.setProperty('--cl-contrast-text', girl.text);
+		document.documentElement.style.setProperty('--cl-border', girl.text);
+		document.documentElement.style.setProperty('--cl-bg', girl.bg);
+		document.documentElement.style.setProperty('--cl-bg-widget', girl.bg);
+		document.documentElement.style.setProperty('--cl-bg-alpha', `${girl.bg}ED`);
+		const element = document.querySelector('.powwowgirl-bg') as HTMLElement;
+		if (element) {
+			element.style.backgroundImage = `url('/powwowgirls/unique/${girl.img}.png')`;
 		}
 	}
 </script>
@@ -82,6 +109,13 @@
 			<button on:click={() => setbg(girl)}>
 				{girl.img}
 				<img src="/powwowgirls/mono/{girl.img}.png" alt="" style="width:40px;height:40px" />
+			</button>
+		{/each}
+		<div class="h-full w-2"></div>
+		{#each unique as girl}
+			<button on:click={() => setUnique(girl)}>
+				{girl.img}
+				<img src="/powwowgirls/unique/{girl.img}.png" alt="" style="width:40px;height:40px" />
 			</button>
 		{/each}
 	</div>

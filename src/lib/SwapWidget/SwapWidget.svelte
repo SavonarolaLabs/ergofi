@@ -163,8 +163,17 @@
 	}
 
 	function handleFromBalanceClick() {
-		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalc(swapIntent);
+		let newInput: SwapItem = {
+			lastInput: true,
+			side: swapIntent[0].side,
+			tokenId: swapIntent[0].tokenId,
+			ticker: swapIntent[0].ticker,
+			value: Number.parseFloat(fromBalance.replaceAll(',', '')).toString()
+		};
+		newInput.amount = valueToAmount(newInput);
+		lastInputItem = structuredClone(newInput);
+		fromValue[0] = lastInputItem.value;
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	// swap button

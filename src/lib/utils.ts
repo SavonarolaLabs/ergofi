@@ -8,9 +8,12 @@ import type { SwapItem, TokenInput } from './swapIntention';
 import { ergoTokens } from './stores/ergoTokens';
 
 export function valueToAmount(swapRow: TokenInput): bigint {
-	const multiplicator = 10 ** ergoTokens[swapRow.tokenId].decimals;
+	if (swapRow.value == undefined) return 0n;
+	const decimals = ergoTokens[swapRow.tokenId].decimals;
+	const multiplicator = 10 ** decimals;
 	const pureValue = swapRow.value!.replaceAll(',', '');
-	return BigInt(BigNumber(pureValue).multipliedBy(multiplicator).toString());
+	if (Number(pureValue) <= 0) return 0n;
+	return BigInt(BigNumber(pureValue).multipliedBy(multiplicator).toFixed(0));
 }
 
 export function amountToValue(swapItem: SwapItem): string {

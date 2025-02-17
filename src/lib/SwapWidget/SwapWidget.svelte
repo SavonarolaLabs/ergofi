@@ -124,6 +124,9 @@
 			if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
 				row.amount = inputItem.amount;
 				row.value = inputItem.value;
+				row.lastInput = true;
+			} else {
+				row.lastInput = false;
 			}
 		});
 
@@ -200,7 +203,8 @@
 	let shake = false;
 
 	async function handleSwapButton() {
-		if (isSwapDisabledCalc(swapIntent)) {
+		const hasLastInput = swapIntent.some((s) => s.lastInput);
+		if (isSwapDisabledCalc(swapIntent) || !hasLastInput) {
 			shake = true;
 			setTimeout(() => {
 				shake = false;
@@ -210,7 +214,8 @@
 		if ($selected_contract == 'SigmaUsd') {
 			await handleSwapButtonSigUsd(swapIntent, fromValue, toValue);
 		} else if ($selected_contract == 'DexyGold') {
-			await handleSwapButtonDexyGold(swapIntent, fromValue, toValue);
+			//
+			await handleSwapButtonDexyGold(swapIntent); //<==
 		}
 	}
 

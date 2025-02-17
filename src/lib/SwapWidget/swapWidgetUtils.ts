@@ -78,7 +78,7 @@ export function isSwapDisabledCalc(swapIntent: SwapIntention) {
 }
 
 export async function handleSwapButtonDexyGold(
-	swapInten: SwapIntention,
+	swapIntent: SwapIntention,
 	fromValue: string[],
 	toValue: string[]
 ) {
@@ -97,15 +97,8 @@ export async function handleSwapButtonDexyGold(
 
 	const { me, utxos, height } = await getWeb3WalletData();
 
-	const input = 1_000_000_000n;
-
-	const fromAssets = [];
-	const toAssets = [];
-
 	const unsignedTx = buildSwapDexyGoldTx(
-		fromAssets,
-		toAssets,
-		input,
+		swapIntent,
 		me,
 		height,
 		get(fee_mining),
@@ -118,7 +111,7 @@ export async function handleSwapButtonDexyGold(
 }
 
 export async function handleSwapButtonSigUsd(
-	swapInten: SwapIntention,
+	swapIntent: SwapIntention,
 	fromValue: string[],
 	toValue: string[]
 ) {
@@ -138,9 +131,9 @@ export async function handleSwapButtonSigUsd(
 		SIGUSD_BANK_ADDRESS,
 		utxos,
 		height,
-		$bank_box,
-		$oracle_box,
-		$fee_mining
+		get(bank_box),
+		get(oracle_box),
+		get(fee_mining)
 	);
 
 	await createInteractionAndSubmitTx(unsignedTx, [me]);

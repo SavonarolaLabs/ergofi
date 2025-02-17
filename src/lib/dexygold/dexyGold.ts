@@ -1563,37 +1563,31 @@ export function dexyGoldBankArbitrageInputErgTx(
 
 // ui
 //prettier-ignore
-export function buildSwapDexyGoldTx(fromAssets:any,toAssets:any,input:bigint,  me:string, height:number, feeMining:bigint, utxos:NodeBox[], dexyGoldUtxo: DexyGoldUtxo, dexyGoldNumbers: DexyGoldNumbers){
+export function buildSwapDexyGoldTx(swapIntent: SwapIntention, me:string, height:number, feeMining:bigint, utxos:NodeBox[], dexyGoldUtxo: DexyGoldUtxo, dexyGoldNumbers: DexyGoldNumbers){
 		
-		let from = fromAssets[1].token? fromAssets[0].token + '+' + fromAssets[1].token : fromAssets[0].token 
-		let to = toAssets[1].token? toAssets[0].token + '+' + toAssets[1].token : toAssets[0].token 
-		from = fromAssets.find((o)=>o.amount) ? from +"_"+fromAssets.find((o)=>o.amount).token : from 
-		to = toAssets.find((o)=>o.amount) ? to +"_"+toAssets.find((o)=>o.amount).token : to 
-		let swapPairLastInput = from + '/' +to
 
-		const amount = [...fromAssets,...toAssets].find((o)=>o.amount).amount
+		const lastInput = swapIntent.find((s)=>s.lastInput)!
+		
+		const swapTag = getSwapTag(swapIntent, lastInput);
+		const amount = lastInput.amount!;
 
-		console.log('swapPairLastInputTest:', swapPairLastInput)
+		console.log('swapTag:', swapTag)
 
-		//let swapPairLastInput = `${fromAssets[0].token}/${toAsset.token}_${lastInput == 'From' ? fromAsset.token : toAsset.token}`;
-		//const amount = lastInput == 'From' ? fromAsset.amount : toAsset.amount;
-		//console.log('',fromAssets[0].isLpToken)
 		let unsignedTx;
-		let bankArbBetterThanLp,bankFreeBetterThanLp
-		switch (swapPairLastInput.toUpperCase()) {
-			case 'ERG+DEXYGOLD_ERG/DEXYLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'ERG+DEXYGOLD_DEXYLP_DEXYLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYLP_DEXYLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
-			case 'DEXYLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+		switch (swapTag) {
+			case 'ERG+DEXYGOLD_ERG/DEXYGOLDLP':  	unsignedTx = dexyGoldLpMintInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP':unsignedTx = dexyGoldLpMintInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'ERG+DEXYGOLD/DEXYGOLDLP_DEXYGOLDLP':	unsignedTx = dexyGoldLpMintInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLDLP_DEXYGOLDLP/ERG+DEXYGOLD':	unsignedTx = dexyGoldLpRedeemInputSharesTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLDLP/ERG+DEXYGOLD_ERG': 	unsignedTx = dexyGoldLpRedeemInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
+			case 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD':unsignedTx = dexyGoldLpRedeemInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo); break;
 
 			case 'ERG_ERG/DEXYGOLD': 			unsignedTx = dexyGoldBestBuyDexyGoldInputErgTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;			
 			case 'ERG/DEXYGOLD_DEXYGOLD': 		unsignedTx = dexyGoldBestBuyDexyGoldInputDexyTx(amount, me, height, feeMining, utxos, dexyGoldUtxo,dexyGoldNumbers); break;
 			case 'DEXYGOLD_DEXYGOLD/ERG':		unsignedTx = dexyGoldLpSwapInputDexyTx(amount,DIRECTION_BUY, me, height, feeMining, utxos, dexyGoldUtxo); break;
 			case 'DEXYGOLD/ERG_ERG':			unsignedTx = dexyGoldLpSwapInputErgTx(amount,DIRECTION_BUY,me, height, feeMining, utxos, dexyGoldUtxo); break;
 			default:
-				throw new Error(`Unsupported swapPair and lastInput combination: ${swapPairLastInput}`);
+				throw new Error(`Unsupported swapPair and lastInput combination: ${swapTag}`);
 		}
 		return unsignedTx;
 	}

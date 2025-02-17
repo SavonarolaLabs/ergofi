@@ -11,6 +11,7 @@ export type SwapItem = TokenInput & {
 	ticker: string;
 	side: SwapSide;
 	amount?: bigint;
+	lastInput?: boolean;
 };
 
 export type SwapIntention = SwapItem[];

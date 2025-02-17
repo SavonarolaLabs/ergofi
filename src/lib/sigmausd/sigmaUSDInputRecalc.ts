@@ -338,66 +338,50 @@ export function calculateAmountAndSwapPrice(
 	const amount = anchor.amount!;
 	
 	let swapPreview: SwapPreview;
-	console.log(anchor,' inside anchor')
-	console.log(swapIntent,' inside swapIntent')
-
 	let calculatedIntent = structuredClone(swapIntent);
 
-	//ERGO_TOKEN_ID
-	//SigUSD_TOKEN_ID
-	//SigRSV_TOKEN_ID
-
-	//+
 	if (swapTag == 'ERG_ERG/SIGUSD'){		
 		const { totalSigUSD: newAmount, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_BUY, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, SigUSD_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });
 	}
-
-	//?
 	if (swapTag == 'ERG_ERG/SIGRSV'){		
 		const { totalSigRSV: newAmount, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_BUY, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, SigRSV_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });	
 	}
-	//+
 	if (swapTag == 'SIGUSD_SIGUSD/ERG'){
 		const { totalErg:    newAmount, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_SELL, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });	
 	}
-	//+
 	if (swapTag == 'SIGRSV_SIGRSV/ERG'){
 		const { totalErg:    newAmount, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_SELL, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });	
 	}
-	//+
 	if (swapTag == 'ERG/SIGUSD_SIGUSD'){
 		const { totalErg:  newAmount, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_BUY, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });	
 	}
-	//+
 	if (swapTag == 'ERG/SIGRSV_SIGRSV'){
 		const { totalErg:   newAmount, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_BUY, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });	
 	}
-	//+
 	if (swapTag == 'SIGUSD/ERG_ERG'){
 		const { totalSigUSD:newAmount, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_SELL, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, SigUSD_TOKEN_ID, newAmount);
 		swapPreview = { calculatedIntent, price };
 		console.log({ swapPreview });
 	}
-	//+
 	if (swapTag == 'SIGRSV/ERG_ERG'){
 		const { totalSigRSV:newAmount, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_SELL, amount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		setAmount(calculatedIntent, SigRSV_TOKEN_ID, newAmount);

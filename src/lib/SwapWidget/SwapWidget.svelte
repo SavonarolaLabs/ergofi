@@ -29,7 +29,7 @@
 		type SwapIntention,
 		type SwapItem
 	} from '../swapIntention';
-	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import { amountToValue, centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import {
@@ -146,8 +146,14 @@
 			outputItem.side = 'output';
 			swapIntent = [input, outputItem];
 		}
+		lastInputItem.side = swapIntent[0].side;
+		lastInputItem.tokenId = swapIntent[0].tokenId;
+		lastInputItem.ticker = swapIntent[0].ticker;
+		lastInputItem.amount = valueToAmount(lastInputItem);
+		//swapIntent
+
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	function handleSelectToOption(i: SwapOption) {

@@ -19,7 +19,7 @@
 	import Tint from '../icons/Tint.svelte';
 	import { getWalletInstallLink } from '../installWallet';
 	import PrimaryButton from '../PrimaryButton.svelte';
-	import { bank_box, fee_mining, oracle_box, reserve_border_left_USD } from '../stores/bank';
+	import { bank_box, fee_mining, oracle_box, sigmausd_numbers } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
 		getTokenId,
@@ -299,7 +299,7 @@
 	let isSwapDisabled = false;
 	function getLabelText(): string {
 		isSwapDisabled = isSwapDisabledCalc(swapIntent);
-		if ($selected_contract == 'SigmaUsd' && !($reserve_border_left_USD > 0)) {
+		if ($selected_contract == 'SigmaUsd' && !($sigmausd_numbers.leftUSD > 0)) {
 			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
 				return 'Mint Unavailable';
 			} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {

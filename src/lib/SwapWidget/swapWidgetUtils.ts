@@ -1,19 +1,10 @@
 import { calculateAmountAndSwapPrice } from '$lib/sigmausd/sigmaUSDInputRecalc';
 import {
 	bank_box,
-	bank_box_circulating_rsv,
-	bank_box_circulating_usd_cent,
-	bank_box_nano_erg,
-	bank_price_usd_buy,
-	bank_price_usd_sell,
 	fee_mining,
 	oracle_box,
-	oracle_price_sig_usd_cent,
-	reserve_border_left_USD,
-	sigmausd_widget_numbers,
-	updateBankBoxAndOracle,
-	updateBankPrices,
-	updateBankStats
+	sigmausd_numbers,
+	updateBankBoxAndOracle
 } from '$lib/stores/bank';
 import type { NodeBox } from '$lib/stores/bank.types';
 import { get } from 'svelte/store';
@@ -56,7 +47,7 @@ export function recalcAmountAndPrice(
 	const swapPreview = calculateAmountAndSwapPrice(
 		inputItem,
 		swapIntent,
-		get(sigmausd_widget_numbers),
+		get(sigmausd_numbers),
 		get(fee_mining)
 	)!;
 
@@ -65,10 +56,8 @@ export function recalcAmountAndPrice(
 
 export function recalcSigUsdBankAndOracleBoxes(oracleBox: NodeBox, bankBox: NodeBox) {
 	if (!oracleBox || !bankBox) return;
-	updateBankBoxAndOracle(oracleBox, bankBox);
-	updateBankStats();
-	updateBankPrices();
-	window.document.title = `↑${get(bank_price_usd_sell)} ↓${get(bank_price_usd_buy)} | SigUSD`;
+	updateBankBoxAndOracle(oracleBox, bankBox, get(fee_mining));
+	window.document.title = `↑${get(sigmausd_numbers).bankPriceUsdSell} ↓${get(sigmausd_numbers).bankPriceUsdBuy} | SigUSD`;
 }
 
 export function getFromLabel(swapIntent: SwapIntention): string {
@@ -78,7 +67,7 @@ export function getFromLabel(swapIntent: SwapIntention): string {
 }
 
 export function isSwapDisabledCalc(swapIntent: SwapIntention) {
-	if (get(selected_contract) == 'SigmaUsd' && !(get(reserve_border_left_USD) > 0)) {
+	if (get(selected_contract) == 'SigmaUsd' && !(get(sigmausd_numbers).leftUSD > 0)) {
 		if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
 			return true;
 		} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {

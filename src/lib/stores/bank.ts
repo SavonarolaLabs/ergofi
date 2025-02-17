@@ -24,7 +24,7 @@ export const bank_price_rsv_buy = writable<number>(0);
 export const bank_price_rsv_sell = writable<number>(0);
 
 //
-export const sigmausd_widget_numbers: Writable<SigmaUsdNumbers> = writable();
+export const sigmausd_numbers: Writable<SigmaUsdNumbers> = writable();
 
 export type SigmaUsdNumbers = {
 	inErg: bigint;
@@ -120,66 +120,37 @@ export function updateBestBankBoxLocal(
 
 // Used in SwapWidget.svelte
 
-export function updateBankBoxAndOracle(oracleBox: NodeBox, bankBox: NodeBox) {
+export function updateBankBoxAndOracle(oracleBox: NodeBox, bankBox: NodeBox, feeMining: bigint) {
 	const { inErg, inCircSigUSD, inCircSigRSV } = parseSigUsdBankBox(bankBox);
 	const { oraclePrice } = parseErgUsdOracleBox(oracleBox);
-	bank_box_nano_erg.set(inErg);
-	bank_box_circulating_usd_cent.set(inCircSigUSD);
-	bank_box_circulating_rsv.set(inCircSigRSV);
-	oracle_price_sig_usd_cent.set(oraclePrice);
-	updateBankWidgetsNumbers();
-}
 
-export function updateBankPrices() {
-	const calc = calculateBankPrices(
-		get(bank_box_nano_erg),
-		get(bank_box_circulating_usd_cent),
-		get(bank_box_circulating_rsv),
-		get(oracle_price_sig_usd_cent),
-		get(fee_mining)
-	);
-	bank_price_usd_buy.set(calc.bankPriceUsdBuy);
-	bank_price_usd_sell.set(calc.bankPriceUsdSell);
-	bank_price_rsv_buy.set(calc.bankPriceRsvBuy);
-	bank_price_rsv_sell.set(calc.bankPriceRsvSell);
-	updateBankWidgetsNumbers();
-}
+	const { bankPriceUsdBuy, bankPriceUsdSell, bankPriceRsvBuy, bankPriceRsvSell } =
+		calculateBankPrices(inErg, inCircSigUSD, inCircSigRSV, oraclePrice, feeMining);
 
-export function updateBankStats() {
-	const calc = calculateReserveRateAndBorders(
-		get(bank_box_nano_erg),
-		get(bank_box_circulating_usd_cent),
-		get(oracle_price_sig_usd_cent),
-		get(bank_price_rsv_buy),
-		get(bank_price_rsv_sell)
-	);
+	const { reserveRate, leftUSD, leftERG, rightUSD, rightERG, leftRSV, rightRSV } =
+		calculateReserveRateAndBorders(
+			inErg,
+			inCircSigUSD,
+			oraclePrice,
+			bankPriceRsvBuy,
+			bankPriceRsvSell
+		);
 
-	reserve_rate.set(calc.reserveRate);
-	reserve_border_left_USD.set(calc.leftUSD);
-	reserve_border_left_ERG.set(calc.leftERG);
-	reserve_border_right_USD.set(calc.rightUSD);
-	reserve_border_right_ERG.set(calc.rightERG);
-	reserve_border_left_RSV.set(calc.leftRSV);
-	reserve_border_right_RSV.set(calc.rightRSV);
-	updateBankWidgetsNumbers();
-}
-
-export function updateBankWidgetsNumbers() {
-	sigmausd_widget_numbers.set({
-		inErg: get(bank_box_nano_erg),
-		inCircSigUSD: get(bank_box_circulating_usd_cent),
-		inCircSigRSV: get(bank_box_circulating_rsv),
-		oraclePrice: get(oracle_price_sig_usd_cent),
-		reserveRate: get(reserve_rate),
-		bankPriceUsdBuy: get(bank_price_usd_buy),
-		bankPriceUsdSell: get(bank_price_usd_sell),
-		bankPriceRsvBuy: get(bank_price_rsv_buy),
-		bankPriceRsvSell: get(bank_price_rsv_sell),
-		leftUSD: get(reserve_border_left_USD),
-		leftERG: get(reserve_border_left_ERG),
-		rightUSD: get(reserve_border_left_RSV),
-		rightERG: get(reserve_border_right_USD),
-		leftRSV: get(reserve_border_right_ERG),
-		rightRSV: get(reserve_border_right_RSV)
+	sigmausd_numbers.set({
+		inErg: inErg,
+		inCircSigUSD: inCircSigUSD,
+		inCircSigRSV: inCircSigRSV,
+		oraclePrice: oraclePrice,
+		reserveRate: reserveRate,
+		bankPriceUsdBuy: bankPriceUsdBuy,
+		bankPriceUsdSell: bankPriceUsdSell,
+		bankPriceRsvBuy: bankPriceRsvBuy,
+		bankPriceRsvSell: bankPriceRsvSell,
+		leftUSD: leftUSD,
+		leftERG: leftERG,
+		rightUSD: leftRSV,
+		rightERG: rightUSD,
+		leftRSV: rightERG,
+		rightRSV: rightRSV
 	});
 }

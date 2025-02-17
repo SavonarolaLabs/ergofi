@@ -1,16 +1,10 @@
 <script lang="ts">
-	import {
-		reserve_border_left_ERG,
-		reserve_border_left_USD,
-		reserve_border_right_ERG,
-		reserve_border_right_USD,
-		reserve_rate
-	} from '$lib/stores/bank';
+	import { sigmausd_numbers } from '$lib/stores/bank';
 </script>
 
 <div>
 	<div class="flex space-x-4">
-		Reserve rate {$reserve_rate}%, 400% = USD:{$reserve_border_left_USD} | ERG:{$reserve_border_left_ERG},
-		800% = USD:{$reserve_border_right_USD} | ERG:{$reserve_border_right_ERG}
+		Reserve rate {$sigmausd_numbers.reserveRate}%, 400% = USD:{$sigmausd_numbers.leftUSD} | ERG:{$sigmausd_numbers.leftERG},
+		800% = USD:{$sigmausd_numbers.rightUSD} | ERG:{$sigmausd_numbers.rightERG}
 	</div>
 </div>

@@ -49,6 +49,7 @@ sub {
 }
 
 :root {
+	--cl-accent: #f87315;
 	--cl-border: #1f2937;
 	--cl-border-error: 'red';
 	--cl-bg: #f5f2a8;
@@ -57,6 +58,14 @@ sub {
 	--cl-text: #1f2937;
 	--cl-text-muted: #1f2937;
 	--cl-contrast-text: #1f2937;
+}
+
+a:hover {
+	color: var(--cl-accent);
+}
+
+.text-accent {
+	color: var(--cl-accent);
 }
 
 .text-muted {

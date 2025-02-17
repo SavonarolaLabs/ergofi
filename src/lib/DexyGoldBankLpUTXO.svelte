@@ -32,9 +32,7 @@
 	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
 >
 	<a href="https://sigmaspace.io/en/address/{DEXY_BANK_BANK}" target="_blank">
-		<div
-			class="mb-2 font-mono text-xs font-bold text-[var(--cl-contrast-text)] hover:text-yellow-300"
-		>
+		<div class="mb-2 font-mono text-xs font-bold">
 			DexyGold Bank :: x6iDu8vHTP81nodtTr...nbeTrPMey1WPaXX
 		</div>
 	</a>
@@ -42,7 +40,7 @@
 	<div class="flex items-end justify-between">
 		<div class="flex">
 			<a
-				class="hover:text-yellow-300"
+				class=""
 				href="https://explorer.ergoplatform.com/en/oracle-pool-state/xauerg"
 				target="_blank"
 			>
@@ -105,8 +103,12 @@
 	class="row flex flex-col gap-1 rounded-md p-4 pt-3 text-gray-500"
 	style="font-variant-numeric: tabular-nums; background:#f0f8ff03; display:none;"
 >
-	<a href="https://sigmaspace.io/en/address/{DEXY_LP_POOL_MAIN}" target="_blank">
-		<div class="mb-2 font-mono text-xs font-bold text-yellow-600 hover:text-yellow-300">
+	<a
+		href="https://sigmaspace.io/en/address/{DEXY_LP_POOL_MAIN}"
+		class="text-[var(--cl-contrast-text)]"
+		target="_blank"
+	>
+		<div class="mb-2 font-mono text-xs font-bold">
 			DexyGold LP :: 8D6pdYVRxLrVgzcxB9...nbeTrPMey1WPaXX
 		</div>
 	</a>
@@ -114,7 +116,7 @@
 	<div class="flex items-end justify-between">
 		<div class="flex">
 			<a
-				class="hover:text-yellow-300"
+				class=""
 				href="https://explorer.ergoplatform.com/en/oracle-pool-state/xauerg"
 				target="_blank"
 			>

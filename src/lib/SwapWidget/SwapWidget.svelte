@@ -41,7 +41,6 @@
 		isLpTokenInput,
 		isLpTokenOutput,
 		outputTicker,
-		outputTokenIds,
 		type SwapIntention,
 		type SwapItem
 	} from '../swapIntention';
@@ -58,11 +57,13 @@
 	} from './swapOptions';
 	import {
 		getFromLabel,
+		getToLabel,
 		handleSwapButtonDexyGold,
 		handleSwapButtonSigUsd,
 		isSwapDisabledCalc,
 		recalcSigUsdBankAndOracleBoxes,
 		updateIntentValues,
+		updateSelectedContractStore,
 		updateUiValues
 	} from './swapWidgetUtils';
 
@@ -76,19 +77,6 @@
 	let showFeeSlider = false;
 	let fromDropdownOpen = false;
 	let toDropdownOpen = false;
-
-	function updateSelectedContract() {
-		if (
-			(inputTokenIds(swapIntent).length == 1 &&
-				['SigUSD', 'SigRSV'].includes(inputTicker(swapIntent, 0))) ||
-			(outputTokenIds(swapIntent).length == 1 &&
-				['SigUSD', 'SigRSV'].includes(outputTicker(swapIntent, 0)))
-		) {
-			selected_contract.set('SigmaUsd');
-		} else {
-			selected_contract.set('DexyGold');
-		}
-	}
 
 	onMount(() => {
 		initJsonTestBoxes();
@@ -211,14 +199,8 @@
 		if ($selected_contract == 'SigmaUsd') {
 			await handleSwapButtonSigUsd(swapIntent);
 		} else if ($selected_contract == 'DexyGold') {
-			//
-			await handleSwapButtonDexyGold(swapIntent); //<==
+			await handleSwapButtonDexyGold(swapIntent);
 		}
-	}
-
-	function handleFromBalanceClick() {
-		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
-		doRecalc();
 	}
 
 	function handleSwapInputs() {
@@ -227,7 +209,7 @@
 			row.side = row.side == 'input' ? 'output' : 'input';
 			return row;
 		});
-		updateSelectedContract();
+		updateSelectedContractStore(swapIntent);
 		doRecalc();
 	}
 
@@ -241,6 +223,7 @@
 		doRecalc();
 	}
 
+	// web3 wallet interaction
 	$: fromBalance = (() => {
 		const fromToken = inputTicker(swapIntent, 0);
 		if (fromToken === 'ERG') {
@@ -258,6 +241,12 @@
 		}
 	})();
 
+	function handleFromBalanceClick() {
+		fromValue[0] = Number.parseFloat(fromBalance.replaceAll(',', '')).toString();
+		doRecalc();
+	}
+
+	// dropdowns
 	let fromBtnRect = { top: 0, left: 0, width: 0 };
 	let toBtnRect = { top: 0, left: 0, width: 0 };
 
@@ -288,31 +277,14 @@
 			outputItem.side = 'output';
 			swapIntent = [input, outputItem];
 		}
-		updateSelectedContract();
+		updateSelectedContractStore(swapIntent);
 		doRecalc();
 	}
 
 	function handleSelectToOption(i: SwapOption) {
 		toDropdownOpen = false;
-		updateSelectedContract();
+		updateSelectedContractStore(swapIntent);
 		doRecalc();
-	}
-
-	let isSwapDisabled = false;
-	function getLabelText(): string {
-		isSwapDisabled = isSwapDisabledCalc(swapIntent);
-		if ($selected_contract == 'SigmaUsd' && !($sigmausd_numbers.leftUSD > 0)) {
-			if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
-				return 'Mint Unavailable';
-			} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {
-				return 'Redeem Unavailable';
-			}
-		}
-		if (isLpTokenInput(swapIntent) || isLpTokenOutput(swapIntent)) {
-			return 'Get';
-		} else {
-			return 'To';
-		}
 	}
 </script>
 
@@ -459,8 +431,8 @@
 			</div>
 			<div class="">
 				<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
-					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabled}>
-						{getLabelText()}</span
+					<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabledCalc(swapIntent)}>
+						{getToLabel(swapIntent)}</span
 					>
 					<span class="text-sm">
 						{#if outputTicker(swapIntent, 0) === 'SigRSV' || inputTicker(swapIntent, 0) === 'SigRSV'}

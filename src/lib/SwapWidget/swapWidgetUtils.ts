@@ -11,11 +11,12 @@ import { get } from 'svelte/store';
 import {
 	getSwapTag,
 	inputTicker,
+	inputTokenIds,
 	isLpTokenInput,
 	isLpTokenOutput,
 	outputTicker,
+	outputTokenIds,
 	type SwapIntention,
-	type SwapItem,
 	type SwapPreview
 } from '../swapIntention';
 import { selected_contract } from '$lib/stores/ui';
@@ -118,4 +119,34 @@ export function updateIntentValues(swapPreview: SwapPreview) {
 	});
 
 	return swapPreview.calculatedIntent;
+}
+
+export function updateSelectedContractStore(swapIntent: SwapIntention) {
+	if (
+		(inputTokenIds(swapIntent).length == 1 &&
+			['SigUSD', 'SigRSV'].includes(inputTicker(swapIntent, 0))) ||
+		(outputTokenIds(swapIntent).length == 1 &&
+			['SigUSD', 'SigRSV'].includes(outputTicker(swapIntent, 0)))
+	) {
+		selected_contract.set('SigmaUsd');
+	} else {
+		selected_contract.set('DexyGold');
+	}
+}
+
+// html
+
+export function getToLabel(swapIntent: SwapIntention): string {
+	if (get(selected_contract) == 'SigmaUsd' && !(get(sigmausd_numbers).leftUSD > 0)) {
+		if (inputTicker(swapIntent, 0) == 'ERG' && outputTicker(swapIntent, 0) == 'SigUSD') {
+			return 'Mint Unavailable';
+		} else if (inputTicker(swapIntent, 0) == 'SigRSV' && outputTicker(swapIntent, 0) == 'ERG') {
+			return 'Redeem Unavailable';
+		}
+	}
+	if (isLpTokenInput(swapIntent) || isLpTokenOutput(swapIntent)) {
+		return 'Get';
+	} else {
+		return 'To';
+	}
 }

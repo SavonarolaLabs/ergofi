@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { doRecalcDexyGoldContract, type DexyGoldUtxo } from '$lib/dexygold/dexyGold';
+	import { calculateAmountAndSwapPrice } from '$lib/sigmausd/sigmaUSDInputRecalc';
 	import {
 		dexygold_bank_arbitrage_mint_box,
 		dexygold_bank_box,
@@ -42,10 +43,9 @@
 		outputTicker,
 		outputTokenIds,
 		type SwapIntention,
-		type SwapItem,
-		type SwapPreview
+		type SwapItem
 	} from '../swapIntention';
-	import { amountToValue, centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import {
@@ -61,7 +61,6 @@
 		handleSwapButtonDexyGold,
 		handleSwapButtonSigUsd,
 		isSwapDisabledCalc,
-		recalcAmountAndPrice,
 		recalcSigUsdBankAndOracleBoxes,
 		updateIntentValues,
 		updateUiValues
@@ -131,12 +130,17 @@
 		});
 
 		if ($selected_contract == 'SigmaUsd') {
+			if (!$oracle_box || !$bank_box) return;
 			if (!inputItem) {
 				const copySwapIntent = defaultAmountIntent(swapIntent);
-				const swapPreview = doRecalcSigUsdContract(copySwapIntent);
+				const swapPreview = calculateAmountAndSwapPrice(
+					copySwapIntent,
+					$sigmausd_numbers,
+					$fee_mining
+				);
 				swapPrice = swapPreview.price;
 			} else {
-				const swapPreview = doRecalcSigUsdContract(swapIntent);
+				const swapPreview = calculateAmountAndSwapPrice(swapIntent, $sigmausd_numbers, $fee_mining);
 				swapIntent = updateIntentValues(swapPreview);
 				swapPrice = swapPreview.price;
 				updateUiValues(swapIntent, fromValue, toValue);
@@ -180,11 +184,6 @@
 				fromValue = fromValue;
 			}
 		}
-	}
-
-	function doRecalcSigUsdContract(swapIntent: SwapIntention): SwapPreview {
-		const swapPreview = recalcAmountAndPrice(swapIntent);
-		return swapPreview;
 	}
 
 	function handleFromValueChange(event: Event) {

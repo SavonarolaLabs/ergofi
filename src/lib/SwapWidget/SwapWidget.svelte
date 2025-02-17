@@ -158,8 +158,26 @@
 
 	function handleSelectToOption(i: SwapOption) {
 		toDropdownOpen = false;
+		if (i.item) {
+			let newItem = structuredClone(i.item);
+			newItem.side = 'output';
+			swapIntent[1] = newItem;
+			if (lastInputItem) {
+				if (lastInputItem.side == 'input') {
+				} else {
+					lastInputItem.side = newItem.side;
+					lastInputItem.tokenId = newItem.tokenId;
+					lastInputItem.ticker = newItem.ticker;
+					lastInputItem.amount = valueToAmount(lastInputItem);
+				}
+			}
+		} else {
+			if (i.intention) {
+			}
+		}
+
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc(swapIntent, lastInputItem);
 	}
 
 	function handleFromBalanceClick() {

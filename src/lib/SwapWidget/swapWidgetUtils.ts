@@ -10,6 +10,7 @@ import {
 	oracle_box,
 	oracle_price_sig_usd_cent,
 	reserve_border_left_USD,
+	sigmausd_widget_numbers,
 	updateBankBoxAndOracle,
 	updateBankPrices,
 	updateBankStats
@@ -54,18 +55,20 @@ export function recalcAmountAndPrice(swapIntent: SwapIntention) {
 	const toAmount = '1';
 	const lastInput = 'From';
 
+	//swapPreview => from
+
 	const { from, to, price } = calculateAmountAndSwapPrice(
 		lastInput,
 		fromToken,
 		fromAmount,
 		toToken,
 		toAmount,
-		get(bank_box_nano_erg),
-		get(bank_box_circulating_usd_cent),
-		get(bank_box_circulating_rsv),
-		get(oracle_price_sig_usd_cent),
+		get(sigmausd_widget_numbers),
 		get(fee_mining)
 	)!;
+
+	// to => swapPreview
+
 	return { price, from, to };
 }
 

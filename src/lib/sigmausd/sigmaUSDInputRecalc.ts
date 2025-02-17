@@ -13,6 +13,7 @@ import {
 	calculateBankRateUSDInputUSD
 } from './sigmaUSDMath';
 import { DIRECTION_BUY, DIRECTION_SELL } from '$lib/api/ergoNode';
+import type { SigmaUsdNumbers } from '$lib/stores/bank';
 
 export const BASE_INPUT_AMOUNT_ERG = 1_000_000_000n; //1 ERG
 export const BASE_INPUT_AMOUNT_USD = 100_00n; //100 USD
@@ -406,37 +407,38 @@ export function calculateInputsRSVErgInRSVPrice(
 }
 
 // prettier-ignore
-export function calculateAmountAndSwapPrice(lastInput:string, fromToken:string, fromAmount:string, toToken:string, toAmount: string, bankNanoErg: bigint, bankCircUsdCent:bigint, bankCircSigRsv:bigint, oraclePriceSigUsdCent:bigint, feeMining: bigint){
+export function calculateAmountAndSwapPrice(lastInput:string, fromToken:string, fromAmount:string, toToken:string, toAmount: string, sigmaUsdNumbers:SigmaUsdNumbers, feeMining: bigint){
+	
 	if (lastInput === 'From' && fromToken === 'ERG'    && toToken === 'SigUSD') {
-		const { totalSigUSD: to, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_BUY, fromAmount, bankNanoErg, bankCircUsdCent, oraclePriceSigUsdCent, feeMining);
+		const { totalSigUSD: to, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_BUY, fromAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {to, price}
 	}
 	if (lastInput === 'From' && fromToken === 'ERG'    && toToken === 'SigRSV') {
-		const { totalSigRSV: to, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_BUY, fromAmount, bankNanoErg, bankCircUsdCent, bankCircSigRsv, oraclePriceSigUsdCent, feeMining);
+		const { totalSigRSV: to, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_BUY, fromAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {to, price}
 	}
 	if (lastInput === 'From' && fromToken === 'SigUSD' && toToken === 'ERG') {
-		const { totalErg:    to, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_SELL, fromAmount, bankNanoErg, bankCircUsdCent, oraclePriceSigUsdCent, feeMining);
+		const { totalErg:    to, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_SELL, fromAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {to, price}
 	}
 	if (lastInput === 'From' && fromToken === 'SigRSV' && toToken === 'ERG') {
-		const { totalErg:    to, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_SELL, fromAmount, bankNanoErg, bankCircUsdCent, bankCircSigRsv, oraclePriceSigUsdCent, feeMining);
+		const { totalErg:    to, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_SELL, fromAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {to, price}
 	}
 	if (lastInput === 'To'   && fromToken === 'ERG'    && toToken === 'SigUSD') {
-		const { totalErg:  from, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_BUY, toAmount, bankNanoErg, bankCircUsdCent, oraclePriceSigUsdCent, feeMining);
+		const { totalErg:  from, finalPrice: price } = calculateInputsUsdErgInUsd(DIRECTION_BUY, toAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {from, price}
 	}
 	if (lastInput === 'To'   && fromToken === 'ERG'    && toToken === 'SigRSV') {
-		const { totalErg:   from, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_BUY, toAmount, bankNanoErg, bankCircUsdCent, bankCircSigRsv, oraclePriceSigUsdCent, feeMining);
+		const { totalErg:   from, finalPrice: price } = calculateInputsRSVErgInRSV(DIRECTION_BUY, toAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {from, price}
 	}
 	if (lastInput === 'To'   && fromToken === 'SigUSD' && toToken === 'ERG') {
-		const { totalSigUSD:from, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_SELL, toAmount, bankNanoErg, bankCircUsdCent, oraclePriceSigUsdCent, feeMining);
+		const { totalSigUSD:from, finalPrice: price } = calculateInputsUsdErgInErg(DIRECTION_SELL, toAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {from, price}
 	}
 	if (lastInput === 'To'   && fromToken === 'SigRSV' && toToken === 'ERG') {
-		const { totalSigRSV:from, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_SELL, toAmount, bankNanoErg, bankCircUsdCent, bankCircSigRsv, oraclePriceSigUsdCent, feeMining);
+		const { totalSigRSV:from, finalPrice: price } = calculateInputsRSVErgInErg(DIRECTION_SELL, toAmount, sigmaUsdNumbers.inErg, sigmaUsdNumbers.inCircSigUSD, sigmaUsdNumbers.inCircSigRSV, sigmaUsdNumbers.oraclePrice, feeMining);
 		return {from, price}
 	}
 }

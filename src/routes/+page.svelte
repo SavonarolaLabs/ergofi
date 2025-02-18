@@ -49,11 +49,11 @@
 		class="flex flex-col"
 		class:ergfi-bg={theme == 'ergfi'}
 		class:powwowgirl-bg={theme == 'powwowgirls'}
-		style="height:100vh;"
+		style="min-height:100vh;"
 	>
 		<Navbar></Navbar>
 		<div class="flex grow max1024:flex-col-reverse">
-			<div class="flex flex-col">
+			<div class="flex flex-col max1024:items-center">
 				<div class="flex grow items-end justify-start">
 					<BankHistoryWidget></BankHistoryWidget>
 				</div>

@@ -93,7 +93,7 @@
 		{/if} -->
 	</div>
 	<div class="padding-bottom">
-		<div class="tx-list w-full pl-2">
+		<div class="tx-list w-full rounded-md bg-[var(--cl-bg-alpha)] pl-2">
 			{#each $prepared_interactions as i (i.id)}
 				<div
 					class="row {blinkingItems.has(i.id) ? 'blink-twice' : ''}"

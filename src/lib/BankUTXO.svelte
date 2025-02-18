@@ -8,8 +8,8 @@
 </script>
 
 <div
-	class="row flex flex-col gap-1 rounded-md p-4 pt-3"
-	style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
+	class="row flex flex-col gap-1 rounded-md bg-[var(--cl-bg-alpha)] p-4 pt-3"
+	style="font-variant-numeric: tabular-nums;"
 >
 	<a
 		href="https://sigmaspace.io/en/address/{SIGUSD_BANK_ADDRESS}"

@@ -11,9 +11,7 @@
 
 	// Detect mobile device
 	onMount(() => {
-		isMobile =
-			/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent) ||
-			window.matchMedia('(max-width: 768px)').matches;
+		isMobile = /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
 
 		if (theme == 'ergfi') {
 			document.documentElement.style.setProperty('--cl-text', '#6A7280');
@@ -54,15 +52,15 @@
 		style="height:100vh;"
 	>
 		<Navbar></Navbar>
-		<div class="flex grow">
+		<div class="flex grow max1024:flex-col-reverse">
 			<div class="flex flex-col">
 				<div class="flex grow items-end justify-start">
 					<BankHistoryWidget></BankHistoryWidget>
 				</div>
 			</div>
-			<div class="justify-left flex grow items-center">
-				<div style="margin-top:-10%; margin-left:20%;">
-					<SwapWidget></SwapWidget>
+			<div class="min1024:justify-left flex grow items-center max1024:justify-center">
+				<div class="min1024:ml-[20%] min1024:mt-[-10%]">
+					<SwapWidget />
 				</div>
 			</div>
 		</div>

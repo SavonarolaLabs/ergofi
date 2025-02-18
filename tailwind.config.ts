@@ -10,14 +10,12 @@ export default {
 
 	theme: {
 		extend: {
+			screens: {
+				max1024: { max: '1024px' },
+				min1024: { min: '1025px' }
+			},
 			colors: {
 				light: {
-					// background: '#FFFFFF',
-					// text: '#000000',
-					// accent: '#5054dd',
-					// secondary: '#4E4E50',
-					// gradientStart: '#171622',
-					// gradientEnd: '#202482'
 					background: '#16151f',
 					text: '#fdfdfd',
 					accent: '#5054dd',

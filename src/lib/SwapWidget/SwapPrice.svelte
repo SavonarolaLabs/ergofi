@@ -9,39 +9,78 @@
 	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
 	export let swapIntent;
+	let direction: boolean = true;
+	let firstTicker: string = '';
+	let lastTicker: string = '';
 
-	function calculatePrice(swapIntent: SwapIntention) {
+	function getFirstTicker(swapIntent: SwapIntention, direct: boolean = true) {
+		if (swapIntent.length == 2) {
+			const inputIndex = swapIntent.findIndex((s) => s.side == 'input');
+			const outputIndex = swapIntent.findIndex((s) => s.side == 'output');
+			if (direct) {
+				firstTicker = swapIntent[inputIndex].ticker;
+				lastTicker = swapIntent[outputIndex].ticker;
+			} else {
+				firstTicker = swapIntent[outputIndex].ticker;
+				lastTicker = swapIntent[inputIndex].ticker;
+			}
+		} else {
+			const lpIndex = swapIntent.findIndex((s) => s.tokenId == DEXY_GOLD.lpTokenId);
+			const ergIndex = swapIntent.findIndex((s) => s.tokenId == ERGO_TOKEN_ID);
+
+			if (
+				(swapIntent[lpIndex].side == 'output' && direct) ||
+				(swapIntent[lpIndex].side == 'input' && !direct)
+			) {
+				firstTicker = swapIntent[ergIndex].ticker;
+				lastTicker = 'LP'; // swapIntent[lpIndex].ticker;
+			} else {
+				firstTicker = 'LP'; // swapIntent[lpIndex].ticker;
+				lastTicker = swapIntent[ergIndex].ticker;
+			}
+		}
+	}
+
+	function getLastTicker(swapIntent: SwapIntention, direct: boolean = true): string {
+		return 'NOT ERG';
+	}
+
+	function calculatePrice(swapIntent: SwapIntention, direct: boolean = true) {
+		let price;
 		if (swapIntent.length == 2) {
 			const inputIndex = swapIntent.findIndex((s) => s.side == 'input');
 			const outputIndex = swapIntent.findIndex((s) => s.side == 'output');
 			const inMultiplicator = 10 ** ergoTokens[swapIntent[inputIndex].tokenId].decimals; //input?
 			const outMultiplicator = 10 ** ergoTokens[swapIntent[outputIndex].tokenId].decimals; //output?
 
-			const price = BigNumber(swapIntent[outputIndex].amount)
+			price = BigNumber(swapIntent[outputIndex].amount)
 				.dividedBy(outMultiplicator)
 				.dividedBy(swapIntent[inputIndex].amount)
-				.multipliedBy(inMultiplicator)
-				.toNumber();
+				.multipliedBy(inMultiplicator);
+
 			//getTokenId(ticker
-			return price;
 		} else {
 			const lpIndex = swapIntent.findIndex((s) => s.tokenId == DEXY_GOLD.lpTokenId);
 			const ergIndex = swapIntent.findIndex((s) => s.tokenId == ERGO_TOKEN_ID);
 			const lpMultiplicator = 10 ** ergoTokens[swapIntent[lpIndex].tokenId].decimals; //input?
 			const ergMultiplicator = 10 ** ergoTokens[swapIntent[ergIndex].tokenId].decimals; //output?
 
-			const price = BigNumber(swapIntent[lpIndex].amount)
+			price = BigNumber(swapIntent[lpIndex].amount)
 				.dividedBy(lpMultiplicator)
 				.dividedBy(swapIntent[ergIndex].amount)
 				.multipliedBy(ergMultiplicator);
 
 			if (swapIntent[lpIndex].side == 'output') {
-				return price.toNumber();
 			} else {
-				return BigNumber(1).dividedBy(price).toNumber();
+				price = BigNumber(1).dividedBy(price);
 			}
 		}
-		// b/a
+
+		if (direct) {
+			return price.toNumber();
+		} else {
+			return BigNumber(1).dividedBy(price).toNumber();
+		}
 	}
 </script>
 
@@ -51,7 +90,10 @@
 			{getToLabel(swapIntent)}</span
 		>
 		<span class="text-sm">
-			<SubNumber value={calculatePrice(swapIntent)}></SubNumber>
+			{getFirstTicker(swapIntent, direction)}1 {firstTicker} = <SubNumber
+				value={calculatePrice(swapIntent, direction)}
+			></SubNumber>
+			{lastTicker}
 		</span>
 		<!-- <span class="text-sm">
 			{#if outputTicker(swapIntent, 0) === 'SigRSV' || inputTicker(swapIntent, 0) === 'SigRSV'}

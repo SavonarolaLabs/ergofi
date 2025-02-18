@@ -8,7 +8,6 @@
 	import { bank_box, fee_mining, oracle_box } from '../stores/bank';
 	import {
 		ERGO_TOKEN_ID,
-		ergoTokens,
 		getTokenId,
 		SigRSV_TOKEN_ID,
 		SigUSD_TOKEN_ID
@@ -30,11 +29,12 @@
 		type SwapIntention,
 		type SwapItem
 	} from '../swapIntention';
-	import { amountToValue, centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
+	import { centsToUsd, isOwnTx, nanoErgToErg, valueToAmount } from '../utils';
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import {
-		ergDexyGoldToLp,
+		createDefaultInput,
+		ergToSigUsd,
 		getOutputOptions,
 		inputOptions,
 		tokenColor,
@@ -53,13 +53,14 @@
 		updateUiValues
 	} from './swapWidgetUtils';
 
-	let swapIntent: SwapIntention = ergDexyGoldToLp.intention;
+	let selectedInputOption: SwapOption = ergToSigUsd;
+	let swapIntent: SwapIntention = selectedInputOption.intention;
 	let lastInputItem: SwapItem;
-	selected_contract.set('DexyGold');
+	//selected_contract.set('DexyGold');
+	selected_contract.set('SigmaUsd');
 	let fromValue = ['', ''];
 	let toValue = ['', ''];
 	let swapPrice: number = 0.0;
-	let selectedInputOption: SwapOption = ergDexyGoldToLp;
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 	let fromDropdownOpen = false;
@@ -93,19 +94,23 @@
 		});
 	});
 
-	function doRecalc(swapIntent: SwapIntention, inputItem?: SwapItem) {
-		const preview = recalcPriceAndIntent(swapIntent, inputItem);
+	function doRecalc(swapIntent: SwapIntention) {
+		console.log('doRecalc lastInputItem', $selected_contract, { swapIntent, lastInputItem });
+		const input = lastInputItem ? lastInputItem : createDefaultInput(swapIntent);
+		const preview = recalcPriceAndIntent(swapIntent, input);
 		if (preview?.price) swapPrice = preview.price;
 		if (preview?.calculatedIntent) {
 			const swapIntentNew = updateIntentValues(preview?.calculatedIntent);
 			updateUiValues(swapIntentNew, fromValue, toValue);
 			swapIntent = swapIntentNew;
-			toValue = toValue;
-			fromValue = fromValue;
+			if (lastInputItem) {
+				toValue = toValue;
+				fromValue = fromValue;
+			}
 		}
 	}
 
-	function handleFromValueChange(event: Event) {
+	function handleValueChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const side = input.dataset.side;
 		const ticker = input.dataset.ticker;
@@ -113,9 +118,10 @@
 		const value = input.value;
 		const amount = valueToAmount({ tokenId, value });
 		lastInputItem = { side, ticker, tokenId, value, amount };
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
+	// TODO: update this like handleSelectInputOption()
 	function handleSwapInputs() {
 		const newSwapIntent: SwapIntention = structuredClone(swapIntent);
 
@@ -125,17 +131,20 @@
 		});
 		if (lastInputItem) {
 			lastInputItem.side = lastInputItem.side == 'input' ? 'output' : 'input';
+		} else {
+			lastInputItem = createDefaultInput(swapIntent);
 		}
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9));
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
+	// TODO: rename function
 	function handleSelectInputOption(option: SwapOption) {
 		fromDropdownOpen = false;
 		selectedInputOption = option;
@@ -153,20 +162,10 @@
 			lastInputItem.tokenId = swapIntent[0].tokenId;
 			lastInputItem.ticker = swapIntent[0].ticker;
 			lastInputItem.amount = valueToAmount(lastInputItem);
-		} else {
-			lastInputItem = {
-				side: swapIntent[0].side,
-				tokenId: swapIntent[0].tokenId,
-				ticker: swapIntent[0].ticker,
-				amount: ergoTokens[swapIntent[0].tokenId].defaultAmount
-			};
-			lastInputItem.value = amountToValue(lastInputItem);
 		}
 
-		//swapIntent
-
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
 	function handleSelectToOption(i: SwapOption) {
@@ -190,7 +189,7 @@
 		}
 
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
 	function handleFromBalanceClick() {
@@ -204,7 +203,7 @@
 		newInput.amount = valueToAmount(newInput);
 		lastInputItem = structuredClone(newInput);
 		fromValue[0] = lastInputItem.value;
-		doRecalc(swapIntent, lastInputItem);
+		doRecalc(swapIntent);
 	}
 
 	// swap button
@@ -325,7 +324,7 @@
 								data-side="input"
 								data-ticker={swapIntent.filter((i) => i.side == 'input')[0].ticker}
 								bind:value={fromValue[0]}
-								on:input={handleFromValueChange}
+								on:input={handleValueChange}
 							/>
 							<button
 								id="fromDropdownBtn"
@@ -375,7 +374,7 @@
 										bind:value={fromValue[1]}
 										data-side="input"
 										data-ticker={swapIntent.filter((i) => i.side == 'input')[1].ticker}
-										on:input={handleFromValueChange}
+										on:input={handleValueChange}
 									/>
 								</div>
 								<button
@@ -447,7 +446,7 @@
 							bind:value={toValue[0]}
 							data-side="output"
 							data-ticker={swapIntent.filter((i) => i.side == 'output')[0].ticker}
-							on:input={handleFromValueChange}
+							on:input={handleValueChange}
 						/>
 						<button
 							id="toDropdownBtn"
@@ -498,7 +497,7 @@
 									bind:value={toValue[1]}
 									data-side="output"
 									data-ticker={swapIntent.filter((i) => i.side == 'output')[1].ticker}
-									on:input={handleFromValueChange}
+									on:input={handleValueChange}
 								/>
 							</div>
 							<button

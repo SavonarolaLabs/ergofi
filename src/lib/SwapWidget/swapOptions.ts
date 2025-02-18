@@ -1,6 +1,7 @@
 // All possible "from" currencies
 
 import { ergoTokens, getTokenId } from '$lib/stores/ergoTokens';
+import { amountToValue } from '$lib/utils';
 import { type SwapIntention, type SwapItem } from '../swapIntention';
 
 export type SwapOption =
@@ -50,6 +51,13 @@ export const ergDexyGoldToLp: SwapOption = {
 	]
 };
 
+export const ergToSigUsd: SwapOption = {
+	intention: [
+		{ side: 'input', ticker: 'ERG', tokenId: getTokenId('ERG')! },
+		{ side: 'output', ticker: 'SigUSD', tokenId: getTokenId('SigUSD')! }
+	]
+};
+
 export const inputOptions: SwapOption[] = [
 	itemERG,
 	itemDexyGold,
@@ -86,6 +94,17 @@ export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
 			}
 		}
 	}
+}
+
+export function createDefaultInput(swapIntent: SwapIntention): SwapItem {
+	const firstItem: SwapItem = {
+		side: swapIntent[0].side,
+		tokenId: swapIntent[0].tokenId,
+		ticker: swapIntent[0].ticker,
+		amount: ergoTokens[swapIntent[0].tokenId].defaultAmount
+	};
+	firstItem.value = amountToValue(firstItem);
+	return firstItem;
 }
 
 export function tokenColor(ticker: string) {

@@ -111,7 +111,7 @@
 		<sup class="text-muted ml-1 mt-1 text-xs">alpha 14</sup>
 	</div>
 
-	<div class="flex gap-1">
+	<!-- <div class="flex gap-1">
 		{#each girls as girl}
 			<button on:click={() => setbg(girl)}>
 				{girl.img}
@@ -125,7 +125,7 @@
 				<img src="/powwowgirls/unique/{girl.img}.png" alt="" style="width:40px;height:40px" />
 			</button>
 		{/each}
-	</div>
+	</div> -->
 
 	<div class="flex gap-3" style="height:52px;">
 		{#if $web3wallet_connected}

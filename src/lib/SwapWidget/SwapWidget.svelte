@@ -54,6 +54,7 @@
 		updateUiValues
 	} from './swapWidgetUtils';
 	import SwapPrice from './SwapPrice.svelte';
+	import { calculateDexyGoldNumbers } from '$lib/stores/dexyGoldStore';
 
 	let selectedInputOption: SwapOption = ergToSigUsd;
 	let swapIntent: SwapIntention = selectedInputOption.intention;
@@ -69,6 +70,8 @@
 
 	onMount(() => {
 		initJsonTestBoxes();
+		calculateDexyGoldNumbers();
+
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
 			if ($selected_contract == 'SigmaUsd') doRecalc();
@@ -77,6 +80,7 @@
 			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
 			if ($selected_contract == 'SigmaUsd') doRecalc();
 		});
+
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
 			if (addr) {
 				confirmed_interactions.update((list) =>

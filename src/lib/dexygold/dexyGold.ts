@@ -1889,7 +1889,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 
 	if (swapTag == 'ERG+DEXYGOLD_DEXYGOLD/DEXYGOLDLP') {
@@ -1899,7 +1898,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, contractErg);
 		setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'ERG+DEXYGOLD/DEXYGOLDLP_DEXYGOLDLP') {
 		const { uiSwapFee, inputErg, contractErg, contractDexy, sharesUnlocked, price } =
@@ -1908,7 +1906,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'DEXYGOLDLP_DEXYGOLDLP/ERG+DEXYGOLD') {
 		const { uiSwapFee, userErg, contractErg, contractDexy, price } =
@@ -1917,7 +1914,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, userErg);
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 
 	if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_ERG') {
@@ -1927,7 +1923,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'DEXYGOLDLP/ERG+DEXYGOLD_DEXYGOLD') {
 		const { uiSwapFee, userErg, contractErg, sharesUnlocked, price } =
@@ -1936,7 +1931,6 @@ export function doRecalcDexyGoldContract(
 		setAmount(calculatedIntent, DEXY_GOLD.lpTokenId, sharesUnlocked);
 
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	//
 	if (swapTag == 'ERG_ERG/DEXYGOLD') {
@@ -1948,7 +1942,6 @@ export function doRecalcDexyGoldContract(
 		);
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, contractDexy);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'ERG/DEXYGOLD_DEXYGOLD') {
 		const { bestAmount: inputErg, bestPrice: price } = bestOptionErgToDexyGoldInputDexy(
@@ -1959,7 +1952,6 @@ export function doRecalcDexyGoldContract(
 		);
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, inputErg);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'DEXYGOLD_DEXYGOLD/ERG') {
 		const { amountErg, amountDexy, price } = dexyGoldLpSwapInputDexyPrice(
@@ -1971,7 +1963,6 @@ export function doRecalcDexyGoldContract(
 
 		setAmount(calculatedIntent, ERGO_TOKEN_ID, amountErg);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 	if (swapTag == 'DEXYGOLD/ERG_ERG') {
 		const { amountErg, amountDexy, price } = dexyGoldLpSwapInputErgPrice(
@@ -1982,7 +1973,6 @@ export function doRecalcDexyGoldContract(
 		);
 		setAmount(calculatedIntent, DEXY_GOLD.dexyTokenId, amountDexy);
 		swapPreview = { calculatedIntent, price };
-		console.log({ swapPreview });
 	}
 
 	// @ts-ignore

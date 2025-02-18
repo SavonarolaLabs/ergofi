@@ -10,11 +10,6 @@
 	import { DEXY_GOLD } from './dexygold/dexyConstants';
 
 	export let confirmed = true;
-
-	onMount(() => {
-		initJsonTestBoxes();
-		calculateDexyGoldNumbers();
-	});
 </script>
 
 {#if $sigmausd_numbers}

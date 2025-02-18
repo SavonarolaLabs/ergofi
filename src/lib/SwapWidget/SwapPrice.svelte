@@ -11,10 +11,6 @@
 	export let swapIntent;
 
 	function calculatePrice(swapIntent: SwapIntention) {
-		console.log(swapIntent);
-		console.log(swapIntent[0]);
-		console.log(swapIntent[1]);
-
 		if (swapIntent.length == 2) {
 			const inputIndex = swapIntent.findIndex((s) => s.side == 'input');
 			const outputIndex = swapIntent.findIndex((s) => s.side == 'output');
@@ -27,7 +23,6 @@
 				.multipliedBy(inMultiplicator)
 				.toNumber();
 			//getTokenId(ticker
-			console.log('price', price);
 			return price;
 		} else {
 			const lpIndex = swapIntent.findIndex((s) => s.tokenId == DEXY_GOLD.lpTokenId);

@@ -5,39 +5,52 @@
 	import BigNumber from 'bignumber.js';
 	import { getToLabel, isSwapDisabledCalc } from './swapWidgetUtils';
 	import type { SwapIntention } from '$lib/swapIntention';
-	import { ergoTokens } from '$lib/stores/ergoTokens';
+	import { ERGO_TOKEN_ID, ergoTokens } from '$lib/stores/ergoTokens';
+	import { DEXY_GOLD } from '$lib/dexygold/dexyConstants';
 
 	export let swapIntent;
 
 	function calculatePrice(swapIntent: SwapIntention) {
 		console.log(swapIntent);
+		console.log(swapIntent[0]);
+		console.log(swapIntent[1]);
+
 		if (swapIntent.length == 2) {
-			const inputIndex = 0;
-			const outputIndex = 1;
-			const inDecimals = ergoTokens[swapIntent[inputIndex].tokenId].decimals; //input?
-			const outDecimals = ergoTokens[swapIntent[outputIndex].tokenId].decimals; //output?
+			const inputIndex = swapIntent.findIndex((s) => s.side == 'input');
+			const outputIndex = swapIntent.findIndex((s) => s.side == 'output');
+			const inMultiplicator = 10 ** ergoTokens[swapIntent[inputIndex].tokenId].decimals; //input?
+			const outMultiplicator = 10 ** ergoTokens[swapIntent[outputIndex].tokenId].decimals; //output?
 
 			const price = BigNumber(swapIntent[outputIndex].amount)
-				.dividedBy(outDecimals)
+				.dividedBy(outMultiplicator)
 				.dividedBy(swapIntent[inputIndex].amount)
-				.multipliedBy(inDecimals)
-				.toString();
+				.multipliedBy(inMultiplicator)
+				.toNumber();
 			//getTokenId(ticker
 			console.log('price', price);
 			return price;
 		} else {
-			console.log('Price else: To Do');
-			return 0;
+			const lpIndex = swapIntent.findIndex((s) => s.tokenId == DEXY_GOLD.lpTokenId);
+			const ergIndex = swapIntent.findIndex((s) => s.tokenId == ERGO_TOKEN_ID);
+			const lpMultiplicator = 10 ** ergoTokens[swapIntent[lpIndex].tokenId].decimals; //input?
+			const ergMultiplicator = 10 ** ergoTokens[swapIntent[ergIndex].tokenId].decimals; //output?
+
+			const price = BigNumber(swapIntent[lpIndex].amount)
+				.dividedBy(lpMultiplicator)
+				.dividedBy(swapIntent[ergIndex].amount)
+				.multipliedBy(ergMultiplicator);
+
+			if (swapIntent[lpIndex].side == 'output') {
+				return price.toNumber();
+			} else {
+				return BigNumber(1).dividedBy(price).toNumber();
+			}
 		}
 		// b/a
 	}
 </script>
 
 {#if $sigmausd_numbers}
-	<div>
-		a0: {swapIntent[0].amount}
-		a1: {swapIntent[1].amount}
-	</div>
 	<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 		<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabledCalc(swapIntent)}>
 			{getToLabel(swapIntent)}</span

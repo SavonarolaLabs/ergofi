@@ -71,11 +71,11 @@
 		initJsonTestBoxes();
 		oracle_box.subscribe((oracleBox) => {
 			recalcSigUsdBankAndOracleBoxes(oracleBox, $bank_box);
-			if ($selected_contract == 'SigmaUsd') doRecalc(swapIntent);
+			if ($selected_contract == 'SigmaUsd') doRecalc();
 		});
 		bank_box.subscribe((bankBox) => {
 			recalcSigUsdBankAndOracleBoxes($oracle_box, bankBox);
-			if ($selected_contract == 'SigmaUsd') doRecalc(swapIntent);
+			if ($selected_contract == 'SigmaUsd') doRecalc();
 		});
 		web3wallet_wallet_used_addresses.subscribe((addr) => {
 			if (addr) {
@@ -95,7 +95,7 @@
 		});
 	});
 
-	function doRecalc(swapIntent: SwapIntention) {
+	function doRecalc() {
 		if (!lastInputItem) {
 			swapIntent = defaultAmountIntent(swapIntent);
 		}
@@ -124,7 +124,7 @@
 		const value = input.value;
 		const amount = valueToAmount({ tokenId, value });
 		lastInputItem = { side, ticker, tokenId, value, amount };
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	// TODO: update this like handleSelectInputOption()
@@ -139,13 +139,13 @@
 			lastInputItem.side = lastInputItem.side == 'input' ? 'output' : 'input';
 		}
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	function handleFeeChange(event: Event) {
 		const val = (event.target as HTMLInputElement).value;
 		fee_mining.set(BigInt(Number(val) * 10 ** 9));
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	// TODO: rename function
@@ -169,7 +169,7 @@
 		}
 
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	function handleSelectToOption(i: SwapOption) {
@@ -193,7 +193,7 @@
 		}
 
 		updateSelectedContractStore(swapIntent);
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	function handleFromBalanceClick() {
@@ -207,7 +207,7 @@
 		newInput.amount = valueToAmount(newInput);
 		lastInputItem = structuredClone(newInput);
 		fromValues[0] = lastInputItem.value;
-		doRecalc(swapIntent);
+		doRecalc();
 	}
 
 	// swap button
@@ -415,10 +415,6 @@
 				/>
 			</div>
 			<div class="">
-				<div>
-					a0: {swapIntent[0].amount} a1: {swapIntent[1].amount}
-				</div>
-				<hr />
 				<SwapPrice {swapIntent}></SwapPrice>
 				<div
 					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"

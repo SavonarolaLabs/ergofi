@@ -19,10 +19,7 @@
 
 {#if $sigmausd_numbers}
 	<div class="rounded-md bg-[var(--cl-bg-alpha)]">
-		<div
-			class="row flex flex-col gap-1 p-4 pt-3"
-			style="font-variant-numeric: tabular-nums; background:#f0f8ff03;"
-		>
+		<div class="row flex flex-col gap-1 p-4 pt-3" style="font-variant-numeric: tabular-nums;">
 			<a href="https://sigmaspace.io/en/address/{DEXY_BANK_BANK}" target="_blank">
 				<div class="mb-2 font-mono text-xs font-bold">
 					DexyGold Bank :: x6iDu8vHTP81nodtTr...nbeTrPMey1WPaXX

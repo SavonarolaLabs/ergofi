@@ -9,7 +9,6 @@ import {
 import type { NodeBox } from '$lib/stores/bank.types';
 import { get } from 'svelte/store';
 import {
-	getSwapTag,
 	inputTicker,
 	inputTokenIds,
 	isLpTokenInput,
@@ -17,8 +16,7 @@ import {
 	outputTicker,
 	outputTokenIds,
 	type SwapIntention,
-	type SwapItem,
-	type SwapPreview
+	type SwapItem
 } from '../swapIntention';
 import { selected_contract } from '$lib/stores/ui';
 import {
@@ -140,40 +138,20 @@ export function updateSelectedContractStore(swapIntent: SwapIntention) {
 	}
 }
 
-export function recalcPriceAndIntent(
-	swapIntent: SwapIntention,
-	inputItem?: SwapItem
-): SwapPreview | undefined {
-	swapIntent.forEach((row) => {
-		if (row.tokenId == inputItem?.tokenId && row.side == inputItem?.side) {
-			row.amount = inputItem.amount;
-			row.value = inputItem.value;
-			row.lastInput = true;
-		} else {
-			row.lastInput = false;
-		}
-	});
-
-	let price;
+export function recalcPriceAndIntent(swapIntent: SwapIntention): SwapIntention | undefined {
 	let calculatedIntent;
 
 	if (get(selected_contract) == 'SigmaUsd') {
-		if (!get(oracle_box) || !get(bank_box)) return;
-		if (!inputItem) {
-			const copySwapIntent = defaultAmountIntent(swapIntent);
-			({ price } = calculateAmountAndSwapPrice(
-				copySwapIntent,
-				get(sigmausd_numbers),
-				get(fee_mining)
-			));
-		} else {
-			({ calculatedIntent, price } = calculateAmountAndSwapPrice(
-				swapIntent,
-				get(sigmausd_numbers),
-				get(fee_mining)
-			));
-		}
+		if (!get(oracle_box) || !get(bank_box) || !get(sigmausd_numbers)) return;
+
+		({ calculatedIntent } = calculateAmountAndSwapPrice(
+			swapIntent,
+			get(sigmausd_numbers),
+			get(fee_mining)
+		));
 	} else if (get(selected_contract) == 'DexyGold') {
+		if (!get(dexygold_widget_numbers)) return;
+
 		let dexyGoldUtxo: DexyGoldUtxo = {
 			lpSwapIn: get(dexygold_lp_swap_box),
 			lpMintIn: get(dexygold_lp_mint_box),
@@ -186,24 +164,15 @@ export function recalcPriceAndIntent(
 			goldOracle: get(oracle_erg_xau_box),
 			tracking101: get(dexygold_tracking101_box)
 		};
-		if (!inputItem) {
-			const copySwapIntent = defaultAmountIntent(swapIntent);
-			({ price } = doRecalcDexyGoldContract(
-				copySwapIntent,
-				dexyGoldUtxo,
-				get(dexygold_widget_numbers),
-				get(fee_mining)
-			));
-		} else {
-			({ calculatedIntent, price } = doRecalcDexyGoldContract(
-				swapIntent,
-				dexyGoldUtxo,
-				get(dexygold_widget_numbers),
-				get(fee_mining)
-			));
-		}
+
+		({ calculatedIntent } = doRecalcDexyGoldContract(
+			swapIntent,
+			dexyGoldUtxo,
+			get(dexygold_widget_numbers),
+			get(fee_mining)
+		));
 	}
-	return { price, calculatedIntent };
+	return calculatedIntent;
 }
 
 // html

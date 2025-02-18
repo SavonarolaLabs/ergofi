@@ -66,13 +66,26 @@ export const inputOptions: SwapOption[] = [
 	ergDexyGoldToLp
 ];
 
-export function defaultAmountIntent(swapIntent: SwapIntention) {
+export function defaultAmountIntent(swapIntent: SwapIntention): SwapIntention {
 	const copySwapIntent = structuredClone(swapIntent);
 
 	const defaultAmount = ergoTokens[copySwapIntent[0].tokenId].defaultAmount;
 
 	copySwapIntent[0].amount = defaultAmount;
+	copySwapIntent[0].lastInput = true;
 	return copySwapIntent;
+}
+
+export function setLastInputForSwapIntent(swapIntent: SwapIntention, lastInputItem: SwapItem) {
+	swapIntent.forEach((row) => {
+		if (row.tokenId == lastInputItem.tokenId && row.side == lastInputItem.side) {
+			row.amount = lastInputItem.amount;
+			row.value = lastInputItem.value;
+			row.lastInput = true;
+		} else {
+			row.lastInput = false;
+		}
+	});
 }
 
 export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
@@ -94,17 +107,6 @@ export function getOutputOptions(swapOption: SwapOption): SwapOption[] {
 			}
 		}
 	}
-}
-
-export function createDefaultInput(swapIntent: SwapIntention): SwapItem {
-	const firstItem: SwapItem = {
-		side: swapIntent[0].side,
-		tokenId: swapIntent[0].tokenId,
-		ticker: swapIntent[0].ticker,
-		amount: ergoTokens[swapIntent[0].tokenId].defaultAmount
-	};
-	firstItem.value = amountToValue(firstItem);
-	return firstItem;
 }
 
 export function tokenColor(ticker: string) {

@@ -33,10 +33,11 @@
 	import Dropdown from './Dropdown.svelte';
 	import SwapInputs from './SwapInputs.svelte';
 	import {
-		createDefaultInput,
+		defaultAmountIntent,
 		ergToSigUsd,
 		getOutputOptions,
 		inputOptions,
+		setLastInputForSwapIntent,
 		tokenColor,
 		type SwapOption
 	} from './swapOptions';
@@ -59,9 +60,8 @@
 	let lastInputItem: SwapItem;
 	//selected_contract.set('DexyGold');
 	selected_contract.set('SigmaUsd');
-	let fromValue = ['', ''];
-	let toValue = ['', ''];
-	let swapPrice: number = 0.0;
+	let fromValues = ['', ''];
+	let toValues = ['', ''];
 	let minerFee = 0.01;
 	let showFeeSlider = false;
 	let fromDropdownOpen = false;
@@ -96,17 +96,22 @@
 	});
 
 	function doRecalc(swapIntent: SwapIntention) {
-		console.log('doRecalc lastInputItem', $selected_contract, { swapIntent, lastInputItem });
-		const input = lastInputItem ? lastInputItem : createDefaultInput(swapIntent);
-		const preview = recalcPriceAndIntent(swapIntent, input);
-		if (preview?.price) swapPrice = preview.price;
-		if (preview?.calculatedIntent) {
-			const swapIntentNew = updateIntentValues(preview?.calculatedIntent);
-			updateUiValues(swapIntentNew, fromValue, toValue);
+		if (!lastInputItem) {
+			swapIntent = defaultAmountIntent(swapIntent);
+		}
+
+		if (lastInputItem) {
+			setLastInputForSwapIntent(swapIntent, lastInputItem);
+		}
+
+		const calculatedIntent = recalcPriceAndIntent(swapIntent);
+		if (calculatedIntent) {
+			const swapIntentNew = updateIntentValues(calculatedIntent);
+			updateUiValues(swapIntentNew, fromValues, toValues);
 			swapIntent = swapIntentNew;
 			if (lastInputItem) {
-				toValue = toValue;
-				fromValue = fromValue;
+				toValues = toValues;
+				fromValues = fromValues;
 			}
 		}
 	}
@@ -132,8 +137,6 @@
 		});
 		if (lastInputItem) {
 			lastInputItem.side = lastInputItem.side == 'input' ? 'output' : 'input';
-		} else {
-			lastInputItem = createDefaultInput(swapIntent);
 		}
 		updateSelectedContractStore(swapIntent);
 		doRecalc(swapIntent);
@@ -203,7 +206,7 @@
 		};
 		newInput.amount = valueToAmount(newInput);
 		lastInputItem = structuredClone(newInput);
-		fromValue[0] = lastInputItem.value;
+		fromValues[0] = lastInputItem.value;
 		doRecalc(swapIntent);
 	}
 
@@ -324,7 +327,7 @@
 								min="0"
 								data-side="input"
 								data-ticker={swapIntent.filter((i) => i.side == 'input')[0].ticker}
-								bind:value={fromValue[0]}
+								bind:value={fromValues[0]}
 								on:input={handleValueChange}
 							/>
 							<button
@@ -372,7 +375,7 @@
 										class="h-full w-[256px] bg-transparent text-3xl outline-none"
 										placeholder="0"
 										min="0"
-										bind:value={fromValue[1]}
+										bind:value={fromValues[1]}
 										data-side="input"
 										data-ticker={swapIntent.filter((i) => i.side == 'input')[1].ticker}
 										on:input={handleValueChange}
@@ -412,7 +415,7 @@
 				/>
 			</div>
 			<div class="">
-				<SwapPrice {swapIntent} {swapPrice}></SwapPrice>
+				<SwapPrice {swapIntent}></SwapPrice>
 				<div
 					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"
 					style="border: none!important; outline: none!important; box-shadow: none!important; max-height: {swapIntent.filter(
@@ -427,7 +430,7 @@
 							class="w-[256px] bg-transparent text-3xl outline-none"
 							placeholder="0"
 							min="0"
-							bind:value={toValue[0]}
+							bind:value={toValues[0]}
 							data-side="output"
 							data-ticker={swapIntent.filter((i) => i.side == 'output')[0].ticker}
 							on:input={handleValueChange}
@@ -478,7 +481,7 @@
 									class="h-full w-[256px] bg-transparent text-3xl outline-none"
 									placeholder="0"
 									min="0"
-									bind:value={toValue[1]}
+									bind:value={toValues[1]}
 									data-side="output"
 									data-ticker={swapIntent.filter((i) => i.side == 'output')[1].ticker}
 									on:input={handleValueChange}

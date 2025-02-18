@@ -20,7 +20,6 @@ export type SwapItem = TokenInput & {
 };
 
 export type SwapIntention = SwapItem[];
-export type SwapPreview = { calculatedIntent?: SwapIntention; price: number };
 
 export function inputTokenIds(swapIntention: SwapIntention): string[] {
 	return swapIntention.filter((si) => si.side == 'input').map((si) => si.tokenId);
@@ -54,7 +53,6 @@ export function getSwapTagAndAmount(swapIntent: SwapIntention): SwapTagAndAmount
 }
 
 export function getSwapTag(swapIntent: SwapIntention, anchorIntent: SwapItem): string {
-	console.log({ swapIntent });
 	let inputStr = '';
 	let outputStr = '';
 

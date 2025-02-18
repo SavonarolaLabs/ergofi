@@ -5,16 +5,31 @@
 	import BigNumber from 'bignumber.js';
 	import { getToLabel, isSwapDisabledCalc } from './swapWidgetUtils';
 	import type { SwapIntention } from '$lib/swapIntention';
+	import { ergoTokens } from '$lib/stores/ergoTokens';
 
 	export let swapIntent;
 
 	function calculatePrice(swapIntent: SwapIntention) {
 		console.log(swapIntent);
-		if (swapIntent[0]?.amount != undefined) {
-			return BigNumber(swapIntent[0].amount).div(swapIntent[0].amount).toString();
+		if (swapIntent.length == 2) {
+			const inputIndex = 0;
+			const outputIndex = 1;
+			const inDecimals = ergoTokens[swapIntent[inputIndex].tokenId].decimals; //input?
+			const outDecimals = ergoTokens[swapIntent[outputIndex].tokenId].decimals; //output?
+
+			const price = BigNumber(swapIntent[outputIndex].amount)
+				.dividedBy(outDecimals)
+				.dividedBy(swapIntent[inputIndex].amount)
+				.multipliedBy(inDecimals)
+				.toString();
+			//getTokenId(ticker
+			console.log('price', price);
+			return price;
 		} else {
+			console.log('Price else: To Do');
 			return 0;
 		}
+		// b/a
 	}
 </script>
 
@@ -24,7 +39,8 @@
 			{getToLabel(swapIntent)}</span
 		>
 		<span class="text-sm">
-			{swapIntent}<SubNumber value={calculatePrice(swapIntent)}></SubNumber>
+			{swapIntent[0].amount}
+			<SubNumber value={calculatePrice(swapIntent)}></SubNumber>
 		</span>
 		<!-- <span class="text-sm">
 			{#if outputTicker(swapIntent, 0) === 'SigRSV' || inputTicker(swapIntent, 0) === 'SigRSV'}

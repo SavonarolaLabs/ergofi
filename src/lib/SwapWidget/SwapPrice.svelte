@@ -10,10 +10,14 @@
 
 	export let swapIntent;
 	let direction: boolean = true;
-	let firstTicker: string = '';
-	let lastTicker: string = '';
 
-	function getFirstTicker(swapIntent: SwapIntention, direct: boolean = true) {
+	type Tickers = {
+		firstTicker: string;
+		lastTicker: string;
+	};
+
+	function getTickers(swapIntent: SwapIntention, direct: boolean = true): Tickers {
+		let firstTicker, lastTicker;
 		if (swapIntent.length == 2) {
 			const inputIndex = swapIntent.findIndex((s) => s.side == 'input');
 			const outputIndex = swapIntent.findIndex((s) => s.side == 'output');
@@ -39,10 +43,8 @@
 				lastTicker = swapIntent[ergIndex].ticker;
 			}
 		}
-	}
 
-	function getLastTicker(swapIntent: SwapIntention, direct: boolean = true): string {
-		return 'NOT ERG';
+		return { firstTicker, lastTicker };
 	}
 
 	function calculatePrice(swapIntent: SwapIntention, direct: boolean = true) {
@@ -89,12 +91,18 @@
 		<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabledCalc(swapIntent)}>
 			{getToLabel(swapIntent)}</span
 		>
-		<span class="text-sm">
-			{getFirstTicker(swapIntent, direction)}1 {firstTicker} = <SubNumber
-				value={calculatePrice(swapIntent, direction)}
-			></SubNumber>
-			{lastTicker}
-		</span>
+		<button
+			on:click={() => {
+				direction = !direction;
+			}}
+		>
+			<span class="text-sm">
+				1 {getTickers(swapIntent, direction).firstTicker} = <SubNumber
+					value={calculatePrice(swapIntent, direction)}
+				></SubNumber>
+				{getTickers(swapIntent, direction).lastTicker}
+			</span>
+		</button>
 		<!-- <span class="text-sm">
 			{#if outputTicker(swapIntent, 0) === 'SigRSV' || inputTicker(swapIntent, 0) === 'SigRSV'}
 				<SubNumber value={1 / swapPrice}></SubNumber>

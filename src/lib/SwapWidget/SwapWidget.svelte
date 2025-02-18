@@ -415,6 +415,10 @@
 				/>
 			</div>
 			<div class="">
+				<div>
+					a0: {swapIntent[0].amount} a1: {swapIntent[1].amount}
+				</div>
+				<hr />
 				<SwapPrice {swapIntent}></SwapPrice>
 				<div
 					class="relative flex flex-col rounded-lg rounded-bl-none focus-within:ring-1 focus-within:ring-blue-500"

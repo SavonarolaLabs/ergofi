@@ -34,12 +34,15 @@
 </script>
 
 {#if $sigmausd_numbers}
+	<div>
+		a0: {swapIntent[0].amount}
+		a1: {swapIntent[1].amount}
+	</div>
 	<div class="mb-2 flex justify-between px-3 pl-4 pr-4 pt-3">
 		<span class="flex gap-1 text-sm" class:text-red-500={isSwapDisabledCalc(swapIntent)}>
 			{getToLabel(swapIntent)}</span
 		>
 		<span class="text-sm">
-			{swapIntent[0].amount}
 			<SubNumber value={calculatePrice(swapIntent)}></SubNumber>
 		</span>
 		<!-- <span class="text-sm">
